@@ -6,7 +6,7 @@ research/sources/
 target/
 
 # Node modules for the table, restored by `npm ci`
-node_modules/
+node_modules
 
 # Python caches
 __pycache__/
