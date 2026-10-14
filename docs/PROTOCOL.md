@@ -70,8 +70,11 @@ alphabetical order.
 | `level` | the opponent's level, an opaque integer for now (default 0); the module carries it through export and import |
 | `settings` | optional; any of `both_pass` (`"play"`, `"throw_in"`), `values` (`"2/3/4"`, `"1/2/3"`, `"1/2/4"`), `ultimo` (`1`, `2`); missing keys take the defaults of RULES 0 |
 
-Errors (output `{"ok":false,"error":"bad-config","detail":"..."}`, return 0):
-unparsable JSON, `touren` not 3 or 6, `human` not 0 or 1, bad settings.
+Errors (return 0; output `{"ok":false,"error":"bad-config", ...}` with either
+`"field"` (`config` unparsable, `human` not 0 or 1, `settings` bad) or
+`"setup"`, the core's `SetupError` as a key with parameters, e.g.
+`{"key":"bad-touren","touren":4}`; keys in `docs/MESSAGES.md`). No error
+carries prose.
 
 ## Replies
 
@@ -90,11 +93,12 @@ Every call that changes the sitting answers
   `ok: false, stepped: false` (and returns 0).
 
 Errors that are not rules refusals have no `state`:
-`{"protocol":1,"ok":false,"error":CODE,"detail":TEXT}` with `CODE` one of
+`{"protocol":1,"ok":false,"error":CODE, ...parameters}` with `CODE` one of
 `bad-config`, `bad-action` (the action JSON does not parse or names an unknown
-action or card), `bad-record` (import), `opponent-refused` (a bug in the
-opponent: it chose an action the engine refused), `no-sitting` (any call
-before `new`).
+action or card), `bad-record` (import: `field` or `setup` as for
+`bad-config`), `opponent-refused` (a bug in the opponent: it chose an action
+the engine refused; carries its `refusal`), `no-sitting` (any call before
+`new`).
 
 ## The state
 

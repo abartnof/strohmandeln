@@ -15,7 +15,7 @@ use serde_json::{json, Map, Value};
 use strohmandeln_core::agents::{Player, RandomPlayer};
 use strohmandeln_core::cards::{Card, Honour};
 use strohmandeln_core::session::{Record, Sitting};
-use strohmandeln_core::types::{Action, Event, Seat, Settings, Source};
+use strohmandeln_core::types::{Action, Event, Seat, Settings, SetupError, Source};
 use strohmandeln_core::view::{filter_event, view, View};
 
 /// Bumped whenever the wire format changes in a way a client would notice.
@@ -67,7 +67,33 @@ struct Saved {
     record: Record,
 }
 
-fn settings_of(overrides: Map<String, Value>) -> Result<Settings, String> {
+/// Why a call that is not a rules refusal failed. On the wire it is a code
+/// plus parameters, never prose (`docs/MESSAGES.md`).
+#[derive(Debug)]
+pub enum Fail {
+    /// The input did not parse or does not fit: the field that was wrong.
+    Field(&'static str),
+    /// The core refused to begin or replay the sitting.
+    Setup(SetupError),
+}
+
+impl From<SetupError> for Fail {
+    fn from(e: SetupError) -> Fail {
+        Fail::Setup(e)
+    }
+}
+
+impl Fail {
+    /// The error reply, under the given code (`bad-config`, `bad-record`).
+    fn reply(&self, code: &str) -> Value {
+        match self {
+            Fail::Field(f) => error(code, json!({"field": f})),
+            Fail::Setup(e) => error(code, json!({"setup": e})),
+        }
+    }
+}
+
+fn settings_of(overrides: Map<String, Value>) -> Result<Settings, Fail> {
     let mut base = match serde_json::to_value(Settings::default()) {
         Ok(Value::Object(m)) => m,
         _ => Map::new(),
@@ -75,7 +101,7 @@ fn settings_of(overrides: Map<String, Value>) -> Result<Settings, String> {
     for (k, v) in overrides {
         base.insert(k, v);
     }
-    serde_json::from_value(Value::Object(base)).map_err(|e| format!("settings: {e}"))
+    serde_json::from_value(Value::Object(base)).map_err(|_| Fail::Field("settings"))
 }
 
 /// One sitting against one opponent, from the human's chair.
@@ -88,12 +114,17 @@ pub struct Table {
     sent: usize,
 }
 
-fn error(code: &str, detail: &str) -> Value {
-    json!({"protocol": PROTOCOL, "ok": false, "error": code, "detail": detail})
+/// An error reply: the code, and the parameters (an object) beside it.
+fn error(code: &str, params: Value) -> Value {
+    let mut r = json!({"protocol": PROTOCOL, "ok": false, "error": code});
+    if let (Value::Object(m), Value::Object(p)) = (&mut r, params) {
+        m.extend(p);
+    }
+    r
 }
 
-fn seat_of(n: u8) -> Result<Seat, String> {
-    Seat::try_from(n)
+fn seat_of(n: u8, field: &'static str) -> Result<Seat, Fail> {
+    Seat::try_from(n).map_err(|_| Fail::Field(field))
 }
 
 impl Table {
@@ -117,20 +148,20 @@ impl Table {
     }
 
     /// Creates a sitting from the JSON of `strohmandeln_new`.
-    pub fn create(config: &str, factory: OpponentFactory) -> Result<Table, String> {
-        let c: Config = serde_json::from_str(config).map_err(|e| format!("config: {e}"))?;
-        let human = seat_of(c.human)?;
+    pub fn create(config: &str, factory: OpponentFactory) -> Result<Table, Fail> {
+        let c: Config = serde_json::from_str(config).map_err(|_| Fail::Field("config"))?;
+        let human = seat_of(c.human, "human")?;
         let sitting = Sitting::new(c.seed, settings_of(c.settings)?, c.touren)?;
         Ok(Table::build(sitting, human, c.level, factory, 0))
     }
 
     /// Restores a sitting from the JSON of `export`.
-    pub fn restore(saved: &str, factory: OpponentFactory) -> Result<Table, String> {
-        let s: Saved = serde_json::from_str(saved).map_err(|e| format!("saved sitting: {e}"))?;
+    pub fn restore(saved: &str, factory: OpponentFactory) -> Result<Table, Fail> {
+        let s: Saved = serde_json::from_str(saved).map_err(|_| Fail::Field("saved"))?;
         if s.protocol != PROTOCOL {
-            return Err(format!("saved protocol {} is not {PROTOCOL}", s.protocol));
+            return Err(Fail::Field("protocol"));
         }
-        let human = seat_of(s.human)?;
+        let human = seat_of(s.human, "human")?;
         let sitting = Sitting::replay(&s.record)?;
         let sent = sitting.events().len();
         Ok(Table::build(sitting, human, s.level, factory, sent))
@@ -249,7 +280,7 @@ impl Table {
     pub fn send(&mut self, action: &str) -> Value {
         let action: Action = match serde_json::from_str(action) {
             Ok(a) => a,
-            Err(e) => return error("bad-action", &e.to_string()),
+            Err(_) => return error("bad-action", json!({})),
         };
         match self.sitting.apply(self.human, action) {
             Ok(_) => self.reply(true, None),
@@ -273,7 +304,7 @@ impl Table {
         let v = view(&self.sitting, opp);
         let action = self.opponent.choose(&v);
         if let Err(refusal) = self.sitting.apply(opp, action.clone()) {
-            return Err(error("opponent-refused", &format!("{action:?}: {refusal}")));
+            return Err(error("opponent-refused", json!({"refusal": refusal})));
         }
         let mut r = self.reply(true, None);
         if let Value::Object(m) = &mut r {
@@ -351,7 +382,7 @@ impl Host {
     }
 
     fn missing(&mut self) {
-        self.give(&error("no-sitting", "create or import a sitting first"));
+        self.give(&error("no-sitting", json!({})));
     }
 
     /// `strohmandeln_new`: 1 if a sitting was created (the output is its
@@ -365,7 +396,7 @@ impl Host {
                 1
             }
             Err(why) => {
-                self.give(&error("bad-config", &why));
+                self.give(&why.reply("bad-config"));
                 0
             }
         }
@@ -428,7 +459,7 @@ impl Host {
                 1
             }
             Err(why) => {
-                self.give(&error("bad-record", &why));
+                self.give(&why.reply("bad-record"));
                 0
             }
         }
@@ -588,6 +619,31 @@ mod tests {
             assert_eq!(h.new_sitting(bad, default_opponent), 0, "{bad}");
             assert_eq!(out(&h)["error"], "bad-config");
         }
+    }
+
+    #[test]
+    fn setup_errors_reach_the_wire_as_a_key_with_parameters() {
+        let mut h = Host::default();
+        assert_eq!(
+            h.new_sitting(r#"{"seed":1,"touren":4}"#, default_opponent),
+            0
+        );
+        let r = out(&h);
+        assert_eq!(r["error"], "bad-config");
+        assert_eq!(r["setup"], json!({"key": "bad-touren", "touren": 4}));
+        assert!(r.get("detail").is_none(), "no prose on the wire");
+
+        let mut h = host(CONFIG);
+        h.show(|t| t.export());
+        let mut saved = out(&h);
+        saved["record"]["version"] = json!(9);
+        assert_eq!(h.import(&saved.to_string(), default_opponent), 0);
+        let r = out(&h);
+        assert_eq!(r["error"], "bad-record");
+        assert_eq!(
+            r["setup"],
+            json!({"key": "record-version", "found": 9, "expected": 1})
+        );
     }
 
     #[test]
