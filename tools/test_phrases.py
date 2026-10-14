@@ -244,6 +244,60 @@ class Shape(unittest.TestCase):
         self.assertEqual(len(ids), len(set(ids)))
 
 
+class Signatures(unittest.TestCase):
+    """Each text carries a `sig`, the saying it is (docs/TABLE3D.md 5.3.1): the talk
+    keeps one saying from being heard again from another group."""
+
+    def test_every_text_in_words_json_has_a_sig(self):
+        import json
+        data = json.loads(phrases.WORDS.read_text())
+        for key, t in data["texts"].items():
+            self.assertTrue(t.get("sig"), key)
+
+    def test_a_table_text_is_its_own_sig(self):
+        import json
+        data = json.loads(phrases.WORDS.read_text())
+        for gid, _, ways in GROUPS:
+            for k, w in enumerate(ways):
+                if w[1] == "T":
+                    self.assertEqual(data["texts"][f"{gid}.{k}"]["sig"], f"{gid}.{k}")
+
+    def test_the_same_saying_has_the_same_sig_whatever_the_group(self):
+        self.assertEqual(phrases.sig("a", 0, ("x", "Wa", "y", "Karte 7")), phrases.sig("b", 3, ("z", "Wa", "q", "Karte 7")))
+        self.assertNotEqual(phrases.sig("a", 0, ("x", "Wa", "y")), phrases.sig("a", 1, ("x", "Wa", "z")))
+        # a bare lemma is not an entry: two sayings under "Spiel" differ
+        self.assertNotEqual(phrases.sig("a", 0, ("x", "Wa", "y", "Spiel")), phrases.sig("a", 1, ("x", "Wa", "z", "Spiel")))
+
+    def test_a_saying_is_in_at_most_two_groups(self):
+        """The talk's record (TABLE3D 5.3) cannot make up for a saying that turns up in
+        many groups: a sourced saying (not a table line) appears in two at most."""
+        groups = {}
+        for gid, _, ways in GROUPS:
+            for k, w in enumerate(ways):
+                if w[1] != "T":
+                    groups.setdefault(phrases.sig(gid, k, w), set()).add(gid)
+        crowded = {s: sorted(g) for s, g in groups.items() if len(g) > 2}
+        self.assertEqual(crowded, {})
+
+    def test_the_most_frequent_groups_have_eight_or_more_wordings(self):
+        by = {g: ways for g, _, ways in GROUPS}
+        for gid in by:
+            if gid.startswith(("pull-", "nothing-", "trick-")):
+                self.assertGreaterEqual(len(by[gid]), 8, gid)
+
+
+class Citations(unittest.TestCase):
+    """Wordings checked against the downloaded texts (docs/review/talk-and-phrases.md)."""
+
+    def german(self, src):
+        return [w[2] for _, _, ways in GROUPS for w in ways if w[1] == src]
+
+    def test_the_volksblatt_line_keeps_the_sources_verb(self):
+        # Das kleine Volksblatt, 24 May 1934: "interessiert der Mond nur, wann er in Gsellschaft ..."
+        for t in self.german("Gs"):
+            self.assertIn("interessiert", t)
+
+
 class Generated(unittest.TestCase):
     def test_generated_files_are_current(self):
         for path, text in ((phrases.DOC, phrases.document()), (phrases.WORDS, phrases.words_json())):
