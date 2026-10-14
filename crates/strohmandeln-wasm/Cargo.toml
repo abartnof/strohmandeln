@@ -1,0 +1,16 @@
+[package]
+name = "strohmandeln-wasm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "The table as a JSON protocol that a browser, or any other client, can drive (docs/PROTOCOL.md)."
+
+[lib]
+# cdylib is the WebAssembly module; rlib lets the protocol be tested natively.
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+strohmandeln-core = { path = "../strohmandeln-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

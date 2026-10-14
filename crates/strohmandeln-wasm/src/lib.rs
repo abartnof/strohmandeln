@@ -1,0 +1,719 @@
+//! The table as a protocol: JSON in, JSON out (`docs/PROTOCOL.md`).
+//!
+//! A client holds no game logic. It creates a sitting, reads the state, draws
+//! it, and sends one action at a time; between its own moves it asks the
+//! module to step the opponent. Every field comes from the human's view
+//! (`strohmandeln_core::view`), so a client cannot show more than the person
+//! at the table could know.
+//!
+//! Compiled to WebAssembly the crate exports a handful of functions (see
+//! [`ffi`]), passing strings through linear memory with no `wasm-bindgen`
+//! (the buffer pattern of Cassino's `cassino-wasm`).
+
+use serde::Deserialize;
+use serde_json::{json, Map, Value};
+use strohmandeln_core::agents::{Player, RandomPlayer};
+use strohmandeln_core::cards::{Card, Honour};
+use strohmandeln_core::session::{Record, Sitting};
+use strohmandeln_core::types::{Action, Event, Seat, Settings, Source};
+use strohmandeln_core::view::{filter_event, view, View};
+
+/// Bumped whenever the wire format changes in a way a client would notice.
+pub const PROTOCOL: u32 = 1;
+
+/// Builds the opponent for a seat from the sitting's seed and the opaque
+/// `level` the host passed. Work package 6 replaces this with its ladder.
+pub type OpponentFactory = fn(seed: u64, seat: Seat, level: u32) -> Box<dyn Player>;
+
+/// The opponent until the ladder exists: the core's random player. The level
+/// is carried through the protocol but does not change it yet.
+pub fn default_opponent(seed: u64, seat: Seat, _level: u32) -> Box<dyn Player> {
+    Box::new(RandomPlayer::new(seed, seat))
+}
+
+/// FNV-1a, 64 bits: the hash of the golden games (`tests/golden.txt`).
+pub fn fnv(data: &[u8]) -> u64 {
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+    for &b in data {
+        h ^= u64::from(b);
+        h = h.wrapping_mul(0x0000_0100_0000_01b3);
+    }
+    h
+}
+
+/// The request that creates a sitting.
+#[derive(Deserialize)]
+struct Config {
+    seed: u64,
+    touren: u32,
+    /// Overrides of the defaults, any of `both_pass`, `values`, `ultimo`.
+    #[serde(default)]
+    settings: Map<String, Value>,
+    /// The seat the human takes, 0 or 1.
+    #[serde(default)]
+    human: u8,
+    /// The opponent's level; opaque to the protocol.
+    #[serde(default)]
+    level: u32,
+}
+
+/// What a saved sitting holds.
+#[derive(Deserialize)]
+struct Saved {
+    protocol: u32,
+    human: u8,
+    #[serde(default)]
+    level: u32,
+    record: Record,
+}
+
+fn settings_of(overrides: Map<String, Value>) -> Result<Settings, String> {
+    let mut base = match serde_json::to_value(Settings::default()) {
+        Ok(Value::Object(m)) => m,
+        _ => Map::new(),
+    };
+    for (k, v) in overrides {
+        base.insert(k, v);
+    }
+    serde_json::from_value(Value::Object(base)).map_err(|e| format!("settings: {e}"))
+}
+
+/// One sitting against one opponent, from the human's chair.
+pub struct Table {
+    sitting: Sitting,
+    human: Seat,
+    level: u32,
+    opponent: Box<dyn Player>,
+    /// How many of the sitting's events the host has been sent.
+    sent: usize,
+}
+
+fn error(code: &str, detail: &str) -> Value {
+    json!({"protocol": PROTOCOL, "ok": false, "error": code, "detail": detail})
+}
+
+fn seat_of(n: u8) -> Result<Seat, String> {
+    Seat::try_from(n)
+}
+
+impl Table {
+    fn build(
+        sitting: Sitting,
+        human: Seat,
+        level: u32,
+        factory: OpponentFactory,
+        sent: usize,
+    ) -> Table {
+        // A restored sitting gets a different opponent stream than the first
+        // run would have had; the record holds moves, not the opponent's mind.
+        let seed = sitting.seed() ^ (sitting.record().moves.len() as u64).rotate_left(32);
+        Table {
+            opponent: factory(seed, human.other(), level),
+            sitting,
+            human,
+            level,
+            sent,
+        }
+    }
+
+    /// Creates a sitting from the JSON of `strohmandeln_new`.
+    pub fn create(config: &str, factory: OpponentFactory) -> Result<Table, String> {
+        let c: Config = serde_json::from_str(config).map_err(|e| format!("config: {e}"))?;
+        let human = seat_of(c.human)?;
+        let sitting = Sitting::new(c.seed, settings_of(c.settings)?, c.touren)?;
+        Ok(Table::build(sitting, human, c.level, factory, 0))
+    }
+
+    /// Restores a sitting from the JSON of `export`.
+    pub fn restore(saved: &str, factory: OpponentFactory) -> Result<Table, String> {
+        let s: Saved = serde_json::from_str(saved).map_err(|e| format!("saved sitting: {e}"))?;
+        if s.protocol != PROTOCOL {
+            return Err(format!("saved protocol {} is not {PROTOCOL}", s.protocol));
+        }
+        let human = seat_of(s.human)?;
+        let sitting = Sitting::replay(&s.record)?;
+        let sent = sitting.events().len();
+        Ok(Table::build(sitting, human, s.level, factory, sent))
+    }
+
+    pub fn human(&self) -> Seat {
+        self.human
+    }
+
+    pub fn sitting(&self) -> &Sitting {
+        &self.sitting
+    }
+
+    fn my_view(&self) -> View {
+        view(&self.sitting, self.human)
+    }
+
+    /// Where a card the human may play comes from.
+    fn source_of(&self, card: Card) -> Option<Source> {
+        let deal = self.sitting.deal()?;
+        if deal.hand_cards(self.human).contains(&card) {
+            return Some(Source::Hand);
+        }
+        (1..=3u8)
+            .find(|&p| deal.cover(self.human, p) == Some(card))
+            .map(Source::Packet)
+    }
+
+    /// The human's legal actions, each play with where its card comes from.
+    pub fn legal(&self) -> Vec<Value> {
+        if self.sitting.to_move() != Some(self.human) {
+            return Vec::new();
+        }
+        self.sitting
+            .legal_actions()
+            .into_iter()
+            .map(|a| match a {
+                Action::Play { card, .. } => {
+                    let source = String::from(self.source_of(card).unwrap_or(Source::Hand));
+                    json!({"action": "play", "card": card, "source": source})
+                }
+                other => serde_json::to_value(other).unwrap_or(Value::Null),
+            })
+            .collect()
+    }
+
+    /// What the host should do next: `you`, `opponent` or `over`.
+    pub fn prompt(&self) -> &'static str {
+        match self.sitting.to_move() {
+            None => "over",
+            Some(s) if s == self.human => "you",
+            Some(_) => "opponent",
+        }
+    }
+
+    fn phase(&self) -> &'static str {
+        if self.sitting.is_over() {
+            return "over";
+        }
+        let actions = self.sitting.legal_actions();
+        match actions.first() {
+            Some(Action::Take | Action::Pass) => "bid",
+            Some(Action::Extend { .. }) => "extend",
+            _ => "play",
+        }
+    }
+
+    /// The current view of the human, with the module's own additions.
+    pub fn state(&self) -> Value {
+        let mut v = serde_json::to_value(self.my_view()).unwrap_or(Value::Null);
+        if let Value::Object(m) = &mut v {
+            m.insert("protocol".into(), json!(PROTOCOL));
+            m.insert("prompt".into(), json!(self.prompt()));
+            m.insert("phase".into(), json!(self.phase()));
+            m.insert("human".into(), json!(self.human));
+            m.insert("level".into(), json!(self.level));
+            m.insert("legal".into(), Value::Array(self.legal()));
+        }
+        v
+    }
+
+    /// The events not yet sent, as the human may see them.
+    fn take_events(&mut self) -> Vec<Event> {
+        let all = self.sitting.events();
+        let out = all[self.sent.min(all.len())..]
+            .iter()
+            .filter_map(|e| filter_event(e, self.human))
+            .collect();
+        self.sent = all.len();
+        out
+    }
+
+    fn reply(&mut self, ok: bool, refusal: Option<Value>) -> Value {
+        let events = self.take_events();
+        let mut r = json!({
+            "protocol": PROTOCOL,
+            "ok": ok,
+            "state": self.state(),
+            "events": events,
+        });
+        if let (Some(refusal), Value::Object(m)) = (refusal, &mut r) {
+            m.insert("refusal".into(), refusal);
+        }
+        r
+    }
+
+    /// The reply that opens a sitting: its first events and state.
+    pub fn open(&mut self) -> Value {
+        self.reply(true, None)
+    }
+
+    /// The human's action, as JSON.
+    pub fn send(&mut self, action: &str) -> Value {
+        let action: Action = match serde_json::from_str(action) {
+            Ok(a) => a,
+            Err(e) => return error("bad-action", &e.to_string()),
+        };
+        match self.sitting.apply(self.human, action) {
+            Ok(_) => self.reply(true, None),
+            Err(refusal) => {
+                let refusal = serde_json::to_value(refusal).unwrap_or(Value::Null);
+                self.reply(false, Some(refusal))
+            }
+        }
+    }
+
+    /// One move of the opponent, if it is the opponent's turn.
+    pub fn step(&mut self) -> Result<Value, Value> {
+        let opp = self.human.other();
+        if self.sitting.to_move() != Some(opp) {
+            let mut r = self.reply(false, None);
+            if let Value::Object(m) = &mut r {
+                m.insert("stepped".into(), json!(false));
+            }
+            return Err(r);
+        }
+        let v = view(&self.sitting, opp);
+        let action = self.opponent.choose(&v);
+        if let Err(refusal) = self.sitting.apply(opp, action.clone()) {
+            return Err(error("opponent-refused", &format!("{action:?}: {refusal}")));
+        }
+        let mut r = self.reply(true, None);
+        if let Value::Object(m) = &mut r {
+            m.insert("stepped".into(), json!(true));
+        }
+        Ok(r)
+    }
+
+    /// The sitting as the host should save it.
+    pub fn export(&self) -> Value {
+        json!({
+            "protocol": PROTOCOL,
+            "human": self.human,
+            "level": self.level,
+            "record": self.sitting.record(),
+        })
+    }
+
+    /// A hint for the human's move. The opponent work package fills this in.
+    pub fn hint(&self) -> Value {
+        json!({"protocol": PROTOCOL, "hint": null, "reason": "unavailable"})
+    }
+
+    /// For tests and the smoke test only: every card the human must not be
+    /// able to learn in this deal (the opponent's private hand cards and every
+    /// face-down packet card), as codes.
+    pub fn audit(&self) -> Value {
+        let mut hidden: Vec<String> = Vec::new();
+        if let Some(deal) = self.sitting.deal() {
+            let opp = self.human.other();
+            let announced: Vec<Card> = [Honour::Trull, Honour::Kings]
+                .into_iter()
+                .filter(|&h| {
+                    deal.honour_state(opp, h) == strohmandeln_core::deal::HonourState::Announced
+                })
+                .flat_map(Honour::cards)
+                .collect();
+            for h in deal.hand(opp) {
+                if !h.public && !announced.contains(&h.card) {
+                    hidden.push(h.card.code());
+                }
+            }
+            for seat in Seat::BOTH {
+                for p in 1..=3u8 {
+                    let all = deal.packet_cards(seat, p);
+                    let skip = usize::from(deal.cover(seat, p).is_some());
+                    hidden.extend(all.iter().skip(skip).map(|c| c.code()));
+                }
+            }
+        }
+        json!({"hidden": hidden})
+    }
+
+    /// Replaces the opponent (the ladder, or a test's).
+    pub fn set_opponent(&mut self, opponent: Box<dyn Player>) {
+        self.opponent = opponent;
+    }
+}
+
+/// The module's state between calls: the table and the last output. Native
+/// tests use it as the host would, through the same strings.
+#[derive(Default)]
+pub struct Host {
+    table: Option<Table>,
+    out: Vec<u8>,
+}
+
+impl Host {
+    pub fn out(&self) -> &[u8] {
+        &self.out
+    }
+
+    fn give(&mut self, v: &Value) {
+        self.out = v.to_string().into_bytes();
+    }
+
+    fn missing(&mut self) {
+        self.give(&error("no-sitting", "create or import a sitting first"));
+    }
+
+    /// `strohmandeln_new`: 1 if a sitting was created (the output is its
+    /// opening reply), else 0 and an error.
+    pub fn new_sitting(&mut self, config: &str, factory: OpponentFactory) -> u32 {
+        match Table::create(config, factory) {
+            Ok(mut t) => {
+                let r = t.open();
+                self.table = Some(t);
+                self.give(&r);
+                1
+            }
+            Err(why) => {
+                self.give(&error("bad-config", &why));
+                0
+            }
+        }
+    }
+
+    /// `strohmandeln_send`: 1 if the action was accepted.
+    pub fn send(&mut self, action: &str) -> u32 {
+        let Some(t) = self.table.as_mut() else {
+            self.missing();
+            return 0;
+        };
+        let r = t.send(action);
+        let ok = r["ok"] == Value::Bool(true);
+        self.give(&r);
+        u32::from(ok)
+    }
+
+    /// `strohmandeln_step`: 1 if the opponent moved.
+    pub fn step(&mut self) -> u32 {
+        let Some(t) = self.table.as_mut() else {
+            self.missing();
+            return 0;
+        };
+        match t.step() {
+            Ok(r) => {
+                self.give(&r);
+                1
+            }
+            Err(r) => {
+                self.give(&r);
+                0
+            }
+        }
+    }
+
+    /// Writes `f` of the table, or the no-sitting error.
+    pub fn show(&mut self, f: impl FnOnce(&mut Table) -> Value) {
+        match self.table.as_mut() {
+            Some(t) => {
+                let v = f(t);
+                self.give(&v);
+            }
+            None => self.missing(),
+        }
+    }
+
+    /// `strohmandeln_render`: the state, with no events.
+    pub fn render(&mut self) {
+        self.show(|t| t.reply_state());
+    }
+
+    /// `strohmandeln_import`: 1 if the saved sitting fitted; otherwise the old
+    /// sitting stays.
+    pub fn import(&mut self, saved: &str, factory: OpponentFactory) -> u32 {
+        match Table::restore(saved, factory) {
+            Ok(mut t) => {
+                let r = t.open();
+                self.table = Some(t);
+                self.give(&r);
+                1
+            }
+            Err(why) => {
+                self.give(&error("bad-record", &why));
+                0
+            }
+        }
+    }
+}
+
+impl Table {
+    /// The state alone, in the shape of a reply with no events.
+    pub fn reply_state(&self) -> Value {
+        json!({"protocol": PROTOCOL, "ok": true, "state": self.state(), "events": []})
+    }
+}
+
+/// The WebAssembly exports. Every call that has something to say leaves JSON
+/// for the host to read at `strohmandeln_out()`, `strohmandeln_out_len()`.
+pub mod ffi {
+    use super::{default_opponent, Host};
+    use std::cell::RefCell;
+
+    thread_local! {
+        static HOST: RefCell<Host> = RefCell::new(Host::default());
+        static IN: RefCell<Vec<u8>> = const { RefCell::new(Vec::new()) };
+    }
+
+    fn input(len: usize) -> String {
+        IN.with(|b| {
+            let b = b.borrow();
+            String::from_utf8_lossy(&b[..len.min(b.len())]).into_owned()
+        })
+    }
+
+    /// A buffer of `len` bytes for the host to write a request into. Valid
+    /// until the next call to this function.
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_alloc(len: usize) -> *mut u8 {
+        IN.with(|b| {
+            let mut b = b.borrow_mut();
+            b.clear();
+            b.resize(len, 0);
+            b.as_mut_ptr()
+        })
+    }
+
+    /// The address of the last output.
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_out() -> *const u8 {
+        HOST.with(|h| h.borrow().out().as_ptr())
+    }
+
+    /// The length in bytes of the last output.
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_out_len() -> usize {
+        HOST.with(|h| h.borrow().out().len())
+    }
+
+    /// Starts a sitting from the config JSON in the `len` bytes just written
+    /// (`{"seed", "touren", "settings"?, "human"?, "level"?}`), discarding any
+    /// old one; 1 if it was made. The output is the opening reply.
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_new(len: usize) -> u32 {
+        let config = input(len);
+        HOST.with(|h| h.borrow_mut().new_sitting(&config, default_opponent))
+    }
+
+    /// Sends the human's action JSON in the `len` bytes just written; 1 if
+    /// accepted. The output is the reply (a refusal when it was not).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_send(len: usize) -> u32 {
+        let action = input(len);
+        HOST.with(|h| h.borrow_mut().send(&action))
+    }
+
+    /// One move of the opponent; 1 if it moved (and the output is the reply).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_step() -> u32 {
+        HOST.with(|h| h.borrow_mut().step())
+    }
+
+    /// Renders the current state (no events).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_render() {
+        HOST.with(|h| h.borrow_mut().render())
+    }
+
+    /// Renders the human's legal actions: `{"legal": [...]}`.
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_legal() {
+        HOST.with(|h| {
+            h.borrow_mut()
+                .show(|t| serde_json::json!({"protocol": super::PROTOCOL, "legal": t.legal()}))
+        })
+    }
+
+    /// Renders the saved form of the sitting.
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_export() {
+        HOST.with(|h| h.borrow_mut().show(|t| t.export()))
+    }
+
+    /// Restores a sitting from the export JSON in the `len` bytes just
+    /// written; 1 if it fitted, otherwise the old sitting stays.
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_import(len: usize) -> u32 {
+        let saved = input(len);
+        HOST.with(|h| h.borrow_mut().import(&saved, default_opponent))
+    }
+
+    /// Renders a hint for the human's move (a stub until the opponent work
+    /// package fills it: `{"hint": null}`).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_hint() {
+        HOST.with(|h| h.borrow_mut().show(|t| t.hint()))
+    }
+
+    /// A test aid: the codes of the cards the human must not see.
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_audit() {
+        HOST.with(|h| h.borrow_mut().show(|t| t.audit()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const CONFIG: &str = r#"{"seed":7,"touren":3,"human":0}"#;
+
+    fn host(config: &str) -> Host {
+        let mut h = Host::default();
+        assert_eq!(h.new_sitting(config, default_opponent), 1);
+        h
+    }
+
+    fn out(h: &Host) -> Value {
+        serde_json::from_slice(h.out()).unwrap()
+    }
+
+    #[test]
+    fn a_new_sitting_opens_with_its_events_and_state() {
+        let h = host(CONFIG);
+        let r = out(&h);
+        assert_eq!(r["ok"], true);
+        assert_eq!(r["events"][0]["type"], "sitting_start");
+        assert_eq!(r["state"]["human"], 0);
+        assert!(r["state"]["deal"]["own_hand"].as_array().unwrap().len() == 15);
+    }
+
+    #[test]
+    fn bad_configs_are_errors_not_panics() {
+        for bad in [
+            "nonsense",
+            r#"{"seed":1,"touren":4}"#,
+            r#"{"seed":1,"touren":3,"human":2}"#,
+            r#"{"seed":1,"touren":3,"settings":{"ultimo":"x"}}"#,
+        ] {
+            let mut h = Host::default();
+            assert_eq!(h.new_sitting(bad, default_opponent), 0, "{bad}");
+            assert_eq!(out(&h)["error"], "bad-config");
+        }
+    }
+
+    #[test]
+    fn settings_overrides_are_merged_over_the_defaults() {
+        let h = host(r#"{"seed":1,"touren":3,"settings":{"values":"1/2/3"}}"#);
+        let e = &out(&h)["events"][0];
+        assert_eq!(e["settings"]["values"], "1/2/3");
+        assert_eq!(e["settings"]["ultimo"], 1);
+    }
+
+    #[test]
+    fn calls_before_a_sitting_say_so() {
+        let mut h = Host::default();
+        assert_eq!(h.send("{}"), 0);
+        assert_eq!(out(&h)["error"], "no-sitting");
+        assert_eq!(h.step(), 0);
+        h.render();
+        assert_eq!(out(&h)["error"], "no-sitting");
+    }
+
+    #[test]
+    fn an_action_out_of_turn_is_a_refusal_with_a_key() {
+        // The human sits where it is not their turn to bid: sit at the seat
+        // that is not first.
+        let mut h = host(CONFIG);
+        if out(&h)["state"]["prompt"] == "you" {
+            h = host(r#"{"seed":7,"touren":3,"human":1}"#);
+        }
+        assert_eq!(out(&h)["state"]["prompt"], "opponent");
+        assert_eq!(h.send(r#"{"action":"take"}"#), 0);
+        let r = out(&h);
+        assert_eq!(r["ok"], false);
+        assert_eq!(r["refusal"]["key"], "not-your-turn");
+        assert!(r["refusal"]["speaker"].is_number());
+        assert_eq!(r["events"], json!([]));
+    }
+
+    #[test]
+    fn malformed_actions_are_errors() {
+        let mut h = host(CONFIG);
+        assert_eq!(h.send("{\"action\":\"fold\"}"), 0);
+        assert_eq!(out(&h)["error"], "bad-action");
+    }
+
+    #[test]
+    fn stepping_out_of_turn_moves_nobody() {
+        let mut h = host(CONFIG);
+        while out(&h)["state"]["prompt"] != "you" {
+            assert_eq!(h.step(), 1);
+        }
+        assert_eq!(h.step(), 0);
+        assert_eq!(out(&h)["stepped"], false);
+    }
+
+    #[test]
+    fn legal_plays_name_their_source() {
+        let mut h = host(CONFIG);
+        let mut saw_packet = false;
+        let mut n = 0;
+        loop {
+            let s = out(&h)["state"].clone();
+            match s["prompt"].as_str().unwrap() {
+                "over" => break,
+                "opponent" => {
+                    h.step();
+                }
+                _ => {
+                    for a in s["legal"].as_array().unwrap() {
+                        if a["action"] == "play" {
+                            let src = a["source"].as_str().unwrap();
+                            assert!(src == "hand" || src.starts_with("packet "), "{src}");
+                            saw_packet |= src.starts_with("packet");
+                        }
+                    }
+                    let a = s["legal"][n % s["legal"].as_array().unwrap().len()].clone();
+                    n += 1;
+                    let a = if a["action"] == "extend" {
+                        json!({"action":"extend","accept":false})
+                    } else {
+                        a
+                    };
+                    assert_eq!(h.send(&a.to_string()), 1, "{a}");
+                }
+            }
+        }
+        assert!(saw_packet, "a packet card became playable");
+    }
+
+    #[test]
+    fn export_then_import_restores_the_same_state() {
+        let mut h = host(CONFIG);
+        for _ in 0..30 {
+            let s = out(&h)["state"].clone();
+            match s["prompt"].as_str().unwrap() {
+                "opponent" => {
+                    h.step();
+                }
+                "you" => {
+                    let a = s["legal"][0].clone();
+                    h.send(&a.to_string());
+                }
+                _ => break,
+            }
+        }
+        h.show(|t| t.export());
+        let saved = out(&h);
+        assert_eq!(saved["protocol"], 1);
+        h.render();
+        let before = out(&h)["state"].clone();
+        let mut g = Host::default();
+        assert_eq!(g.import(&saved.to_string(), default_opponent), 1);
+        let r = out(&g);
+        assert_eq!(r["state"], before);
+        assert_eq!(r["events"], json!([]));
+    }
+
+    #[test]
+    fn a_bad_import_leaves_the_old_sitting() {
+        let mut h = host(CONFIG);
+        assert_eq!(h.import("{}", default_opponent), 0);
+        assert_eq!(out(&h)["error"], "bad-record");
+        h.render();
+        assert_eq!(out(&h)["ok"], true);
+    }
+
+    #[test]
+    fn the_hint_is_a_stub() {
+        let mut h = host(CONFIG);
+        h.show(|t| t.hint());
+        assert_eq!(out(&h)["hint"], Value::Null);
+    }
+}
