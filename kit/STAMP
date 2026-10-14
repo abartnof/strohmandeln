@@ -20,8 +20,8 @@ js/surfaces.js           web3d/src/surfaces.js          verbatim
 js/timeline.js           web3d/src/timeline.js          verbatim
 js/easing.js             web3d/src/easing.js            verbatim
 js/kinematics.js         web3d/src/kinematics.js        verbatim
-js/framing.js            web3d/src/framing.js           verbatim
-js/scene.js              web3d/src/scene.js             verbatim
+js/framing.js            web3d/src/framing.js           CHANGED: framing, aim and cameraFor take the portrait eye as a last argument (default CAMERA_PORTRAIT)
+js/scene.js              web3d/src/scene.js             CHANGED: createScene takes `eyes` ({ across, portrait }; default cassino's)
 js/faces.js              web3d/src/faces.js             verbatim
 js/dialogue.js           web3d/src/dialogue.js          verbatim
 js/units.js              web3d/src/units.js             without ZONES, ZONES_PORTRAIT, ZONES_TOUCH
@@ -47,6 +47,7 @@ js/hud.js                web3d/src/hud.js               widget half, generic: cr
 js/count.js              web3d/src/choreography.js      Plan.count's timing (countSchedule), director.js animate's pace (scalePace), main.js's quiet window (quietWindow, muted); new: paceOf, HUD_TIMING
 css/hud.css              web3d/src/style.css            the score HUD section, verbatim except for `.info` (the page's slot for it) and a header
 test/scoring.test.js     web3d/test/hud.test.js         model tests ported onto a stand-in game; new: defineGame, thirds, segment scale, handHeight
+test/framing.test.js     -                              new: a game passes its own eyes
 test/hud.test.js         web3d/test/hud.test.js         widget tests ported onto a stand-in game; new: names, goal, thirds, reduced motion, words
 test/count.test.js       -                              new (the pace and the quiet window were untested in cassino's node tests)
 test/counting.test.js    -                              new: a Strohmandeln-like game (threes, thirds, 36 of 70) through the whole path
