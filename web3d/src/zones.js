@@ -21,8 +21,8 @@ export const EYE = Object.freeze({
   position: over(TARGET, 118),
   target: TARGET,
   fov: 34,
-  widthTan: 0.42,
-  reach: Object.freeze({ up: 0.3, foot: 0.26 }),
+  widthTan: 0.4,
+  reach: Object.freeze({ up: 0.31, foot: 0.315 }),
 });
 const TARGET_TOUCH = Object.freeze([0, 0, -12]);
 export const EYE_TOUCH = Object.freeze({
@@ -70,10 +70,10 @@ export const ZONES = arrangement({
   eye: EYE,
   yours: hand([0, 12, 14], EYE, { fan: true, radius: 40, spacing: 2.9, width: 46 }),
   theirs: hand([0, 7, -44], EYE, { fan: true, radius: 40, spacing: 1.4, width: 30 }),
-  packets: { you: 3, them: -27, xs: [-17, 0, 17] },
-  trick: { x: 0, z: -12, gap: 0.8, offset: 2.4 },
-  won: { x: 40, you: 5, them: -17 },
-  pack: { you: { x: 40, z: 5 }, them: { x: -40, z: -17 } },
+  packets: { you: -3, them: -27, xs: [-17, 0, 17] },
+  trick: { x: 0, z: -15, gap: 0.8, offset: 2.4 },
+  won: { x: 40, you: 2, them: -17 },
+  pack: { you: { x: 40, z: 2 }, them: { x: -40, z: -17 } },
   count: { perRow: 6, step: 2.3, gap: 1.4, row: 5.5, you: { z: 12 }, them: { z: -38 }, x: 0 },
 });
 

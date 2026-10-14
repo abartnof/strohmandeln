@@ -6,18 +6,13 @@
 // and the count is as long as the longer take, not the two together.
 import { defineGame } from "../../kit/js/scoring.js";
 import { thirdsOf } from "./cardinfo.js";
+import { thirds } from "./strings.js";
 
 // 107 thirds is 35 2/3, and reaches 36: the finish lights at 107.
 export const TARGET = 107;
 export const SEGMENTS = 36;
 
-// A value in thirds as points and a vulgar fraction: 107 -> "35⅔", 106 -> "35⅓", 105 -> "35".
-export function thirds(units) {
-  const whole = Math.floor(units / 3);
-  const rest = units % 3;
-  const fraction = rest === 1 ? "⅓" : rest === 2 ? "⅔" : "";
-  return whole === 0 && fraction ? fraction : `${whole}${fraction}`;
-}
+export { thirds };
 
 // A take's lines: { side, group, codes, thirds }. `counted` is each seat's
 // cards in the order they are turned up.

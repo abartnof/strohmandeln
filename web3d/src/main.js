@@ -1,0 +1,967 @@
+// Strohmandeln at a three-dimensional table.
+//
+// A client of the wasm module (docs/PROTOCOL.md): it draws the human's view
+// and sends back actions, and holds no rules. What may be played is
+// `state.legal`; what a refusal means is its message key. Every change of
+// state is played out on the cards by the director (choreography.js), each
+// event's chips, the HUD, the talk and the screen reader's sentence at its
+// moment. The plan is docs/TABLE3D.md.
+
+import { Vector3 } from "three";
+import { countEvents, countLedger } from "../../kit/js/scoring.js";
+import { paceOf } from "../../kit/js/count.js";
+import { choosePlace } from "../../kit/js/dialogue.js";
+import { createDirector } from "../../kit/js/director.js";
+import { createDeck } from "../../kit/js/deck.js";
+import { createHud } from "../../kit/js/hud.js";
+import { cardCorners } from "../../kit/js/kinematics.js";
+import { createScene } from "../../kit/js/scene.js";
+import { chooseSurface, PATTERNS } from "../../kit/js/surfaces.js";
+import { largeTextHere } from "../../kit/js/faces.js";
+import { decodeBase64 } from "../../kit/js/engine.js";
+import { CARD } from "../../kit/js/units.js";
+import { sentence, where } from "./a11y.js";
+import { choreograph, initialPlacement, opening } from "./choreography.js";
+import { TRULL, KINGS } from "./cardinfo.js";
+import { countGame, countLines, TARGET } from "./counting.js";
+import { loadEngine } from "./engine.js";
+import { check, emptyModel, fromState, reduce } from "./model.js";
+import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
+import { loadPrefsInfo, savePrefs, sittingConfig, speedScale, urlOverrides, withUrl } from "./prefs.js";
+import { createSettings } from "./settings.js";
+import { createSlate } from "./slate.js";
+import { cardName, getLang, onLang, setLang, t, tn, thirds } from "./strings.js";
+import { createTalk } from "./talk.js";
+import { backTexture, COURT_CODES, faceTextures } from "./tarockfaces.js";
+import { createUi } from "./ui.js";
+import { EYE, EYE_PORTRAIT, EYE_TOUCH, ZONES, ZONES_PORTRAIT, ZONES_TOUCH } from "./zones.js";
+
+/* global WASM_BASE64, WORDS */
+
+const params = new URL(window.location.href).searchParams;
+const TEST = params.has("seed") || params.has("test");
+const IDLE = [25_000, 60_000];
+
+const storage = () => {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+};
+
+async function main() {
+  document.getElementById("loading").textContent = t("ui.loading");
+  let stopped = () => {};
+  const engine = await loadEngine(decodeBase64(WASM_BASE64), (error) => {
+    console.error(error);
+    stopped();
+  });
+
+  // ---- settings, the language -------------------------------------------
+  const info = loadPrefsInfo();
+  let prefs = withUrl(info.prefs, params);
+  const over = urlOverrides(params);
+  setLang(prefs.lang);
+  const save = (patch) => {
+    prefs = { ...prefs, ...patch };
+    savePrefs({ ...info.prefs, ...patch, ...(TEST ? {} : {}) });
+  };
+  const calm = () => prefs.reducedMotion === "on" || (prefs.reducedMotion === "system" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
+  const dirSpeed = () => {
+    const scale = speedScale(prefs.speed);
+    return scale === 0 ? 1000 : 1 / scale;
+  };
+
+  // ---- the scene, the cards -------------------------------------------------
+  const touch = params.has("touch") ? params.get("touch") !== "0" : largeTextHere();
+  const canvas = document.getElementById("stage");
+  const stage = createScene(canvas, { table: chooseSurface({ chosen: prefs.surface === "random" ? null : prefs.surface, saved: null }), touch, eyes: { across: touch ? EYE_TOUCH : EYE, portrait: EYE_PORTRAIT } });
+  const anisotropy = stage.renderer.capabilities.getMaxAnisotropy();
+  const width = Math.round(512 * Math.min(Math.max(stage.renderer.getPixelRatio(), 1), 1.5));
+  const textures = { faces: faceTextures({ width, anisotropy, lang: getLang() }), back: backTexture({ width, anisotropy }) };
+  const deck = createDeck(stage, textures);
+  const zonesNow = () => (stage.portrait ? ZONES_PORTRAIT : touch ? ZONES_TOUCH : ZONES);
+
+  // ---- state ------------------------------------------------------------------
+  let wasm = null; // the module's last state
+  let log = []; // every event of the sitting
+  let S = null; // the director's state: { model, events }
+  let human = 0;
+  let sel = { chosen: null, scroll: 0 };
+  let focus = null; // { row: "hand" | "packets", index }
+  let hintCard = null;
+  let pending = 0; // scheduled moments not yet come
+  let restModel = null; // the model at the last rest, for the tags
+  let sittingOver = false;
+  let dealNo = 0;
+  let sawRefusal = false;
+  let ledgerNow = null; // the count so far, for a rebuilt HUD
+  let idleTimers = [];
+
+  const lit = new Set();
+  const view = () => ({ chosen: sel.chosen, scroll: sel.scroll, zones: zonesNow(), left: prefs.leftHanded, reduced: calm() });
+
+  function decorate(placement, d, meshes) {
+    const mine = wasm?.prompt === "you" && !over_();
+    for (const m of placement) {
+      const own = m.zone === "your-hand" || (m.zone === "your-packets" && m.code);
+      let line = "plain";
+      let dim = false;
+      if (own && m.code) {
+        const ok = lit.has(m.code);
+        if (m.code === sel.chosen) line = "chosen";
+        else if (m.code === hintCard) line = "hint";
+        else if (focus && m.code === focusedCode()) line = "hover";
+        else if (mine && ok) line = "hover";
+        dim = mine && !ok;
+      }
+      d.decorate(meshes[m.id], { line, dim });
+    }
+  }
+  const over_ = () => sittingOver;
+
+  const director = createDirector({
+    stage,
+    deck,
+    view,
+    decorate,
+    rested: () => rested(),
+    choreography: { choreograph, initialPlacement, opening },
+    zones: null,
+    cards: 54,
+    manual: params.has("manual"),
+    speed: dirSpeed(),
+  });
+  // The director's zones (handEdge of an empty hand) come from the view.
+  const hudWords = () => ({
+    category: t("hud.count"),
+    goal: t("hud.thirds", { n: 36 }),
+    names: { you: t("hud.you"), opp: t("hud.opp") },
+    group: (n) => t("hud.group", { n }),
+    hud: { score: t("hud.score"), hand: t("hud.deal"), live: t("hud.live"), subtotal: t("hud.subtotal"), total: t("hud.total"), show: t("hud.show"), hide: t("hud.hide") },
+  });
+
+  // ---- the page ---------------------------------------------------------------
+  const ui = createUi(document.getElementById("overlay"), { t, onAct: (act, data) => onAct(act, data) });
+  document.getElementById("loading").remove();
+  canvas.setAttribute("aria-label", t("ui.stage"));
+
+  let game = countGame(hudWords());
+  let hud = createHud(ui.hudSlot, game, { later: (ms, fn) => director.at(ms, fn), reduced: () => calm() });
+
+  const settings = createSettings(ui.settingsRoot, {
+    t,
+    prefs,
+    surfaces: PATTERNS.map((p) => ({ value: p.id, label: p.name })),
+    onChange: (key, value) => changed(key, value),
+    onAction: (name) => settingsAction(name),
+  });
+  const slate = createSlate(ui.slateRoot, { t, tn, later: (ms, fn) => director.at(ms, fn, "linger") });
+
+  const talk = createTalk({
+    words: WORDS,
+    getLang,
+    rng: Math.random,
+    say: ({ text }) => sayLine(text),
+  });
+  talk.setMode(prefs.talk);
+
+  // A line in a box by the opponent's hand, clear of the cards and the controls.
+  function sayLine(text) {
+    if (!text) return;
+    const edge = director.handEdge("them");
+    const places = [
+      { kind: "below", x: edge.x, y: edge.y },
+      { kind: "right", x: edge.x + 150, y: edge.y },
+      { kind: "left", x: edge.x - 150, y: edge.y },
+    ];
+    const box = ui.sayBox("them", text, places[0]);
+    const rect = box.getBoundingClientRect();
+    const keep = cardRectsOf("their-packets").concat(cardRectsOf("your-packets"), cardRectsOf("trick"), [hudRect(), ...controlRects()]);
+    const place = choosePlace(places, () => ({ w: rect.width, h: rect.height, natural: rect.width, spills: false }), keep, { width: window.innerWidth, height: window.innerHeight });
+    placeBox(box, place, rect);
+    director.at(Math.max(1800, 250 + 65 * text.length + 600), () => box.remove(), "linger");
+  }
+  function placeBox(box, place, rect) {
+    const w = rect.width;
+    const h = rect.height;
+    let left = place.x - w / 2;
+    let top = place.y + 18;
+    if (place.kind === "right") (left = place.x), (top = place.y - h / 2);
+    if (place.kind === "left") (left = place.x - w), (top = place.y - h / 2);
+    left = Math.max(8, Math.min(window.innerWidth - w - 8, left));
+    top = Math.max(8, Math.min(window.innerHeight - h - 8, top));
+    box.style.left = `${left}px`;
+    box.style.top = `${top}px`;
+  }
+  const hudRect = () => ui.hudSlot.getBoundingClientRect();
+  const controlRects = () => [ui.controls.getBoundingClientRect(), document.querySelector(".top-right").getBoundingClientRect()];
+
+  // ---- where cards are on the screen ---------------------------------------------
+  const rectOf = (points) => ({ left: Math.min(...points.map((p) => p.x)), right: Math.max(...points.map((p) => p.x)), top: Math.min(...points.map((p) => p.y)), bottom: Math.max(...points.map((p) => p.y)) });
+  function cardRectsOf(zone) {
+    return director
+      .placement()
+      .filter((m) => m.zone === zone)
+      .map((m) => rectOf(cardCorners(m.pose).map((c) => director.toScreen(c))));
+  }
+  function zoneRects() {
+    const out = {};
+    for (const zone of ["your-hand", "their-hand", "your-packets", "their-packets", "trick", "your-won", "their-won", "pack", "count"]) {
+      const cards = director.placement().filter((m) => m.zone === zone);
+      if (cards.length) out[zone] = rectOf(cards.flatMap((m) => cardCorners(m.pose).map((c) => director.toScreen(c))));
+    }
+    return out;
+  }
+
+  // ---- tags that follow cards -----------------------------------------------------
+  function placeTags() {
+    if (!S || !restModel) return ui.tags([]);
+    const m = restModel;
+    const list = [];
+    const placement = director.placement();
+    const Z = zonesNow();
+    // The hidden count of each packet, on the corner opposite its cover's index.
+    for (const seat of [0, 1]) {
+      for (let i = 0; i < 3; i++) {
+        const p = m.packets[seat][i];
+        if (p.hidden <= 0) continue;
+        const stack = placement.filter((x) => x.packet?.seat === seat && x.packet.i === i);
+        const top = stack.sort((a, b) => b.pose.position.y - a.pose.position.y)[0];
+        if (!top) continue;
+        const mine = seat === m.human;
+        const corner = new Vector3(CARD.width / 2 - 0.1, mine ? -CARD.height / 2 + 0.1 : CARD.height / 2 - 0.1, CARD.thickness / 2);
+        const at = director.toScreen(corner.applyQuaternion(top.pose.quaternion).add(top.pose.position));
+        list.push({ id: `badge:${seat}:${i}`, text: String(p.hidden), x: at.x, y: at.y, kind: "badge", title: t("ui.packets." + (mine ? "yours" : "theirs")) });
+      }
+    }
+    // The dealer's marker and the declarer's badge, by their hands.
+    for (const [key, seat, text] of [["dealer", m.dealer, t("marker.dealer")], ["declarer", m.declarer, t("ui.take")]]) {
+      if (seat === null || seat === undefined || (key === "declarer" && !wasm?.deal?.playing && m.declarer === null)) continue;
+      const who = seat === m.human ? "you" : "them";
+      const edge = director.handEdge(who);
+      const dx = key === "dealer" ? -1 : 1;
+      list.push({ id: key, text, x: edge.x + dx * (key === "dealer" ? 150 : 100), y: edge.y + (who === "you" ? -14 : 14), kind: key });
+    }
+    // The public mark on a hand card the other player has seen.
+    for (const slot of placement.filter((x) => (x.zone === "your-hand" || x.zone === "their-hand") && x.public)) {
+      const corner = new Vector3(-CARD.width / 2 + 0.2, -CARD.height / 2 + 0.2, CARD.thickness / 2);
+      const at = director.toScreen(corner.applyQuaternion(slot.pose.quaternion).add(slot.pose.position));
+      list.push({ id: `pub:${slot.zone}:${slot.index}`, text: "", x: at.x + 7, y: at.y - 3, kind: "public", width: 12, height: 3, title: t("ui.public.tip") });
+    }
+    ui.tags(list);
+  }
+  stage.onRender = placeTags;
+
+  // ---- the model, kept beside the module's state ------------------------------------
+  function fold(events) {
+    let model = S ? S.model : emptyModel(human);
+    for (const e of events) model = reduce(model, e);
+    return model;
+  }
+
+  // A reply's events played out, and what is shown at each one's moment.
+  function advance(reply, { first = false } = {}) {
+    const events = reply.events ?? [];
+    const since = log.length;
+    log = [...log, ...events];
+    wasm = reply.state;
+    const model = events.length || first ? fold(events) : S.model;
+    const next = { model, events: log };
+    const countEvent = events.find((e) => e.type === "count");
+    const lines = countEvent ? countLines(model.counted, human) : [];
+    const pace = countEvent ? paceOf(game, lines) : null;
+    const timing = first ? director.restart(next, { dealt: true }) : director.advance(next, { pace });
+    S = next;
+    sel = { ...sel, chosen: null };
+    hintCard = null;
+    ui.setRefusal(null);
+    events.forEach((e, k) => later(timing.beats[since + k] ?? 0, () => onEvent(e, since + k, model, timing)));
+    if (countEvent) schedulePopups(timing.count, lines, since + events.indexOf(countEvent));
+    persist(reply);
+    refresh();
+  }
+  function later(ms, fn) {
+    pending++;
+    director.at(ms, () => {
+      pending--;
+      fn();
+      if (pending === 0 && !director.busy()) rested();
+    });
+  }
+
+  // The count's popups, each at its line's moment, and the edge after.
+  function schedulePopups(count, lines, at) {
+    if (!count) return;
+    const events = countEvents(game, lines, { at, hand: 1 });
+    later(Math.max(0, count.lines[0] - 1), () => talk.onEvent({ type: "count_start" }, { human }));
+    for (const ev of events) {
+      later(ev.end ? count.end : (count.lines[ev.line] ?? count.end), () => (ev.end ? hud.endHand(1) : hud.score(ev)));
+    }
+    later(count.end + 200, () => {
+      talk.onEvent({ type: "count_close" }, { human });
+      const totals = hud.totals();
+      for (const side of ["you", "opp"]) if (totals[side] === TARGET - 1) ui.chip(t("chip.not-36", { a: thirds(totals[side]) }), { x: 120, y: side === "you" ? 150 : 100, kind: "edge", ms: 3000 });
+    });
+  }
+
+  // ---- what is shown at an event's moment ------------------------------------------
+  function onEvent(e, index, model) {
+    const s = sentence(e, model);
+    if (s) ui.live(s);
+    talk.onEvent(e, { human, state: wasm, index });
+    if (!["card_pulled"].includes(e.type)) slate.update(wasm, [e]);
+    else slate.update(wasm, []);
+    const at = (seat) => director.handEdge(seat === human ? "you" : "them");
+    const chip = (text, seat, kind = "", ms) => {
+      const p = at(seat);
+      ui.chip(text, { x: p.x, y: p.y + (seat === human ? -40 : 30), kind, ms });
+    };
+    switch (e.type) {
+      case "deal_start":
+        dealNo = e.deal_number;
+        hud.reset({ hands: [], live: null });
+        hud.dealt(1);
+        ui.setTour(`${t("hud.tour", { n: e.tour, total: wasm.touren_total })} · ${t("hud.deal", { n: e.deal_number })}${e.multiplier > 1 ? ` · ${t("hud.double")}` : ""}`);
+        ui.hideBanner();
+        break;
+      case "bid":
+        chip(t("ui.take"), e.seat, "bid", 1800);
+        break;
+      case "pass":
+        chip(t("ui.pass"), e.seat, "", 1200);
+        break;
+      case "both_pass":
+        if (e.mode === "play") ui.chip(t("chip.simple"), { x: window.innerWidth / 2, y: window.innerHeight * 0.4, kind: "simple", ms: 2200 });
+        break;
+      case "thrown_in":
+        ui.chip(t("chip.thrown-in"), { x: window.innerWidth / 2, y: window.innerHeight * 0.4, kind: "simple", ms: 2400 });
+        break;
+      case "void_deal":
+        for (const seat of e.seats) chip(t("chip.void-deal"), seat, "void", 2200);
+        break;
+      case "packet_empty":
+        chip(t("chip.last-card"), e.seat, "tag", 1200);
+        break;
+      case "announcement":
+        chip(`${t(e.honour === "trull" ? "chip.trull" : "chip.kings")} +1`, e.seat, "announce", 1800);
+        break;
+      case "honour_forfeited":
+        chip(t("chip.forfeited"), e.seat, "forfeit", 1600);
+        break;
+      case "pagat_ultimo":
+        ui.chip(`${t("chip.ultimo")} ${e.result === "won" ? "+" : "−"}${wasm.deal ? 1 : 1}`, { x: window.innerWidth / 2, y: window.innerHeight * 0.35, kind: `ultimo ${e.result}`, ms: 2200 });
+        break;
+      case "valat":
+        chip(t("chip.valat"), e.seat, "valat", 2200);
+        break;
+      case "doubling_set":
+        ui.chip(t("chip.doubling"), { x: 160, y: 120, kind: "simple", ms: 2400 });
+        break;
+      case "doubling_lapsed":
+        ui.chip(t("chip.lapses"), { x: 160, y: 120, kind: "simple", ms: 1800 });
+        break;
+      case "game_scored":
+        showResult(e);
+        break;
+      case "tour_end":
+        if (prefs.slateAuto) slate.open({ ms: 3000 });
+        break;
+      case "extension_offered":
+        if (prefs.slateAuto) slate.open({ ms: 3000 });
+        break;
+      case "extension_decided":
+        if (!e.accepted && e.seat_first_no) ui.chip(t("chip.ext-opp-no"), { x: window.innerWidth / 2, y: 200, ms: 2400 });
+        break;
+      case "sitting_end":
+        endSitting(e);
+        break;
+      default:
+        break;
+    }
+  }
+
+  function showResult(e) {
+    const points = e.credits.filter((c) => c.cause === "game").reduce((s, c) => s + c.points, 0);
+    const title = e.result === "draw" ? t("banner.draw") : t(`banner.${e.result.replace("_", "-")}`, { points: t("banner.plus", { n: points * 1 }) });
+    const rows = e.credits.map((c) => [t(`slate.cause.${c.cause}`), t("banner.plus", { n: c.points })]);
+    if (e.multiplier > 1) rows.push([t("banner.doubled"), ""]);
+    const tallies = e.result === "draw" ? [] : [];
+    ui.showBanner({ title, rows: rows.concat(tallies), foot: e.result === "draw" ? t("banner.doubling-next") : null });
+    director.at(3000, () => ui.hideBanner(), "linger");
+  }
+
+  function endSitting(e) {
+    sittingOver = true;
+    slate.settle(e);
+    clearSitting();
+    stage.reveal({ instant: calm() || prefs.speed === "instant" });
+    ui.dialog({
+      id: "over",
+      title: t("ui.prompt.over"),
+      body: "",
+      buttons: [{ label: t("ui.new.plus"), act: "new", primary: true, focus: true }],
+    });
+  }
+
+  // ---- when the cards are still ---------------------------------------------------------
+  function rested() {
+    if (pending > 0 || director.busy() || !S) return;
+    restModel = S.model;
+    placeTags();
+    refresh();
+    armIdle();
+    if (wasm.prompt === "opponent" && !sittingOver && !stepping) {
+      stepping = true;
+      director.at(Math.round(350), () => {
+        stepping = false;
+        step();
+      });
+    }
+  }
+  let stepping = false;
+
+  function step() {
+    if (!wasm || wasm.prompt !== "opponent") return;
+    const r = engine.step();
+    if (r?.error || r?.ok === false) {
+      ui.dialog({ id: "error", title: t("error.opponent-refused"), body: "", buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
+      return;
+    }
+    advance(r);
+  }
+
+  function armIdle() {
+    idleTimers.forEach(clearTimeout);
+    idleTimers = [];
+    if (wasm?.prompt !== "you" || wasm.phase !== "play") return;
+    IDLE.forEach((ms, n) => idleTimers.push(setTimeout(() => !director.busy() && !document.hidden && talk.onEvent({ type: "slow", n: n + 1 }, { human }), ms)));
+  }
+
+  // ---- what the person can do -----------------------------------------------------------
+  const legalPlays = () => (wasm?.prompt === "you" ? wasm.legal.filter((a) => a.action === "play") : []);
+  const honourOf = (code) => (TRULL.includes(code) ? "trull" : KINGS.includes(code) ? "kings" : null);
+  const heldHonours = () => new Set((wasm?.legal ?? []).filter((a) => a.action === "announce").map((a) => a.honour));
+
+  function refresh() {
+    if (!wasm) return;
+    lit.clear();
+    for (const a of legalPlays()) lit.add(a.card);
+    const mine = wasm.prompt === "you" && !sittingOver;
+    const busy = director.busy() || pending > 0;
+    // The prompt.
+    let prompt = "";
+    if (!busy && !sittingOver) {
+      if (wasm.phase === "bid" && mine) prompt = t("ui.prompt.bid");
+      else if (wasm.phase === "play" && mine) prompt = wasm.deal?.lead ? (prefs.explain && lit.size && legalNarrowed() ? t("ui.prompt.follow") : "") : t("ui.prompt.lead");
+      else if (wasm.prompt === "opponent") prompt = t("ui.prompt.opp");
+    }
+    ui.setPrompt(prompt);
+    // The bar.
+    const groups = [];
+    if (mine && !busy) {
+      if (wasm.phase === "bid") {
+        const has = (a) => wasm.legal.some((x) => x.action === a);
+        const buttons = [];
+        if (has("take")) buttons.push({ act: "take", label: t("ui.take"), enabled: true, kind: "take" });
+        if (has("pass")) buttons.push({ act: "pass", label: t("ui.pass"), enabled: true, kind: "pass" });
+        groups.push({ kind: "bid", buttons });
+      } else if (wasm.phase === "play") {
+        if (sel.chosen) groups.push({ kind: "play", buttons: [{ act: "play", label: t("ui.play"), enabled: true, kind: "primary" }] });
+        const held = heldHonours();
+        groups.push({
+          kind: "announce",
+          buttons: ["trull", "kings"].map((h) => ({ act: "announce", data: { honour: h }, label: t(`ui.announce.${h}`), enabled: held.has(h), ask: true })),
+        });
+      }
+    }
+    ui.setBar(groups, { left: prefs.leftHanded });
+    // The extension prompt.
+    if (mine && !busy && wasm.phase === "extend" && !ui.dialogOpen("extend")) {
+      const yes = { label: t("ui.ext.yes"), act: "yes", primary: true, focus: true };
+      const no = { label: t("ui.ext.no"), act: "no" };
+      ui.dialog({ id: "extend", title: t("ui.ext.title"), body: tn("ui.ext.adds", wasm.touren_total === 6 ? 3 : 3), buttons: prefs.leftHanded ? [no, yes] : [yes, no] });
+    }
+    if (wasm.phase !== "extend") ui.closeDialog("extend");
+    if (!busy) director.redecorate();
+    else director.redecorate();
+  }
+  const legalNarrowed = () => lit.size < (wasm.deal?.own_hand?.length ?? 0) + 3;
+
+  // A tap or a click on the table.
+  function tapped(slot) {
+    if (director.busy() || pending > 0) {
+      director.skip();
+      return;
+    }
+    ui.hideBanner();
+    if (!slot || !slot.code || !(slot.zone === "your-hand" || slot.zone.endsWith("packets") || slot.zone === "trick" || slot.zone === "count")) {
+      if (sel.chosen) {
+        sel = { ...sel, chosen: null };
+        refresh();
+        director.rearrange();
+      }
+      return;
+    }
+    const code = slot.code;
+    if (wasm.prompt !== "you" || !lit.has(code)) return askRefusal(code);
+    if (sel.chosen === code) return commit(code);
+    sel = { ...sel, chosen: code };
+    focus = null;
+    ui.setRefusal(null);
+    refresh();
+    director.rearrange();
+  }
+
+  // A card that is not lit is sent anyway: the engine says why (3.2).
+  function askRefusal(code) {
+    const r = engine.send({ action: "play", card: code });
+    if (r.ok) return advance(r); // the module allowed it after all: it is played
+    showRefusal(r.refusal);
+  }
+  function showRefusal(refusal) {
+    if (!refusal) return;
+    const p = { ...refusal };
+    if (p.led) p.led = t(`card.suit.${p.led}`);
+    if (p.honour) p.honour = t(`card.honour.${p.honour}`);
+    const text = t(`refusal.${refusal.key}`, p);
+    ui.setRefusal(text);
+    ui.live(t("sr.refusal", { text }));
+    talk.onEvent({ type: "refused" }, { human });
+    if (refusal.allowed) {
+      hintCard = null;
+      director.redecorate();
+    }
+  }
+
+  // Send an action; a refusal is shown, an acceptance played out.
+  function send(action) {
+    const r = engine.send(action);
+    if (!r.ok) {
+      if (r.refusal) showRefusal(r.refusal);
+      else if (r.error) ui.setRefusal(t(`error.${r.error}`));
+      return false;
+    }
+    sel = { ...sel, chosen: null };
+    advance(r);
+    return true;
+  }
+
+  function commit(code) {
+    const honour = honourOf(code);
+    const held = heldHonours();
+    if (honour && held.has(honour)) {
+      if (prefs.announceAuto) return send({ action: "play", card: code, announce: [honour] });
+      ui.dialog({
+        id: "announce",
+        title: t(`ui.announce.prompt.${honour}`),
+        body: t("ui.announce.note"),
+        buttons: [
+          { label: t("ui.announce.do"), act: `do:${code}:${honour}`, primary: true, focus: true },
+          { label: t("ui.announce.dont"), act: `dont:${code}` },
+        ],
+        onClose: () => ui.closeDialog("announce"),
+      });
+      return false;
+    }
+    return send({ action: "play", card: code });
+  }
+
+  // ---- buttons ---------------------------------------------------------------------------
+  function onAct(act, data) {
+    if (act.startsWith("dialog:")) return onDialog(act.split(":").slice(1));
+    switch (act) {
+      case "take":
+      case "pass":
+        return send({ action: act });
+      case "play":
+        return sel.chosen && commit(sel.chosen);
+      case "announce": {
+        const r = engine.send({ action: "announce", honour: data.honour });
+        if (!r.ok) return showRefusal(r.refusal);
+        return advance(r);
+      }
+      case "slate":
+        return toggleSlate();
+      case "settings":
+        settings.open();
+        return;
+      default:
+    }
+  }
+  function toggleSlate() {
+    if (ui.slateRoot.hidden) slate.open();
+    else slate.close();
+    ui.setSlateOpen(!ui.slateRoot.hidden);
+  }
+  function onDialog([id, ...rest]) {
+    if (id === "announce") {
+      ui.closeDialog("announce");
+      const [what, code, honour] = rest;
+      if (what === "do") send({ action: "play", card: code, announce: [honour] });
+      else send({ action: "play", card: code });
+    } else if (id === "extend") {
+      ui.closeDialog("extend");
+      send({ action: "extend", accept: rest[0] === "yes" });
+    } else if (id === "welcome") {
+      ui.closeDialog("welcome");
+      if (rest[0] === "continue") continueSitting();
+      else askNew();
+    } else if (id === "new") {
+      const length = Number(document.querySelector('[data-length].on')?.dataset.length ?? prefs.touren);
+      ui.closeDialog("new");
+      if (rest[0] === "deal") {
+        save({ touren: length });
+        settings.set("touren", length);
+        newSitting({ touren: length });
+      }
+    } else if (id === "over") {
+      ui.closeDialog("over");
+      askNew();
+    } else if (id === "keys") ui.closeDialog("keys");
+    else ui.closeDialog(id);
+  }
+
+  // ---- a sitting ----------------------------------------------------------------------------
+  function resetTable() {
+    director.cancelTimed();
+    pending = 0;
+    ui.hush();
+    ui.clearChips();
+    ui.hideBanner();
+    ui.closeDialog("over");
+    stage.unreveal();
+    sittingOver = false;
+    sel = { chosen: null, scroll: 0 };
+    focus = null;
+    wasm = null;
+    S = null;
+    log = [];
+    restModel = null;
+  }
+
+  function newSitting({ touren = prefs.touren, seed = over.seed, humanSeat = over.human } = {}) {
+    resetTable();
+    const config = sittingConfig({ ...prefs, touren }, { seed: seed ?? undefined, human: humanSeat ?? Math.floor(Math.random() * 2) });
+    const r = engine.new(config);
+    if (!r?.ok) {
+      ui.dialog({ id: "error", title: t("error.bad-config"), body: "", buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
+      return;
+    }
+    human = r.state.human;
+    settings.setSitting(true);
+    ui.root.classList.toggle("left", prefs.leftHanded);
+    talk.restore({});
+    S = null;
+    advance(r, { first: true });
+  }
+
+  function askNew() {
+    const body = ui.el(
+      "div",
+      { class: "new" },
+      ui.el("p", {}, t("ui.new.helper")),
+      ui.el("div", { class: "choice", role: "radiogroup", "aria-label": t("ui.new.length") }, ...[3, 6].map((n) => ui.el("button", { class: `big${prefs.touren === n ? " on" : ""}`, type: "button", "data-length": String(n), role: "radio", "aria-checked": String(prefs.touren === n) }, t(`ui.new.length.${n}`)))),
+    );
+    body.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-length]");
+      if (!b) return;
+      body.querySelectorAll("[data-length]").forEach((x) => {
+        x.classList.toggle("on", x === b);
+        x.setAttribute("aria-checked", String(x === b));
+      });
+    });
+    ui.dialog({ id: "new", title: t("ui.new.title"), body, buttons: [{ label: t("ui.new.deal"), act: "deal", primary: true, focus: true }, ...(wasm && !sittingOver ? [{ label: t("ui.new.cancel"), act: "cancel" }] : [])] });
+  }
+
+  // ---- keeping the sitting -----------------------------------------------------------------------
+  const extras = () => ({ lang: getLang(), slate: slate.snapshot(), talk: talk.snapshot(), human });
+  let warned = false;
+  function persist(reply) {
+    if (TEST && !params.has("keep")) return;
+    const over = reply.state.over;
+    const kept = saveSitting(over ? null : engine.export(), extras(), { over });
+    if (!kept.ok && !warned) {
+      warned = true;
+      ui.chip(t(kept.reason === "too-big" ? "chip.too-big" : "chip.unsaved"), { x: window.innerWidth / 2, y: 120, ms: 4000 });
+    }
+  }
+  function continueSitting() {
+    const kept = loadSitting();
+    if (kept) restore(kept.export, kept.extras);
+    else askNew();
+  }
+  function restore(exported, ex = {}) {
+    const snapshot = { prefs: null };
+    void snapshot;
+    const r = engine.import(exported);
+    if (!r?.ok) {
+      ui.dialog({ id: "error", title: t("error.bad-record"), body: "", buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
+      return false;
+    }
+    resetTable();
+    human = r.state.human;
+    wasm = r.state;
+    log = [...r.state.events];
+    const model = fromState(r.state);
+    if (check(model, r.state).length) console.error("the restored model differs from the state", check(model, r.state));
+    S = { model, events: log };
+    if (ex.lang) setLang(ex.lang);
+    if (ex.slate) slate.restore(ex.slate);
+    if (ex.talk) talk.restore(ex.talk);
+    settings.setSitting(true);
+    director.restart(S, { dealt: false });
+    restModel = model;
+    ui.setTour(`${t("hud.tour", { n: Math.ceil((r.state.deals_counted + 1) / 2), total: r.state.touren_total })}`);
+    hud.reset({ hands: [], live: null });
+    refresh();
+    rested();
+    return true;
+  }
+
+  function settingsAction(name) {
+    if (name === "save" && wasm) {
+      const text = fileText(engine.export(), extras());
+      const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+      const link = Object.assign(document.createElement("a"), { href: url, download: "strohmandeln-sitting.json" });
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } else if (name === "load") {
+      const input = Object.assign(document.createElement("input"), { type: "file", accept: "application/json" });
+      input.addEventListener("change", async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        const got = parseFile(await file.text());
+        if (!got.ok) return ui.setRefusal(t(`error.${got.error}`));
+        restore(got.export, got.extras);
+      });
+      input.click();
+    }
+  }
+
+  // ---- a setting changed ------------------------------------------------------------------------------
+  function changed(key, value) {
+    save({ [key]: value });
+    switch (key) {
+      case "lang":
+        setLang(value);
+        break;
+      case "speed":
+        director.setSpeed(dirSpeed());
+        break;
+      case "talk":
+        talk.setMode(value);
+        break;
+      case "surface":
+        stage.setSurface(chooseSurface({ chosen: value === "random" ? null : value, saved: null }));
+        break;
+      case "leftHanded":
+        ui.root.classList.toggle("left", value);
+        if (S) director.relayout();
+        break;
+      default:
+    }
+    if (wasm) refresh();
+  }
+
+  // The language: every drawn string again, the faces' courts, the HUD rebuilt
+  // with its numbers kept (7.5.2).
+  onLang((lang) => {
+    document.documentElement.lang = lang;
+    document.title = t("ui.title");
+    canvas.setAttribute("aria-label", t("ui.stage"));
+    ui.relabel();
+    const fresh = faceTextures({ width, anisotropy, codes: COURT_CODES, lang });
+    const old = Object.keys(fresh).map((c) => textures.faces[c]);
+    deck.setFaces(fresh);
+    Object.assign(textures.faces, fresh);
+    old.forEach((x) => x?.dispose?.());
+    const totals = hud.totals();
+    ui.hudSlot.replaceChildren();
+    game = countGame(hudWords());
+    hud = createHud(ui.hudSlot, game, { later: (ms, fn) => director.at(ms, fn), reduced: () => calm() });
+    const ledger = countLedger(game, []);
+    ledger.count = { you: totals.you, opp: totals.opp };
+    hud.reset({ hands: [ledger], live: null });
+    if (wasm) {
+      refresh();
+      ui.setTour(`${t("hud.tour", { n: Math.ceil(((wasm.deals_counted ?? 0) + 1) / 2), total: wasm.touren_total })}`);
+    }
+    stage.render();
+  });
+  document.documentElement.lang = getLang();
+  document.title = t("ui.title");
+
+  // ---- input -----------------------------------------------------------------------------------------------
+  canvas.addEventListener("click", (e) => tapped(director.pick(e.clientX, e.clientY)));
+  document.getElementById("overlay").addEventListener("click", (e) => {
+    if (e.target.closest("button, .dialog, .slate, .settings, .hud")) return;
+    if (director.busy() || pending > 0) director.skip();
+  });
+  // A row of cards wider than the screen scrolls.
+  let dragFrom = null;
+  canvas.addEventListener("pointerdown", (e) => (dragFrom = { x: e.clientX, scroll: sel.scroll }));
+  canvas.addEventListener("pointermove", (e) => {
+    if (!dragFrom || zonesNow().yourHand.fan || director.busy()) return;
+    const dx = e.clientX - dragFrom.x;
+    if (Math.abs(dx) < 6) return;
+    const cm = (dx / window.innerWidth) * 34;
+    sel = { ...sel, scroll: dragFrom.scroll - cm };
+    director.rearrange();
+  });
+  window.addEventListener("pointerup", () => (dragFrom = null));
+  canvas.addEventListener(
+    "wheel",
+    (e) => {
+      if (zonesNow().yourHand.fan) return;
+      sel = { ...sel, scroll: sel.scroll + e.deltaY * 0.03 + e.deltaX * 0.03 };
+      director.rearrange();
+    },
+    { passive: true },
+  );
+
+  const handCodes = () => (S ? S.model.hand.map((c) => c.code) : []);
+  const coverCodes = () => (S ? S.model.packets[human].map((p) => p.cover).filter(Boolean) : []);
+  const focusList = (row) => (row === "hand" ? handCodes() : coverCodes());
+  const focusedCode = () => (focus ? focusList(focus.row)[focus.index] ?? null : null);
+  function describeFocus() {
+    const code = focusedCode();
+    if (!code) return;
+    const text = focus.row === "hand" ? t("sr.hand.item", { card: cardName(code) }) : tn("sr.packet.item", S.model.packets[human].find((p) => p.cover === code).hidden, { card: cardName(code), packet: S.model.packets[human].findIndex((p) => p.cover === code) + 1 });
+    ui.live(text + (lit.has(code) ? "" : ""));
+  }
+  function moveFocus(row, by, absolute = null) {
+    const list = focusList(row);
+    if (!list.length) return;
+    let index = focus?.row === row ? focus.index : -1;
+    if (index < 0) index = Math.max(0, list.findIndex((c) => lit.has(c)));
+    else index = absolute !== null ? absolute : Math.max(0, Math.min(list.length - 1, index + by));
+    focus = { row, index };
+    describeFocus();
+    director.redecorate();
+  }
+
+  window.addEventListener("keydown", (e) => {
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === "Escape") {
+      if (ui.dialogOpen("announce")) ui.closeDialog("announce");
+      else if (ui.dialogOpen("keys")) ui.closeDialog("keys");
+      else if (!ui.slateRoot.hidden) toggleSlate();
+      else if (sel.chosen) {
+        sel = { ...sel, chosen: null };
+        refresh();
+        director.rearrange();
+      }
+      return;
+    }
+    if (e.target instanceof Element && e.target.closest("input, select, textarea, .settings, .slate")) return;
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (key === "?") {
+      ui.dialog({ id: "keys", title: t("keys.title"), body: ui.el("ul", { class: "keys" }, ...["play", "arrows", "packets", "announce", "take", "weiter", "slate", "hint", "mute", "where", "help", "esc"].map((k) => ui.el("li", {}, t(`keys.${k}`)))), buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
+      return;
+    }
+    if (ui.dialogOpen()) return;
+    if (!wasm) return;
+    if (key === "s") return toggleSlate();
+    if (key === "i") return ui.live(where(wasm));
+    if (key === "t" && wasm.legal.some((a) => a.action === "take")) return send({ action: "take" });
+    if (key === "w" && wasm.legal.some((a) => a.action === "pass")) return send({ action: "pass" });
+    if (key === "a" && wasm.phase === "play") {
+      const first = [...heldHonours()][0];
+      if (first) onAct("announce", { honour: first });
+      else onAct("announce", { honour: "trull" });
+      return;
+    }
+    if (director.busy() || wasm.phase !== "play") return;
+    if (key === "ArrowLeft") moveFocus(focus?.row ?? "hand", -1);
+    else if (key === "ArrowRight") moveFocus(focus?.row ?? "hand", 1);
+    else if (key === "Home") moveFocus(focus?.row ?? "hand", 0, 0);
+    else if (key === "End") moveFocus(focus?.row ?? "hand", 0, 999);
+    else if (["1", "2", "3"].includes(key)) {
+      const covers = S.model.packets[human].map((p) => p.cover);
+      const code = covers[Number(key) - 1];
+      if (code) {
+        focus = { row: "packets", index: coverCodes().indexOf(code) };
+        describeFocus();
+        director.redecorate();
+      }
+    } else if (key === "Enter" || key === " ") {
+      const code = focusedCode();
+      if (!code) return;
+      e.preventDefault();
+      if (!lit.has(code)) return askRefusal(code);
+      if (sel.chosen === code) commit(code);
+      else {
+        sel = { ...sel, chosen: code };
+        refresh();
+        director.rearrange();
+      }
+    }
+  });
+  new ResizeObserver(() => {
+    if (S) director.relayout();
+  }).observe(document.getElementById("overlay"));
+  stage.onReframe = () => S && director.relayout();
+
+  stopped = () => ui.dialog({ id: "error", title: t("error.opponent-refused"), body: "", buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
+  if (info.notice === "unavailable") ui.chip(t("error.no-storage"), { x: window.innerWidth / 2, y: 100, ms: 5000 });
+  if (info.notice === "newer") ui.chip(t("chip.newer"), { x: window.innerWidth / 2, y: 100, ms: 5000 });
+
+  // ---- the start ---------------------------------------------------------------------------------------------
+  const kept = TEST ? null : loadSitting();
+  if (TEST) newSitting({ touren: Number(params.get("touren")) || prefs.touren });
+  else if (kept) {
+    ui.dialog({
+      id: "welcome",
+      title: t("ui.welcome.title"),
+      body: "",
+      buttons: [
+        { label: t("ui.welcome.continue"), act: "continue", primary: true, focus: true },
+        { label: t("ui.welcome.new"), act: "new" },
+      ],
+    });
+  } else askNew();
+
+  // ---- for the browser test --------------------------------------------------------------------------------------
+  window.strohmandeln3d = {
+    engine,
+    state: () => wasm,
+    model: () => S?.model,
+    prefs: () => prefs,
+    log: () => log,
+    lit: () => [...lit],
+    faces: () => director.placement().filter((m) => m.code).map((m) => m.code),
+    shown: () => director.meshes.map((m) => m.userData.code),
+    hidden: () => engine.audit().hidden,
+    busy: () => director.busy() || pending > 0 || stage.reframing(),
+    said: () => ui.said(),
+    live: () => ui.lived(),
+    hud: () => ({ totals: hud.totals(), shown: hud.shown(), idle: hud.idle() }),
+    zoneRects,
+    cardRects: cardRectsOf,
+    placement: () => director.placement().map((m) => ({ zone: m.zone, key: m.key, code: m.code, index: m.index, packet: m.packet })),
+    screenPoint: (code) => director.screenPoint(code),
+    pickAt: (x, y) => {
+      const m = director.pick(x, y);
+      return m ? { zone: m.zone, code: m.code } : null;
+    },
+    selection: () => sel.chosen,
+    skip: () => director.skip(),
+    tick: (ms) => director.tick(ms),
+    clock: () => director.clock(),
+    meshInfo: () => director.meshes.map((m) => ({ x: m.position.x, y: m.position.y, z: m.position.z, code: m.userData.code })),
+    newSitting,
+    step,
+    sittingOver: () => sittingOver,
+    stage: () => ({ portrait: stage.portrait, strips: stage.strips() }),
+  };
+}
+
+main().catch((error) => {
+  console.error(error);
+  const loading = document.getElementById("loading");
+  if (loading) loading.textContent = "The table could not be set.";
+});

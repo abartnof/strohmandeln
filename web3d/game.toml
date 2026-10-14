@@ -1,0 +1,13 @@
+name = "strohmandeln"
+entry = "src/main.js"
+template = "src/index.html"
+style = "src/style.css"
+kit_styles = ["../kit/css/hud.css", "src/table.css"]
+output = "strohmandeln.html"
+crate = "strohmandeln-wasm"
+guideline_bytes = 10485760
+
+[[assets]]
+placeholder = "/*WORDS*/"
+path = "words.json"
+kind = "json"

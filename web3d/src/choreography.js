@@ -196,7 +196,7 @@ class Plan {
   constructor(placement, view, options) {
     this.moments = {};
     this.pace = options.pace ?? null;
-    this.reduced = Boolean(options.reduced);
+    this.reduced = Boolean(options.reduced ?? view.reduced);
     this.now = placement.map((m) => ({ ...m }));
     this.view = view;
     this.clock = 0;
