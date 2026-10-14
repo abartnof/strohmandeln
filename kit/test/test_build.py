@@ -176,6 +176,55 @@ class Cli(unittest.TestCase):
             self.assertEqual(text.strip(), str(Path(tmp) / "web3d" / "tiny.html"))
 
 
+class Safety(unittest.TestCase):
+    def test_the_wasm_build_remaps_the_paths_a_panic_embeds(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = build.load_config(tiny_game(Path(tmp)), Path(tmp))
+            flags = build.rust_env(cfg)["RUSTFLAGS"]
+            self.assertIn(f"--remap-path-prefix={cfg.root}=/strohmandeln", flags)
+            self.assertIn("=/cargo", flags)
+            self.assertIn("=/rustup", flags)
+
+    def test_a_tool_that_fails_or_is_missing_ends_the_build_with_one_line(self):
+        with self.assertRaises(SystemExit) as e:
+            build.run_tool(["definitely-not-a-tool-xyz"], "bundling")
+        self.assertIn("not installed", str(e.exception))
+        with self.assertRaises(SystemExit) as e:
+            build.run_tool([sys.executable, "-c", "raise SystemExit(3)"], "bundling x")
+        self.assertIn("bundling x failed (exit 3)", str(e.exception))
+
+    def test_json_cannot_close_its_script_and_text_that_would_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            web = Path(tmp)
+            a = build.Asset("/*W*/", write(web / "w.json", json.dumps({"a": "x</script><b>é"})), "json")
+            text = build.asset_text(a)
+            self.assertNotIn("</", text)
+            self.assertEqual(json.loads(text), {"a": "x</script><b>é"}, "still the same data")
+            t = build.Asset("/*T*/", write(web / "t.md", "a </SCRIPT> b"), "text")
+            self.assertIn("</SCRIPT>", build.asset_text(t), "text is verbatim")
+
+    def test_a_style_or_text_asset_that_would_close_its_element_fails_the_build(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = tiny_game(Path(tmp))
+            web = Path(tmp) / "web3d"
+            write(web / "src" / "style.css", "a{}/* </style> */")
+            code, text = run(["--config", str(cfg), "--root", tmp])
+            self.assertEqual(code, 1)
+            self.assertIn("</style", text)
+
+    def test_non_ascii_text_survives_and_the_page_is_written_with_unix_newlines(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = tiny_game(Path(tmp))
+            web = Path(tmp) / "web3d"
+            write(web / "src" / "style.css", "/* Sküs ⅔ */\r\nbody{margin:0}")
+            code, text = run(["--config", str(cfg), "--root", tmp])
+            self.assertEqual(code, 0, text)
+            raw = (web / "tiny.html").read_bytes()
+            self.assertIn("Sküs ⅔".encode(), raw)
+            self.assertNotIn(b"\r", raw)
+            self.assertEqual(run(["--config", str(cfg), "--root", tmp, "--check"])[0], 0)
+
+
 @unittest.skipUnless((REAL_WEB3D / "node_modules" / ".bin" / "esbuild").exists(), "run `npm ci` in web3d/ first")
 class EndToEnd(unittest.TestCase):
     def test_a_game_importing_the_kit_builds_and_checks(self):

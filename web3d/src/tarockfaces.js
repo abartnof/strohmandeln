@@ -47,6 +47,28 @@ export function parseCode(code) {
   throw new Error(`not a card code: ${JSON.stringify(code)}`);
 }
 
+// ---- Court labels, by language --------------------------------------------------
+
+// The letter a court shows: the code's K Q C J are the king, queen, cavalier
+// (horseman) and jack; German packs letter them K D C B (Dame, Bube).
+export const COURT_LABELS = Object.freeze({
+  en: Object.freeze({ K: "K", Q: "Q", C: "C", J: "J" }),
+  de: Object.freeze({ K: "K", Q: "D", C: "C", J: "B" }),
+});
+
+// The four court letters of a language ("en" or "de"), or of a table of the
+// four codes (a game with another language passes its own).
+export function courtLabels(lang = "en") {
+  const labels = typeof lang === "string" ? COURT_LABELS[lang] : lang;
+  if (!labels || !["K", "Q", "C", "J"].every((k) => typeof labels[k] === "string" && labels[k].length > 0)) {
+    throw new RangeError(`no court labels for ${JSON.stringify(lang)}`);
+  }
+  return labels;
+}
+
+// The 16 courts' codes, the faces to draw again when the language changes.
+export const COURT_CODES = Object.freeze(ALL_CODES.filter((c) => /^[KQCJ][hdcs]$/.test(c)));
+
 // ---- Roman numerals, as on the real pack -----------------------------------
 
 // Standard subtractive numerals, except 4, which is IIII.
@@ -195,20 +217,26 @@ function star(ctx, u, cx, cy, r, colour) {
 
 // ---- Pips ----------------------------------------------------------------------
 
-const COL = { l: 3.9, c: (JUMBO.strip + JUMBO.w) / 2 + 0.05, r: 6.1 };
+// The pip columns are symmetric about the body's centre line (BODY_X, the room
+// right of the index strip), so a face reads as centred in the room it has.
+const COL = { l: BODY_X - 1.1, c: BODY_X, r: BODY_X + 1.1 };
 const TOP = 1.2;
 const BOTTOM = JUMBO.h - 1.2;
 const at = (f) => TOP + (BOTTOM - TOP) * f;
+// What a glyph's ink fills of its font size (the widest of the four suits, at
+// 0.8 with margin), for keeping pips inside the room.
+export const PIP_INK = 0.8;
 
-// The pips of a rank "1".."4", "7".."10": { x, y, size } in card units.
+// The pips of a rank "1".."4", "7".."10": { x, y, size } in card units, `size`
+// being the font size they are drawn at.
 export function pipLayout(rank) {
   const col = (c, ys, size) => ys.map((f) => ({ x: COL[c], y: at(f), size }));
-  const S = 1.35;
+  const S = 1.7;
   switch (rank) {
-    case "1": return [{ x: COL.c, y: JUMBO.h / 2, size: 3 }];
-    case "2": return col("c", [0.1, 0.9], 1.7);
-    case "3": return col("c", [0, 0.5, 1], 1.7);
-    case "4": return [...col("l", [0.1, 0.9], 1.6), ...col("r", [0.1, 0.9], 1.6)];
+    case "1": return [{ x: COL.c, y: JUMBO.h / 2, size: 3.75 }];
+    case "2": return col("c", [0.12, 0.88], 2.4);
+    case "3": return col("c", [0.05, 0.5, 0.95], 2.4);
+    case "4": return [...col("l", [0.12, 0.88], 1.9), ...col("r", [0.12, 0.88], 1.9)];
     case "7": return [...col("l", [0, 0.5, 1], S), ...col("r", [0, 0.5, 1], S), ...col("c", [0.25], S)];
     case "8": return [...col("l", [0, 0.5, 1], S), ...col("r", [0, 0.5, 1], S), ...col("c", [0.25, 0.75], S)];
     case "9": return [...col("l", [0, 1 / 3, 2 / 3, 1], S), ...col("r", [0, 1 / 3, 2 / 3, 1], S), ...col("c", [0.5], S)];
@@ -279,7 +307,8 @@ function tarockFace(ctx, u, { text, nick, sku }) {
   put(ctx, u, text, { x: BODY_X, y: MID + cap / 2, size: n.size, scaleX: n.scaleX, font: rankFont, colour: ink });
 }
 
-function suitFace(ctx, u, { rank, suit }) {
+function suitFace(ctx, u, { rank: code, suit }, labels) {
+  const rank = labels[code] ?? code; // the letter shown; `code` decides the layout
   ctx.fillStyle = JUMBO.paper;
   ctx.fillRect(0, 0, JUMBO.w * u, JUMBO.h * u);
   const colour = COLOUR[suit];
@@ -292,7 +321,7 @@ function suitFace(ctx, u, { rank, suit }) {
   const ink = suitInkHeight(ctx) * s;
   glyph(ctx, u, suit, { x: AXIS, y: base + dip(ctx, rank, r.size) + JUMBO.gap + ink / 2, size: s, colour });
 
-  if (!/^\d/.test(rank)) {
+  if (!/^\d/.test(code)) {
     // A court: the rank letter large, the suit large under it.
     const f = fitText(ctx, rank, { room: BODY_W, maxSize: 5, minCondense: 0.62, font: rankFont });
     const cap = CAP(ctx, rankFont, f.size);
@@ -304,15 +333,17 @@ function suitFace(ctx, u, { rank, suit }) {
     glyph(ctx, u, suit, { x: BODY_X, y: top + cap + gap + sInk / 2, size: sz, colour });
     return;
   }
-  for (const p of pipLayout(rank)) glyph(ctx, u, suit, { x: p.x, y: p.y, size: p.size * 1.25, colour });
+  for (const p of pipLayout(code)) glyph(ctx, u, suit, { x: p.x, y: p.y, size: p.size, colour });
 }
 
 // The face of `code` ("T7", "SK", "Kh", "10c", "3d") on a 2D context `width`
-// pixels wide and 1.4 times as tall.
-export function drawFace(ctx, width, code) {
+// pixels wide and 1.4 times as tall. `lang` ("en", "de" or a table of K Q C J
+// letters) says how the courts are lettered.
+export function drawFace(ctx, width, code, lang = "en") {
   const c = parseCode(code);
+  const labels = courtLabels(lang);
   const u = width / JUMBO.w;
-  if (c.kind === "suit") suitFace(ctx, u, c);
+  if (c.kind === "suit") suitFace(ctx, u, c, labels);
   else if (c.kind === "sku") tarockFace(ctx, u, { sku: true });
   else tarockFace(ctx, u, { text: tarockNumeral(c.n), nick: NICKNAMES[c.n] ?? null });
 }
@@ -356,12 +387,14 @@ const canvasOf = (width) => {
   return canvas;
 };
 
-// The 54 faces as textures keyed by code, `width` pixels wide.
-export function faceTextures({ width, anisotropy = 1, codes = ALL_CODES }) {
+// The faces as textures keyed by code, `width` pixels wide: all 54, or `codes`
+// (COURT_CODES to redo only the courts when the language changes; dispose the
+// textures they replace).
+export function faceTextures({ width, anisotropy = 1, codes = ALL_CODES, lang = "en" }) {
   return Object.fromEntries(
     codes.map((code) => {
       const canvas = canvasOf(width);
-      drawFace(canvas.getContext("2d"), width, code);
+      drawFace(canvas.getContext("2d"), width, code, lang);
       return [code, cardTexture(new CanvasTexture(canvas), anisotropy)];
     }),
   );

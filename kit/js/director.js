@@ -22,7 +22,9 @@ import { CARD } from "./units.js";
 //  - `choreography` is the game's { choreograph, initialPlacement, opening },
 //    passed in rather than imported from a choreography.js of cassino's;
 //  - `zones` is the game's zones, used by handEdge when view().zones is unset;
-//  - `cards` is the number of card meshes (cassino's 52).
+//  - `cards` is the number of card meshes (cassino's 52);
+//  - a missing choreography function, or missing zones where handEdge needs
+//    them, is an error that names it.
 //
 // `view()` is how the person asks to see the state: { chosen, picked }.
 // `advance` and `restart` return { beats, count }: when each new event will
@@ -30,7 +32,10 @@ import { CARD } from "./units.js";
 // the table's clock (for the dialogue and the score sheet; see `at`).
 // `rested()` runs whenever the cards come to rest.
 export function createDirector({ stage, deck, view, decorate, rested, choreography, zones = null, cards = 52, manual = false, speed = 1 }) {
-  const { choreograph, initialPlacement, opening } = choreography;
+  const { choreograph, initialPlacement, opening } = choreography ?? {};
+  for (const [name, fn] of Object.entries({ choreograph, initialPlacement, opening })) {
+    if (typeof fn !== "function") throw new TypeError(`createDirector needs choreography.${name}: the game's { choreograph, initialPlacement, opening }`);
+  }
   const meshes = Array.from({ length: cards }, () => deck.card(null));
   meshes.forEach((mesh, id) => (mesh.userData.id = id));
   let state = null;
@@ -227,7 +232,9 @@ export function createDirector({ stage, deck, view, decorate, rested, choreograp
       .filter((m) => m.zone === zone)
       .flatMap((m) => cardCorners(m.pose).map(toScreen));
     if (!points.length) {
-      const centre = (view().zones ?? zones)[who === "you" ? "yourHand" : "theirHand"].centre; // T17
+      const where = view().zones ?? zones;
+      if (!where) throw new Error("handEdge of an empty hand needs the game's zones: pass `zones` to createDirector or set view().zones");
+      const centre = where[who === "you" ? "yourHand" : "theirHand"].centre; // T17
       return { ...toScreen(new Vector3(...centre)), empty: true };
     }
     const x = points.reduce((sum, p) => sum + p.x, 0) / points.length;

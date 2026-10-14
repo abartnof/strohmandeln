@@ -68,6 +68,12 @@ test("a module lacking the ABI exports is refused at once, naming them", async (
   await assert.rejects(loadWasm(new Uint8Array(), "other", { instantiate }), /other_alloc.*other_out.*other_out_len/);
 });
 
+test("a module without exported memory is refused too", async () => {
+  const { ex } = fakeModule("game");
+  delete ex.memory;
+  await assert.rejects(loadWasm(new Uint8Array(), "game", { instantiate: async () => ({ instance: { exports: ex } }) }), /memory/);
+});
+
 test("decodeBase64 gives the bytes", () => {
   assert.deepEqual([...decodeBase64("AQID")], [1, 2, 3]);
 });

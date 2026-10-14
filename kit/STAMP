@@ -26,9 +26,9 @@ js/faces.js              web3d/src/faces.js             verbatim
 js/dialogue.js           web3d/src/dialogue.js          verbatim
 js/units.js              web3d/src/units.js             without ZONES, ZONES_PORTRAIT, ZONES_TOUCH
 js/reveal.js             web3d/src/reveal.js            without COURTS, courtName, courtFor, FIGURE, figureHead, figureSides
-js/director.js           web3d/src/director.js          choreography, zones and card count are createDirector options
+js/director.js           web3d/src/director.js          choreography, zones and card count are createDirector options; a missing choreography function, or zones where handEdge needs them, is an error naming it
 js/tutorial.js           web3d/src/tutorial.js          parseTutorial only; page keys are an argument
-js/engine.js             web3d/src/engine.js            generic part only: loadWasm (alloc/write/out), guard, decodeBase64
+js/engine.js             web3d/src/engine.js            generic part only: loadWasm (alloc/write/out; refuses a module without its ABI exports or memory), guard, decodeBase64
 test/bag.test.js         web3d/test/bag.test.js         verbatim (imports ../src -> ../js)
 test/easing.test.js      web3d/test/easing.test.js      verbatim (imports ../src -> ../js)
 test/timeline.test.js    web3d/test/timeline.test.js    verbatim (imports ../src -> ../js)

@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
-  ALL_CODES, NICKNAMES, TAROCK, contrast, drawBack, drawFace, fitText, nickname, parseCode, pipLayout, tarockNumeral,
+  ALL_CODES, COURT_CODES, COURT_LABELS, NICKNAMES, PIP_INK, TAROCK, contrast, courtLabels, drawBack, drawFace, fitText, nickname, parseCode, pipLayout, tarockNumeral,
 } from "../src/tarockfaces.js";
 import { JUMBO } from "../../kit/js/faces.js";
 
@@ -181,18 +181,32 @@ test("pips: as many symbols as the number, inside the card, none on another", ()
     const pips = pipLayout(rank);
     assert.equal(pips.length, n, rank);
     for (const p of pips) {
-      assert.ok(p.x - p.size / 2 >= JUMBO.strip && p.x + p.size / 2 <= JUMBO.w, rank);
-      assert.ok(p.y - p.size / 2 >= 0 && p.y + p.size / 2 <= JUMBO.h, rank);
+      // The ink (PIP_INK of the font size), not the font box: clear of the strip and 0.1 from the edge.
+      const half = (p.size * PIP_INK) / 2;
+      assert.ok(p.x - half >= JUMBO.strip && p.x + half <= JUMBO.w - 0.1, `${rank}: ${p.x - half}..${p.x + half}`);
+      assert.ok(p.y - half >= 0.2 && p.y + half <= JUMBO.h - 0.2, rank);
     }
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
         const a = pips[i], b = pips[j];
-        const reach = ((a.size + b.size) / 2) * 0.85;
-        assert.ok(Math.abs(a.x - b.x) >= reach || Math.abs(a.y - b.y) >= reach, `${rank}: pips ${i} and ${j} touch`);
+        const reach = ((a.size + b.size) / 2) * PIP_INK;
+        assert.ok(Math.hypot(a.x - b.x, a.y - b.y) >= reach, `${rank}: pips ${i} and ${j} touch`);
       }
     }
   }
   assert.throws(() => pipLayout("K"));
+});
+
+test("pips sit centred in the room right of the strip, left-right symmetric", () => {
+  const bodyX = (JUMBO.strip + 0.3 + JUMBO.w - 0.3) / 2;
+  for (const rank of ["1", "2", "3", "4", "7", "8", "9", "10"]) {
+    const xs = pipLayout(rank).map((p) => p.x);
+    assert.ok(Math.abs((Math.min(...xs) + Math.max(...xs)) / 2 - bodyX) < 1e-9, rank);
+  }
+  for (const rank of ["1", "2", "3"]) assert.ok(pipLayout(rank).every((p) => Math.abs(p.x - bodyX) < 1e-9), rank);
+});
+
+test("pips: each symbol is drawn once at its layout size", () => {
   // The index's suit and one glyph for each pip.
   for (const [code, n] of [["7s", 7], ["10c", 10], ["3h", 3], ["4d", 4], ["1h", 1]]) {
     const ctx = recorder();
@@ -234,4 +248,43 @@ test("the back is a plain pattern, drawn from edge to edge, with no text", () =>
   assert.deepEqual(ctx.calls[0].slice(0, 4), ["fillRect", 0, 0, 700]);
   assert.equal(textsOf(ctx).length, 0);
   assert.ok(ctx.calls.length > 10);
+});
+
+test("court letters follow the language: K Q C J in English, K D C B in German", () => {
+  assert.deepEqual({ ...COURT_LABELS.en }, { K: "K", Q: "Q", C: "C", J: "J" });
+  assert.deepEqual({ ...COURT_LABELS.de }, { K: "K", Q: "D", C: "C", J: "B" });
+  assert.equal(COURT_CODES.length, 16);
+  assert.ok(COURT_CODES.every((c) => /^[KQCJ][hdcs]$/.test(c)));
+  const lettersOf = (code, lang) => {
+    const ctx = recorder();
+    drawFace(ctx, 700, code, lang);
+    return textsOf(ctx).map((c) => c[1]).filter((t) => !/[♠♥♦♣]/.test(t));
+  };
+  for (const suit of "hdcs") {
+    for (const code of COURT_CODES.filter((c) => c[1] === suit)) {
+      const want = { en: COURT_LABELS.en[code[0]], de: COURT_LABELS.de[code[0]] };
+      assert.deepEqual(lettersOf(code), [want.en, want.en], code);
+      assert.deepEqual(lettersOf(code, "en"), [want.en, want.en], code);
+      assert.deepEqual(lettersOf(code, "de"), [want.de, want.de], code);
+    }
+  }
+  assert.deepEqual(lettersOf("Qh", "de"), ["D", "D"]);
+  assert.deepEqual(lettersOf("Js", "de"), ["B", "B"]);
+});
+
+test("languages leave everything but the courts alone", () => {
+  for (const code of ALL_CODES.filter((c) => !COURT_CODES.includes(c))) {
+    const a = recorder();
+    const b = recorder();
+    drawFace(a, 700, code, "en");
+    drawFace(b, 700, code, "de");
+    assert.deepEqual(a.calls, b.calls, code);
+  }
+});
+
+test("court labels: another language is a table of the four letters; a bad one is refused", () => {
+  assert.equal(courtLabels({ K: "R", Q: "D", C: "C", J: "V" }).K, "R");
+  assert.throws(() => courtLabels("fr"), RangeError);
+  assert.throws(() => courtLabels({ K: "K", Q: "Q", C: "C" }), RangeError);
+  assert.throws(() => drawFace(recorder(), 700, "Kh", "xx"), RangeError);
 });

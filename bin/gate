@@ -27,14 +27,15 @@ if [ -f Cargo.toml ]; then
   command -v cargo >/dev/null || fail "Cargo.toml exists but cargo is not installed"
   cargo fmt --all -- --check >/dev/null 2>&1 || fail "cargo fmt (run cargo fmt)"
   if ! out=$(cargo clippy --all-targets --quiet -- -D warnings 2>&1); then
-    echo "$out" | head -40 >&2
+    { echo "$out" | head -40 >&2; } || true
     fail "clippy"
   fi
   if ! out=$(cargo test --quiet 2>&1); then
-    echo "$out" | grep -E "FAILED|panicked|error" | head -40 >&2
+    { echo "$out" | grep -E "FAILED|panicked|error" | head -40 >&2; } || true
     fail "cargo test"
   fi
-  rust_passed=$(echo "$out" | grep -oE "test result: ok\. [0-9]+ passed" | awk '{s += $4} END {print s + 0}')
+  rust_passed=$(echo "$out" | grep -oE "test result: ok\. [0-9]+ passed" | awk '{s += $4} END {print s + 0}' || true)
+  [ "${rust_passed:-0}" -gt 0 ] || fail "cargo test ran no tests (its output was not recognised)"
   parts+=("$rust_passed in Rust")
 else
   parts+=("no Cargo.toml, Rust skipped")
@@ -45,6 +46,15 @@ if [ -f kit/STAMP ]; then
   while read -r file; do
     [ -e "kit/$file" ] || fail "kit/STAMP lists kit/$file, which is missing"
   done < <(awk '/^files:/ {on = 1; next} on && NF {print $1}' kit/STAMP)
+  # ...and every file of the kit is listed (STAMP is the provenance of all of it)
+  while read -r file; do
+    awk '/^files:/ {on = 1; next} on && NF {print $1}' kit/STAMP | grep -qxF "${file#kit/}" \
+      || fail "$file is in the kit but not listed in kit/STAMP"
+  done < <(find kit/js kit/css kit/test -type f ! -path '*/__pycache__/*' | sort; ls kit/build.py kit/package.json)
+  # ...and what STAMP calls verbatim still carries its origin header
+  while read -r file; do
+    head -1 "kit/$file" | grep -q '^// From cassino ' || fail "kit/$file is listed as verbatim but lacks its '// From cassino' header"
+  done < <(awk '/^files:/ {on = 1; next} on && $3 == "verbatim" && $1 ~ /\.js$/ {print $1}' kit/STAMP)
 fi
 
 # ---- Node: the kit's tests and the game's ------------------------------
@@ -55,10 +65,12 @@ if [ ${#dirs[@]} -gt 0 ]; then
   [ -d web3d/node_modules/three ] || fail "web3d/node_modules is missing: run npm ci in web3d/ (the kit imports three from there)"
   [ -e kit/node_modules/three ] || fail "kit/node_modules does not lead to web3d/node_modules (it should be a symlink to ../web3d/node_modules)"
   if ! node_out=$(node --test "${dirs[@]/%//}" 2>&1); then
-    echo "$node_out" | grep -E "^not ok|^\s+not ok|Error|expected|actual" | head -40 >&2
+    { echo "$node_out" | grep -E "^not ok|^\s+not ok|Error|expected|actual" | head -40 >&2; } || true
     fail "node tests"
   fi
-  parts+=("$(echo "$node_out" | grep -oE "^# pass [0-9]+" | awk '{print $3}') in Node")
+  node_passed=$(echo "$node_out" | grep -oE "^# pass [0-9]+" | awk '{print $3}' || true)
+  [ "${node_passed:-0}" -gt 0 ] || fail "node ran no tests (a path that matches nothing passes quietly)"
+  parts+=("$node_passed in Node")
 else
   parts+=("no node tests")
 fi
@@ -66,7 +78,7 @@ fi
 # ---- Python: the kit's build.py ----------------------------------------
 if ls kit/test/test_*.py >/dev/null 2>&1; then
   if ! py_out=$(python3 -m unittest discover -s kit/test -p 'test_*.py' 2>&1); then
-    echo "$py_out" | tail -30 >&2
+    { echo "$py_out" | tail -30 >&2; } || true
     fail "python tests (kit/build.py)"
   fi
   parts+=("$(echo "$py_out" | grep -oE "^Ran [0-9]+" | awk '{print $2}') in Python")
@@ -75,7 +87,7 @@ fi
 # ---- Python: the phrase bank (its rules, and generated files kept current)
 if [ -f tools/phrases.py ]; then
   if ! ph_out=$(cd tools && python3 -m unittest discover -s . -p 'test_*.py' 2>&1); then
-    echo "$ph_out" | tail -30 >&2
+    { echo "$ph_out" | tail -30 >&2; } || true
     fail "phrase bank tests (tools/)"
   fi
   python3 tools/phrases.py --check >/dev/null 2>&1 || fail "the phrase bank's generated files are stale (run python3 tools/phrases.py)"
@@ -85,24 +97,22 @@ fi
 # ---- The page: it must be built from these sources (the build is deterministic)
 if [ -f web3d/game.toml ]; then
   page=$(python3 kit/build.py --output-path)
-  if [ -f "$page" ]; then
-    if ! out=$(python3 kit/build.py --check 2>&1); then
-      echo "$out" | tail -3 >&2
-      fail "the built page is stale"
-    fi
-    # Built but not staged: the gate usually runs before staging, so on its own
-    # that is a note. But when the page's sources are staged and the rebuilt
-    # page is not, `git commit` would leave the page behind, stale: that fails.
-    if ! git diff --quiet -- "$page"; then
-      if ! git diff --cached --quiet -- web3d/src kit crates; then
-        fail "$page is rebuilt but not staged, and the sources it is built from are (git add $page)"
-      fi
-      echo "gate: note: $page is rebuilt but not staged" >&2
-    fi
-    parts+=("page current")
-  else
-    parts+=("page not built yet, check skipped")
+  # The page is required as soon as the game has a config: --check fails, with
+  # "out of date", when it is missing, so a forgotten page is never skipped.
+  if ! out=$(python3 kit/build.py --check 2>&1); then
+    { echo "$out" | tail -3 >&2; } || true
+    fail "the built page is stale"
   fi
+  # Built but not staged: the gate usually runs before staging, so on its own
+  # that is a note. But when the page's sources are staged and the rebuilt
+  # page is not, `git commit` would leave the page behind, stale: that fails.
+  if ! git diff --quiet -- "$page"; then
+    if ! git diff --cached --quiet -- web3d/src kit crates; then
+      fail "$page is rebuilt but not staged, and the sources it is built from are (git add $page)"
+    fi
+    echo "gate: note: $page is rebuilt but not staged" >&2
+  fi
+  parts+=("page current")
 else
   parts+=("no web3d/game.toml, page check skipped")
 fi

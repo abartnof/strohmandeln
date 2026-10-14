@@ -93,3 +93,19 @@ test("handEdge of an empty hand falls back on the game's zones, or the view's", 
   other.director.restart({ cards: [] });
   assert.notEqual(other.director.handEdge("you").x, edge.x, "view().zones wins");
 });
+
+test("a choreography missing a function is refused at construction, naming it", () => {
+  const stage = { render() {}, camera: new PerspectiveCamera(30, 1, 1, 1000), renderer: { domElement: { getBoundingClientRect: () => ({ left: 0, top: 0, width: 1, height: 1 }) } } };
+  const deck = { card: () => ({ position: new Vector3(), quaternion: new Quaternion(), userData: {} }), reveal() {}, decorate() {} };
+  const ok = { choreograph() {}, initialPlacement() {}, opening() {} };
+  const make = (choreography) => () => createDirector({ stage, deck, view: () => ({}), choreography, manual: true });
+  assert.throws(make(undefined), /choreography\.choreograph/);
+  assert.throws(make({ ...ok, opening: null }), /choreography\.opening/);
+  assert.doesNotThrow(make(ok));
+});
+
+test("handEdge of an empty hand with no zones anywhere says what is missing", () => {
+  const { director } = setup();
+  director.restart({ cards: [] });
+  assert.throws(() => director.handEdge("you"), /zones/);
+});
