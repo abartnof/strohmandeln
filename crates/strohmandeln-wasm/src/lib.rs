@@ -16,7 +16,7 @@ use strohmandeln_core::agents::{Player, RandomPlayer};
 use strohmandeln_core::cards::{Card, Honour};
 use strohmandeln_core::session::{Record, Sitting};
 use strohmandeln_core::types::{Action, Event, Seat, Settings, SetupError, Source};
-use strohmandeln_core::view::{filter_event, view, View};
+use strohmandeln_core::view::{filter_events, view, View};
 
 /// Bumped whenever the wire format changes in a way a client would notice.
 pub const PROTOCOL: u32 = 1;
@@ -249,10 +249,7 @@ impl Table {
     /// The events not yet sent, as the human may see them.
     fn take_events(&mut self) -> Vec<Event> {
         let all = self.sitting.events();
-        let out = all[self.sent.min(all.len())..]
-            .iter()
-            .filter_map(|e| filter_event(e, self.human))
-            .collect();
+        let out = filter_events(&all[self.sent.min(all.len())..], self.human);
         self.sent = all.len();
         out
     }
@@ -688,6 +685,57 @@ mod tests {
         let mut h = host(CONFIG);
         assert_eq!(h.send("{\"action\":\"fold\"}"), 0);
         assert_eq!(out(&h)["error"], "bad-action");
+    }
+
+    /// Every `dealt` event of a reply (its events and the state's), as the
+    /// seats they name.
+    fn dealt_seats(r: &Value) -> Vec<u64> {
+        r["events"]
+            .as_array()
+            .into_iter()
+            .chain(r["state"]["events"].as_array())
+            .flatten()
+            .filter(|e| e["type"] == "dealt")
+            .map(|e| e["seat"].as_u64().unwrap())
+            .collect()
+    }
+
+    #[test]
+    fn the_opponents_dealt_never_reaches_the_human() {
+        for human in [0u64, 1] {
+            let mut h = host(&format!(r#"{{"seed":9,"touren":3,"human":{human}}}"#));
+            let mut told = dealt_seats(&out(&h));
+            let mut moves = 0;
+            loop {
+                let s = out(&h)["state"].clone();
+                match s["prompt"].as_str().unwrap() {
+                    "over" => break,
+                    "opponent" => assert_eq!(h.step(), 1),
+                    _ => {
+                        let a = s["legal"][0].clone();
+                        let a = if a["action"] == "extend" {
+                            json!({"action":"extend","accept":false})
+                        } else {
+                            a
+                        };
+                        assert_eq!(h.send(&a.to_string()), 1);
+                    }
+                }
+                told.extend(dealt_seats(&out(&h)));
+                moves += 1;
+            }
+            assert!(moves > 100 && told.len() > 3, "several deals were told");
+            assert!(told.iter().all(|&s| s == human), "human {human}: {told:?}");
+            // ...although the sitting itself dealt to both seats.
+            let table = h.table.as_ref().unwrap();
+            let both = table
+                .sitting()
+                .events()
+                .iter()
+                .filter(|e| matches!(e, Event::Dealt { seat, .. } if seat.index() as u64 != human))
+                .count();
+            assert!(both > 0, "the unfiltered stream holds the opponent's hands");
+        }
     }
 
     #[test]
