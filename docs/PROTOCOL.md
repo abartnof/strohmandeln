@@ -167,7 +167,7 @@ parts are shown in the next section):
 | `tricks` | completed tricks of this deal: leader, the two cards in play order, where each came from, the winner |
 | `lead` | the card led to the open trick, or `null` |
 | `take_thirds` | the running count of each seat's won cards in thirds, by seat (the pack counts 70 points, 210 thirds; the threshold of the `count` event is 107, RULES 8) |
-| `announcements`, `forfeited` | honours announced, or lost by playing a card of them unannounced |
+| `announcements`, `forfeited` | honours announced (both seats), and the human's own honours lost by playing a card of them unannounced (the opponent's are never shown) |
 
 A packet card played from a packet leaves a `null` cover until the
 replacement events refill it (6.1).
@@ -263,7 +263,9 @@ examples (field order is alphabetical on the wire):
 Notes:
 
 - `dealt` appears only for the human's seat. The opponent's 15 cards are never
-  sent. A card appears in the stream only when the human may know it.
+  sent. Likewise `honour_forfeited` appears only for the human's own forfeit:
+  the opponent's is private (RULES 11.5, 13.2), and `deal.forfeited` lists only
+  the human's. A card appears in the stream only when the human may know it.
 - `credits[].cause` is one of `game trull kings ultimo_won ultimo_lost valat`;
   `result` one of `declarer_win declarer_loss simple_win draw`.
 - `sitting_end` is the settlement: `payer` is the losing seat (`null` if

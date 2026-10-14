@@ -36,4 +36,5 @@ A record writes its `seed` as a decimal string, since a JavaScript number cannot
 hold every 64-bit seed (a plain number is read too).
 
 Events (RULES 16) carry codes and ids only and need no keys of their own; the
-table speaks to their `type`.
+table speaks to their `type`. Two events are not sent to the seat that does not
+own them: `dealt` (the other hand) and `honour_forfeited` (RULES 13.2, 11.5).
