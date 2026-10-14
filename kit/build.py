@@ -24,6 +24,7 @@ The config (paths are relative to the config file):
     entry = "src/main.js"                    # required: the page's script
     template = "src/index.html"              # required
     style = "src/style.css"                  # required
+    kit_styles = ["../kit/css/hud.css"]      # the kit's stylesheets, inlined before `style`
     output = "strohmandeln3d.html"           # required: the page
     crate = "strohmandeln-wasm"              # the engine's cargo package; omit for no engine yet
     worker_entry = "src/tutorworker-entry.js"  # a second bundle, inlined as text (the tutor's worker)
@@ -85,6 +86,7 @@ class Config:
     template: Path
     style: Path
     output: Path
+    kit_styles: list[Path] = field(default_factory=list)
     crate: str | None = None
     worker_entry: Path | None = None
     worker_placeholder: str = "/*TUTORWORKER*/"
@@ -120,6 +122,7 @@ def load_config(path: Path, root: Path = DEFAULT_ROOT) -> Config:
         template=here / raw["template"],
         style=here / raw["style"],
         output=here / raw["output"],
+        kit_styles=[here / p for p in raw.get("kit_styles", [])],
         crate=raw.get("crate"),
         worker_entry=here / raw["worker_entry"] if "worker_entry" in raw else None,
         worker_placeholder=raw.get("worker_placeholder", "/*TUTORWORKER*/"),
@@ -224,6 +227,7 @@ def shown(cfg: Config, path: Path) -> str:
 def dry_run(cfg: Config) -> int:
     """The plan: what would be built from what, and what is missing."""
     needed = [("entry", cfg.entry), ("template", cfg.template), ("stylesheet", cfg.style)]
+    needed += [("kit stylesheet", p) for p in cfg.kit_styles]
     if cfg.worker_entry:
         needed.append(("worker entry", cfg.worker_entry))
     needed += [(f"asset {a.placeholder}", a.path) for a in cfg.assets if not a.optional]
@@ -247,7 +251,9 @@ def dry_run(cfg: Config) -> int:
 def make_page(cfg: Config) -> tuple[str, list[tuple[str, int]], int]:
     """The page, and what its parts weigh."""
     code, owned = bundle(cfg, cfg.entry)
-    values = {"/*APP*/": code, "/*STYLE*/": cfg.style.read_text()}
+    # The kit's stylesheets first, so the game's own can override them.
+    style = "".join(p.read_text() for p in [*cfg.kit_styles, cfg.style])
+    values = {"/*APP*/": code, "/*STYLE*/": style}
     rows: list[tuple[str, int]] = []
     if cfg.crate:
         engine = base64.b64encode(build_wasm(cfg)).decode("ascii")

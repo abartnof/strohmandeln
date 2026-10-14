@@ -78,6 +78,13 @@ class Config(unittest.TestCase):
             self.assertIsNone(cfg.worker_entry)
             self.assertEqual(cfg.guideline, 5 * 1024 * 1024)
 
+    def test_kit_stylesheets_are_paths_relative_to_the_config(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = build.load_config(tiny_game(Path(tmp), more='kit_styles = ["../kit/css/hud.css"]'), root=Path(tmp))
+            self.assertEqual(cfg.kit_styles, [Path(tmp) / "web3d" / ".." / "kit" / "css" / "hud.css"])
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(build.load_config(tiny_game(Path(tmp)), root=Path(tmp)).kit_styles, [], "none by default")
+
     def test_the_wasm_file_is_named_from_the_crate(self):
         with tempfile.TemporaryDirectory() as tmp:
             more = 'crate = "strohmandeln-wasm"'
@@ -193,6 +200,22 @@ class EndToEnd(unittest.TestCase):
             page.write_text(html + " ")
             code, _ = run(["--config", str(cfg), "--root", tmp, "--check"])
             self.assertEqual(code, 1, "a stale page fails the check")
+
+    def test_kit_stylesheets_come_before_the_games_own(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = tiny_game(Path(tmp), more='kit_styles = ["../kit/css/hud.css"]')
+            code, text = run(["--config", str(cfg), "--root", tmp])
+            self.assertEqual(code, 0, text)
+            html = (Path(tmp) / "web3d" / "tiny.html").read_text()
+            self.assertIn(".hud{", html.replace(" ", "").replace("\n", ""), "the kit's HUD stylesheet was inlined")
+            self.assertLess(html.index(".hud"), html.index("body{margin:0}"), "the game's style can override the kit's")
+
+    def test_a_missing_kit_stylesheet_is_said_by_the_dry_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = tiny_game(Path(tmp), more='kit_styles = ["../kit/css/nothing.css"]')
+            code, text = run(["--config", str(cfg), "--root", tmp, "--dry-run"])
+            self.assertEqual(code, 1)
+            self.assertIn("nothing.css", text)
 
     def test_the_build_is_deterministic(self):
         with tempfile.TemporaryDirectory() as tmp:
