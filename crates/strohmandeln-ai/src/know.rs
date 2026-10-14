@@ -19,6 +19,11 @@ pub struct Knowledge {
     /// Whether the bidding is over and play has begun.
     pub playing: bool,
     pub declarer: Option<Seat>,
+    /// The sitting's game values, both-pass setting and the deal's doubling
+    /// multiplier: public, and what a bid is worth.
+    pub values: Values,
+    pub both_pass: BothPass,
+    pub multiplier: u32,
     /// The non-dealer, who bids first and leads the first trick.
     pub forehand: Seat,
     /// 1 to 27.
@@ -105,6 +110,9 @@ impl Knowledge {
             opp,
             playing: d.playing,
             declarer: d.declarer,
+            values: d.values,
+            both_pass: d.both_pass,
+            multiplier: d.multiplier,
             forehand: d.forehand,
             trick_number: d.trick_number,
             lead,

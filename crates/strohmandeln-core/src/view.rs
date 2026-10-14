@@ -31,6 +31,9 @@ pub struct DealView {
     pub dealer: Seat,
     pub forehand: Seat,
     pub multiplier: u32,
+    /// The sitting's public settings that price a game (RULES 0, 3.4, 9.1).
+    pub values: Values,
+    pub both_pass: BothPass,
     pub declarer: Option<Seat>,
     pub playing: bool,
     pub trick_number: u32,
@@ -156,6 +159,8 @@ pub fn deal_view(deal: &crate::deal::Deal, seat: Seat) -> DealView {
         dealer: deal.dealer(),
         forehand: deal.forehand(),
         multiplier: deal.multiplier(),
+        values: deal.settings().values,
+        both_pass: deal.settings().both_pass,
         declarer: deal.declarer(),
         playing: deal.is_playing(),
         trick_number: deal.trick_number(),
@@ -495,5 +500,27 @@ mod tests {
         assert!(!wire.contains("honour_forfeited"), "{wire}");
         // Nor can it be read from the filtered stream of the whole sitting.
         assert!(!filter_events(s.events(), other).iter().any(is_forfeit));
+    }
+}
+
+#[cfg(test)]
+mod settings_tests {
+    use super::*;
+    use crate::session::Sitting;
+
+    #[test]
+    fn the_deal_view_carries_the_public_settings() {
+        let settings = Settings {
+            values: Values::V123,
+            both_pass: BothPass::ThrowIn,
+            ..Settings::default()
+        };
+        let s = Sitting::new(2, settings, 3).unwrap();
+        let v = view(&s, Seat::A);
+        let d = v.deal.unwrap();
+        assert_eq!((d.values, d.both_pass), (Values::V123, BothPass::ThrowIn));
+        let json = serde_json::to_value(&d).unwrap();
+        assert_eq!(json["values"], "1/2/3");
+        assert_eq!(json["both_pass"], "throw_in");
     }
 }
