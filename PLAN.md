@@ -55,7 +55,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 
 - Table DOM modules (review, docs/review/table-dom-modules.md): a save refused as too big leaves the older save, so Continue offers an earlier state; a quota error reports "unavailable", not "too-big"; `seen` lives in `strohmandeln.prefs`, not the separate `strohmandeln.seen` of TABLE3D 7.7.1; URL overrides must be gated to test runs by the page (7.7.4); the folded slate's backdrop ignores taps (4.1.1); the ultimo setting's note names no source (7.2).
 
-- Opponent (review, docs/review/opponent.md): rung 4's bid estimate assumes the default game values and ignores `values`, `both_pass` and the doubling, which the view does not carry; the step from rung 2 to 3 is thin (+1.39 ± 0.59 Points per pair, stopped on the boundary); no test pins wasm `hint` returning null for a play outside `legal`.
+- Opponent (review, docs/review/opponent.md): rung 4's `bid_margin` is in fixed Points, so a doubled deal clears it more easily; the step from rung 2 to 3 is thin (+1.39 ± 0.59 Points per pair, stopped on the boundary).
 
 - Tutorial (review, docs/review/tutorial.md): the `bidding` page covers only both passing to a plain game; under `both_pass = throw_in` it needs the setting passed in (TABLE3D 6.2.2). The end-of-deal review's bullets need engine message keys and their strings (6.4).
 
