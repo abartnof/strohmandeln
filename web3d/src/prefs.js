@@ -156,15 +156,14 @@ export function urlOverrides(params) {
   return { seed: int("seed"), human: human === 0 || human === 1 ? human : null, noworker: params.has("noworker") };
 }
 
-// The argument of strohmandeln_new (docs/PROTOCOL.md). `level` is the dial in
-// integer steps from 0 (skill 1) to 6 (skill 4); the module carries it opaque
-// until the opponent package defines it. The seed is drawn if none is given.
+// The argument of strohmandeln_new (docs/PROTOCOL.md). `level` is the skill dial as it
+// is, 1 to 4 in half steps (docs/OPPONENT.md). The seed is drawn if none is given.
 export function sittingConfig(prefs, { seed, human } = {}) {
   const cfg = {
     seed: Number.isInteger(seed) ? seed : Math.floor(Math.random() * 2 ** 32),
     touren: prefs.touren,
     ...(human === 0 || human === 1 ? { human } : {}),
-    level: Math.round((prefs.skill - 1) * 2),
+    level: prefs.skill,
     settings: { both_pass: prefs.both_pass, values: prefs.values, ultimo: prefs.ultimo },
   };
   return cfg;

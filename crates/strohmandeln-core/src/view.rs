@@ -31,6 +31,9 @@ pub struct DealView {
     pub dealer: Seat,
     pub forehand: Seat,
     pub multiplier: u32,
+    /// The sitting's public settings that price a game (RULES 0, 3.4, 9.1).
+    pub values: Values,
+    pub both_pass: BothPass,
     pub declarer: Option<Seat>,
     pub playing: bool,
     pub trick_number: u32,
@@ -118,7 +121,9 @@ pub fn view(sitting: &Sitting, seat: Seat) -> View {
     }
 }
 
-fn deal_view(deal: &crate::deal::Deal, seat: Seat) -> DealView {
+/// What `seat` knows of `deal`, without a sitting around it (the opponent's
+/// measurements and the hidden-information tests play bare deals).
+pub fn deal_view(deal: &crate::deal::Deal, seat: Seat) -> DealView {
     let opp = seat.other();
     let announced_cards: Vec<Card> = [Honour::Trull, Honour::Kings]
         .into_iter()
@@ -154,6 +159,8 @@ fn deal_view(deal: &crate::deal::Deal, seat: Seat) -> DealView {
         dealer: deal.dealer(),
         forehand: deal.forehand(),
         multiplier: deal.multiplier(),
+        values: deal.settings().values,
+        both_pass: deal.settings().both_pass,
         declarer: deal.declarer(),
         playing: deal.is_playing(),
         trick_number: deal.trick_number(),
@@ -273,6 +280,15 @@ mod tests {
         let mut seen = HashSet::new();
         cards_in(&fake, &mut seen);
         assert!(seen.intersection(&hidden).count() > 0);
+    }
+
+    #[test]
+    fn a_bare_deal_gives_the_same_view_as_its_sitting() {
+        let s = Sitting::new(11, Settings::default(), 3).unwrap();
+        let deal = s.deal().unwrap();
+        for seat in Seat::BOTH {
+            assert_eq!(Some(deal_view(deal, seat)), view(&s, seat).deal);
+        }
     }
 
     #[test]
@@ -484,5 +500,27 @@ mod tests {
         assert!(!wire.contains("honour_forfeited"), "{wire}");
         // Nor can it be read from the filtered stream of the whole sitting.
         assert!(!filter_events(s.events(), other).iter().any(is_forfeit));
+    }
+}
+
+#[cfg(test)]
+mod settings_tests {
+    use super::*;
+    use crate::session::Sitting;
+
+    #[test]
+    fn the_deal_view_carries_the_public_settings() {
+        let settings = Settings {
+            values: Values::V123,
+            both_pass: BothPass::ThrowIn,
+            ..Settings::default()
+        };
+        let s = Sitting::new(2, settings, 3).unwrap();
+        let v = view(&s, Seat::A);
+        let d = v.deal.unwrap();
+        assert_eq!((d.values, d.both_pass), (Values::V123, BothPass::ThrowIn));
+        let json = serde_json::to_value(&d).unwrap();
+        assert_eq!(json["values"], "1/2/3");
+        assert_eq!(json["both_pass"], "throw_in");
     }
 }

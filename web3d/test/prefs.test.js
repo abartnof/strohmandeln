@@ -89,10 +89,11 @@ test("URL overrides are for tests", () => {
 
 test("the config for strohmandeln_new follows the protocol", () => {
   const cfg = sittingConfig({ ...DEFAULTS, both_pass: "throw_in", values: "1/2/3", ultimo: 2, touren: 6, skill: 4 }, { seed: 7, human: 1 });
-  assert.deepEqual(cfg, { seed: 7, touren: 6, human: 1, level: 6, settings: { both_pass: "throw_in", values: "1/2/3", ultimo: 2 } });
+  assert.deepEqual(cfg, { seed: 7, touren: 6, human: 1, level: 4, settings: { both_pass: "throw_in", values: "1/2/3", ultimo: 2 } });
   const no = sittingConfig({ ...DEFAULTS }, {});
   assert.ok(!("human" in no));
-  assert.equal(no.level, 4);
+  assert.equal(no.level, DEFAULTS.skill);
+  for (const skill of SKILLS) assert.equal(sittingConfig({ ...DEFAULTS, skill }, {}).level, skill, "the 1 to 4 dial goes to the module as it is");
   assert.ok(Number.isInteger(no.seed));
 });
 
