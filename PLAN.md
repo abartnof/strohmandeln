@@ -49,7 +49,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 
 ## Open
 
-- Phrase bank (review RK): Wander proverbs repeat across groups (one appears in 7), and the most frequent groups (pull-*, nothing-*, trick-*) need more wordings; the talk system needs cross-group repeat control, not only the per-group bag.
+- Talk (review, docs/review/talk-and-phrases.md): the table must send `count_close` before `game_scored`, or the result line is dropped (TABLE3D 5.2.3; needs a table test); a run at the third pull replaces that pull's line; `count-close` fires only at exactly 107 thirds, so it is rare. Resolved: the phrase bank's cross-group repeats (a saying in at most 2 groups) and the thin frequent groups (8 or more wordings each).
 
 - Kit (review CR-KIT, docs/review/kit-and-faces.md): textures for phones at 384 px or less, built lazily (54 at 512 px is ~105 MB with mipmaps); the HUD must be rebuilt to switch language; Cassino defaults left in the kit (HAND_H, end = 21, cards = 52); kit/node_modules is a symlink (unsafe on Windows without core.symlinks; root npm workspaces if that ever matters); tools/contact_sheet.mjs depends on ~/piquet/.venv.
 
