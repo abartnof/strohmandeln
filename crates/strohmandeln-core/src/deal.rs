@@ -46,6 +46,44 @@ pub struct Deal {
     phase: Phase,
     declarer: Option<Seat>,
     end: Option<DealEnd>,
+    /// The leader of the current trick.
+    leader: Seat,
+    /// Number of the current trick, 1 to 27.
+    trick: u32,
+    /// The card led to the current trick, with its player and source.
+    led: Option<(Seat, Card, Source)>,
+    /// The cards taken by each seat (RULES 7.2).
+    takes: [Vec<Card>; 2],
+    /// Completed tricks, in order.
+    log: Vec<TrickRecord>,
+}
+
+/// A completed trick: leader's play first.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TrickRecord {
+    pub leader: Seat,
+    pub cards: [Card; 2],
+    pub sources: [Source; 2],
+    pub winner: Seat,
+}
+
+/// The suit led (RULES 5.3).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Led {
+    Trump,
+    Suit(crate::cards::Suit),
+}
+
+impl Led {
+    fn of(card: Card) -> Led {
+        match card.suit() {
+            None => Led::Trump,
+            Some(s) => Led::Suit(s),
+        }
+    }
+    fn matches(self, card: Card) -> bool {
+        Led::of(card) == self
+    }
 }
 
 impl Deal {
@@ -80,7 +118,42 @@ impl Deal {
             phase: Phase::Bidding(forehand),
             declarer: None,
             end: None,
+            leader: forehand,
+            trick: 1,
+            led: None,
+            takes: [Vec::new(), Vec::new()],
+            log: Vec::new(),
         }
+    }
+
+    /// A deal in the playing phase with the given hands and packets, for
+    /// tests: `(cover, face-down cards top first)` per packet.
+    #[cfg(test)]
+    pub(crate) fn arranged(
+        dealer: Seat,
+        hands: [&[&str]; 2],
+        packets: [[(Option<&str>, &[&str]); 3]; 2],
+        settings: Settings,
+    ) -> Deal {
+        let code = |c: &str| Card::parse(c).unwrap_or_else(|| panic!("bad code {c}"));
+        let mut deal = Deal::new(&Card::all().collect::<Vec<_>>(), dealer, 1, settings);
+        for s in 0..2 {
+            deal.hands[s] = hands[s]
+                .iter()
+                .map(|c| HandCard {
+                    card: code(c),
+                    public: false,
+                })
+                .collect();
+            for (p, (cover, rest)) in packets[s].iter().enumerate() {
+                deal.packets[s][p] = Packet {
+                    cover: cover.map(code),
+                    rest: rest.iter().map(|c| code(c)).collect(),
+                };
+            }
+        }
+        deal.phase = Phase::Playing;
+        deal
     }
 
     pub fn dealer(&self) -> Seat {
@@ -147,15 +220,89 @@ impl Deal {
     pub fn to_move(&self) -> Option<Seat> {
         match self.phase {
             Phase::Bidding(s) => Some(s),
-            Phase::Playing => Some(self.forehand()),
+            Phase::Playing => Some(match self.led {
+                None => self.leader,
+                Some((s, _, _)) => s.other(),
+            }),
             Phase::Done => None,
         }
+    }
+
+    /// The number of the current trick (1 to 27).
+    pub fn trick_number(&self) -> u32 {
+        self.trick
+    }
+
+    pub fn leader(&self) -> Seat {
+        self.leader
+    }
+
+    pub fn tricks(&self) -> &[TrickRecord] {
+        &self.log
+    }
+
+    /// The card led to the open trick, if any.
+    pub fn led_card(&self) -> Option<(Seat, Card, Source)> {
+        self.led
+    }
+
+    pub fn take(&self, seat: Seat) -> &[Card] {
+        &self.takes[seat.index()]
+    }
+
+    /// Every card a seat may play to the current trick, with its source
+    /// (RULES 5.2 to 5.7).
+    pub fn legal_plays(&self, seat: Seat) -> Vec<(Card, Source)> {
+        let set = self.playable(seat);
+        let Some((_, led_card, _)) = self.led else {
+            return set;
+        };
+        if self.to_move() != Some(seat) {
+            return Vec::new();
+        }
+        let led = Led::of(led_card);
+        let following: Vec<_> = set
+            .iter()
+            .filter(|(c, _)| led.matches(*c))
+            .copied()
+            .collect();
+        if !following.is_empty() {
+            return following;
+        }
+        if led != Led::Trump {
+            let trumps: Vec<_> = set.iter().filter(|(c, _)| c.is_tarock()).copied().collect();
+            if !trumps.is_empty() {
+                return trumps;
+            }
+        }
+        set
+    }
+
+    /// Hand plus covers (RULES 5.2).
+    fn playable(&self, seat: Seat) -> Vec<(Card, Source)> {
+        let mut v: Vec<(Card, Source)> = self.hands[seat.index()]
+            .iter()
+            .map(|h| (h.card, Source::Hand))
+            .collect();
+        for (i, p) in self.packets[seat.index()].iter().enumerate() {
+            if let Some(c) = p.cover {
+                v.push((c, Source::Packet(i as u8 + 1)));
+            }
+        }
+        v
     }
 
     pub fn legal_actions(&self) -> Vec<Action> {
         match self.phase {
             Phase::Bidding(_) => vec![Action::Take, Action::Pass],
-            _ => Vec::new(),
+            Phase::Playing => {
+                let seat = self.to_move().expect("someone is to play");
+                self.legal_plays(seat)
+                    .into_iter()
+                    .map(|(card, _)| Action::play(card))
+                    .collect()
+            }
+            Phase::Done => Vec::new(),
         }
     }
 
@@ -176,10 +323,124 @@ impl Deal {
                 RefusalKind::WrongPhase,
                 "There is no extension to answer during a deal.",
             )),
-            Action::Announce { .. } | Action::Play { .. } => Err(Refusal::new(
+            Action::Announce { .. } => Err(Refusal::new(
+                RefusalKind::WrongPhase,
+                "There is nothing to announce yet.",
+            )),
+            Action::Play { card, .. } => self.play(seat, card, events),
+        }
+    }
+
+    fn play(&mut self, seat: Seat, card: Card, events: &mut Vec<Event>) -> Result<(), Refusal> {
+        if matches!(self.phase, Phase::Bidding(_)) {
+            return Err(Refusal::new(
                 RefusalKind::WrongPhase,
                 "Cards are not played until the bidding is settled.",
-            )),
+            ));
+        }
+        if self.to_move() != Some(seat) {
+            return Err(Refusal::new(
+                RefusalKind::NotYourTurn,
+                "It is not your turn to play.",
+            ));
+        }
+        let Some(&(_, source)) = self.playable(seat).iter().find(|(c, _)| *c == card) else {
+            return Err(Refusal::new(
+                RefusalKind::NotPlayable,
+                format!(
+                    "{} is not among your hand cards or your uncovered packet cards.",
+                    card.code()
+                ),
+            ));
+        };
+        let legal = self.legal_plays(seat);
+        if !legal.iter().any(|(c, _)| *c == card) {
+            return Err(self.follow_refusal(&legal, card));
+        }
+        // The card is played.
+        match source {
+            Source::Hand => {
+                let hand = &mut self.hands[seat.index()];
+                let at = hand.iter().position(|h| h.card == card).expect("held");
+                hand.remove(at);
+            }
+            Source::Packet(n) => {
+                self.packets[seat.index()][usize::from(n) - 1].cover = None;
+            }
+        }
+        events.push(Event::CardPlayed {
+            seat,
+            card,
+            source,
+            trick: self.trick,
+        });
+        match self.led {
+            None => self.led = Some((seat, card, source)),
+            Some((leader, led_card, led_source)) => {
+                self.led = None;
+                self.finish_trick(leader, [led_card, card], [led_source, source], events);
+            }
+        }
+        Ok(())
+    }
+
+    fn follow_refusal(&self, legal: &[(Card, Source)], tried: Card) -> Refusal {
+        let (_, led_card, _) = self.led.expect("a refusal needs a led card");
+        let list: Vec<String> = legal.iter().map(|(c, _)| c.code()).collect();
+        let list = list.join(", ");
+        let tried = tried.code();
+        if legal.iter().all(|(c, _)| Led::of(led_card).matches(*c)) {
+            let what = match Led::of(led_card) {
+                Led::Trump => "tarock".to_string(),
+                Led::Suit(s) => format!("{s:?}").to_lowercase(),
+            };
+            Refusal::new(
+                RefusalKind::MustFollowSuit,
+                format!("You must follow suit ({what} was led), so {tried} is not allowed; play one of: {list}."),
+            )
+        } else {
+            Refusal::new(
+                RefusalKind::MustTrump,
+                format!("You hold nothing of the suit led, so you must play a tarock; {tried} is not allowed; play one of: {list}."),
+            )
+        }
+    }
+
+    /// Trick over (RULES 7): winner takes both cards, then replacement (6.1).
+    fn finish_trick(
+        &mut self,
+        leader: Seat,
+        cards: [Card; 2],
+        sources: [Source; 2],
+        events: &mut Vec<Event>,
+    ) {
+        let winner = if trick_won_by_leader(cards[0], cards[1]) {
+            leader
+        } else {
+            leader.other()
+        };
+        self.takes[winner.index()].extend(cards);
+        events.push(Event::TrickWon {
+            winner,
+            cards,
+            trick: self.trick,
+        });
+        self.log.push(TrickRecord {
+            leader,
+            cards,
+            sources,
+            winner,
+        });
+        // Replacement, leader's packet first (RULES 6.3).
+        for (seat, source) in [(leader, sources[0]), (leader.other(), sources[1])] {
+            if let Source::Packet(n) = source {
+                self.turn_packet(seat, n, events);
+            }
+        }
+        self.trick += 1;
+        self.leader = winner;
+        if self.trick > 27 {
+            self.phase = Phase::Done;
         }
     }
 
@@ -270,6 +531,20 @@ impl Deal {
         }
     }
 }
+
+/// Whether the card led beats the card followed (RULES 7.1): the highest
+/// trump wins, else the highest card of the suit led; other suits never win.
+fn trick_won_by_leader(led: Card, followed: Card) -> bool {
+    match (led.is_tarock(), followed.is_tarock()) {
+        (true, true) => led.strength() > followed.strength(),
+        (true, false) => true,
+        (false, true) => false,
+        (false, false) => led.suit() != followed.suit() || led.strength() > followed.strength(),
+    }
+}
+
+#[cfg(test)]
+mod play_tests;
 
 #[cfg(test)]
 mod tests {
