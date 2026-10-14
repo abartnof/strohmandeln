@@ -5,3 +5,4 @@
 
 pub mod cards;
 pub mod rng;
+pub mod types;
