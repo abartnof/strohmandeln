@@ -57,4 +57,6 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 
 - Opponent (review, docs/review/opponent.md): rung 4's bid estimate assumes the default game values and ignores `values`, `both_pass` and the doubling, which the view does not carry; the step from rung 2 to 3 is thin (+1.39 ± 0.59 Points per pair, stopped on the boundary); no test pins wasm `hint` returning null for a play outside `legal`.
 
+- Tutorial (review, docs/review/tutorial.md): the `bidding` page covers only both passing to a plain game; under `both_pass = throw_in` it needs the setting passed in (TABLE3D 6.2.2). The end-of-deal review's bullets need engine message keys and their strings (6.4).
+
 - The currency on the slate (gulden and kreuzer, or krone). Note 13's dates for the krone are unsourced.
