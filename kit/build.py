@@ -104,7 +104,7 @@ def load_config(path: Path, root: Path = DEFAULT_ROOT) -> Config:
     path = Path(path)
     if not path.exists():
         sys.exit(f"no config at {path}: write one (see the top of kit/build.py)")
-    raw = tomllib.loads(path.read_text())
+    raw = tomllib.loads(path.read_text(encoding="utf-8"))
     here = path.resolve().parent
     for key in ("name", "entry", "template", "style", "output"):
         if key not in raw:
@@ -145,13 +145,38 @@ def parts(cfg: Config) -> list[tuple[str, Callable[[str], bool]]]:
     ]
 
 
+def run_tool(cmd: list[str], what: str, **kwargs) -> None:
+    """Run a tool; a failure ends the build with one line saying which tool, not a traceback."""
+    try:
+        subprocess.run(cmd, check=True, **kwargs)
+    except FileNotFoundError:
+        sys.exit(f"{what}: {cmd[0]} is not installed or not on PATH")
+    except subprocess.CalledProcessError as e:
+        sys.exit(f"{what} failed (exit {e.returncode}); its messages are above")
+
+
+def rust_env(cfg: Config) -> dict[str, str]:
+    """The environment of the wasm build. The module embeds the source paths of
+    panics (the repository, the cargo registry, the toolchain): remapped, so the
+    same sources give the same bytes in any checkout, user and home directory,
+    which `--check` relies on. (An explicit RUSTFLAGS in the caller's
+    environment is replaced, not extended, for the same reason.)"""
+    home = Path(os.environ.get("CARGO_HOME") or Path.home() / ".cargo")
+    flags = [f"--remap-path-prefix={cfg.root}=/strohmandeln", f"--remap-path-prefix={home}=/cargo"]
+    rustup = os.environ.get("RUSTUP_HOME") or str(Path.home() / ".rustup")
+    flags.append(f"--remap-path-prefix={rustup}=/rustup")
+    return {**os.environ, "RUSTFLAGS": " ".join(flags)}
+
+
 def build_wasm(cfg: Config) -> bytes:
     cargo = Path.home() / ".cargo" / "bin" / "cargo"
-    subprocess.run(
+    run_tool(
         [str(cargo) if cargo.exists() else "cargo", "build", "--release", "-q",
          "-p", cfg.crate, "--lib", "--target", "wasm32-unknown-unknown"],
-        cwd=cfg.root, check=True,
+        f"building {cfg.crate}", cwd=cfg.root, env=rust_env(cfg),
     )
+    if not cfg.wasm.exists():
+        sys.exit(f"cargo built {cfg.crate} but {cfg.wasm} is not there: is it a cdylib crate?")
     return cfg.wasm.read_bytes()
 
 
@@ -167,15 +192,15 @@ def bundle(cfg: Config, entry: Path) -> tuple[str, dict[str, int]]:
     env = {**os.environ, "NODE_PATH": str(cfg.here / "node_modules")}
     with tempfile.TemporaryDirectory() as tmp:
         out, meta = Path(tmp) / "app.js", Path(tmp) / "meta.json"
-        subprocess.run(
+        run_tool(
             [str(esbuild), str(entry), "--bundle", "--minify", "--format=iife",
              "--target=es2022", "--platform=browser", "--legal-comments=eof",
              # A tutorial's pages are Markdown, inlined as text.
              "--loader:.md=text",
              f"--outfile={out}", f"--metafile={meta}", "--log-level=warning"],
-            cwd=cfg.here, check=True, env=env,
+            f"bundling {shown(cfg, entry)}", cwd=cfg.here, env=env,
         )
-        code = out.read_text()
+        code = out.read_text(encoding="utf-8")
         outputs = json.loads(meta.read_text())["outputs"]
     table = parts(cfg)
     owned = {name: 0 for name, _ in table}
@@ -204,8 +229,10 @@ def asset_text(asset: Asset) -> str:
             return "{}"
         sys.exit(f"{asset.path} is missing (asset {asset.placeholder})")
     if asset.kind == "json":
-        return json.dumps(json.loads(asset.path.read_text()), separators=(",", ":"), ensure_ascii=False)
-    return asset.path.read_text()
+        # "</" is written "<\/" (the same JSON string), so no value can close its script.
+        text = json.dumps(json.loads(asset.path.read_text(encoding="utf-8")), separators=(",", ":"), ensure_ascii=False)
+        return text.replace("</", "<\\/")
+    return asset.path.read_text(encoding="utf-8")
 
 
 def fill(template: str, values: dict[str, str]) -> str:
@@ -252,7 +279,7 @@ def make_page(cfg: Config) -> tuple[str, list[tuple[str, int]], int]:
     """The page, and what its parts weigh."""
     code, owned = bundle(cfg, cfg.entry)
     # The kit's stylesheets first, so the game's own can override them.
-    style = "".join(p.read_text() for p in [*cfg.kit_styles, cfg.style])
+    style = "".join(p.read_text(encoding="utf-8") for p in [*cfg.kit_styles, cfg.style])
     values = {"/*APP*/": code, "/*STYLE*/": style}
     rows: list[tuple[str, int]] = []
     if cfg.crate:
@@ -269,10 +296,14 @@ def make_page(cfg: Config) -> tuple[str, list[tuple[str, int]], int]:
         text = asset_text(a)
         values[a.placeholder] = text
         rows.append((f"asset {a.placeholder} ({a.kind})", len(text.encode())))
-    for name, text in [("the bundle", code)] + [(k, v) for k, v in values.items() if k == cfg.worker_placeholder]:
-        if "</script" in text.lower():
-            sys.exit(f"{name} contains '</script', which would end the inline script early")
-    page = fill(cfg.template.read_text(), values)
+    for placeholder, text in values.items():
+        if placeholder == "__WASM_BASE64__":
+            continue
+        low = text.lower()
+        for closer in ("</script", "</style"):
+            if closer in low:
+                sys.exit(f"the text for {placeholder} contains '{closer}', which would end its inline element early")
+    page = fill(cfg.template.read_text(encoding="utf-8"), values)
     rows += list(owned.items())
     rows.append(("stylesheet", len(values["/*STYLE*/"].encode())))
     return page, rows, len(page.encode())
@@ -298,11 +329,11 @@ def main(argv=None) -> int:
     page, rows, size = make_page(cfg)
     rel = shown(cfg, cfg.output)
     if args.check:
-        if not cfg.output.exists() or cfg.output.read_text() != page:
+        if not cfg.output.exists() or cfg.output.read_bytes() != page.encode("utf-8"):
             print(f"{rel} is out of date: run python3 kit/build.py and commit it")
             return 1
         return 0
-    cfg.output.write_text(page)
+    cfg.output.write_bytes(page.encode("utf-8"))  # bytes: no CRLF on Windows
     rows.append(("page skeleton", size - sum(n for _, n in rows)))
     print(f"{rel}: {size:,} bytes")
     for name, n in rows:
