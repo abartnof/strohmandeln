@@ -304,7 +304,9 @@ Points**, paid by the other player to the one who took every trick [14 rule 25]
 [03-S12 "12 Points"][02 §3].
 
 10.2 A Valat **replaces** the game payment of 9.2 (no "wins" or "loses" value is
-added to the 12). Trull, four kings and Pagat ultimo (11, 12) are separate
+added to the 12).
+
+> Engine note: In a declared game the `game_scored` result of a Valat is `declarer_win` if the declarer took every trick and `declarer_loss` if the defender did; in a simple game it is `simple_win`. The threshold is not consulted. Trull, four kings and Pagat ultimo (11, 12) are separate
 payments and are added. [D: the sources give 12 and are silent on combination.]
 
 10.3 Ulmann and Bermann hold that a Valat never happens and pay nothing extra
@@ -343,6 +345,8 @@ unannounced honour, with "announce" and "do not announce". The engine rejects an
 announcement of an honour that is not held at that moment, so a false
 announcement cannot occur (Ulmann's penalty, [03-S14 Codex §33], has no case)
 [D].
+
+> Engine note: The engine offers both forms: `Announce` as an action of its own, and `Play` with an `announce` list that is validated whole before anything changes. "Do not announce" is not an action; playing a card of a held, unannounced honour forfeits it (11.5). A forfeited honour is refused with the key `honour-forfeited`.
 
 11.5 **Announcing is optional.** A player may keep an honour silent; it is then
 not paid [03-S12 "Auch kann man die Honneurs ... verschweigen, erhält sie aber
@@ -414,6 +418,8 @@ sei sie aufgenommen oder nicht, sammt allen Ansagen doppelt zählt"][02 A12]
 [14 D "the next deal"]. Ulmann (a draw counts nothing and does not double
 [03-S14]) is not followed [14 rule 18].
 
+> Engine note: "or thrown in" is read with 14.4: a throw-in is not a deal that consumes the doubling. The flag stays set through void deals and throw-ins and is cleared or set again only by a played deal.
+
 14.2 A doubling doubles every payment of that deal: game, honours, Pagat ultimo
 and Valat [03-S12 "sammt allen Ansagen"].
 
@@ -460,12 +466,16 @@ every payment of clauses 9 to 12 (doubled by 14.2) is credited to the Conto of t
 player who receives it. Nothing is subtracted from the payer's Conto. The
 **balance** is Conto(A) minus Conto(B).
 
+> Engine note: The Contos are gains only, so they do not themselves sum to zero; "nets to zero" holds of the settlement (15.8), where the payer loses exactly what the other gains, and of the balance (Conto(A) minus Conto(B) is the negative of Conto(B) minus Conto(A)). The property tests check that the credits of all deals sum to the Contos.
+
 15.6 **Extension.** When the announced Touren have been played the sitting may be
 extended only by the consent of both players [14 D][13-S3 "Nur mit allseitiger
 Zustimmung können die angesagten Touren erstreckt werden"]. An extension adds 3
 or 6 Touren (the choice of 15.2); the deal alternates on, and the Contos and a
 pending doubling carry over [D: no source gives the length]. The engine asks both
 players; one refusal ends the sitting.
+
+> Engine note: Seat 0 is asked first, then seat 1. A refusal by seat 0 ends the sitting at once and seat 1 is not asked.
 
 15.7 **The end.** After the last deal of the announced (or extended) Touren the
 engine emits `sitting_end`, drops a pending doubling (14.5) and settles (15.8).
