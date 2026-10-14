@@ -1,8 +1,8 @@
 # 08 - The physical cards: Industrie und Glück, period packs, own-art design cues
 
-Scope note. The coordinator changed the brief mid-run: the game will draw its OWN cards (no third-party art). The
-asset-sourcing findings are kept below (section 6) as a fallback and as reference, but the weight of this note is
-on what our own faces and back need: index conventions, names/nicknames, back designs, and the piquet/cassino
+Scope: the game draws its OWN cards (no third-party art). The
+asset-sourcing findings are kept below (section 6) as a fallback and as reference; the weight of this note is
+on what the project's own faces and back need: index conventions, names/nicknames, back designs, and the piquet/cassino
 "Jumbo Index" recipe. Images I downloaded are REFERENCE ONLY.
 
 All claims cite sources I actually fetched this session; ids `[08-Sn]` are listed at the end. "Own reading" =
@@ -89,7 +89,7 @@ Checked in this session:
 
 ## 7. What the earlier games used, and the Jumbo Index recipe
 
-- Piquet (CREDITS.md): faces from "Public domain complete playing card deck" by AustinGabriel64 (Commons, 27 July 2026, CC0); back "Reverso baraja española" by Germarquezm (CC BY-SA 3.0, adapted: adaptation also CC BY-SA 3.0); large-text faces are the project's own design (user's recipe, 1 Oct 2026), drawn in the browser (`web3d/src/faces.js`) with the device's bold UI font and symbol font, nothing bundled [08-S18]. Cassino and bezique reuse the same faces and back; cassino adds twelve courts cut from a c.1760 Sarton-family Spanish pack (Cary Collection scan via WOPC; public domain) [08-S18].
+- Piquet (CREDITS.md): faces from "Public domain complete playing card deck" by AustinGabriel64 (Commons, 27 July 2026, CC0); back "Reverso baraja española" by Germarquezm (CC BY-SA 3.0, adapted: adaptation also CC BY-SA 3.0); large-text faces are the project's own design (the maintainer's recipe, 1 Oct 2026), drawn in the browser (`web3d/src/faces.js`) with the device's bold UI font and symbol font, nothing bundled [08-S18]. Cassino and bezique reuse the same faces and back; cassino adds twelve courts cut from a c.1760 Sarton-family Spanish pack (Cary Collection scan via WOPC; public domain) [08-S18].
 - Recipe, commit d2507ac (1 Oct 2026, "The user's recipe for Jumbo Index card faces, as given"): Canvas 2D; card 7 x 9.8 units (5:7); rank in `-apple-system, system-ui, sans-serif` weight 700, size 2.2, cap-top at y=0.3; suit glyph via `"Apple Symbols","Segoe UI Symbol","Noto Sans Symbols 2"` size 2.8 placed by measured ink so the top is below the rank and its centre on the rank's axis; U+FE0E variation selector prevents emoji hearts/diamonds; the same corner repeated rotated 180 degrees; paper `#fbfaf6`, ink `#15171c`, red `#c8202c` [08-S18]. Later commits (7f92ebd, aa7e5cc, 2 Oct): the index is fitted to the strip of each card that a fanned hand shows (strip 1.46 units, margin 0.25), "make the font on each card just big enough to be seen in that space"; the 10 may run on under the next card; `isPhone` = coarse pointer and short side under 600 px; Settings "Large Text (Optimized for smaller screens)" defaults on phones [08-S18].
 - Adapting it to tarock: (1) trumps need Roman numerals up to XXI (up to five characters, "XVIII"), so the "10 runs under next card" trick will not do; fit the numeral width to the strip, or add a bold nickname beneath; (2) four-suit pips are 1-4 and 7-10, courts K Q C J; (3) the Sküs needs a non-numeral mark (star, harlequin glyph or "Sküs"); (4) trumps need a distinct colour from suits, e.g. a cream or tinted ground; (5) a fanned hand of 6 to 12 cards. Nicknames: I Pagat, II Uhu, III Kakadu, IIII Quapil, XXI Mond, Sküs [08-S16][08-S17].
 

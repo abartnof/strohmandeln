@@ -1,4 +1,4 @@
-# Coordinator follow-ups for the review pass
+# Follow-ups for the review pass
 
 - 02: Torberg, *Tante Jolesch* p. 217 (Rostopschin, Café Central) read only as quoted by Wikipedia; fetch the book itself.
 - 02: Sedlaczek's claim that Torberg misapplied "Rostopschin" to the whole game: likewise second-hand.
@@ -13,7 +13,7 @@
 - 09 + others: ANNO full text is JavaScript-only; Google Books quota-blocked. Find an ANNO back-end endpoint for the review pass.
 - 09: sources/09/ holds redirect stubs and 401 pages from the aborted run; prune before commit.
 - 08: real packs print IIII not IV; check how 9, 14, 19 are printed (VIIII? XIIII? XVIIII?) on the Volkskundemuseum scan (ÖMV/87529, CC PDM) before fixing our numeral style.
-- 08: real packs have no corner indices on suit cards; our faces add rank labels by the user's choice (not a period claim; say so in CREDITS/DESIGN).
+- 08: real packs have no corner indices on suit cards; our faces add rank labels by design choice (not a period claim; say so in CREDITS/DESIGN).
 - 08: "Pagatl" and "Valet" unsourced so far (05 may source them); no nicknames found for XVIII/XX.
 - 08: trump II shows an eagle yet is called Uhu (owl): verify on the scan; good tutor joke if true.
 - 08: Wien Museum CC0 claim unverified (only matters as reference).
@@ -35,11 +35,11 @@
 - 05d: Breslau 1821 card almanac describes two-hand "Tarok en deux" with 25 cards laid aside (cf. Mößler 1800/1805, de Gébelin 1781).
 - 05d: Rosenau's farce "Scüs, Mond und Pagat" (Vienna 1821) has a text (S4), unlike 05c's claim that only playbills survive: reconcile.
 - 05d: Dummett p. 453-459: "Kontra" answer to "Ich nehme auf" (Löw) — a rules-menu option.
-- RC: the git-submodule kit is weak (esbuild can't resolve `three` from kit/ — reproduced; worktrees don't populate submodules; cassino keeps evolving). Safer first step: a vendored kit/ dir with a stamp file recording its cassino commit. Decide with the user.
+- RC: the git-submodule kit is weak (esbuild can't resolve `three` from kit/ — reproduced; worktrees don't populate submodules; cassino keeps evolving). Safer first step: a vendored kit/ dir with a stamp file recording its cassino commit. Open: decide with the maintainer.
 - RC: Werner's last-card rule is conditional ("wenn es sich nicht zur Aufnahme eignet"); the "main rules fork" may be smaller than notes 02/06 said. RA asked to re-check 02.
 - RC: "Strohmandeln" in Haas 1824 (p. 109) is a bare name in a list, no rules.
 - RC: the 1887 Brno "(en deux)" may be Neunzehnerrufen, not the pile game.
-- COORD: saved 'spolrad_*.txt' (06/11) are 403 error bodies, not texts; the 1932 Štromandl section (p. 370) is unread. Fixed 06 page refs per RE.
+- Saved 'spolrad_*.txt' (06/11) are 403 error bodies, not texts; the 1932 Štromandl section (p. 370) is unread. Fixed 06 page refs per RE.
 - RB: Werner 2nd ed. "by 1891" (04, from an 1891 Sport-Zeitung review) vs Dummett's guess repeated in 06/07: settle after strand 12 item 6, then fix 06/07 and the synthesis.
 - RB: Nestroy quotes follow the 1890/91 Bonz edition; the modern Reclam text differs ("Pagat Ultimo Volat!" and "'s Glück in Pacht" absent). Cite the edition with every Nestroy line.
 - RB: harbour-tarock licence is NOASSERTION on GitHub (GPL per README only): borrow nothing, cite only.

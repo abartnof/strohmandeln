@@ -53,7 +53,7 @@ Confirmed exactly: commit counts 298/120/293; piquet and cassino public, bezique
 
 Gate script contents: matches the note's description (fmt, clippy `-D warnings`, test, then with `web3d/node_modules` present: wasm build, `node --test test/`, `build.py --check`, the "rebuilt but not staged" check; prints `gate: ok (N tests passed + M in Node)`).
 
-### Jumbo Index recipe (stated in note 08, verified here at the user's request)
+### Jumbo Index recipe (stated in note 08, verified here)
 `piquet` commit d2507ac (1 Oct 2026, 21:48 UTC) "The user's recipe for Jumbo Index card faces, as given" adds a file `foobar-edc6697e.js`; it contains exactly: card 7 x 9.8 units, paper `#fbfaf6`, ink `#15171c`, red `#c8202c`, rank font `-apple-system, system-ui, sans-serif` weight 700 size 2.2, `rankTop` 0.3, suit font `"Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2"` size 2.8 placed by measured ink, U+FE0E variation selector, corner repeated rotated 180 degrees. Commit 7f92ebd (strip 1.46 units of 7, margin 0.25) and aa7e5cc ("The 10 ... runs under the next card") exist and say what note 08 says. New observation for the build: cassino's `faces.js` has since dropped the turned corner ("a card on the screen is never read upside down ... the user's choice"), raised strip to 2.9 and kept the recipe's own sizes. Note 08's recipe summary ("the same corner repeated rotated 180 degrees") describes the original, not what the latest game ships. (Note 08 is not mine; not edited.)
 
 ## 4. Judgement on the recommended git-submodule "card-table-kit" (note 10 §6.4, not rewritten)

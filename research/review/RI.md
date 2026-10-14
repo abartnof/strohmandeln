@@ -6,7 +6,7 @@ Reviewer RI. Changes in the note are marked `[REVIEW RI]`. Scratch scripts in th
 
 Design A (an open "Abend" ended by announced Touren, slate, kreuzer settlement) stands as a reconstruction of multi-hand Tarock practice, but with four caveats: (1) no source applies the Touren rule, the Conto or the money to the two-hand game; (2) "1 Tour = 2 deals" is inference; (3) the ~15-deal sitting figure is not Strohmandl evidence; (4) the Ehrentour trigger in design C was wrong (fixed).
 
-## Answers to the maintainer's questions (a)-(e)
+## Open questions (a)-(e)
 
 (a) Deals per Tour with two players. Not stated anywhere for two players. Bermann p. 43-44: Touren "enden nach drei- oder sechsmaligem Herumspielen damit, daß dessen Nachbar zur Linken gibt"; Ulmann p. 19: "Bei Beginn der Touren hat jeder Partner nur noch drei-, respective sechsmal Karten zu geben". Each player deals once per Tour. Werner p. 129: in Strohmanndl "wechselt das Geben bei jedem nächsten Spiele ab", and Ulmann p. 70 after a pass "die Vorhand hat die nächste Donne" (the other player). So 1 Tour = 2 deals, 3 Touren = 6, 6 Touren = 12, is a sound inference, not a quotation. Mayr & Sedlaczek (sources/07d/ms_web_2002.html.txt lines 158, 276) say "die nächste Runde, bestehend aus 2 Spielen": a modern term, used only for the doubling, not for ending a sitting. It supports "2 deals = one cycle" but is not period.
 

@@ -85,6 +85,6 @@ RULES — these are strict:
    important, flagged, but never propose them as game lines).
 9. Do NOT create git commits and do not touch files other than your note and
    your sources subdirectory.
-10. Final reply to the coordinator: a ~250-word summary of the most important
+10. Final reply: a ~250-word summary of the most important
     and most surprising findings, plus the file path. The file is the real
     deliverable.

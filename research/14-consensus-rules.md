@@ -1,6 +1,6 @@
 # 14 — The canonical rules: a consensus of the sources
 
-Coordinator's note, 14 October 2026. The maintainer asked for **one canonical game based on a consensus of rules from legitimate sources**, not a set of presets. This note decides each rule by tallying the describers, and cites where each one says what.
+Decided (14 October 2026): **one canonical game based on a consensus of rules from legitimate sources**, not a set of presets. This note decides each rule by tallying the describers, and cites where each one says what.
 
 ## Method
 
@@ -26,7 +26,7 @@ Known only through Dummett's digest (1980, pp. 457–459) [02-S1], or through Wi
 
 [REVIEW RH] The dependence is not shown. Wikipedia's remark is about the scoring table ("Furr follows them, but omits the Quapil and adds ... Rostopschin"); it is Wikipedia's inference. Furr's own text (pp. 108-111) names no source for the game; his bibliography lists Dummett 1980, Dummett & McLeod, pagat.com and (for the Königrufen text) German Wikipedia, and nowhere Mayr & Sedlaczek; he says elsewhere that some rules were first built from "a Babel Fish translation of some internet sources found in German". Furr also departs from MS on the first lead (bidder leads), on Trull/Kings (none), on announcement, and adds big-win bonuses and Rostopschin. So "counted once" is a cautious convention, not a finding: F may share a source with MS, or not. Treating F as independent would not change any result in the tables below (it would move rule 7 to 5-3 and rule 19 to 3 of 5 schemes for 2/3/4). Also, D's "norm" is not an independent voice: it digests the same authors (Beck, Löw, Babsch, Piatnik) that are tallied separately, so "D and Beck" count as one scheme, as rule 19 already does.
 
-**Decision rule.** The majority of independent describers decides each rule. A tie goes to the period primary texts (W, U, Be): the maintainer's standing preference is for period sources over modern reviews. A rule found in only one or two modern sources is left out, as a regional or modern addition.
+**Decision rule.** The majority of independent describers decides each rule. A tie goes to the period primary texts (W, U, Be); period sources outrank modern reviews. A rule found in only one or two modern sources is left out, as a regional or modern addition.
 
 **Scope.** These are the rules of play and of scoring a single deal. How deals add up into a sitting, and how a sitting ends and is settled, is being researched as historical practice in note 13 and will be added from it.
 
@@ -43,7 +43,7 @@ Known only through Dummett's digest (1980, pp. 457–459) [02-S1], or through Wi
 | 7 | Both pass | the deal is played as a "simple" game (stille / einfache Partie) | W, MS(+F), Löw, Piatnik; U allows it "in manchen Kreisen"; [REVIEW RH] Unger (via D: primary form has no bidding, every deal played for 1 point) | U's usual practice, Beck (default; WP: "Alternatively, they can agree to play regardless, but at a lower game value"), Bamberger (throw in, second-hand via WP); Be describes both ways; MS also report that "Alte Tarockbücher" advise throwing in | 4–3 independent (W, MS, Löw, Piatnik vs U, Beck, Bamberger); 5–3 with Unger, whom D's wording leaves a little unclear. D: "Most writers recognise both alternative rules." [02 §1][03-S14] |
 | 8 | When the packets are laid | at the deal (follows from 7: every deal is played) | W, MS | U, Be (one mode), Beck: after a bid, because their both-pass rule throws in | consequence of 7; no effect on play, since the packets are face down either way |
 | 9 | Opening the packets | each player turns the top card of each packet, left to right; a tarock or king is shown to the opponent, then taken into the hand, and the next card turned; the first other card stays face up | all | — | unanimous [02 §1 A6–A7][03-S12][03-S13][03-S14] |
-| 10 | **Last card of a packet** | **[COORD decision after RH] taken into the hand whatever it is, after the opponent has seen it** | Beck and Babsch (via D), MS: the last card goes into the hand; D: "as soon as it is exposed" | W: a last card unfit for the hand "so lange offen liegen bleiben, bis es gelegentlich gespielt wird" (stays face up until played) | **3–1 on explicit statements** [RH]. U and Be have only general sentences about face-up suit cards that never mention the last card, so they are not counted; the earlier "3–3, tie to period" reading was the coordinator's overreach [review/RH.md]. Shown: every pulled card is shown before it is taken (unanimous, rule 9), and D says "exposed"; WP-Beck's "without being revealed" is the outlier [02 A4] |
+| 10 | **Last card of a packet** | **[decided after RH] taken into the hand whatever it is, after the opponent has seen it** | Beck and Babsch (via D), MS: the last card goes into the hand; D: "as soon as it is exposed" | W: a last card unfit for the hand "so lange offen liegen bleiben, bis es gelegentlich gespielt wird" (stays face up until played) | **3–1 on explicit statements** [RH]. U and Be have only general sentences about face-up suit cards that never mention the last card, so they are not counted; the earlier "3–3, tie to period" reading is withdrawn [review/RH.md]. Shown: every pulled card is shown before it is taken (unanimous, rule 9), and D says "exposed"; WP-Beck's "without being revealed" is the outlier [02 A4] |
 | 11 | Face-up packet cards | part of their owner's hand: may be led, followed with or trumped with | all | — | unanimous [02 A1][03-S12][03-S13] |
 | 12 | Following | follow suit from hand or face-up packet cards; with both available the choice is free; with neither, play a tarock (from hand or packet); with no tarock either, any card. No obligation to win the trick | W, U, Be, MS, F, Beck | — | unanimous [02 A2][03-S13 "steht die Wahl … frei"] |
 | 13 | Replacing a used packet card | after the trick is gathered, the card beneath is turned: a tarock or king is shown and taken (and the next turned); anything else becomes the new face-up card | W, U, MS, F | — | unanimous [02 A5][03-S12][03-S14] |
@@ -62,7 +62,7 @@ Known only through Dummett's digest (1980, pp. 457–459) [02-S1], or through Wi
 
 ## Settings: only where a split persisted through the game's life
 
-The maintainer's guidance: canonical rules by default; a setting only for "true differences in opinion that have persisted through this game", like whether aces are high in poker.
+Decided: canonical rules by default; a setting only where a true difference of opinion has persisted through the game's history.
 
 **The test.** A disagreement counts as persistent only if it is found both among the period describers (W, U, Be; to 1938) **and** among the modern ones (Löw, Beck, Babsch, Unger, MS, F; 1956 on). A split within one era only, or a shift from one era to the next, keeps the canonical rule and no setting.
 
@@ -71,9 +71,9 @@ The maintainer's guidance: canonical rules by default; a setting only for "true 
 | 7 | Both pass | yes: W plays on; U usually throws in ("in manchen Kreisen" plays on); Be gives both ways; (Unger 1923: no-bid game, every deal played) | yes: MS, Löw, Piatnik play on; Beck (default), Bamberger throw in | **setting**: *play the simple game* (default) / *throw in and redeal* |
 | 19 | Game values | yes: W 2/3/4; U 1/2/4 | yes: MS 2/3/4; Beck and D 1/2/3 | **setting**: *2/3/4* (default) / *1/2/3* / *1/2/4* |
 | 21 | Pagat ultimo value | yes: W 1; U "in manchen Kreisen … zwei Points"; Be a lost ultimo costs double; [REVIEW RH] Unger 5 (some 1) belongs here: his booklet is of 1923, before the 1938 cut-off | yes: MS, F, Beck 1; Beck "some 2–3" | **setting**: *1* (default) / *2* |
-| 10 | Last packet card | not demonstrated: only W states a rule; U and Be are silent on the last card | no: Beck, Babsch, MS all take it | **canonical (taken, shown), no setting** [COORD after RH] |
+| 10 | Last packet card | not demonstrated: only W states a rule; U and Be are silent on the last card | no: Beck, Babsch, MS all take it | **canonical (taken, shown), no setting** [decided after RH] |
 | 20 | Honours declared from hand | no: W, U, Be all declare | yes: MS quiet; Beck declares | modern only: **canonical, no setting** |
-| 25 | Valat | yes: W 12, Unger 12 (1923); U, Be none | [REVIEW RH] MS, F 12; Beck none in WP's table (second-hand dash). If that dash means "no Valat" the split persists and, by the test above, Valat would be a fourth setting (12 / none); unresolved, flagged for the coordinator | with Beck as "none": **setting by the stated test**; otherwise period only: canonical (12), no setting |
+| 25 | Valat | yes: W 12, Unger 12 (1923); U, Be none | [REVIEW RH] MS, F 12; Beck none in WP's table (second-hand dash). If that dash means "no Valat" the split persists and, by the test above, Valat would be a fourth setting (12 / none); unresolved | with Beck as "none": **setting by the stated test**; otherwise period only: canonical (12), no setting |
 | 14 | First lead | no | yes: Löw, F bidder | modern only: **canonical, no setting** |
 | 6 | Kontra | no | Löw alone | **no setting** |
 | 18 | After a draw: next deal or next round doubles | pending note 13 | | |
@@ -86,7 +86,7 @@ So the game ships **three settings**, each a genuine, long-lived difference of p
 
 ## What the consensus amounts to
 
-- It is very close to **Werner (1891)**, differing on one point: the last packet card is taken into the hand (rule 10), where Werner alone leaves a low one face up. [COORD after RH: the earlier wording claimed Ulmann and Bermann shared Werner's rule; they do not state it.]
+- It is very close to **Werner (1891)**, differing on one point: the last packet card is taken into the hand (rule 10), where Werner alone leaves a low one face up. [Correction after RH: Ulmann and Bermann do not state Werner's rule.]
 - It leaves out everything that appears only in the modern Viennese school: the bird bonuses, quiet honours and Rostopschin.
 - It keeps what the modern sources share with the period ones: 2/3/4 values, both-pass played on, and Valat 12.
 
@@ -96,25 +96,25 @@ So the game ships **three settings**, each a genuine, long-lived difference of p
 3. **Game values (rule 19)** is a plurality, not a majority.
 
 **Corrections to earlier notes:**
-- Note 02 called the last-card split "Werner versus everyone", and that framing stands: no other text states Werner's rule [RH]. (The coordinator's first draft of this note wrongly enlisted Ulmann and Bermann on his side.)
+- Note 02 called the last-card split "Werner versus everyone", and that framing stands: no other text states Werner's rule [RH]. Correction: Ulmann and Bermann do not state it.
 - The synthesis's §3.2 presets are superseded by this note.
 
 ## Still to settle
 - The unit of play, how a sitting ends, and settling up. These come from note 13 (strand 13, in progress). They also decide rule 18's "next deal or next round".
 - Whether the declarer's 4 points for a loss go to the opponent as a gain of 4 (Werner: "muß … 4 Points dem Gegner bezahlen", must pay the opponent 4 points) [03-S12]. Under a two-player money reckoning a payment is both a loss and a gain, so this needs no decision.
 
-## Decisions recorded by the coordinator
+## Decisions
 
 - **Rule 10, last packet card:** taken into the hand and shown, by 3–1 on explicit statements (see the row and review/RH.md). Not a setting.
 - **Rule 25, Valat:** stays 12, with no setting. Wikipedia's table shows a dash in Beck's column, which may mean "none" or only "not mentioned". That is too weak to establish a modern split, so the persistent-split test is not met [RH].
-- **The session (maintainer's decision, 14 October 2026):** design A of note 13, the period "Abend". The players announce the sitting's length as three or six Touren, a running account per player is kept on a slate, and the evening ends by settling up at a stated price per Point (Bermann 1894, Ulmann 1899, Werner 1891 [13]). The open details are being settled by reviewer RI: deals per Tour with two players, who calls the end, the price and currency, and whether a draw doubles the next deal or the next Tour. A race to a target score (design B) is not canonical.
+- **The session (decided by the maintainer, 14 October 2026):** design A of note 13, the period "Abend". The players announce the sitting's length as three or six Touren, a running account per player is kept on a slate, and the evening ends by settling up at a stated price per Point (Bermann 1894, Ulmann 1899, Werner 1891 [13]). Open details, settled below after RI: deals per Tour with two players, who calls the end, the price and currency, and whether a draw doubles the next deal or the next Tour. A race to a target score (design B) is not canonical.
 
-### The session in detail (coordinator, after reviewer RI)
+### The session in detail (after reviewer RI)
 
 Design A is a reconstruction. Every source for it describes multi-hand Tarock, and none applies the Touren rule, the running account or the settlement to Strohmandl [13][RI]. The game should say so wherever it explains the evening.
 
 - **Tour = 2 deals.** Bermann and Ulmann (p. 19) say each player deals once per Tour, and Werner (p. 129) has the deal alternate in Strohmanndl, so with two players a Tour is two deals. No source states this for two players. So "drei Touren" = 6 deals and "sechs Touren" = 12 [RI].
 - **Calling the length:** at the start, 3 or 6 Touren. At the end the sitting may be extended by mutual consent, the period custom [RI].
-- **After a 35:35 draw** the next deal counts double, with its announcements (Werner, our rules base; Beck as reported). Ulmann voids the game, and Mayr & Sedlaczek and Dummett double the next round [RI][02 A12].
+- **After a 35:35 draw** the next deal counts double, with its announcements (Werner, the rules base; Beck as reported). Ulmann voids the game, and Mayr & Sedlaczek and Dummett double the next round [RI][02 A12].
 - **Price per Point:** no Strohmandl stake is sourced. The slate converts Points at **2 kreuzer**, within the Tarock stake of "zwei bis drei Kreuzer der Point" reported for 1894 [13][RI]. It is labelled as Tarock evidence, not Strohmandl evidence. Currency details (gulden and kreuzer versus krone) are open, because note 13's dates for the krone are unsourced [RI].
 - **A doubling still pending when the sitting ends lapses.** No source covers this; it is a design choice, labelled [RI (e)].

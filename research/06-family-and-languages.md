@@ -34,7 +34,7 @@ OCR from Kramerius is raw OCR, lightly normalised by me where quoted [OCR]. Noth
    Ebner-Eschenbach (1893) [06-S7]. Adelung (1801) and Campe (1810) know only the straw-effigy / weakling senses [06-S8] [review: the saved Adelung text is cut off after "scarecrow"; only Campe's full entry was verified].  So the whist sense
    probably entered German in the 1830s, as a rendering of French *le mort* / English *dummy*; the straw-effigy and "front man" senses are much older (16th-17th c.) [06-S7; 06-S9].
 7. **Czech: the two-hand Tarok game was called "Štromandl", glossed "Taroky ve dvou"** in a 1932 Czech household-and-etiquette compendium
-   (contents p. 495 lists "Štromandl ... 370"; text p. 370, copyright-restricted online) [COORD: corrected from "contents entry p. 369" per review/RE.md 1.1] [06-S10]. Czech 1844 translators gloss English *whist dummy* as
+   (contents p. 495 lists "Štromandl ... 370"; text p. 370, copyright-restricted online) [corrected from "contents entry p. 369" per review/RE.md 1.1] [06-S10]. Czech 1844 translators gloss English *whist dummy* as
    "hastroš" - a footnote in the Czech Oliver Twist [06-S4c]. I found no Czech "slaměný panák" for the game or the dummy.
 8. **ANNO (Vienna press) shows the game played for small stakes by 1850** (Der Wanderer, 30 Nov 1850) [06-S17], and a pun-laden word by the 1850s-60s.
 9. **Cultural life, from Brno/Moravian press 1880-1906:** a "hausbackenes" game (1880), a café game with a Kibitz (1894), a punning
@@ -151,7 +151,7 @@ This pushes the Viennese-press attestation of the game to 1850 and confirms the 
 
 Sources addendum: **06-S17** `research/sources/anno/strohmandl.jsonl` (harvest via ANNO open search; docIds ANNO_wan18501130, ANNO_joe18560414, ANNO_joe18531024, ANNO_fig18580522, ANNO_ode18621130, ANNO_gem18640211, ANNO_joe18620719).
 
-## 5b. Non-German leads handed to strand 11 (per coordinator's scope change)
+## 5b. Non-German leads handed to strand 11 (scope change)
 - Hungarian: Widder Lajos (Dummett's "Dr Widder Lajos mentioned above"); Parlaghy Kálmán, *Kártyajátékok könyve* (Budapest 1888); Arcanum is Cloudflare-blocked from this shell; search terms "Strohmandli", "kétszemélyes tarokk", "szalmabáb" (zero hits in Pais, MEK).
 - Czech: *Společenský rádce pro všechny životní okolnosti* (1932) p. 370 "Štromandl. Taroky ve dvou" (403 online; needs reading-room or NDK access); Czech "hastroš" = dummy (Oliver Twist 1844 footnote); Kramerius queries with "Štrohmandl" only found a surname.
 - Slovene (dLib), Polish (Polona), Croatian, Slovak, Italian beyond Dummett's *Morto*/*Baronetti* (Primi Elementi e Regole del Giuoco de' Tarocchi, Turin 1787): none searched usefully.
@@ -214,7 +214,7 @@ Sources addendum: **06-S17** `research/sources/anno/strohmandl.jsonl` (harvest v
 - **06-S7** Deutsches Wörterbuch (Grimm), vol. 19 col. 1671, s.v. *strohmann* (S52530), via Trier open API https://api.woerterbuchnetz.de/open-api/dictionaries/DWB/ (kwic reconstruction): `dict/dwb_strohmann.txt`, `dict/dwb_fulltext_strohmann.json`.
 - **06-S8** Adelung, *Grammatisch-kritisches Wörterbuch* vol. 4, col. 454 (S07004) `dict/adelung_strohmann.txt`; Campe, *Wörterbuch der deutschen Sprache* vol. 4, p. 718a (S20059) `dict/campe_strohmann.txt` (both via Trier API).
 - **06-S9** Wolfgang Pfeifer, *Etymologisches Wörterbuch des Deutschen*, via DWDS https://www.dwds.de/wb/Strohmann (`dict/dwds_Strohmann.html`).
-- **06-S10** *Společenský rádce pro všechny životní okolnosti*, 1932 (Kramerius, root uuid 29b474c0-d1b6-11ef-a675-0050568d319f; TOC page (p. 495) 4e66db7f-943c-4c63-9bd3-acd31184dcde "Štromandl ... 370" [COORD: was "369"; the saved .txt files for both uuids are 403 error bodies, so this rests on Kramerius metadata per review/RE.md]; page uuid 389ef0b2-df3a-4f74-86a9-6834b4dc2558, snippet "Štromandl. Taroky ve dvou"; full page text HTTP 403) `cz/spolecensky_radce_1932_hl.txt`. [OCR snippet]
+- **06-S10** *Společenský rádce pro všechny životní okolnosti*, 1932 (Kramerius, root uuid 29b474c0-d1b6-11ef-a675-0050568d319f; TOC page (p. 495) 4e66db7f-943c-4c63-9bd3-acd31184dcde "Štromandl ... 370" [corrected from "369"; the saved .txt files for both uuids are 403 error bodies, so this rests on Kramerius metadata per review/RE.md]; page uuid 389ef0b2-df3a-4f74-86a9-6834b4dc2558, snippet "Štromandl. Taroky ve dvou"; full page text HTTP 403) `cz/spolecensky_radce_1932_hl.txt`. [OCR snippet]
 - **06-S11** Schmeller, *Bayerisches Wörterbuch*, 3rd part (R and S), Stuttgart/Tübingen 1836 (Internet Archive `bub_gb_Trk_AAAAcAAJ`), entry "Das Strö", `dict/schmeller/bub_gb_Trk_AAAAcAAJ.txt` lines 38754-38800; also 4th part `bub_gb_S5hCAAAAcAAJ.txt` (not searched in detail). [OCR]
 - **06-S12** *Meyers Konversations-Lexikon* vol. 20, p. 580, s.v. *Whist* (Trier API, sigle Meyers, W02794) `dict/meyers_whist.txt`; **06-S12b** de.wikipedia "Whist" (text derived from Meyers 1908) `dict/bridge/de_Whist.txt` (secondary).
 - **06-S13** Wiktionary raw (secondary/UGC): `dict/wikt/fr_mort.txt`, `fr_hommedepaille.txt`; **06-S13b** `dict/wikt/en_dummy.txt` (translation table "bridge: the partner of the winning bidder").
