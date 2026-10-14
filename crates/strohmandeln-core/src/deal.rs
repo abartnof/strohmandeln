@@ -10,7 +10,7 @@ use std::collections::VecDeque;
 
 /// A card in a hand, and whether it is publicly known (RULES 13.4): a pulled
 /// card is public, a dealt card private.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub struct HandCard {
     pub card: Card,
     pub public: bool,
@@ -95,7 +95,7 @@ pub struct Deal {
 }
 
 /// A completed trick: leader's play first.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub struct TrickRecord {
     pub leader: Seat,
     pub cards: [Card; 2],

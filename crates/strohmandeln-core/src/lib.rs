@@ -8,3 +8,4 @@ pub mod deal;
 pub mod rng;
 pub mod session;
 pub mod types;
+pub mod view;
