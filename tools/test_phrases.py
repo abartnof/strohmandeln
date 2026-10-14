@@ -286,6 +286,18 @@ class Signatures(unittest.TestCase):
                 self.assertGreaterEqual(len(by[gid]), 8, gid)
 
 
+class Citations(unittest.TestCase):
+    """Wordings checked against the downloaded texts (docs/review/talk-and-phrases.md)."""
+
+    def german(self, src):
+        return [w[2] for _, _, ways in GROUPS for w in ways if w[1] == src]
+
+    def test_the_volksblatt_line_keeps_the_sources_verb(self):
+        # Das kleine Volksblatt, 24 May 1934: "interessiert der Mond nur, wann er in Gsellschaft ..."
+        for t in self.german("Gs"):
+            self.assertIn("interessiert", t)
+
+
 class Generated(unittest.TestCase):
     def test_generated_files_are_current(self):
         for path, text in ((phrases.DOC, phrases.document()), (phrases.WORDS, phrases.words_json())):

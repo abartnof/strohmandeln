@@ -325,7 +325,7 @@ card_pulled: the Mond (XXI) pulled
 | Good moon, you come so quietly. | Guter Mond, du gehst so stille. | Ra [05c LIT-S8] |
 | Keep the Mond back while the Sküs is unknown. | Den Mond nicht früh legen, solange man nicht weiß, wo der Skis steht. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | Only the Sküs can trump the Mond. | Nur der Sküs kann den Mond stechen. | Fh [05c LIT-S60] |
-| The Mond counts only with Sküs and Pagat. | Der Mond zählt nur in G'sellschaft vom Gstieß und Pagat. | Gs [05c LIT-S54] |
+| The Mond matters only with Sküs and Pagat. | Der Mond interessiert nur in G'sellschaft vom Gstieß und Pagat. | Gs [05c LIT-S54] |
 
 ### `pull-pagat`
 
@@ -444,7 +444,7 @@ trick_won: a good trick for the player
 | Struck, the buck: why stray into the cabbage? | Gestochen der Bock, warum geht er ins Kraut. | Wa, Bock [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The lesser beat the greater these days. | Die geringern stechen die höhern. | Wa, Spielen 22 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | You know what is trump. | Sie wissen, was Trumpf ist. | Wa, Wissen 541 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Early winners, late losers, they say. | Die ersten Hunde ertränkt man gern. | Wa, Hund [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Early winners, late losers, they say. | Die ersten Hunde ertränkt man gern. | Wa, Hund 301 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 
 ### `trick-bad-mine`
 
@@ -474,7 +474,7 @@ trick_won: a bad trick for the player
 | I gave that one a trump. | Den hab i an Trumpf geben. | Id [05b LEX-S33][05b LEX-S16] |
 | A kind heart wins no game. | Mit einem guten Herzen gewinnt man kein Spiel. | Wa, Herz 239 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Count the tarocks diligently. | Zählen S' fleißig die Tarok! | Ro [05d POLY-S4] |
-| A trick lost is not a game lost. | Ein Stich verloren ist nicht das Spiel verloren. | T |
+| A trick lost is not a game lost. | Ein verlorener Stich ist noch kein verlorenes Spiel. | T |
 
 ### `sku-played`
 
@@ -714,7 +714,7 @@ game_scored: the player loses the deal
 | Mine this time. Next one may be yours. | Diesmal meines. Das nächste vielleicht Ihres. | T |
 | A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | You play as well; the luck was mine. | Sie spielen ebenso gut; das Glück war meines. | Cr [04-S26] |
-| The leaf can turn yet. | Die Karte hat sich gewendet. | Wa, Karte 44 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| The card has turned. | Die Karte hat sich gewendet. | Wa, Karte 44 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Mine this time; the evening is long. | Diesmal meines; der Abend ist lang. | T |
 
 ### `draw`

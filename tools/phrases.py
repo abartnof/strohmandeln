@@ -354,7 +354,7 @@ def phrase_groups():
         ('Good moon, you come so quietly.', 'Ra', 'Guter Mond, du gehst so stille.'),
         ('Keep the Mond back while the Sküs is unknown.', 'Wn', 'Den Mond nicht früh legen, solange man nicht weiß, wo der Skis steht.'),
         ('Only the Sküs can trump the Mond.', 'Fh', 'Nur der Sküs kann den Mond stechen.'),
-        ('The Mond counts only with Sküs and Pagat.', 'Gs', "Der Mond zählt nur in G'sellschaft vom Gstieß und Pagat."))
+        ('The Mond matters only with Sküs and Pagat.', 'Gs', "Der Mond interessiert nur in G'sellschaft vom Gstieß und Pagat."))
     add('pull-pagat', 'card_pulled: the Pagat (I) pulled',
         ('The Pagat! A little trump, a great hope.', 'T', 'Der Pagat! Ein kleiner Tarok, eine große Hoffnung.'),
         ('Pagat out of the straw.', 'T', 'Pagat aus dem Stroh.'),
@@ -425,7 +425,7 @@ def phrase_groups():
         ('Struck, the buck: why stray into the cabbage?', 'Wa', 'Gestochen der Bock, warum geht er ins Kraut.', 'Bock'),
         ('The lesser beat the greater these days.', 'Wa', 'Die geringern stechen die höhern.', 'Spielen 22'),
         ('You know what is trump.', 'Wa', 'Sie wissen, was Trumpf ist.', 'Wissen 541'),
-        ('Early winners, late losers, they say.', 'Wa', 'Die ersten Hunde ertränkt man gern.', 'Hund'))
+        ('Early winners, late losers, they say.', 'Wa', 'Die ersten Hunde ertränkt man gern.', 'Hund 301'))
     add('trick-bad-mine', 'trick_won: a bad trick for the opponent, points lost',
         ('The leaf has turned.', 'Wa', 'Das Blatt hat sich gewandt.', 'Blatt 29'),
         ('Not won till the cards are out.', 'Wa', 'So lange die Karten auf dem Tisch liegen, ist das Spiel nicht gewonnen.', 'Karte 89'),
@@ -443,7 +443,7 @@ def phrase_groups():
         ('I gave that one a trump.', 'Id', 'Den hab i an Trumpf geben.'),
         ('A kind heart wins no game.', 'Wa', 'Mit einem guten Herzen gewinnt man kein Spiel.', 'Herz 239'),
         ('Count the tarocks diligently.', 'Ro', "Zählen S' fleißig die Tarok!"),
-        ('A trick lost is not a game lost.', 'T', 'Ein Stich verloren ist nicht das Spiel verloren.'))
+        ('A trick lost is not a game lost.', 'T', 'Ein verlorener Stich ist noch kein verlorenes Spiel.'))
     add('sku-played', 'card_played: the Sküs played (either side)',
         ('Sküs: I excuse myself!', 'Me', 'Ich skisiere mich!'),
         ('Pardon me: the Sküs.', 'Ha', 'Pardon, ich skisire mich.'),
@@ -563,7 +563,7 @@ def phrase_groups():
         ('Mine this time. Next one may be yours.', 'T', 'Diesmal meines. Das nächste vielleicht Ihres.'),
         ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
         ('You play as well; the luck was mine.', 'Cr', 'Sie spielen ebenso gut; das Glück war meines.'),
-        ('The leaf can turn yet.', 'Wa', 'Die Karte hat sich gewendet.', 'Karte 44'),
+        ('The card has turned.', 'Wa', 'Die Karte hat sich gewendet.', 'Karte 44'),
         ('Mine this time; the evening is long.', 'T', 'Diesmal meines; der Abend ist lang.'))
     add('draw', 'game_scored, draw: 35 and 35, nothing decided',
         ('A draw. The next deal counts double.', 'Wn', 'Unentschieden. Das nächste Spiel zählt doppelt.'),
