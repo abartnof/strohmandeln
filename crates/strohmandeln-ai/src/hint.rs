@@ -160,6 +160,22 @@ mod tests {
     }
 
     #[test]
+    fn docs_messages_md_gives_every_hint_key_in_english_and_german() {
+        let doc = include_str!("../../../docs/MESSAGES.md");
+        let section = doc.split("\n## Hint reasons").nth(1).expect("section");
+        let rows: Vec<Vec<&str>> = section
+            .lines()
+            .filter(|l| l.starts_with("| `"))
+            .map(|l| l.split('|').map(str::trim).collect())
+            .collect();
+        let documented: Vec<&str> = rows.iter().map(|r| r[1].trim_matches('`')).collect();
+        assert_eq!(documented, KEYS, "same keys, same order");
+        for r in &rows {
+            assert!(!r[2].is_empty() && !r[3].is_empty(), "{}", r[1]);
+        }
+    }
+
+    #[test]
     fn the_keys_are_distinct_and_kebab_case() {
         let set: std::collections::HashSet<_> = KEYS.iter().collect();
         assert_eq!(set.len(), KEYS.len());
