@@ -9,6 +9,7 @@
 #   - python3 -m unittest over kit/test                   (the kit's build.py tests)
 #   - the phrase bank's tests and tools/phrases.py --check (tools/)
 #   - kit/build.py --check                                (the game's page)
+#   - the wasm module built, then crates/strohmandeln-wasm/tests/smoke.mjs (web3d/node_modules)
 # Unlike cassino's, it does not skip the Node tests when web3d/node_modules is
 # missing: the kit imports `three` from there, so a missing install is a
 # failure that says how to fix it (kit/README.md).
@@ -73,6 +74,21 @@ if [ ${#dirs[@]} -gt 0 ]; then
   parts+=("$node_passed in Node")
 else
   parts+=("no node tests")
+fi
+
+# ---- The wasm module, in Node: golden sittings, random sittings, no leaks -
+# Built first so that the smoke test never runs against an old module. Needs
+# web3d/node_modules like the other Node tests (the kit's engine.js loads it).
+if [ -d crates/strohmandeln-wasm ] && [ -d web3d/node_modules ]; then
+  if ! out=$(cargo build --quiet --release -p strohmandeln-wasm --lib --target wasm32-unknown-unknown 2>&1); then
+    echo "$out" | head -20 >&2
+    fail "building the wasm module"
+  fi
+  if ! smoke_out=$(node crates/strohmandeln-wasm/tests/smoke.mjs 2 2>&1); then
+    echo "$smoke_out" | tail -15 >&2
+    fail "wasm smoke test"
+  fi
+  parts+=("wasm smoke ok")
 fi
 
 # ---- Python: the kit's build.py ----------------------------------------

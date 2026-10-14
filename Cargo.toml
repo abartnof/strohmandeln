@@ -1,6 +1,10 @@
 [workspace]
 resolver = "2"
-members = ["crates/strohmandeln-core"]
+members = [
+    "crates/strohmandeln-core",
+    "crates/strohmandeln-wasm",
+    "crates/strohmandeln-cli",
+]
 
 [workspace.package]
 version = "0.1.0"
