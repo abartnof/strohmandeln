@@ -29,6 +29,12 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
   every phrase, interface string and tutorial page has both languages; card
   faces swap court labels (K Q C J / K D C B) with the language.
 
+- 14 Oct 2026: the score HUD and the count's per-card popups are in the kit
+  (`kit/js/scoring.js`, `hud.js`, `count.js`, `kit/css/hud.css`), generic and
+  parameterised by a game definition, because several games in the series score
+  by counting cards. Strohmandeln supplies its categories, thirds format and
+  36 of 70 (`kit/README.md`, "The score HUD").
+
 ## Work packages
 
 | # | Package | Depends on | State |
