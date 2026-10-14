@@ -146,8 +146,11 @@ impl Opponent {
 }
 
 impl Player for Opponent {
-    fn choose(&mut self, view: &View) -> Action {
-        self.decide(view)
+    fn choose(&mut self, view: &View) -> Option<Action> {
+        if view.legal_actions.is_empty() {
+            return None;
+        }
+        Some(self.decide(view))
     }
 }
 
