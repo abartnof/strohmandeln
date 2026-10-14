@@ -207,6 +207,9 @@ impl Table {
             m.insert("phase".into(), json!(self.phase()));
             m.insert("human".into(), json!(self.human));
             m.insert("level".into(), json!(self.level));
+            // `legal` replaces the view's own list: the same actions, with the
+            // source of each playable card.
+            m.remove("legal_actions");
             m.insert("legal".into(), Value::Array(self.legal()));
         }
         v
