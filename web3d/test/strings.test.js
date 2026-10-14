@@ -144,3 +144,19 @@ test("the spec's refusal wording is used", () => {
   assert.equal(t("refusal.not-held", { honour: "die Troule" }), "Sie haben die Troule nicht.");
   setLang("en");
 });
+
+test("the settlement line says what is owed, not that it was paid", () => {
+  assert.ok(!/bezahlt/i.test(TABLE["slate.owed"].de), TABLE["slate.owed"].de);
+});
+
+test("the both-pass note names the sources of the rules (research/14 rule 7)", () => {
+  const note = TABLE["settings.both_pass.note"];
+  for (const lang of ["en", "de"]) for (const who of ["Werner", "Mayr", "Sedlaczek", "Ulmann", "Beck"]) assert.ok(note[lang].includes(who), `${lang} ${who}`);
+});
+
+test("the declarer is the Aufnehmer in German, as in the books", () => {
+  for (const k of ["banner.declarer-win", "banner.declarer-loss", "hud.declarer", "sr.game_scored.declarer_win", "sr.game_scored.declarer_loss"]) {
+    assert.ok(/Aufnehmer/.test(TABLE[k].de), k);
+    assert.ok(!/Ich nehme auf/.test(TABLE[k].de), k);
+  }
+});
