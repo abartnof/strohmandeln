@@ -1,0 +1,10 @@
+[package]
+name = "strohmandeln-ai"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "The computer opponent for Strohmandeln: a ladder of four rungs, the tutor's hint, and the tournament that measures them."
+
+[dependencies]
+strohmandeln-core = { path = "../strohmandeln-core" }

@@ -528,7 +528,10 @@ mod tests {
 
     #[test]
     fn docs_messages_md_lists_exactly_the_keys_the_code_can_emit() {
+        // The refusal and setup tables only: the hint reasons below them are
+        // the AI crate's (`hint::KEYS`, tested there).
         let doc = include_str!("../../../docs/MESSAGES.md");
+        let doc = doc.split("\n## Hint reasons").next().unwrap();
         let documented: std::collections::BTreeSet<&str> = doc
             .lines()
             .filter_map(|l| l.strip_prefix("| `"))

@@ -153,6 +153,31 @@ w.strohmandeln_export();
 const saved = out();
 assert.equal(w.strohmandeln_import(write(JSON.stringify(saved))), 1);
 assert.deepEqual(out().state, before);
-w.strohmandeln_hint();
-assert.equal(out().hint, null);
-console.log("export/import restores the state; the hint is a stub");
+console.log("export/import restores the state");
+
+// 4. The hint (level-4 search): a legal move with a reason key, on the human's turn only.
+create({ seed: 78, touren: 3, human: 0, level: 3.5 });
+let hinted = 0;
+let worst = 0;
+for (let n = 0; n < 60; n++) {
+  w.strohmandeln_render();
+  const s = out().state;
+  if (s.prompt === "opponent") {
+    w.strohmandeln_hint();
+    assert.equal(out().hint, null);
+    assert.equal(out().reason, "not-your-turn");
+    assert.equal(w.strohmandeln_step(), 1);
+  } else if (s.prompt === "you") {
+    const t0 = performance.now();
+    w.strohmandeln_hint();
+    worst = Math.max(worst, performance.now() - t0);
+    const h = out();
+    assert.ok(s.legal.some((a) => JSON.stringify(a) === JSON.stringify(h.hint)), JSON.stringify(h));
+    assert.match(h.reason, /^[a-z]+(-[a-z]+)*$/);
+    assert.equal(typeof h.params, "object");
+    hinted++;
+    assert.ok(send(wire(h.hint)), "the hint is playable");
+  } else break;
+}
+assert.ok(hinted > 10, "several hints were taken");
+console.log(`${hinted} hints, each legal and playable (slowest ${worst.toFixed(0)} ms)`);

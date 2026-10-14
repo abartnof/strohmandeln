@@ -118,7 +118,9 @@ pub fn view(sitting: &Sitting, seat: Seat) -> View {
     }
 }
 
-fn deal_view(deal: &crate::deal::Deal, seat: Seat) -> DealView {
+/// What `seat` knows of `deal`, without a sitting around it (the opponent's
+/// measurements and the hidden-information tests play bare deals).
+pub fn deal_view(deal: &crate::deal::Deal, seat: Seat) -> DealView {
     let opp = seat.other();
     let announced_cards: Vec<Card> = [Honour::Trull, Honour::Kings]
         .into_iter()
@@ -273,6 +275,15 @@ mod tests {
         let mut seen = HashSet::new();
         cards_in(&fake, &mut seen);
         assert!(seen.intersection(&hidden).count() > 0);
+    }
+
+    #[test]
+    fn a_bare_deal_gives_the_same_view_as_its_sitting() {
+        let s = Sitting::new(11, Settings::default(), 3).unwrap();
+        let deal = s.deal().unwrap();
+        for seat in Seat::BOTH {
+            assert_eq!(Some(deal_view(deal, seat)), view(&s, seat).deal);
+        }
     }
 
     #[test]

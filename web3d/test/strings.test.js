@@ -7,10 +7,10 @@ import { createStrings, t, tn, getLang, setLang, onLang, thirds, kreuzer, signed
 
 const TABLE = JSON.parse(readFileSync(new URL("../strings.json", import.meta.url), "utf8"));
 const doc = (p) => readFileSync(new URL(`../../docs/${p}`, import.meta.url), "utf8");
-// MESSAGES.md has two tables: refusals, then (after "Starting or replaying") setup errors.
+// MESSAGES.md has two tables: refusals, then (after "Starting or replaying") setup errors, before the hint reasons.
 const messagesTable = (which) => {
-  const [refusals, errors] = doc("MESSAGES.md").split("Starting or replaying");
-  return which === "refusals" ? refusals : errors;
+  const [refusals, rest] = doc("MESSAGES.md").split("Starting or replaying");
+  return which === "refusals" ? refusals : rest.split("\n## Hint reasons")[0];
 };
 const slots = (s) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 

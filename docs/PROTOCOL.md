@@ -39,7 +39,7 @@ Text goes in and out through linear memory, as in Cassino. `kit/js/engine.js`
 | `strohmandeln_legal()` | | | `{protocol, legal}` |
 | `strohmandeln_export()` | | | the saved sitting |
 | `strohmandeln_import(len)` | saved JSON in the buffer | 1 restored, 0 not (old sitting stays) | opening reply, or an error |
-| `strohmandeln_hint()` | | | `{protocol, hint: null, reason: "unavailable"}` (a stub until the opponent work package fills it) |
+| `strohmandeln_hint()` | | | `{protocol, hint, reason, params}`: the tutor's move (one of `legal`, same shape) and why; on the opponent's turn or after the end `hint` is `null` and `reason` `"not-your-turn"`. Does not move the game. See below |
 | `strohmandeln_audit()` | | | `{hidden: [codes]}`: test aid, see below |
 
 To call: `at = alloc(n); copy the UTF-8 bytes to memory[at..at+n]; send(n)`,
@@ -67,7 +67,7 @@ alphabetical order.
 | `seed` | integer 0 to 2^53 (a u64 in the module); the deals and the first dealer follow from it |
 | `touren` | `3` or `6` (15.2) |
 | `human` | the seat the human takes, `0` (default) or `1` |
-| `level` | the opponent's level, an opaque integer for now (default 0); the module carries it through export and import |
+| `level` | the opponent's level, 1 to 4 in half steps (default 1; outside the range is clamped, a fraction rounds to the nearest half). `docs/OPPONENT.md`; the module carries it through export and import |
 | `settings` | optional; any of `both_pass` (`"play"`, `"throw_in"`), `values` (`"2/3/4"`, `"1/2/3"`, `"1/2/4"`), `ultimo` (`1`, `2`); missing keys take the defaults of RULES 0 |
 
 Errors (return 0; output `{"ok":false,"error":"bad-config", ...}` with either
@@ -134,7 +134,7 @@ parts are shown in the next section):
 | `legal` | the human's legal actions, empty unless `prompt` is `"you"` (below) |
 | `deal` | the deal in progress, or `null` when there is none |
 | `events` | the events of the deal in progress, filtered; lets a client rebuild after a reload |
-| `level` | the opponent's level as created |
+| `level` | the opponent's level after clamping to half steps (a number, e.g. `2.5`) |
 
 ### `deal`
 
@@ -319,3 +319,20 @@ action, declining any extension; the opponent is the default. A change to
 anything on the wire, or to the engine's play, shows as a mismatch in
 `cargo test -p strohmandeln-wasm --test golden` and in `smoke.mjs`; re-record
 with `UPDATE_GOLDEN=1` once the change is intended.
+
+## The hint
+
+`strohmandeln_hint` answers for the human's seat at the top rung (level 4,
+whole), whatever the opponent's level. It is a function of the position, so
+asking twice gives the same answer, and asking changes nothing.
+
+```json
+{"protocol": 1, "hint": {"action": "play", "card": "T21", "source": "hand"},
+ "reason": "hold-pagat", "params": {}}
+```
+
+`hint` is one of the entries of `state.legal` (send its card alone, as for any
+play). `reason` is a message key from the hint table in `docs/MESSAGES.md`;
+`params` is an object reserved for the key's parameters (none of the keys has
+any yet). The opponent's `step` and the hint share their rules: a hint is what
+the level-4 opponent would play.
