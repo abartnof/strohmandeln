@@ -30,6 +30,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
   parameterised by a game definition, because several games in the series score
   by counting cards. Strohmandeln supplies its categories, thirds format and
   36 of 70 (`kit/README.md`, "The score HUD").
+- 14 Oct 2026: "Mit einem guten Herzen gewinnt man kein Spiel" (Wander, Herz 239) stays in `trick-bad-yours`: a proverb about play, within the kindness rule (open question in docs/review/talk-and-phrases.md, closed).
 
 ## Work packages
 
