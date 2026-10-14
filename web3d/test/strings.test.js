@@ -7,6 +7,11 @@ import { createStrings, t, tn, getLang, setLang, onLang, thirds, kreuzer, signed
 
 const TABLE = JSON.parse(readFileSync(new URL("../strings.json", import.meta.url), "utf8"));
 const doc = (p) => readFileSync(new URL(`../../docs/${p}`, import.meta.url), "utf8");
+// MESSAGES.md has two tables: refusals, then (after "Starting or replaying") setup errors.
+const messagesTable = (which) => {
+  const [refusals, errors] = doc("MESSAGES.md").split("Starting or replaying");
+  return which === "refusals" ? refusals : errors;
+};
 const slots = (s) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
 test("every key has a non-empty en and de, and no other language", () => {
@@ -26,9 +31,21 @@ test("keys are namespaced", () => {
 });
 
 test("every refusal key of docs/MESSAGES.md has a refusal.* string", () => {
-  const keys = [...doc("MESSAGES.md").matchAll(/^\| `([a-z-]+)` \|/gm)].map((m) => m[1]);
-  assert.ok(keys.length >= 10);
+  const keys = [...messagesTable("refusals").matchAll(/^\| `([a-z-]+)` \|/gm)].map((m) => m[1]);
+  assert.ok(keys.length >= 9);
   for (const k of keys) assert.ok(TABLE[`refusal.${k}`], k);
+});
+
+test("every setup-error key of docs/MESSAGES.md has an error.* string with its parameters as slots", () => {
+  const rows = [...messagesTable("errors").matchAll(/^\| `([a-z-]+)` \| ([^|]*) \|/gm)];
+  assert.equal(rows.length, 4);
+  for (const [, k, params] of rows) {
+    const e = TABLE[`error.${k}`];
+    assert.ok(e, k);
+    const want = [...params.matchAll(/`([a-z]+)`/g)].map((m) => m[1]).sort();
+    assert.deepEqual(slots(e.en), want, k);
+    assert.deepEqual(slots(e.de), want, k);
+  }
 });
 
 test("every event type of docs/PROTOCOL.md is voiced for the screen reader", () => {
