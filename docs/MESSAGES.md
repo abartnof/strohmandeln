@@ -22,5 +22,18 @@ omitted.
 | `honour-forfeited` | `honour` | announcing after playing a card of it unannounced (11.5) |
 | `duplicate-announcement` | `honour` | the same honour twice in one play action |
 
+Starting or replaying a sitting can fail too; the error has the same form
+(`{"key": ..., <parameters>}`, `SetupError` in the code).
+
+| Key | Parameters | When |
+|---|---|---|
+| `bad-touren` | `touren` | a sitting of other than 3 or 6 Touren (15.2) |
+| `bad-ultimo` | `ultimo` | an ultimo setting other than 1 or 2 (12.3) |
+| `record-version` | `found`, `expected` | a record of another `RECORD_VERSION` |
+| `replay-refused` | `index`, `refusal` (a refusal as above) | a recorded move refused on replay |
+
+A record writes its `seed` as a decimal string, since a JavaScript number cannot
+hold every 64-bit seed (a plain number is read too).
+
 Events (RULES 16) carry codes and ids only and need no keys of their own; the
 table speaks to their `type`.
