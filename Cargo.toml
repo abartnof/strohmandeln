@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/strohmandeln-core",
     "crates/strohmandeln-wasm",
+    "crates/strohmandeln-cli",
 ]
 
 [workspace.package]

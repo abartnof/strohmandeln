@@ -76,6 +76,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "strohmandeln-cli"
+version = "0.1.0"
+dependencies = [
+ "strohmandeln-core",
+]
+
+[[package]]
 name = "strohmandeln-core"
 version = "0.1.0"
 dependencies = [
