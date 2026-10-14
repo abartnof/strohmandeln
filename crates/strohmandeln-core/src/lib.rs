@@ -4,5 +4,6 @@
 //! names (for example "rules_7_1") refer to it.
 
 pub mod cards;
+pub mod deal;
 pub mod rng;
 pub mod types;
