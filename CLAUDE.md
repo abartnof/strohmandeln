@@ -32,8 +32,12 @@ Standing rules:
   (`research/05*`), with the kindness rule: luck, speed, the score and the run
   of play are fair game; looks, intelligence, age, gender, class, religion or
   nationality never are.
-- **Agents run at most on Sonnet.** Pass `model: "sonnet"` (or smaller) on
-  every agent call; the orchestrating session stays on Opus.
+- **Let agents do the work.** The orchestrating session (Opus) plans,
+  briefs, decides and checks; reading, research, coding, testing and review
+  go to agents wherever the work can be handed off, in parallel when the
+  pieces are independent.
+- **Agents run on Sonnet or smaller.** Pass `model: "sonnet"` (or `"haiku"`
+  for simple, mechanical work) on every agent call; never Opus.
 - **Documents are public-facing.** The person who commissioned the game is
   "the maintainer", never named, and the docs are project notes, not a diary.
 - **Consult the maintainer before anything that spends money** or any long
