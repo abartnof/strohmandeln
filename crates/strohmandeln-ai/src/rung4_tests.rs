@@ -12,7 +12,14 @@ const SMALL: Budget = Budget {
 };
 
 fn go(v: &View, seed: u64) -> Action {
-    decide(v, &mut Rng::seeded(seed), SMALL, Some(0.0), BID_RULE)
+    decide(
+        v,
+        &mut Rng::seeded(seed),
+        SMALL,
+        Some(0.0),
+        BID_RULE,
+        &Weights::default(),
+    )
 }
 
 #[test]
@@ -73,7 +80,7 @@ fn with_nothing_hidden_it_plays_the_double_dummy_best_card() {
             nodes: 4_000_000,
             bid_worlds: 1,
         };
-        let chosen = best_card(&k, &mut Rng::seeded(1), budget);
+        let chosen = best_card(&k, &mut Rng::seeded(1), budget, &Weights::default());
         let sim = Sim::from_deal(&scene.deal, seat);
         let mut sv = Solver::new(14);
         let values = sv.move_values(&sim, 30).unwrap();
@@ -98,7 +105,7 @@ fn a_bigger_budget_searches_deeper() {
             nodes,
             bid_worlds: 1,
         };
-        move_scores(&k, &mut Rng::seeded(1), b).1
+        move_scores(&k, &mut Rng::seeded(1), b, &Weights::default()).1
     };
     assert!(depth(40_000) > depth(2_000));
 }

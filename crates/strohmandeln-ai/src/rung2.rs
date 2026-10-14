@@ -27,21 +27,41 @@ use strohmandeln_core::types::Action;
 use strohmandeln_core::view::View;
 
 /// Weights of the maxims, in thirds of a point.
-pub mod w {
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Weights {
     /// A won trick passes the lead to its winner, who must open a suit.
-    pub const BURDEN: f64 = 3.0;
+    pub burden: f64,
     /// Playing a cover shows what is beneath it sooner.
-    pub const COVER: f64 = 0.8;
-    pub const EXPOSED_FIGURE: f64 = 2.0;
-    pub const SPLIT_SUIT: f64 = 4.0;
-    pub const KEEP_PACKET: f64 = 3.0;
-    pub const HOLD_PAGAT: f64 = 100.0;
-    pub const CASH_KING: f64 = 3.0;
-    pub const DRAW_TRUMPS: f64 = 3.0;
-    pub const SOLID_RUN: f64 = 2.0;
-    pub const KEEP_TAROCKS: f64 = 4.0;
-    pub const HIGH_TRUMP_LEAD: f64 = 5.0;
-    pub const COVERLESS_SUIT: f64 = 2.0;
+    pub cover: f64,
+    pub exposed_figure: f64,
+    pub split_suit: f64,
+    pub keep_packet: f64,
+    pub hold_pagat: f64,
+    pub cash_king: f64,
+    pub draw_trumps: f64,
+    pub solid_run: f64,
+    pub keep_tarocks: f64,
+    pub high_trump_lead: f64,
+    pub coverless_suit: f64,
+}
+
+impl Default for Weights {
+    fn default() -> Weights {
+        Weights {
+            burden: 3.0,
+            cover: 0.8,
+            exposed_figure: 2.0,
+            split_suit: 4.0,
+            keep_packet: 3.0,
+            hold_pagat: 100.0,
+            cash_king: 3.0,
+            draw_trumps: 3.0,
+            solid_run: 2.0,
+            keep_tarocks: 4.0,
+            high_trump_lead: 5.0,
+            coverless_suit: 2.0,
+        }
+    }
 }
 
 /// Tarocks at which a hand is strong, and weak.
@@ -132,14 +152,14 @@ pub(crate) fn spend(c: Card) -> f64 {
 }
 
 /// Scores every legal card, best first.
-pub fn score_cards(k: &Knowledge) -> Vec<Choice> {
+pub fn score_cards(k: &Knowledge, wt: &Weights) -> Vec<Choice> {
     let mut out: Vec<Choice> = k
         .legal
         .iter()
         .map(|&c| {
             let t = match k.lead {
-                Some(led) => follow(k, led, c),
-                None => lead(k, c),
+                Some(led) => follow(k, led, c, wt),
+                None => lead(k, c, wt),
             };
             Choice {
                 card: c,
@@ -157,7 +177,7 @@ pub fn score_cards(k: &Knowledge) -> Vec<Choice> {
     out
 }
 
-fn follow(k: &Knowledge, led: Card, c: Card) -> Tally {
+fn follow(k: &Knowledge, led: Card, c: Card, wt: &Weights) -> Tally {
     let mut t = Tally::new("follow-cheaply");
     let wins = !leader_wins(led, c);
     if wins {
@@ -170,24 +190,24 @@ fn follow(k: &Knowledge, led: Card, c: Card) -> Tally {
                 "take-trick"
             },
         );
-        t.add(-w::BURDEN, "finesse");
+        t.add(-wt.burden, "finesse");
         t.add(-spend(c), "follow-cheaply");
     } else {
         t.add(-f64::from(c.thirds()), "follow-cheaply");
         t.add(-0.01 * f64::from(c.strength()), "follow-cheaply");
     }
-    common(k, c, &mut t, k.legal.len() > 1);
+    common(k, c, &mut t, k.legal.len() > 1, wt);
     t
 }
 
-fn lead(k: &Knowledge, c: Card) -> Tally {
+fn lead(k: &Knowledge, c: Card, wt: &Weights) -> Tally {
     let mut t = Tally::new("lead-low");
     let tarocks = k.my_tarocks();
     match c.suit() {
         None => {
             t.add(-spend(c), "keep-tarocks");
             if tarocks >= STRONG_TAROCKS - 1 {
-                t.add(w::DRAW_TRUMPS, "draw-trumps");
+                t.add(wt.draw_trumps, "draw-trumps");
                 let neighbour = |d: i32| {
                     let s = i32::from(c.strength()) + d;
                     (0..=21).contains(&s)
@@ -196,14 +216,14 @@ fn lead(k: &Knowledge, c: Card) -> Tally {
                             .any(|x| x.is_tarock() && i32::from(x.strength()) == s)
                 };
                 if neighbour(-1) || neighbour(1) {
-                    t.add(w::SOLID_RUN, "lead-solid-run");
+                    t.add(wt.solid_run, "lead-solid-run");
                 }
                 t.add(-0.05 * f64::from(c.strength()), "lead-solid-run");
             } else if tarocks <= WEAK_TAROCKS {
-                t.add(-w::KEEP_TAROCKS, "keep-tarocks");
+                t.add(-wt.keep_tarocks, "keep-tarocks");
             }
             if c.thirds() > 1 && k.legal.len() > 1 {
-                t.add(-w::HIGH_TRUMP_LEAD, "hold-high-trump");
+                t.add(-wt.high_trump_lead, "hold-high-trump");
             }
         }
         Some(suit) => {
@@ -211,41 +231,41 @@ fn lead(k: &Knowledge, c: Card) -> Tally {
             let visible = opp_visible(k, kind);
             let mine = my_value_in(k, suit);
             if mine >= 3 && (0.3..=0.7).contains(&(f64::from(mine) / 18.0)) {
-                t.add(-w::SPLIT_SUIT, "dont-lead-split-suit");
+                t.add(-wt.split_suit, "dont-lead-split-suit");
             }
             if visible.iter().any(|v| v.strength() > c.strength()) {
                 t.add(-f64::from(c.thirds()) - 2.0, "finesse");
             }
             if c.is_king() {
-                t.add(w::CASH_KING, "cash-king");
+                t.add(wt.cash_king, "cash-king");
             } else {
                 t.add(-0.5 * f64::from(c.thirds()), "lead-low");
             }
             if cover_index(k, c).is_some() {
                 let low_shown = visible.iter().filter(|v| v.thirds() == 1).count();
                 if (c.strength() == 6 || c.strength() == 5) && low_shown < 2 {
-                    t.add(w::EXPOSED_FIGURE, "play-exposed-figure");
+                    t.add(wt.exposed_figure, "play-exposed-figure");
                 }
                 if visible.is_empty() {
-                    t.add(w::COVERLESS_SUIT, "lead-where-he-shows-none");
+                    t.add(wt.coverless_suit, "lead-where-he-shows-none");
                 }
             }
         }
     }
-    common(k, c, &mut t, k.legal.len() > 1);
+    common(k, c, &mut t, k.legal.len() > 1, wt);
     t
 }
 
 /// The maxims that hold for leading and following alike.
-pub(crate) fn common(k: &Knowledge, c: Card, t: &mut Tally, choice: bool) {
+pub(crate) fn common(k: &Knowledge, c: Card, t: &mut Tally, choice: bool, wt: &Weights) {
     if let Some(i) = cover_index(k, c) {
-        t.add(w::COVER, "play-packet-off");
+        t.add(wt.cover, "play-packet-off");
         if reserved_packet(k) == Some(i) {
-            t.add(-w::KEEP_PACKET, "keep-packet");
+            t.add(-wt.keep_packet, "keep-packet");
         }
     }
     if c == Card::PAGAT && choice && k.my_tarocks() >= STRONG_TAROCKS {
-        t.add(-w::HOLD_PAGAT, "hold-pagat");
+        t.add(-wt.hold_pagat, "hold-pagat");
     }
 }
 
@@ -321,8 +341,8 @@ pub fn play_card(k: &Knowledge, card: Card) -> Action {
 }
 
 /// The best-scoring card, ties broken by `rng`.
-pub fn best_card(k: &Knowledge, rng: &mut Rng) -> Choice {
-    let scored = score_cards(k);
+pub fn best_card(k: &Knowledge, rng: &mut Rng, wt: &Weights) -> Choice {
+    let scored = score_cards(k, wt);
     let top = scored[0].score;
     let tied: Vec<&Choice> = scored.iter().filter(|c| top - c.score < 1e-9).collect();
     *tied[rng.below(tied.len() as u64) as usize]
@@ -330,11 +350,11 @@ pub fn best_card(k: &Knowledge, rng: &mut Rng) -> Choice {
 
 /// A decision at rung 2 with the standard bid rule.
 pub fn decide(view: &View, rng: &mut Rng) -> Action {
-    decide_with(view, rng, BID_RULE)
+    decide_with(view, rng, BID_RULE, &Weights::default())
 }
 
 /// A decision at rung 2 with the given bid rule.
-pub fn decide_with(view: &View, rng: &mut Rng, rule: BidRule) -> Action {
+pub fn decide_with(view: &View, rng: &mut Rng, rule: BidRule, wt: &Weights) -> Action {
     if matches!(view.legal_actions.first(), Some(Action::Extend { .. })) {
         return Action::Extend { accept: false };
     }
@@ -346,7 +366,7 @@ pub fn decide_with(view: &View, rng: &mut Rng, rule: BidRule) -> Action {
             Action::Pass
         };
     }
-    play_card(&k, best_card(&k, rng).card)
+    play_card(&k, best_card(&k, rng, wt).card)
 }
 
 #[cfg(test)]
@@ -358,7 +378,7 @@ mod tests {
     const NO: [&str; 3] = ["", "", ""];
 
     fn pick(k: &Knowledge) -> Card {
-        best_card(k, &mut Rng::seeded(1)).card
+        best_card(k, &mut Rng::seeded(1), &Weights::default()).card
     }
 
     #[test]

@@ -17,7 +17,7 @@
 use crate::cardset::{leader_wins, Kind};
 use crate::know::Knowledge;
 use crate::rung2::{
-    common, cover_index, play_card, spend, w, BidRule, Choice, Tally, STRONG_TAROCKS,
+    common, cover_index, play_card, spend, BidRule, Choice, Tally, Weights, STRONG_TAROCKS,
 };
 use crate::sampler::{sample, World};
 use strohmandeln_core::cards::Card;
@@ -29,7 +29,7 @@ use strohmandeln_core::view::View;
 pub const WORLDS: usize = 24;
 
 /// Scores every legal card, best first.
-pub fn score_cards(k: &Knowledge, rng: &mut Rng, worlds: usize) -> Vec<Choice> {
+pub fn score_cards(k: &Knowledge, rng: &mut Rng, worlds: usize, wt: &Weights) -> Vec<Choice> {
     let worlds: Vec<World> = if k.lead.is_none() && k.legal.len() > 1 {
         (0..worlds).map(|_| sample(k, rng)).collect()
     } else {
@@ -41,8 +41,8 @@ pub fn score_cards(k: &Knowledge, rng: &mut Rng, worlds: usize) -> Vec<Choice> {
         .iter()
         .map(|&c| {
             let t = match k.lead {
-                Some(led) => follow(k, led, c),
-                None => lead(k, c, &sims),
+                Some(led) => follow(k, led, c, wt),
+                None => lead(k, c, &sims, wt),
             };
             Choice {
                 card: c,
@@ -60,7 +60,7 @@ pub fn score_cards(k: &Knowledge, rng: &mut Rng, worlds: usize) -> Vec<Choice> {
     out
 }
 
-fn follow(k: &Knowledge, led: Card, c: Card) -> Tally {
+fn follow(k: &Knowledge, led: Card, c: Card, wt: &Weights) -> Tally {
     let mut t = Tally::new("follow-cheaply");
     if !leader_wins(led, c) {
         t.add(
@@ -71,13 +71,13 @@ fn follow(k: &Knowledge, led: Card, c: Card) -> Tally {
                 "take-trick"
             },
         );
-        t.add(-w::BURDEN, "finesse");
+        t.add(-wt.burden, "finesse");
         t.add(-spend(c), "follow-cheaply");
     } else {
         t.add(-f64::from(c.thirds()), "follow-cheaply");
         t.add(-0.01 * f64::from(c.strength()), "follow-cheaply");
     }
-    common(k, c, &mut t, k.legal.len() > 1);
+    common(k, c, &mut t, k.legal.len() > 1, wt);
     t
 }
 
@@ -108,7 +108,7 @@ fn suit_share(k: &Knowledge, kind: Kind) -> (u32, f64) {
     (mine, f64::from(mine) / f64::from((mine + theirs).max(1)))
 }
 
-fn lead(k: &Knowledge, c: Card, sims: &[crate::sim::Sim]) -> Tally {
+fn lead(k: &Knowledge, c: Card, sims: &[crate::sim::Sim], wt: &Weights) -> Tally {
     let mut t = Tally::new("lead-low");
     if !sims.is_empty() {
         let mut sum = 0.0;
@@ -119,7 +119,7 @@ fn lead(k: &Knowledge, c: Card, sims: &[crate::sim::Sim]) -> Tally {
             let reply = s.policy();
             let (winner, _) = s.play(reply).expect("a trick");
             if winner == 0 {
-                sum += f64::from(reply.thirds()) - w::BURDEN;
+                sum += f64::from(reply.thirds()) - wt.burden;
                 wins += 1;
             } else {
                 sum -= f64::from(c.thirds());
@@ -140,7 +140,7 @@ fn lead(k: &Knowledge, c: Card, sims: &[crate::sim::Sim]) -> Tally {
             t.add(-spend(c), "keep-tarocks");
             let edge = trump_edge(k);
             if edge >= 2.0 && k.my_tarocks() >= STRONG_TAROCKS - 2 {
-                t.add(w::DRAW_TRUMPS, "draw-trumps");
+                t.add(wt.draw_trumps, "draw-trumps");
                 let neighbour = |d: i32| {
                     let s = i32::from(c.strength()) + d;
                     (0..=21).contains(&s)
@@ -149,30 +149,30 @@ fn lead(k: &Knowledge, c: Card, sims: &[crate::sim::Sim]) -> Tally {
                             .any(|x| x.is_tarock() && i32::from(x.strength()) == s)
                 };
                 if neighbour(-1) || neighbour(1) {
-                    t.add(w::SOLID_RUN, "lead-solid-run");
+                    t.add(wt.solid_run, "lead-solid-run");
                 }
                 t.add(-0.05 * f64::from(c.strength()), "lead-solid-run");
             } else if edge <= -1.5 {
-                t.add(-w::KEEP_TAROCKS, "keep-tarocks");
+                t.add(-wt.keep_tarocks, "keep-tarocks");
             }
         }
         Some(_) => {
             let (mine, share) = suit_share(k, Kind::of(c));
             if mine >= 3 && (0.35..=0.65).contains(&share) {
-                t.add(-w::SPLIT_SUIT, "dont-lead-split-suit");
+                t.add(-wt.split_suit, "dont-lead-split-suit");
             }
             if cover_index(k, c).is_some() && (c.strength() == 6 || c.strength() == 5) {
-                t.add(w::EXPOSED_FIGURE, "play-exposed-figure");
+                t.add(wt.exposed_figure, "play-exposed-figure");
             }
         }
     }
-    common(k, c, &mut t, k.legal.len() > 1);
+    common(k, c, &mut t, k.legal.len() > 1, wt);
     t
 }
 
 /// The best-scoring card, ties broken by `rng`.
-pub fn best_card(k: &Knowledge, rng: &mut Rng, worlds: usize) -> Choice {
-    let scored = score_cards(k, rng, worlds);
+pub fn best_card(k: &Knowledge, rng: &mut Rng, worlds: usize, wt: &Weights) -> Choice {
+    let scored = score_cards(k, rng, worlds, wt);
     let top = scored[0].score;
     let tied: Vec<&Choice> = scored.iter().filter(|c| top - c.score < 1e-9).collect();
     *tied[rng.below(tied.len() as u64) as usize]
@@ -180,7 +180,7 @@ pub fn best_card(k: &Knowledge, rng: &mut Rng, worlds: usize) -> Choice {
 
 /// A decision at rung 3. It bids as rung 2 does: counting has nothing to
 /// count before the first card.
-pub fn decide_with(view: &View, rng: &mut Rng, rule: BidRule) -> Action {
+pub fn decide_with(view: &View, rng: &mut Rng, rule: BidRule, wt: &Weights) -> Action {
     if matches!(view.legal_actions.first(), Some(Action::Extend { .. })) {
         return Action::Extend { accept: false };
     }
@@ -192,7 +192,7 @@ pub fn decide_with(view: &View, rng: &mut Rng, rule: BidRule) -> Action {
             Action::Pass
         };
     }
-    play_card(&k, best_card(&k, rng, WORLDS).card)
+    play_card(&k, best_card(&k, rng, WORLDS, wt).card)
 }
 
 #[cfg(test)]
@@ -211,8 +211,11 @@ mod tests {
         for seed in 0..12 {
             walk(seed, |s, seat| {
                 let v = view(s, seat);
-                let a = decide_with(&v, &mut Rng::seeded(seed), BID_RULE);
-                assert_eq!(a, decide_with(&v, &mut Rng::seeded(seed), BID_RULE));
+                let a = decide_with(&v, &mut Rng::seeded(seed), BID_RULE, &Weights::default());
+                assert_eq!(
+                    a,
+                    decide_with(&v, &mut Rng::seeded(seed), BID_RULE, &Weights::default())
+                );
                 match &a {
                     Action::Play { card, .. } => {
                         assert!(v.legal_actions.contains(&Action::play(*card)))
@@ -228,8 +231,10 @@ mod tests {
 
     #[test]
     fn hidden_cards_never_change_a_decision() {
-        let twins =
-            crate::testutil::blind_check(&|v| decide_with(v, &mut Rng::seeded(5), BID_RULE), 25);
+        let twins = crate::testutil::blind_check(
+            &|v| decide_with(v, &mut Rng::seeded(5), BID_RULE, &Weights::default()),
+            25,
+        );
         assert!(twins > 100, "only {twins} twins");
     }
 
@@ -240,14 +245,14 @@ mod tests {
         // king will be trumped.
         let mut trumped = know(&hand, NO, NO, &["T5"], None);
         trumped.opp_void[Kind::Suit(strohmandeln_core::cards::Suit::Hearts).index()] = true;
-        let scored = score_cards(&trumped, &mut Rng::seeded(1), 24);
+        let scored = score_cards(&trumped, &mut Rng::seeded(1), 24, &Weights::default());
         assert_ne!(scored[0].card, c("Kh"), "{scored:?}");
         let king_trumped = scored.iter().find(|s| s.card == c("Kh")).unwrap().score;
         // The same void with no trump possible: the king is safe.
         let mut safe = know(&hand, NO, NO, &[], None);
         safe.opp_void[Kind::Suit(strohmandeln_core::cards::Suit::Hearts).index()] = true;
         safe.opp_void[Kind::Trump.index()] = true;
-        let scored = score_cards(&safe, &mut Rng::seeded(1), 24);
+        let scored = score_cards(&safe, &mut Rng::seeded(1), 24, &Weights::default());
         let king_safe = scored.iter().find(|s| s.card == c("Kh")).unwrap().score;
         assert!(king_safe > king_trumped + 8.0, "{king_safe} {king_trumped}");
     }

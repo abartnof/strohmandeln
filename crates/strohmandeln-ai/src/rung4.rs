@@ -18,7 +18,7 @@
 //! take-up is valued against the simple game.
 
 use crate::know::Knowledge;
-use crate::rung2::{best_card as rung2_best, play_card};
+use crate::rung2::{best_card as rung2_best, play_card, Weights};
 use crate::rung3;
 use crate::sampler::sample;
 use crate::solver::Solver;
@@ -50,7 +50,12 @@ impl Default for Budget {
 
 /// The average margin in thirds of each legal card over the sampled worlds,
 /// best first, and the depth (in tricks) the searches reached on average.
-pub fn move_scores(k: &Knowledge, rng: &mut Rng, budget: Budget) -> (Vec<(Card, f64)>, f64) {
+pub fn move_scores(
+    k: &Knowledge,
+    rng: &mut Rng,
+    budget: Budget,
+    wt: &Weights,
+) -> (Vec<(Card, f64)>, f64) {
     let mut sums: Vec<(Card, f64)> = k.legal.iter().map(|&c| (c, 0.0)).collect();
     let share = (budget.nodes / budget.worlds.max(1) as u64).max(1);
     let mut solver = Solver::new(14);
@@ -83,7 +88,7 @@ pub fn move_scores(k: &Knowledge, rng: &mut Rng, budget: Budget) -> (Vec<(Card, 
     }
     if counted == 0 {
         // The budget was too small to finish even one trick: rung 3's choice.
-        let scored = rung3::score_cards(k, rng, rung3::WORLDS);
+        let scored = rung3::score_cards(k, rng, rung3::WORLDS, wt);
         return (scored.iter().map(|c| (c.card, c.score)).collect(), 0.0);
     }
     let n = counted as f64;
@@ -93,11 +98,11 @@ pub fn move_scores(k: &Knowledge, rng: &mut Rng, budget: Budget) -> (Vec<(Card, 
 }
 
 /// The card to play, ties (and near ties) settled by rung 2's maxims.
-pub fn best_card(k: &Knowledge, rng: &mut Rng, budget: Budget) -> Card {
+pub fn best_card(k: &Knowledge, rng: &mut Rng, budget: Budget, wt: &Weights) -> Card {
     if k.legal.len() == 1 {
         return k.legal[0];
     }
-    let (scores, _) = move_scores(k, rng, budget);
+    let (scores, _) = move_scores(k, rng, budget, wt);
     let top = scores[0].1;
     // Within a hair of the best (a third of a third), the maxims decide.
     let near: Vec<Card> = scores
@@ -110,7 +115,7 @@ pub fn best_card(k: &Knowledge, rng: &mut Rng, budget: Budget) -> Card {
     }
     let mut k2 = k.clone();
     k2.legal = near;
-    rung2_best(&k2, rng).card
+    rung2_best(&k2, rng, wt).card
 }
 
 /// The expected payment (in Points) of taking up, against playing the simple
@@ -143,6 +148,7 @@ pub fn decide(
     budget: Budget,
     bid_margin: Option<f64>,
     rule: crate::rung2::BidRule,
+    wt: &Weights,
 ) -> Action {
     if matches!(view.legal_actions.first(), Some(Action::Extend { .. })) {
         return Action::Extend { accept: false };
@@ -155,7 +161,7 @@ pub fn decide(
         };
         return if take { Action::Take } else { Action::Pass };
     }
-    play_card(&k, best_card(&k, rng, budget))
+    play_card(&k, best_card(&k, rng, budget, wt))
 }
 
 #[cfg(test)]

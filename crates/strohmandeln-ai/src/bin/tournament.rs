@@ -10,7 +10,8 @@
 //! A and B are specs: a level (`1` to `4`, or in halves `2.5`), optionally
 //! followed by `@` and comma-separated settings, such as `2@bid=40/5` (the
 //! rung-2 bid rule: sure-winner thirds / least tarocks); `worlds=`, `nodes=`,
-//! `bidworlds=` and `bidmargin=` set rung 4's search. The unit of
+//! `bidworlds=` and `bidmargin=` set rung 4's search; `w.burden=2` and the
+//! like set a weight of the maxims (`rung2::Weights`). The unit of
 //! observation is the Points A takes from B over one mirrored pair of
 //! sittings (each of `--touren` Touren, so 6 or 12 deals a seating).
 
@@ -45,6 +46,25 @@ fn parse_spec(spec: &str) -> (Level, Config) {
             "bidworlds" => config.budget.bid_worlds = v.parse().expect("bidworlds"),
             "bidmargin" => config.bid_margin = Some(v.parse().expect("bidmargin")),
             "bidrule" => config.bid_margin = None,
+            w if w.starts_with("w.") => {
+                let x: f64 = v.parse().expect("weight");
+                let wt = &mut config.weights;
+                match &w[2..] {
+                    "burden" => wt.burden = x,
+                    "cover" => wt.cover = x,
+                    "exposed_figure" => wt.exposed_figure = x,
+                    "split_suit" => wt.split_suit = x,
+                    "keep_packet" => wt.keep_packet = x,
+                    "hold_pagat" => wt.hold_pagat = x,
+                    "cash_king" => wt.cash_king = x,
+                    "draw_trumps" => wt.draw_trumps = x,
+                    "solid_run" => wt.solid_run = x,
+                    "keep_tarocks" => wt.keep_tarocks = x,
+                    "high_trump_lead" => wt.high_trump_lead = x,
+                    "coverless_suit" => wt.coverless_suit = x,
+                    other => panic!("unknown weight {other}"),
+                }
+            }
             other => panic!("unknown setting {other}"),
         }
     }

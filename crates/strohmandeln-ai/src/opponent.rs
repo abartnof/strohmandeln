@@ -9,7 +9,7 @@
 //! stream, a hash of the view, so every decision is a pure function of
 //! (seed, view): asked twice it answers the same, and a record replays.
 
-use crate::rung2::BidRule;
+use crate::rung2::{BidRule, Weights};
 use crate::seed::view_seed;
 use crate::{rung1, rung2, rung3, rung4};
 use strohmandeln_core::agents::Player;
@@ -62,6 +62,8 @@ impl Level {
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Config {
     pub bid: BidRule,
+    /// The weights of the maxims (rungs 2 to 4).
+    pub weights: Weights,
     /// Rung 4's search budget.
     pub budget: rung4::Budget,
     /// Rung 4 takes up when the sampled advantage exceeds this (Points);
@@ -73,6 +75,7 @@ impl Default for Config {
     fn default() -> Config {
         Config {
             bid: rung2::BID_RULE,
+            weights: Weights::default(),
             budget: rung4::Budget::default(),
             bid_margin: Some(0.0),
         }
@@ -128,15 +131,16 @@ impl Opponent {
         let mut rng = Rng::seeded(draws.next_u64());
         match self.rung_for(view) {
             1 => rung1::decide(view, &mut rng),
-            3 => rung3::decide_with(view, &mut rng, self.config.bid),
+            3 => rung3::decide_with(view, &mut rng, self.config.bid, &self.config.weights),
             4 => rung4::decide(
                 view,
                 &mut rng,
                 self.config.budget,
                 self.config.bid_margin,
                 self.config.bid,
+                &self.config.weights,
             ),
-            _ => rung2::decide_with(view, &mut rng, self.config.bid),
+            _ => rung2::decide_with(view, &mut rng, self.config.bid, &self.config.weights),
         }
     }
 }
