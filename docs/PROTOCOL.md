@@ -274,7 +274,11 @@ Notes:
 - After `trick_won` come the replacement events for each cover used (6.1),
   leader first.
 - A `deal_start` may be followed by `dealt`, `void_deal`, and a new
-  `deal_start` (a hand without a tarock is dealt again, 2.6).
+  `deal_start` (a hand without a tarock is dealt again, 2.6). The `void_deal`
+  is in the `events` of the reply that carries it, where the table shows it
+  (it names the seats whose hand had no tarock). It is not in `state.events`,
+  which starts at the last `deal_start` and so never holds an annulled deal;
+  a client that rebuilds from a saved state does not see it again.
 
 ## Saving and restoring
 

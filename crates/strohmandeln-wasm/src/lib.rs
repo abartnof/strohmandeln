@@ -739,6 +739,32 @@ mod tests {
     }
 
     #[test]
+    fn a_void_deal_is_surfaced_to_the_table_in_the_reply_events() {
+        // Seed 520 deals a hand without a tarock first (found by search): the
+        // core's view starts at the last deal_start, so the void_deal is in
+        // the reply's events but not in the state's list of the deal's.
+        let h = host(r#"{"seed":520,"touren":3,"human":0}"#);
+        let r = out(&h);
+        let types: Vec<&str> = r["events"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|e| e["type"].as_str().unwrap())
+            .collect();
+        let void = types.iter().position(|&t| t == "void_deal").expect("told");
+        assert_eq!(types.iter().filter(|&&t| t == "deal_start").count(), 2);
+        assert!(
+            types[..void].contains(&"deal_start"),
+            "after the deal it voids"
+        );
+        assert!(types[void..].contains(&"deal_start"), "and then a new deal");
+        let seats = r["events"][void]["seats"].as_array().unwrap();
+        assert!(!seats.is_empty());
+        let in_state = r["state"]["events"].as_array().unwrap();
+        assert!(!in_state.iter().any(|e| e["type"] == "void_deal"));
+    }
+
+    #[test]
     fn an_opponent_with_no_action_is_an_error_not_a_panic() {
         struct Stuck;
         impl Player for Stuck {
