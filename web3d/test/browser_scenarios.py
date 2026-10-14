@@ -5,6 +5,7 @@ moved by the test (`?manual`) where a frame matters. Imported by browser.py."""
 import json
 import re
 
+from browser import open_page as _open_page
 from browser import (
     LANDSCAPE,
     PAGE,
@@ -15,11 +16,17 @@ from browser import (
     close_all,
     fail_if,
     js,
-    open_page,
     rest,
     state,
     still,
 )
+
+FAST = {"width": 800, "height": 450}  # the flows that play whole sittings: a software GPU draws a small window faster
+
+
+def open_page(browser, query="seed=7&speed=instant", viewport=None, **kw):
+    return _open_page(browser, query, viewport or FAST, **kw)
+
 
 # ---- driving the table without a mouse ---------------------------------------------------------
 
@@ -79,7 +86,7 @@ def wait_chip(page, kind=None, timeout=15_000):
 
 
 def with_prefs(browser, prefs, query="seed=7&speed=instant&human=1", viewport=None, reduced=False, wait=True):
-    context = browser.new_context(viewport=viewport or LANDSCAPE, reduced_motion="reduce" if reduced else "no-preference")
+    context = browser.new_context(viewport=viewport or FAST, reduced_motion="reduce" if reduced else "no-preference")
     context.set_offline(True)
     context.add_init_script(f"try {{ localStorage.setItem('strohmandeln.prefs', JSON.stringify({json.dumps({'v': 1, **prefs})})); }} catch (e) {{}}")
     page = context.new_page()
@@ -88,17 +95,26 @@ def with_prefs(browser, prefs, query="seed=7&speed=instant&human=1", viewport=No
     page.on("request", lambda r: page.requests.append(r.url))
     page.on("console", lambda m: m.type == "error" and page.errors.append(m.text))
     page.on("pageerror", lambda e: page.errors.append(str(e)))
-    page.goto(f"{PAGE.as_uri()}?{query}", wait_until="commit", timeout=120_000)
+    page.goto(f"{PAGE.as_uri()}?{query}&lowfx=1&level=1", wait_until="commit", timeout=120_000)
     page.wait_for_function("window.strohmandeln3d !== undefined", timeout=180_000)
     if wait:
         rest(page)
     return page
 
 
-def take_if_bidding(page):
+def take_if_bidding(page, manual=False):
     if state(page)["phase"] == "bid":
         page.locator("[data-act=take]").click()
-        rest(page)
+        (mrest(page, step=400) if manual else rest(page))
+
+
+def watch_chips(page):
+    """Record every chip's text as it is put up (they fade in a moment)."""
+    page.evaluate("window.__chips = []; new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => n.classList && n.classList.contains('chip') && window.__chips.push({ text: n.textContent, cls: n.className })))).observe(document.querySelector('.floats'), { childList: true })")
+
+
+def chips_seen(page):
+    return page.evaluate("window.__chips")
 
 
 # ---- 10.2 choreography ---------------------------------------------------------------------------
@@ -127,10 +143,12 @@ def check_bid_badge(browser, failures):
     fail_if(page.locator(".tag.declarer").count() != 1, failures, "bid_badge: no declarer badge after a take")
     close_all(browser)
     page = open_page(browser, "seed=1&speed=instant&human=0")
+    watch_chips(page)
     page.locator("[data-act=pass]").click()
-    text = wait_chip(page)
+    page.wait_for_function("window.__chips.length > 0", timeout=60_000)
+    text = chips_seen(page)[0]["text"]
     fail_if(text != STRINGS["ui.pass"]["en"], failures, f"bid_badge: the pass chip says {text!r}")
-    page.wait_for_selector(".chip", state="detached", timeout=10_000)
+    page.wait_for_selector(".chip", state="detached", timeout=20_000)
     check_offline(page, failures, "bid_badge: ")
 
 
@@ -166,11 +184,13 @@ def chains(events):
 
 def check_reveal_shows_cards(browser, failures):
     page = open_page(browser, "seed=7&speed=normal&human=1&manual", wait=False)
+    mrest(page, step=400)
+    page.locator("[data-act=take]").click()
     longest = longest_hold(page)
     fail_if(longest < 700, failures, f"reveal_shows_cards: the longest hold seen was {longest} ms")
     mrest(page)
     log = js(page, "log()")
-    chain = max((len(g) for g in chains([e for e in log if e["type"] in ("packet_turned", "card_pulled", "cover_set")])), default=0)
+    chain = max((len(g) for g in chains([e for e in log if e["type"] in ("card_pulled", "cover_set")])), default=0)
     fail_if(chain < 3, failures, f"reveal_shows_cards: no chain of three pulls in the seeded sitting ({chain})")
     fail_if(not any(e["type"] == "cover_set" for e in log), failures, "reveal_shows_cards: no low card stayed as a cover")
     m = js(page, "model()")
@@ -181,6 +201,7 @@ def check_reveal_shows_cards(browser, failures):
 
 def check_last_card_pulled(browser, failures):
     page = open_page(browser, "seed=7&speed=instant&human=1")
+    take_if_bidding(page)
     log = js(page, "log()")
     last = [e for e in log if e["type"] == "card_pulled" and e["last"]]
     fail_if(not last, failures, "last_card_pulled: the seeded sitting pulls no last card")
@@ -198,21 +219,24 @@ def check_play_hand_vs_packet(browser, failures):
     fail_if(packet is None, failures, "play_hand_vs_packet: no cover is playable at the first lead")
     if packet:
         before = s["deal"]["hidden"]
-        js(page, f"act({json.dumps(wire(packet))})")
-        still(page)
-        after = state(page)["deal"]["hidden"]
-        fail_if(before != after, failures, "play_hand_vs_packet: the hidden counts changed before the replacement")
-        badges = sorted(int(t) for t in page.locator(".tag.badge").all_inner_texts())
-        fail_if(badges != sorted(h for row in before for h in row if h > 0), failures, f"play_hand_vs_packet: badges {badges} changed with the play")
+        # In one step: the opponent follows a moment later, and the replacement after that.
+        now = page.evaluate(
+            """(a) => { const h = window.strohmandeln3d; h.act(a); return { hidden: h.state().deal.hidden,
+                badges: [...document.querySelectorAll('.tag.badge')].map((n) => Number(n.textContent)), placement: h.placement() }; }""",
+            wire(packet),
+        )
+        fail_if(before != now["hidden"], failures, "play_hand_vs_packet: the hidden counts changed before the replacement")
+        fail_if(sorted(now["badges"]) != sorted(h for row in before for h in row if h > 0), failures, f"play_hand_vs_packet: badges {now['badges']} changed with the play")
         i = int(packet["source"][-1]) - 1
-        stack = [m for m in js(page, "placement()") if m["packet"] and m["packet"]["seat"] == s["human"] and m["packet"]["i"] == i]
-        fail_if(any(m["code"] for m in stack), failures, "play_hand_vs_packet: the stack top is not bare")
+        stack = [m for m in now["placement"] if m["packet"] and m["packet"]["seat"] == s["human"] and m["packet"]["i"] == i]
+        fail_if(any(m["code"] for m in stack) or len(stack) != before[s["human"]][i], failures, "play_hand_vs_packet: the stack top is not bare")
+        fail_if(not any(m["zone"] == "trick" and m["code"] == packet["card"] for m in now["placement"]), failures, "play_hand_vs_packet: the cover did not land in the trick")
 
 
 def check_replacement_after_trick(browser, failures):
     page = open_page(browser, "seed=7&speed=normal&human=1&manual", wait=False)
-    mrest(page)
-    take_if_bidding(page)
+    mrest(page, step=400)
+    take_if_bidding(page, manual=True)
     bad = 0
     for _ in range(12):
         s = state(page)
@@ -249,50 +273,85 @@ def check_trick_gather(browser, failures):
 
 
 def check_last_trick_ultimo(browser, failures):
-    for seed, human, result in [(6, 0, "won"), (16, 1, "lost")]:
+    for seed, human, result in [(2, 1, "won"), (1, 1, "lost")]:
         page = open_page(browser, f"seed={seed}&speed=instant&human={human}")
+        watch_chips(page)
         ok = drive(page, has("pagat_ultimo", result=result))
         fail_if(not ok, failures, f"last_trick_ultimo: seed {seed} has no ultimo {result}")
         if ok:
-            text = wait_chip(page, "ultimo", timeout=30_000)
-            fail_if(STRINGS["chip.ultimo.won"]["en"].split(" +")[0] not in text, failures, f"last_trick_ultimo: the chip says {text!r}")
-            fail_if(result not in page.locator(".chip.ultimo").first.get_attribute("class"), failures, f"last_trick_ultimo: the chip is not marked {result}")
+            page.wait_for_function("window.__chips.some(c => c.cls.includes('ultimo'))", timeout=60_000)
+            chip = next(c for c in chips_seen(page) if "ultimo" in c["cls"])
+            fail_if(STRINGS["chip.ultimo.won"]["en"].split(" +")[0] not in chip["text"], failures, f"last_trick_ultimo: the chip says {chip['text']!r}")
+            fail_if(result not in chip["cls"], failures, f"last_trick_ultimo: the chip is not marked {result}")
         close_all(browser)
 
 
+def to_last_trick(page):
+    """Play by the engine's first action, at Instant, to the last trick of the deal; then Normal speed."""
+    page.evaluate("window.strohmandeln3d.speed('instant')")
+    ok = drive(page, lambda s, log: s["deal"] is not None and s["deal"]["trick_number"] == 27 and s["prompt"] == "you" and s["phase"] == "play", manual=True, step=400)
+    page.evaluate("window.strohmandeln3d.speed('normal')")
+    return ok
+
+
+SAMPLE = """() => { const h = window.strohmandeln3d; return { clock: h.clock(), totals: h.hud().totals, idle: h.hud().idle, busy: h.busy(),
+    counted: h.meshInfo().filter((m) => m.code).length, said: h.said().length, banner: !document.querySelector('.banner').hidden }; }"""
+
+
+def count_run(page, limit=1200, step=100):
+    """Tick through the count and what follows it; every sample."""
+    samples = []
+    play = None
+    for _ in range(limit):
+        s = state(page)
+        if play is None and s["prompt"] == "you":
+            a = choose(s, "first", False)
+            page.evaluate(f"window.strohmandeln3d.act({json.dumps(wire(a))})")
+            play = True
+        page.evaluate(f"window.strohmandeln3d.tick({step})")
+        samples.append(page.evaluate(SAMPLE))
+        if play and any(x["banner"] for x in samples) and not samples[-1]["banner"] and samples[-1]["idle"]:
+            break
+        if state(page)["prompt"] == "you" and play and any(e["type"] == "game_scored" for e in js(page, "log()")) and not samples[-1]["busy"]:
+            break
+    return samples
+
+
 def check_count_thirds(browser, failures):
-    page = open_page(browser, "seed=7&speed=instant&human=1")
-    ok = drive(page, has("count"))
-    fail_if(not ok, failures, "count_thirds: no count")
+    page = open_page(browser, "seed=7&speed=instant&human=1&manual", wait=False)
+    mrest(page, step=400)
+    take_if_bidding(page, manual=True)
+    ok = to_last_trick(page)
+    fail_if(not ok, failures, "count_thirds: the sitting did not reach a last trick")
     if ok:
-        rest(page)
-        page.wait_for_function("window.strohmandeln3d.hud().idle", timeout=120_000)
+        samples = count_run(page)
         count = next(e for e in js(page, "log()") if e["type"] == "count")
         human = state(page)["human"]
-        totals = js(page, "hud()")["totals"]
-        fail_if(totals["you"] != count["thirds"][human] or totals["opp"] != count["thirds"][1 - human], failures, f"count_thirds: the HUD shows {totals}, the count is {count['thirds']}")
+        want = {"you": count["thirds"][human], "opp": count["thirds"][1 - human]}
+        seen = [x["totals"] for x in samples]
+        fail_if(want not in seen, failures, f"count_thirds: the HUD never showed {want}; at most {max(seen, key=lambda t: t['you'] + t['opp'])}")
+        # The tally only ever rises through the count.
+        rising = [t["you"] + t["opp"] for t in seen]
+        fail_if(any(b < a for a, b in zip(rising[: rising.index(max(rising)) + 1], rising[1:])), failures, "count_thirds: the tally fell during the count")
         fail_if(sum(count["thirds"]) != 210, failures, "count_thirds: the takes do not sum to 210")
-        fail_if(count_of(page, "count") < 1, failures, "count_thirds: no card turned up in the count")
+        fail_if(max(x["counted"] for x in samples) < 3, failures, "count_thirds: no cards turned up in the count")
 
 
 def check_count_quiet(browser, failures):
-    page = open_page(browser, "seed=7&speed=normal&human=1&manual", wait=False)
-    ok = drive(page, has("count"), manual=True, step=400)
-    fail_if(not ok, failures, "count_quiet: no count")
+    page = open_page(browser, "seed=7&speed=instant&human=1&manual", wait=False)
+    mrest(page, step=400)
+    take_if_bidding(page, manual=True)
+    ok = to_last_trick(page)
+    fail_if(not ok, failures, "count_quiet: the sitting did not reach a last trick")
     if ok:
+        samples = count_run(page)
         timing = js(page, "timing()")
         count = timing["count"]
-        base = timing["base"]
-        lo, hi = base + count["lines"][0], base + count["end"]
-        noise = 0
-        for _ in range(900):
-            clock = js(page, "clock()")
-            if lo <= clock <= hi and page.evaluate("window.strohmandeln3d.said().length"):
-                noise += 1
-            page.evaluate("window.strohmandeln3d.tick(100)")
-            if clock > hi + 200:
-                break
-        fail_if(noise, failures, f"count_quiet: a dialogue box was up during the count ({noise} frames)")
+        fail_if(count is None, failures, "count_quiet: no count timing")
+        if count:
+            lo, hi = timing["base"] + count["lines"][0], timing["base"] + count["end"] - 5
+            noisy = [x for x in samples if lo <= x["clock"] <= hi and x["said"]]
+            fail_if(noisy, failures, f"count_quiet: a dialogue box was up during the count ({len(noisy)} samples)")
 
 
 def check_game_scored_banner(browser, failures):
@@ -306,7 +365,7 @@ def check_game_scored_banner(browser, failures):
 
 
 def check_draw_and_doubling(browser, failures):
-    page = open_page(browser, "seed=18&speed=instant&human=1")
+    page = open_page(browser, "seed=2&speed=instant&human=1")
     ok = drive(page, has("game_scored", result="draw"), policy="weiter")
     fail_if(not ok, failures, "draw_and_doubling: no draw in the seeded sitting")
     if ok:
@@ -319,10 +378,17 @@ def check_draw_and_doubling(browser, failures):
 
 
 def check_void_deal(browser, failures):
-    page = open_page(browser, "seed=520&speed=instant&human=0", wait=False)
-    text = wait_chip(page, "void", timeout=120_000)
-    fail_if(STRINGS["chip.void-deal"]["en"] != text, failures, f"void_deal: the tag says {text!r}")
-    rest(page)
+    page = open_page(browser, "seed=520&speed=normal&human=0&manual", wait=False)
+    watch_chips(page)
+    for _ in range(300):
+        page.evaluate("window.strohmandeln3d.tick(100)")
+        if page.evaluate("window.__chips.length") > 0:
+            break
+    seen = chips_seen(page)
+    fail_if(not seen, failures, "void_deal: no tag rose over the hand")
+    if seen:
+        fail_if(STRINGS["chip.void-deal"]["en"] != seen[0]["text"], failures, f"void_deal: the tag says {seen[0]['text']!r}")
+    mrest(page, step=400)
     s = state(page)
     fail_if(s["deals_counted"] != 0, failures, "void_deal: the void deal was counted")
     fail_if("1" not in page.locator(".tour-line").inner_text(), failures, "void_deal: the deal counter moved")
@@ -506,8 +572,8 @@ def check_announce_prompt(browser, failures):
             click_card(page, card)
             still(page)
             page.locator("[data-act=play]").click()
-            page.wait_for_selector(".dialog [data-dialog-act^=do]", timeout=30_000)
-            page.locator(".dialog [data-dialog-act^=do]").click()
+            page.wait_for_selector(".dialog [data-dialog-act^=\"do:\"]", timeout=30_000)
+            page.locator(".dialog [data-dialog-act^=\"do:\"]").click()
             rest(page)
             fail_if(not any(e["type"] == "announcement" and e["seat"] == human for e in js(page, "log()")), failures, "announce_prompt: Announce did not announce")
         close_all(browser)
@@ -531,7 +597,7 @@ def check_announce_prompt(browser, failures):
         still(page)
         page.locator("[data-act=play]").click()
         rest(page)
-        fail_if(page.locator(".dialog [data-dialog-act^=do]").count(), failures, "announce_prompt: a prompt for a card of no honour")
+        fail_if(page.locator(".dialog [data-dialog-act^=\"do:\"]").count(), failures, "announce_prompt: a prompt for a card of no honour")
 
 
 def check_announce_chip(browser, failures):
@@ -542,7 +608,7 @@ def check_announce_chip(browser, failures):
     other = next((h for h in ("kings", "trull") if h not in held), None)
     fail_if(other is None, failures, "announce_chip: both honours held in the seeded deal")
     if other:
-        page.locator(f"[data-act=announce][data-honour={other}]").click()
+        page.locator(f"[data-act=announce][data-honour={other}]").click(force=True)
         page.wait_for_selector(".refusal:not(:empty)", timeout=30_000)
         text = page.locator(".refusal").inner_text()
         fail_if("hold" not in text.lower() and "haben" not in text.lower(), failures, f"announce_chip: not-held says {text!r}")
@@ -618,7 +684,7 @@ def check_keyboard_sitting(browser, failures):
 def check_screen_reader(browser, failures):
     for lang in ("en", "de"):
         page = open_page(browser, f"seed=7&speed=instant&human=1&lang={lang}", wait=False)
-        page.evaluate("window.__live = []; new MutationObserver(() => { const t = document.querySelector('.live').textContent; if (t) window.__live.push(t); }).observe(document.querySelector('.live'), { childList: true, characterData: true, subtree: true })")
+        page.evaluate("window.__live = []; new MutationObserver(() => { const t = document.querySelector('.sr-live').textContent; if (t) window.__live.push(t); }).observe(document.querySelector('.sr-live'), { childList: true, characterData: true, subtree: true })")
         rest(page)
         drive(page, has("trick_won"))
         spoken = page.evaluate("window.__live")

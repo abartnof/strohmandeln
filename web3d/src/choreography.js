@@ -56,6 +56,8 @@ export const TIMING = Object.freeze({
   dealGroup: 160, // between hands and packets
   countCard: 520,
   countStagger: 110,
+  countLead: 2600, // `count-start` is said and its box gone before the first card turns
+  countTail: 1000, // the last popup done before the count is closed
   collect: 480,
   collectStagger: 12,
   void: 1500,
@@ -500,7 +502,7 @@ class Plan {
   count({ model, before, event, at }) {
     const target = this.layout(model);
     const lines = countLines(model.counted, model.human);
-    const start = Math.max(this.clock, this.end) + TIMING.beat;
+    const start = Math.max(this.clock, this.end) + TIMING.beat + TIMING.countLead;
     const sched = countSchedule(COUNT_RULES, lines, { start, pace: this.pace });
     for (const turn of sched.turns) {
       turn.cards.forEach((code, w) => {
@@ -514,9 +516,10 @@ class Plan {
         this.move(mesh.id, slot, peelOff(mesh.pose, (lifted) => toss(lifted, slot.pose, { clearance: 2 }), { toward }), turn.at + w * TIMING.countStagger, TIMING.countCard);
       });
     }
-    this.counted = { at, lines: sched.lines, end: sched.end, turns: sched.turns, grouped: lines };
-    this.moments.start = start - TIMING.beat;
-    this.clock = sched.end;
+    const end = sched.end + TIMING.countTail;
+    this.counted = { at, lines: sched.lines, end, turns: sched.turns, grouped: lines };
+    this.moments.start = start - TIMING.beat - TIMING.countLead;
+    this.clock = end;
     void event;
     this.stage(target, null, this.clock);
   }

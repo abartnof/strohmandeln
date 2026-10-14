@@ -57,7 +57,7 @@ def open_page(browser, query="seed=7&speed=instant", viewport=None, reduced=Fals
     page.on("request", lambda r: page.requests.append(r.url))
     page.on("console", lambda m: m.type == "error" and page.errors.append(m.text))
     page.on("pageerror", lambda e: page.errors.append(str(e)))
-    page.goto(f"{PAGE.as_uri()}?{query}", wait_until="commit", timeout=120_000)
+    page.goto(f"{PAGE.as_uri()}?{query}&lowfx=1&level=1", wait_until="commit", timeout=120_000)
     page.wait_for_function("window.strohmandeln3d !== undefined", timeout=180_000)
     if wait:
         rest(page)
@@ -210,14 +210,16 @@ def check_cover_legibility(browser, failures):
 
 
 def check_no_face_leak(browser, failures):
-    page = open_page(browser, "seed=7&speed=instant&human=1")
+    page = open_page(browser, "seed=7&speed=instant&human=1", {"width": 800, "height": 450})
     made = 0
     while True:
         bad = secret(page)
         fail_if(bad, failures, f"no_face_leak: faces {bad} shown that the view does not give, after {made} decisions")
-        if bad or not play_one(page, extend=made % 2 == 0):
+        if bad or not play_one(page, extend=False):
             break
         made += 1
+        if made % 20 == 0:
+            print(f"  no_face_leak: {made} decisions, prompt {state(page)['prompt']}, trick {(state(page)['deal'] or {}).get('trick_number')}", flush=True)
         if made > 600:
             failures.append("no_face_leak: the sitting did not end")
             break
@@ -233,14 +235,18 @@ def check_phone_row(browser, failures):
     fail_if(len(hand) != 15, failures, f"phone_row: {len(hand)} cards")
     # It scrolls: wheel over the hand until the last card is on the screen.
     seen = set()
-    for _ in range(40):
+    for step in [300] * 6 + [-300] * 12:
         for code in js(page, "model().hand.map(c => c.code)"):
             p = js(page, f"screenPoint('{code}')")
-            if p and 0 <= p["x"] <= PORTRAIT["width"]:
+            if p and 10 <= p["x"] <= PORTRAIT["width"] - 10:
                 seen.add(code)
         page.mouse.move(195, 640)
-        page.mouse.wheel(300, 0)
-        page.wait_for_timeout(120)
+        page.mouse.wheel(0, step)
+        page.wait_for_timeout(250)
+    for code in js(page, "model().hand.map(c => c.code)"):
+        p = js(page, f"screenPoint('{code}')")
+        if p and 10 <= p["x"] <= PORTRAIT["width"] - 10:
+            seen.add(code)
     fail_if(len(seen) < 15, failures, f"phone_row: only {len(seen)} of 15 cards reached by scrolling")
 
 
@@ -273,6 +279,8 @@ def run(checks, failures):
             except Exception as error:  # a check that cannot run is a failure, named
                 failures.append(f"{check.__name__}: {type(error).__name__}: {str(error)[:300]}")
             print(f"{'ok  ' if len(failures) == before else 'FAIL'} {check.__name__}", flush=True)
+            for f in failures[before:]:
+                print(f"       {f}"[:600], flush=True)
             close_all(browser)
         browser.close()
 

@@ -43,7 +43,7 @@ export function createUi(root, { t, onAct }) {
       el("p", { class: "aid-line", hidden: "" }),
       el("div", { class: "move-bar", role: "group", "data-i18n-label": "ui.movebar", hidden: "" }),
     ),
-    el("p", { class: "live", "aria-live": "polite", "aria-atomic": "true" }),
+    el("p", { class: "sr-live", "aria-live": "polite", "aria-atomic": "true" }),
     el("div", { class: "dialogs" }),
   );
   const bar = q(".move-bar");
@@ -51,7 +51,7 @@ export function createUi(root, { t, onAct }) {
   const refusal = q(".refusal");
   const aid = q(".aid-line");
   const banner = q(".banner");
-  const live = q(".live");
+  const live = q(".sr-live");
   const floats = q(".floats");
   const tagLayer = q(".tags");
   const sayLayer = q(".say-layer");

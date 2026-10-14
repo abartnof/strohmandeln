@@ -70,7 +70,7 @@ button { font: inherit; }
 .dialog .choice { display: flex; gap: 10px; flex-wrap: wrap; }
 .keys { padding-left: 18px; margin: 0; }
 
-.live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.sr-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
 
 .upright .controls { padding-bottom: 8px; }
 @media (max-width: 520px) {

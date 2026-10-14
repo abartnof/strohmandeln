@@ -90,7 +90,7 @@ export const ZONES_TOUCH = arrangement({
 
 export const ZONES_PORTRAIT = arrangement({
   eye: EYE_PORTRAIT,
-  yours: hand([0, 2, 13], EYE_PORTRAIT, { fan: false, pitch: 3.2, width: 34 }),
+  yours: hand([0, 2, 13], EYE_PORTRAIT, { fan: false, pitch: 3.2, width: 26 }),
   theirs: hand([0, 6, -38], EYE_PORTRAIT, { fan: true, radius: 30, spacing: 1.1, width: 20 }),
   packets: { you: -3, them: -27, xs: [-11, 0, 11] },
   trick: { x: 0, z: -15, gap: 0.8, offset: 2.2 },

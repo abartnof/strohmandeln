@@ -22,6 +22,7 @@ import { decodeBase64 } from "../../kit/js/engine.js";
 import { CARD } from "../../kit/js/units.js";
 import { sentence, where } from "./a11y.js";
 import { choreograph, initialPlacement, opening } from "./choreography.js";
+import { handRange } from "./layout.js";
 import { TRULL, KINGS } from "./cardinfo.js";
 import { countGame, countLines, TARGET } from "./counting.js";
 import { loadEngine } from "./engine.js";
@@ -79,7 +80,7 @@ async function main() {
   // ---- the scene, the cards -------------------------------------------------
   const touch = params.has("touch") ? params.get("touch") !== "0" : largeTextHere();
   const canvas = document.getElementById("stage");
-  const stage = createScene(canvas, { table: chooseSurface({ chosen: prefs.surface === "random" ? null : prefs.surface, saved: null }), touch, eyes: { across: touch ? EYE_TOUCH : EYE, portrait: EYE_PORTRAIT } });
+  const stage = createScene(canvas, { table: chooseSurface({ chosen: prefs.surface === "random" ? null : prefs.surface, saved: null }), touch, ...(params.has("lowfx") ? { shadow: "pcf", shadowMap: 256 } : {}), eyes: { across: touch ? EYE_TOUCH : EYE, portrait: EYE_PORTRAIT } });
   const anisotropy = stage.renderer.capabilities.getMaxAnisotropy();
   const width = Math.round(512 * Math.min(Math.max(stage.renderer.getPixelRatio(), 1), 1.5));
   const textures = { faces: faceTextures({ width, anisotropy, lang: getLang() }), back: backTexture({ width, anisotropy }) };
@@ -91,7 +92,7 @@ async function main() {
   let log = []; // every event of the sitting
   let S = null; // the director's state: { model, events }
   let human = 0;
-  let sel = { chosen: null, scroll: 0 };
+  let sel = { chosen: null, scroll: -1e9 }; // a row of cards starts at its left end
   let focus = null; // { row: "hand" | "packets", index }
   let hintCard = null;
   let pending = 0; // scheduled moments not yet come
@@ -260,10 +261,16 @@ async function main() {
   stage.onRender = placeTags;
 
   // ---- the model, kept beside the module's state ------------------------------------
+  // The model after the events, and the cards of the count as it stood when `count` came
+  // (a reply can run on into the next deal, whose model has none).
   function fold(events) {
     let model = S ? S.model : emptyModel(human);
-    for (const e of events) model = reduce(model, e);
-    return model;
+    let counted = null;
+    for (const e of events) {
+      model = reduce(model, e);
+      if (e.type === "count") counted = model.counted;
+    }
+    return { model, counted };
   }
 
   // A reply's events played out, and what is shown at each one's moment.
@@ -272,18 +279,19 @@ async function main() {
     const since = log.length;
     log = [...log, ...events];
     wasm = reply.state;
-    const model = events.length || first ? fold(events) : S.model;
+    const { model, counted } = events.length || first ? fold(events) : { model: S.model, counted: null };
     const next = { model, events: log };
     const begun = events.find((e) => e.type === "sitting_start");
     if (begun) sittingLength = begun.touren;
     const countEvent = events.find((e) => e.type === "count");
-    const lines = countEvent ? countLines(model.counted, human) : [];
+    const lines = countEvent ? countLines(counted, human) : [];
     const pace = countEvent ? paceOf(game, lines) : null;
     const timing = first ? director.restart(next, { dealt: true }) : director.advance(next, { pace });
     S = next;
     lastTiming = { ...timing, base: director.clock() };
     sel = { ...sel, chosen: null };
     hintCard = null;
+    ui.setAid(null);
     ui.setRefusal(null);
     for (const m of momentsOf({ events, since, beats: timing.beats, count: countEvent ? timing.count : null })) {
       later(m.ms, () => (m.synthetic ? talk.onEvent(m.event, { human }) : onEvent(m.event, m.index, model, timing)));
@@ -504,6 +512,7 @@ async function main() {
         });
       }
     }
+    if (mine && !busy && prefs.hints && wasm.phase !== "extend") groups.push({ kind: "hint", buttons: [{ act: "hint", label: t("ui.hint"), enabled: true }] });
     ui.setBar(groups, { left: prefs.leftHanded });
     // The extension prompt.
     if (mine && !busy && wasm.phase === "extend" && !ui.dialogOpen("extend")) {
@@ -596,6 +605,19 @@ async function main() {
     return send({ action: "play", card: code });
   }
 
+  // The tutor's hint: the engine's own answer for this position, shown by the
+  // card it names and one sentence from its reason's key. It never plays.
+  function askHint() {
+    if (!wasm || wasm.prompt !== "you" || director.busy() || pending > 0 || !prefs.hints) return;
+    const r = engine.hint();
+    if (!r?.hint) return ui.setAid(t("hint.none"));
+    hintCard = r.hint.action === "play" ? r.hint.card : null;
+    const text = t(`hint.reason.${r.reason}`);
+    ui.setAid(text);
+    ui.live(text);
+    director.redecorate();
+  }
+
   // ---- buttons ---------------------------------------------------------------------------
   function onAct(act, data) {
     if (act.startsWith("dialog:")) return onDialog(act.split(":").slice(1));
@@ -615,6 +637,8 @@ async function main() {
       case "settings":
         settings.open();
         return;
+      case "hint":
+        return askHint();
       default:
     }
   }
@@ -664,7 +688,7 @@ async function main() {
     ui.closeDialog("over");
     stage.unreveal();
     sittingOver = false;
-    sel = { chosen: null, scroll: 0 };
+    sel = { chosen: null, scroll: -1e9 };
     focus = null;
     wasm = null;
     S = null;
@@ -675,6 +699,7 @@ async function main() {
   function newSitting({ touren = prefs.touren, seed = over.seed, humanSeat = over.human } = {}) {
     resetTable();
     const config = sittingConfig({ ...prefs, touren }, { seed: seed ?? undefined, human: humanSeat ?? Math.floor(Math.random() * 2) });
+    if (params.has("level")) config.level = Number(params.get("level")); // for tests: the opponent's rung
     const r = engine.new(config);
     if (!r?.ok) {
       ui.dialog({ id: "error", title: t("error.bad-config"), body: "", buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
@@ -845,13 +870,17 @@ async function main() {
   });
   // A row of cards wider than the screen scrolls.
   let dragFrom = null;
-  canvas.addEventListener("pointerdown", (e) => (dragFrom = { x: e.clientX, scroll: sel.scroll }));
+  const clampScroll = (v) => {
+    const range = handRange(S ? S.model.hand.length : 0, zonesNow().yourHand);
+    return Math.max(-range, Math.min(range, v));
+  };
+  canvas.addEventListener("pointerdown", (e) => (dragFrom = { x: e.clientX, scroll: clampScroll(sel.scroll) }));
   canvas.addEventListener("pointermove", (e) => {
     if (!dragFrom || zonesNow().yourHand.fan || director.busy()) return;
     const dx = e.clientX - dragFrom.x;
     if (Math.abs(dx) < 6) return;
     const cm = (dx / window.innerWidth) * 34;
-    sel = { ...sel, scroll: dragFrom.scroll - cm };
+    sel = { ...sel, scroll: clampScroll(dragFrom.scroll - cm) };
     director.rearrange();
   });
   window.addEventListener("pointerup", () => (dragFrom = null));
@@ -859,7 +888,7 @@ async function main() {
     "wheel",
     (e) => {
       if (zonesNow().yourHand.fan) return;
-      sel = { ...sel, scroll: sel.scroll + e.deltaY * 0.03 + e.deltaX * 0.03 };
+      sel = { ...sel, scroll: clampScroll(clampScroll(sel.scroll) + e.deltaY * 0.03 + e.deltaX * 0.03) };
       director.rearrange();
     },
     { passive: true },
@@ -905,12 +934,13 @@ async function main() {
     if (e.target instanceof Element && e.target.closest("input, select, textarea, .settings, .slate")) return;
     const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
     if (key === "?") {
-      ui.dialog({ id: "keys", title: t("keys.title"), body: ui.el("ul", { class: "keys" }, ...["play", "arrows", "packets", "announce", "take", "weiter", "slate", "where", "help", "esc"].map((k) => ui.el("li", {}, t(`keys.${k}`)))), buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
+      ui.dialog({ id: "keys", title: t("keys.title"), body: ui.el("ul", { class: "keys" }, ...["play", "arrows", "packets", "announce", "take", "weiter", "slate", "hint", "where", "help", "esc"].map((k) => ui.el("li", {}, t(`keys.${k}`)))), buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
       return;
     }
     if (ui.dialogOpen()) return;
     if (!wasm) return;
     if (key === "s") return toggleSlate();
+    if (key === "h") return askHint();
     if (key === "i") return ui.live(where(wasm));
     const calm_ = director.busy() || pending > 0;
     if (key === "t" && !calm_ && wasm.legal.some((a) => a.action === "take")) return send({ action: "take" });
@@ -1010,6 +1040,7 @@ async function main() {
     meshInfo: () => director.meshes.map((m) => ({ x: m.position.x, y: m.position.y, z: m.position.z, code: m.userData.code })),
     newSitting,
     act: (action) => send(action),
+    speed: (name) => changed("speed", name),
     step,
     sittingOver: () => sittingOver,
     stage: () => ({ portrait: stage.portrait, strips: stage.strips() }),

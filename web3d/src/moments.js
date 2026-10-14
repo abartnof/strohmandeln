@@ -8,7 +8,9 @@
 export function momentsOf({ events, since, beats, count }) {
   const out = events.map((event, k) => ({ ms: beats[since + k] ?? 0, event, index: since + k, synthetic: false }));
   if (count) {
-    out.push({ ms: Math.max(0, count.lines[0] - 1), event: { type: "count_start" }, index: -1, synthetic: true });
+    // As the count begins (its stage's start), and in any case before the first card.
+    const began = Math.min(beats[count.at] ?? Infinity, count.lines[0] - 1);
+    out.push({ ms: Math.max(0, began), event: { type: "count_start" }, index: -1, synthetic: true });
     out.push({ ms: Math.max(0, count.end - 1), event: { type: "count_close" }, index: -1, synthetic: true });
   }
   return out.map((m, order) => ({ ...m, order })).sort((a, b) => a.ms - b.ms || a.order - b.order);
