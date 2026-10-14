@@ -108,3 +108,13 @@ So the game ships **three settings**, each a genuine, long-lived difference of p
 - **Rule 10, last packet card:** taken into the hand and shown, by 3–1 on explicit statements (see the row and review/RH.md). Not a setting.
 - **Rule 25, Valat:** stays 12, with no setting. Wikipedia's table shows a dash in Beck's column, which may mean "none" or only "not mentioned". That is too weak to establish a modern split, so the persistent-split test is not met [RH].
 - **The session (maintainer's decision, 14 October 2026):** design A of note 13, the period "Abend". The players announce the sitting's length as three or six Touren, a running account per player is kept on a slate, and the evening ends by settling up at a stated price per Point (Bermann 1894, Ulmann 1899, Werner 1891 [13]). The open details are being settled by reviewer RI: deals per Tour with two players, who calls the end, the price and currency, and whether a draw doubles the next deal or the next Tour. A race to a target score (design B) is not canonical.
+
+### The session in detail (coordinator, after reviewer RI)
+
+Design A is a reconstruction. Every source for it describes multi-hand Tarock, and none applies the Touren rule, the running account or the settlement to Strohmandl [13][RI]. The game should say so wherever it explains the evening.
+
+- **Tour = 2 deals.** Bermann and Ulmann (p. 19) say each player deals once per Tour, and Werner (p. 129) has the deal alternate in Strohmanndl, so with two players a Tour is two deals. No source states this for two players. So "drei Touren" = 6 deals and "sechs Touren" = 12 [RI].
+- **Calling the length:** at the start, 3 or 6 Touren. At the end the sitting may be extended by mutual consent, the period custom [RI].
+- **After a 35:35 draw** the next deal counts double, with its announcements (Werner, our rules base; Beck as reported). Ulmann voids the game, and Mayr & Sedlaczek and Dummett double the next round [RI][02 A12].
+- **Price per Point:** no Strohmandl stake is sourced. The slate converts Points at **2 kreuzer**, within the Tarock stake of "zwei bis drei Kreuzer der Point" reported for 1894 [13][RI]. It is labelled as Tarock evidence, not Strohmandl evidence. Currency details (gulden and kreuzer versus krone) are open, because note 13's dates for the krone are unsourced [RI].
+- **A doubling still pending when the sitting ends lapses.** No source covers this; it is a design choice, labelled [RI (e)].
