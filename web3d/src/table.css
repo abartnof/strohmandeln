@@ -1,0 +1,187 @@
+/* The slate and the settings menu (docs/TABLE3D.md 4, 7). Only classes
+   prefixed .slate and .settings are here; the rest of the table's styling is
+   the table's own. The chalk face is a web font the build embeds; until it is
+   there, a system cursive that stays legible at 14 px. */
+
+.slate,
+.settings {
+  --chalk: #f1f1e6;
+  --chalk-dim: #c4cbbd;
+  --chalk-you: #f3df7a;
+  --chalk-opp: #9fc8ee;
+  --board: #17251d;
+  --board-edge: #6b4a2a;
+  --target: 44px;
+  font-family: "Chalk", "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive, sans-serif;
+  font-size: 15px;
+  color: var(--chalk);
+}
+
+/* ---- the slate -------------------------------------------------------- */
+
+.slate {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 56px 12px 12px;
+  pointer-events: none;
+}
+.slate[hidden] { display: none; }
+.slate.slate-large {
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
+.slate-board {
+  pointer-events: auto;
+  box-sizing: border-box;
+  width: min(420px, 100%);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  padding: 12px 14px 14px;
+  background: var(--board);
+  border: 10px solid var(--board-edge);
+  border-radius: 4px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+.slate-large .slate-board { width: min(520px, 100%); max-height: calc(100vh - 48px); }
+.slate-head { display: flex; justify-content: space-between; align-items: center; }
+.slate-head h2 { margin: 0; font-size: 22px; font-weight: normal; }
+.slate-close {
+  min-width: var(--target);
+  min-height: var(--target);
+  background: none;
+  border: 0;
+  color: var(--chalk);
+  font: inherit;
+  font-size: 24px;
+  cursor: pointer;
+}
+.slate-rules { color: var(--chalk-dim); font-size: 13px; margin: 2px 0 8px; }
+.slate-cols,
+.slate-row,
+.slate-rule.slate-tour,
+.slate-line {
+  display: grid;
+  grid-template-columns: 56px 1fr 1fr;
+  column-gap: 8px;
+  align-items: start;
+}
+.slate-cols { border-bottom: 2px solid var(--chalk-dim); padding-bottom: 4px; }
+.slate-col-margin { font-size: 12px; color: var(--chalk-dim); }
+.slate-col-you { color: var(--chalk-you); }
+.slate-col-opp { color: var(--chalk-opp); }
+.slate-row { padding: 6px 0; border-bottom: 1px solid rgba(241, 241, 230, 0.28); }
+.slate-margin { display: flex; flex-wrap: wrap; gap: 2px 6px; font-size: 13px; color: var(--chalk-dim); }
+.slate-dealer { border: 1px solid var(--chalk-dim); border-radius: 50%; padding: 0 5px; font-size: 11px; }
+.slate-double { color: var(--chalk); }
+.slate-cell:nth-child(2) { color: var(--chalk-you); }
+.slate-cell:nth-child(3) { color: var(--chalk-opp); }
+.slate-credits { display: flex; flex-wrap: wrap; gap: 0 8px; }
+.slate-total { font-size: 13px; color: var(--chalk-dim); }
+.slate-conto { text-align: right; font-size: 18px; }
+.slate-rule { margin-top: 2px; border-top: 3px double var(--chalk); padding: 4px 0; }
+.slate-rule.slate-tour .slate-tour-no { color: var(--chalk-dim); font-size: 13px; }
+.slate-extended { border-top: 4px double var(--chalk); text-align: center; color: var(--chalk-dim); }
+.slate-empty { color: var(--chalk-dim); padding: 12px 0; }
+.slate-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; padding-top: 6px; border-top: 2px solid var(--chalk-dim); }
+.slate-settlement { margin-top: 12px; padding: 8px 10px; border: 2px solid var(--chalk); }
+.slate-settlement h3 { margin: 0 0 6px; font-size: 17px; font-weight: normal; }
+.slate-line { padding: 3px 0; }
+.slate-line.slate-owed,
+.slate-line.slate-payer,
+.slate-line.slate-square { display: block; font-size: 18px; }
+
+/* Each figure is written as the chalk would: a wipe, 120 ms a figure. */
+.slate-step { animation: slate-write 120ms steps(6, end) both; animation-delay: calc(var(--step, 0) * 120ms); }
+@keyframes slate-write {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slate-step { animation: none; }
+}
+
+/* High contrast: pure white on a flat board. */
+@media (prefers-contrast: more) {
+  .slate, .settings { --chalk: #fff; --chalk-dim: #fff; --board: #000; --board-edge: #fff; }
+  .slate-board { box-shadow: none; }
+}
+
+/* A sheet from the bottom in portrait. */
+@media (orientation: portrait) and (max-width: 640px) {
+  .slate { align-items: flex-end; justify-content: center; padding: 0; }
+  .slate-board { width: 100%; max-height: 70vh; border-width: 8px 8px 0; border-radius: 8px 8px 0 0; }
+  .slate.slate-large { align-items: center; padding: 12px; }
+  .slate.slate-large .slate-board { border-width: 8px; border-radius: 4px; }
+}
+
+/* ---- the settings menu ------------------------------------------------ */
+
+.settings {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 12px;
+  background: rgba(0, 0, 0, 0.45);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.settings[hidden] { display: none; }
+.settings-sheet {
+  box-sizing: border-box;
+  width: min(560px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 12px 16px 16px;
+  background: #1d2a24;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+}
+.settings-head { display: flex; justify-content: space-between; align-items: center; }
+.settings-head h2 { margin: 0; font-size: 20px; font-weight: 600; }
+.settings-close {
+  min-width: var(--target);
+  min-height: var(--target);
+  background: none;
+  border: 0;
+  color: var(--chalk);
+  font-size: 24px;
+  cursor: pointer;
+}
+.settings-section { margin-top: 14px; }
+.settings-section h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--chalk-dim); }
+.settings-row { display: grid; grid-template-columns: 1fr; gap: 4px; padding: 8px 0; border-top: 1px solid rgba(241, 241, 230, 0.18); }
+.settings-label { font-weight: 600; }
+.settings-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.settings-option,
+.settings-switch,
+.settings-action {
+  min-height: var(--target);
+  min-width: var(--target);
+  padding: 6px 12px;
+  background: #2c3d35;
+  color: var(--chalk);
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+}
+.settings-selected,
+.settings-switch[aria-checked="true"] { border-color: var(--chalk-you); background: #3a4f45; }
+.settings-option:focus-visible,
+.settings-switch:focus-visible,
+.settings-action:focus-visible,
+.settings-close:focus-visible,
+.slate-close:focus-visible { outline: 3px solid var(--chalk-opp); outline-offset: 2px; }
+.settings-locked .settings-option { opacity: 0.55; cursor: default; }
+.settings-note,
+.settings-when { font-size: 13px; color: var(--chalk-dim); }
+.settings-action { margin: 4px 6px 0 0; }
