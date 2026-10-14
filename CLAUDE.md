@@ -38,7 +38,11 @@ Standing rules:
   pieces are independent.
 - **Agents run on Sonnet or smaller.** Pass `model: "sonnet"` (or `"haiku"`
   for simple, mechanical work) on every agent call; never Opus.
-- **Documents are public-facing.** The person who commissioned the game is
-  "the maintainer", never named, and the docs are project notes, not a diary.
+- **Documents are public-facing, and terse.** Write notes the way a software
+  project keeps them: what was decided, the evidence, what follows. No
+  narrative of who said what or why they felt it ("the maintainer called this
+  a blind spot", "after the review the coordinator realised..."). A decision
+  is recorded as a decision with its date and its source, nothing more. The
+  person who commissioned the game is "the maintainer", never named.
 - **Consult the maintainer before anything that spends money** or any long
   compute run, with an estimate in hand.
