@@ -40,7 +40,7 @@ SOURCES = {
            "aufzunehmen\"; Königrufen calls \"Mein Spiel\", \"Ich rufe\", \"weiter\", \"gut\"; \"Ich sage die "
            "Troule an\"; Troule and kings paid if \"angesagt\" at the latest as the first of them is played; "
            "a 35:35 tie is undecided and the next deal \"sammt allen Ansagen doppelt zählt\"; \"Mondfang\"; "
-           "\"das Impassiren\"; \"ein Conto ... bei fortlaufender Addition\". \"Mondfang\" is Werner's noun in his "
+           "\"das Impassiren\"; \"ein Conto ... bei fortlaufender Addition\"; the Mond is not to be laid early \"so lange man nicht weiß, wo der Skis steht\". \"Mondfang\" is Werner's noun in his "
            "other games (Kauf, Königrufen), not in the Strohmann section. The spoken \"Ich nehme auf!\", "
            "\"Weiter!\", \"Ich passe!\" are inflections of Werner's \"aufnehmen\", \"weiter\", \"Paßt\"; the "
            "exact sentences are as Mayr and Sedlaczek (2007) quote them [05-S5]", True),
@@ -66,7 +66,7 @@ SOURCES = {
     "Ne1": (1835, "[05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3]",
             "Nestroy, Zu ebener Erde und erster Stock (1835), Act 2, Bonz 1890 edition: Goldfuchs calls "
             "\"Tous les trois ... vier Könige ... Pagat Ultimo!\"; Johann's Lied: \"Der macht drei, vier "
-            "Ultimo in einem Nu\". The wording is edition-dependent: the Projekt Gutenberg text prints "
+            "Ultimo in einem Nu\"; \"Mein Herr hat halt überall 's Glück in Pacht\" (Bonz 1890 only). The wording is edition-dependent: the Projekt Gutenberg text prints "
             "\"Tous les trois! – Vier Könige! – Pagat Ultimo!\"", False),
     "Ne2": (1832, "[05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3]",
             "Nestroy, Nagerl und Handschuh (1832), Bonz 1891 edition (OCR): \"Pagat Ultimo Volat! ... Ich "
@@ -81,12 +81,12 @@ SOURCES = {
     "Mo": (1844, "[05-S11]",
            "Moser, \"Die Tarok- und Hundert-Eins-Brüder\" (Vienna 1844): \"Wann sich drei zum Spieltisch "
            "setzen, Seins im Anfang mäuserlstill\"; \"Da fragt Aner: wer spielt aus, der And're: wer hat "
-           "Karten geb'n?\"; \"Und wanns G'spiel aus is, werd'n Stich zählt und dabei erst kritisirt\"", False),
+           "Karten geb'n?\"; \"Und wanns G'spiel aus is, werd'n Stich zählt und dabei erst kritisirt\"; \"Jeder Karten geben will\"", False),
     "Ba": (1756, "[05-S12][05d POLY-S1]",
            "Bauer (Vienna and Nuremberg 1756), Ode auf das Taroc-Spiel: \"Wenn mein Pagat den letzten "
            "sticht\"; \"Und kommt der lustge Scüs darzu, So sitz ich in vergnügter Ruh\"; \"Ein wenig "
            "Spielen bleibt erlaubt, Doch nur zum Zeitvertreib\"; \"Der Pagat ist den andern Mitspielern "
-           "ein Dorn in den Augen\"", False),
+           "ein Dorn in den Augen\"; \"Ein andrer leg sich als ein Block ins weiche Bett: ich spiel Tarock\"", False),
     "Hu": (1873, "[05-S1][05 headline 8 REVIEW]",
            "Hügel, Der Wiener Dialekt (1873): \"Max'\" as a name of the Sküs card and, separately, \"Er hängt "
            "scho' der Max'\" (his wish is near fulfilment). That the phrase is said of the card is the "
@@ -183,6 +183,20 @@ SOURCES = {
     "Mk": (1923, "[05c LIT-S42]",
            "Die Muskete, 1 Aug 1923, p. 6 (OCR snippet): \"als Kiebitz darf ich höchstens ein Nachtmahl "
            "zahlen, aber nichts dreinreden\"", False),
+    "Ne5": (1845, "[05-S9][05-S22][05c LIT-S3]",
+            "Nestroy, Unverhofft (1845), Bonz 1890 edition (OCR), Ledig: \"Beim Tarock kann ich doch 'was "
+            "g'winnen, wenn ich einige Ultimo mach'\"", False),
+    "Id": (1824, "[05b LEX-S33][05b LEX-S16]",
+           "Idioticon Austriacum (Vienna 1824), also in Wander, Trumpf 5: \"Den hab i an Trumpf geben\" (a "
+           "sharp retort)", False),
+    "Sk": (1905, "[05-S2]",
+           "Schranka, Wiener Dialekt-Lexikon (1905): \"Auf jemanden einen Pick haben\" (to bear a grudge, "
+           "after the suit Pick)", False),
+    "Kk": (1887, "[05c LIT-S23]",
+           "Kikeriki, 9 Jan 1887, p. 3 (a riddle, OCR snippet): \"Der Sküs sticht immer Alles\"", False),
+    "Gs": (1934, "[05c LIT-S54]",
+           "Das kleine Volksblatt, 24 May 1934, p. 10 (OCR snippet): \"der Mond nur, wann er in G'sellschaft "
+           "vom Gstieß und Pagat is\" (Gstieß: the Viennese street name of the Sküs)", False),
     "Bt": (1927, "[05c LIT-S62]",
            "Bettauers Wochenschrift, 3 Jan 1927, p. 7 (OCR snippet): \"Den ganzen Nachmittag haben wir "
            "Tarock gespielt! ... Strohmandl!\"", False),
@@ -231,9 +245,9 @@ def phrase_groups():
     add('deal-yours', 'deal_start: the player deals',
         ('Your deal.', 'T', 'Sie geben.'),
         ('Deal on; the straw men wait.', 'T', 'Geben Sie nur, die Strohmänner warten.'),
-        ('Dealt one way, played another. Go on.', 'Wa', 'Die Karten werden anders gegeben, anders gespielet.', 'Karte 7'),
         ('Your deal. Good luck to us both.', 'T', 'Sie geben. Viel Glück uns beiden.'),
-        ('A good shuffle is half the game.', 'Ra', 'Ein guter Misch ist das halbe Spiel.'))
+        ('A good shuffle is half the game.', 'Ra', 'Ein guter Misch ist das halbe Spiel.'),
+        ('Everyone wants to deal; you first.', 'Mo', 'Jeder will Karten geben; Sie zuerst.'))
     add('void-deal', 'void_deal: a hand with no tarock, the deal annulled',
         ('No trumps, no game.', 'Jö', 'Ohne Tarok is kein Spiel.'),
         ('Void. Gather them up and deal again.', 'T', 'Vergeben! Zusammenwerfen und neu geben.'),
@@ -292,69 +306,96 @@ def phrase_groups():
         ('Ah, a king. Welcome.', 'T', 'Ah, ein König. Willkommen.'),
         ('A king: worth little, then worth much.', 'Wa', 'Wie der König im Kartenspiel, bald gilt er nichts, bald gilt er viel.', 'König 175'),
         ('The straw is generous today.', 'T', 'Das Stroh ist heut großzügig.'),
-        ('Another king for my hand.', 'T', 'Noch ein König in die Hand.'))
+        ('Another king for my hand.', 'T', 'Noch ein König in die Hand.'),
+        ('Kings and courts from the straw: an easy game.', 'Ha', 'Schmiert der Strohmann viel Könige und Figuren, so ist das Spiel leicht zu gewinnen.'),
+        ('Honours are only the cadres of the army.', 'Ul', 'Die Honneurs sind nur die Cadres der Kartenarmee.'),
+        ('Everything has its charms.', 'Ra', 'Alles hat seine Reizes!'))
     add('pull-king-yours', "card_pulled: a king pulled into the player's hand",
         ('A king for you. Well turned.', 'T', 'Ein König für Sie. Schön umgedreht.'),
         ('The king comes to you.', 'T', 'Der König kommt zu Ihnen.'),
         ('A king: worth little, then worth much.', 'Wa', 'Wie der König im Kartenspiel, bald gilt er nichts, bald gilt er viel.', 'König 175'),
         ('The straw is kind to you.', 'T', 'Das Stroh ist gut zu Ihnen.'),
-        ('There goes a king, into the hand.', 'T', 'Da geht ein König in die Hand.'))
+        ('There goes a king, into the hand.', 'T', 'Da geht ein König in die Hand.'),
+        ('Kings and courts from the straw: an easy game.', 'Ha', 'Schmiert der Strohmann viel Könige und Figuren, so ist das Spiel leicht zu gewinnen.'),
+        ('Luck on lease, everywhere.', 'Ne1', "Der hat halt überall 's Glück in Pacht."),
+        ('Each is the smith of his own luck.', 'Ul', 'Jeder ist seines eigenen Glückes Schmied.'))
     add('pull-tarock-mine', "card_pulled: a tarock pulled into the opponent's hand",
         ('A tarock! Gladly taken.', 'T', 'Ein Tarok! Gern genommen.'),
         ('Tarock from the straw.', 'T', 'Tarok aus dem Stroh.'),
         ('Besser mitgenommen als drumgekommen.', 'Wa', 'Besser mitgenommen als drumgekommen.', 'Mitnehmen 1'),
         ('One more trump. That helps.', 'T', 'Noch ein Tarok. Das hilft.'),
-        ('Dealt one way, turned another.', 'Wa', 'Die Karten werden anders gegeben, anders gespielet.', 'Karte 7'))
+        ('To play, one must know what is trump.', 'Wa', 'Wer spielen will, muss wissen, was Trumpf ist.', 'Spielen 72'),
+        ('Without trumps there is no game.', 'Jö', 'Ohne Tarok is kein Spiel.'),
+        ('Let others sleep like logs; I play Tarock.', 'Ba', 'Ein andrer leg sich als ein Block ins weiche Bett: ich spiel Tarock.'),
+        ('How splendidly that falls out!', 'Fi', 'Das trifft sich ja herrlich!'))
     add('pull-tarock-yours', "card_pulled: a tarock pulled into the player's hand",
         ('A tarock for you.', 'T', 'Ein Tarok für Sie.'),
         ('Trumps from the straw: well turned.', 'T', 'Tarok aus dem Stroh: schön umgedreht.'),
-        ('Good cards get used to you.', 'Wa', 'An einen geschickten Spieler gewöhnen sich gute Karten.', 'Spieler 3'),
         ('One more trump to count.', 'T', 'Noch ein Tarok zu zählen.'),
-        ('The straw gives, the straw takes.', 'T', 'Das Stroh gibt, das Stroh nimmt.'))
+        ('The straw gives, the straw takes.', 'T', 'Das Stroh gibt, das Stroh nimmt.'),
+        ('To play, one must know what is trump.', 'Wa', 'Wer spielen will, muss wissen, was Trumpf ist.', 'Spielen 72'),
+        ('The little ones chase the big.', 'Wa', 'Die Kleinen jagen die Grossen.', 'Kleine 10'),
+        ('Let others sleep like logs; I play Tarock.', 'Ba', 'Ein andrer leg sich als ein Block ins weiche Bett: ich spiel Tarock.'),
+        ('A few ultimos, and Tarock pays.', 'Ne5', "Beim Tarock kann man doch 'was g'winnen, wenn man einige Ultimo macht."))
     add('pull-sku', 'card_pulled: the Sküs pulled (either side)',
         ('The Sküs! A wish nearly granted.', 'Hu', "Der Sküs! Er hängt scho' der Max'."),
         ('And the merry Sküs joins in.', 'Ba', 'Und kommt der lustge Scüs darzu.'),
         ('The Sküs has come home.', 'T', 'Der Sküs ist heimgekehrt.'),
         ('The highest trump, out of the straw.', 'T', 'Der höchste Tarok, aus dem Stroh.'),
         ('A Sküs: the one card nothing beats.', 'T', 'Ein Sküs: die eine Karte, die keiner sticht.'),
-        ('The irresistible Sküs!', 'Lv', 'Der unwiderstehliche, alles niederrennende Sküs!'))
+        ('The irresistible Sküs!', 'Lv', 'Der unwiderstehliche, alles niederrennende Sküs!'),
+        ('Sküs, Mond and the little sparrow.', 'Kz', 'Sküs, Mond und Spatz.'),
+        ('The Sküs beats everything.', 'Kk', 'Der Sküs sticht immer Alles.'))
     add('pull-mond', 'card_pulled: the Mond (XXI) pulled',
         ('The Mond! Watch the Sküs.', 'T', 'Der Mond! Achtung auf den Sküs.'),
         ('Mond out of the straw.', 'T', 'Der Mond aus dem Stroh.'),
         ('The Mond is turned.', 'T', 'Der Mond ist umgedreht.'),
         ('The good, gentle Mond.', 'Lv', 'Der gute, sanfte Mond.'),
-        ('Good moon, you come so quietly.', 'Ra', 'Guter Mond, du gehst so stille.'))
+        ('Good moon, you come so quietly.', 'Ra', 'Guter Mond, du gehst so stille.'),
+        ('Keep the Mond back while the Sküs is unknown.', 'Wn', 'Den Mond nicht früh legen, solange man nicht weiß, wo der Skis steht.'),
+        ('Only the Sküs can trump the Mond.', 'Fh', 'Nur der Sküs kann den Mond stechen.'),
+        ('The Mond counts only with Sküs and Pagat.', 'Gs', "Der Mond zählt nur in G'sellschaft vom Gstieß und Pagat."))
     add('pull-pagat', 'card_pulled: the Pagat (I) pulled',
         ('The Pagat! A little trump, a great hope.', 'T', 'Der Pagat! Ein kleiner Tarok, eine große Hoffnung.'),
         ('Pagat out of the straw.', 'T', 'Pagat aus dem Stroh.'),
         ('The Pagat is here.', 'T', 'Der Pagat ist da.'),
         ('The Pagat: coquettish and cheerful.', 'Lv', 'Der kokette, fröhliche Pagat!'),
-        ('Sküs, Mond and the little sparrow.', 'Kz', 'Sküs, Mond und Spatz.'))
+        ('Sküs, Mond and the little sparrow.', 'Kz', 'Sküs, Mond und Spatz.'),
+        ('The Pagat, a thorn in my eye!', 'Ba', 'Der Pagat ist mir ein Dorn im Auge!'),
+        ('A few ultimos, and Tarock pays.', 'Ne5', "Beim Tarock kann man doch 'was g'winnen, wenn man einige Ultimo macht."),
+        ('Now the little sparrow goes under the knife!', 'Ra', 'Jetzt kommt der Spatz unters Messer!'))
     add('run-mine', 'card_pulled, long chain: a lucky run for the opponent',
         ('Three in a row! The straw is kind.', 'T', 'Drei hintereinander! Das Stroh ist gut.'),
         ('Glück ist besser als gut Spielen.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
-        ('Luck at cards is April weather.', 'Wa', 'Glück im Spiel ist Wetter im April.', 'Glück'),
         ('What a run from the straw!', 'T', 'Was für eine Serie aus dem Stroh!'),
-        ('Easy to play when luck deals.', 'Wa', 'Wem das Glück die Karten gibt, der hat gut spielen.', 'Glück 665'))
+        ('Luck on lease, everywhere.', 'Ne1', "Der hat halt überall 's Glück in Pacht."),
+        ('Lucky folk play weak cards well.', 'Wa', 'Wer Glück hat, spielt mit schlechten Karten gut.', 'Glück 850'),
+        ('Three, four, in a flash!', 'Ne1', 'Der macht drei, vier in einem Nu.'))
     add('run-yours', 'card_pulled, long chain: a lucky run for the player',
         ('What a run! Three, four, five.', 'T', 'Was für eine Serie! Drei, vier, fünf.'),
         ('Easy to play when luck deals.', 'Wa', 'Wem das Glück die Karten gibt, der hat gut spielen.', 'Glück 665'),
         ('The cards run your way tonight.', 'T', 'Die Karten laufen Ihnen heute zu.'),
         ('The straw empties itself into the hand.', 'T', 'Das Stroh leert sich in die Hand.'),
-        ('Luck at cards is April weather.', 'Wa', 'Glück im Spiel ist Wetter im April.', 'Glück'))
+        ('Luck at cards is April weather.', 'Wa', 'Glück im Spiel ist Wetter im April.', 'Glück'),
+        ('Three, four, in a flash!', 'Ne1', 'Der macht drei, vier in einem Nu.'))
     add('nothing-mine', "packet_turned, no pull: the opponent's packets give nothing",
         ('Nothing but low cards!', 'Gl', 'Lauter Skartindeln!'),
         ('Nothing from the straw. Patience.', 'T', 'Nichts aus dem Stroh. Geduld.'),
-        ('The game hates me today.', 'Wa', 'Das Spiel hasst mich.', 'Spiel 274, Zusätze'),
         ('Not a trump, not a king.', 'T', 'Kein Tarok, kein König.'),
-        ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
-        ('Not a single tarock all evening!', 'Ra', "Den ganzen Abend hab' ich noch kein Tarock gesehen!"))
+        ('Not a single tarock all evening!', 'Ra', "Den ganzen Abend hab' ich noch kein Tarock gesehen!"),
+        ('Without the best cards, nothing takes a trick.', 'Wa', 'Wenn die besten Blätter verworffen, so kann man nichts mehr stechen.', 'Blatt 53'),
+        ('Lead small; one can always grow big.', 'Wa', "Klan ausg'spielt, gross koan ma oallweil wer'n.", 'Klein 14'),
+        ('Not won yet; the cards still lie out.', 'Wa', "Das Spiel ist noch nicht gewonnen, die Kart liegt noch auf'm Tisch.", 'Spiel 42'),
+        ('A card or a log of wood, either will do.', 'Mw', 'Eine Karte oder ein Scheit Holz!'))
     add('nothing-yours', "packet_turned, no pull: the player's packets give nothing",
         ('Nothing for you. The straw is stingy.', 'T', 'Nichts für Sie. Das Stroh ist geizig.'),
         ('Blind chance, nothing more.', 'Ha', 'Blinder Zufall, sonst nichts.'),
-        ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
         ('The straw gave you low cards only.', 'T', 'Das Stroh gab Ihnen nur kleine Karten.'),
-        ('It counts the same for both of us.', 'Ha', 'Es gilt ja Einem wie dem Andern.'))
+        ('It counts the same for both of us.', 'Ha', 'Es gilt ja Einem wie dem Andern.'),
+        ('Without the best cards, nothing takes a trick.', 'Wa', 'Wenn die besten Blätter verworffen, so kann man nichts mehr stechen.', 'Blatt 53'),
+        ('Lead small; one can always grow big.', 'Wa', "Klan ausg'spielt, gross koan ma oallweil wer'n.", 'Klein 14'),
+        ('Nothing but low cards!', 'Gl', 'Lauter Skartindeln!'),
+        ('The straw was frugal with you today.', 'T', 'Das Stroh war heut sparsam mit Ihnen.'))
     add('slow', 'the player is slow to play',
         ('Your turn, I believe.', 'T', "Sie sind an der Reihe, glaub' ich."),
         ('Mouse-quiet: the table waits.', 'Mo', 'Mäuserlstill.'),
@@ -370,25 +411,39 @@ def phrase_groups():
         ('That one is mine, I think.', 'T', "Der gehört mir, glaub' ich."),
         ('Taken. Thank you.', 'T', 'Genommen. Danke.'),
         ('A trick for me, it seems.', 'T', "Ein Stich für mich, scheint's."),
-        ('Another trick on my side.', 'T', 'Wieder ein Stich auf meiner Seite.'))
+        ('Another trick on my side.', 'T', 'Wieder ein Stich auf meiner Seite.'),
+        ('Struck, the buck: why stray into the cabbage?', 'Wa', 'Gestochen der Bock, warum geht er ins Kraut.', 'Bock'),
+        ('I gave that one a trump.', 'Id', 'Den hab i an Trumpf geben.'),
+        ('A kind heart wins no game.', 'Wa', 'Mit einem guten Herzen gewinnt man kein Spiel.', 'Herz 239'),
+        ('The lesser beat the greater these days.', 'Wa', 'Die geringern stechen die höhern.', 'Spielen 22'))
     add('trick-good-yours', 'trick_won: a good trick for the player',
         ('Well taken.', 'T', 'Gut genommen.'),
         ('The little ones chase the big.', 'Wa', 'Die Kleinen jagen die Grossen.', 'Kleine 10'),
         ('Your trick, and fairly won.', 'T', 'Ihr Stich, und ehrlich gewonnen.'),
         ('Good cards like you, it seems.', 'Wa', 'An einen geschickten Spieler gewöhnen sich gute Karten.', 'Spieler 3'),
-        ('Trump against trump, and yours.', 'Wa', 'Trumpf wider Trumpf.', 'Trumpf 4'))
+        ('Trump against trump, and yours.', 'Wa', 'Trumpf wider Trumpf.', 'Trumpf 4'),
+        ('Struck, the buck: why stray into the cabbage?', 'Wa', 'Gestochen der Bock, warum geht er ins Kraut.', 'Bock'),
+        ('The lesser beat the greater these days.', 'Wa', 'Die geringern stechen die höhern.', 'Spielen 22'),
+        ('You know what is trump.', 'Wa', 'Sie wissen, was Trumpf ist.', 'Wissen 541'),
+        ('Early winners, late losers, they say.', 'Wa', 'Die ersten Hunde ertränkt man gern.', 'Hund'))
     add('trick-bad-mine', 'trick_won: a bad trick for the opponent, points lost',
         ('The leaf has turned.', 'Wa', 'Das Blatt hat sich gewandt.', 'Blatt 29'),
         ('Not won till the cards are out.', 'Wa', 'So lange die Karten auf dem Tisch liegen, ist das Spiel nicht gewonnen.', 'Karte 89'),
-        ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
         ('There goes a trick. It happens.', 'T', 'Da geht ein Stich. Das kommt vor.'),
-        ('That one was yours, and rightly.', 'T', 'Das war Ihrer, und mit Recht.'))
+        ('That one was yours, and rightly.', 'T', 'Das war Ihrer, und mit Recht.'),
+        ('Everyone plays against me, and with trumps!', 'Ra', 'Alles spielt gegen mich und trischakt mich mit Tarock?'),
+        ('A grudge against you, in play only.', 'Sk', 'Einen Pick auf Sie, nur im Spiel.'),
+        ('Tricks counted, and criticised after.', 'Mo', "Werd'n Stich zählt und dabei erst kritisirt."),
+        ('The card has turned.', 'Wa', 'Die Karte hat sich gewendet.', 'Karte 44'))
     add('trick-bad-yours', 'trick_won: a bad trick for the player',
         ('The next one may be yours.', 'T', 'Der nächste gehört vielleicht Ihnen.'),
-        ('The leaf can turn yet.', 'Wa', 'Das Blatt kann sich noch wenden.', 'Blatt 29'),
         ('Nothing is lost while cards lie out.', 'Wa', 'So lange die Karten auf dem Tisch liegen, ist das Spiel nicht gewonnen.', 'Karte 89'),
         ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
-        ('Dealt one way, played another.', 'Wa', 'Die Karten werden anders gegeben, anders gespielet.', 'Karte 7'))
+        ('Dealt one way, played another.', 'Wa', 'Die Karten werden anders gegeben, anders gespielet.', 'Karte 7'),
+        ('I gave that one a trump.', 'Id', 'Den hab i an Trumpf geben.'),
+        ('A kind heart wins no game.', 'Wa', 'Mit einem guten Herzen gewinnt man kein Spiel.', 'Herz 239'),
+        ('Count the tarocks diligently.', 'Ro', "Zählen S' fleißig die Tarok!"),
+        ('A trick lost is not a game lost.', 'T', 'Ein Stich verloren ist nicht das Spiel verloren.'))
     add('sku-played', 'card_played: the Sküs played (either side)',
         ('Sküs: I excuse myself!', 'Me', 'Ich skisiere mich!'),
         ('Pardon me: the Sküs.', 'Ha', 'Pardon, ich skisire mich.'),
@@ -488,28 +543,28 @@ def phrase_groups():
         ('Thirty-five and two thirds: the proudest win.', 'Kg', 'Fünfunddreißig und zwei Blatt: der stolzeste Sieg.'))
     add('result-won-mine', 'game_scored: the opponent wins the deal',
         ('Gewonnen, and fairly, I hope.', 'T', "Gewonnen, und ehrlich, hoff' ich."),
-        ('Luck beats good play, today.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
         ('Taken up and won. The straw obliged.', 'T', 'Aufgenommen und gewonnen. Das Stroh war willig.'),
-        ('Luck at cards is April weather.', 'Wa', 'Glück im Spiel ist Wetter im April.', 'Glück'),
-        ('Won with flair.', 'Sc', 'Mit Glanz gewonnen.'))
+        ('Hearts are trumps: boldness wins.', 'Wa', 'Herz ist Trumpf.', 'Herz 197'),
+        ('Lucky folk play weak cards well.', 'Wa', 'Wer Glück hat, spielt mit schlechten Karten gut.', 'Glück 850'),
+        ('The deal is mine; the slate will say so.', 'T', 'Das Spiel geht an mich; die Tafel wird es sagen.'))
     add('result-lost-mine', 'game_scored: the opponent loses the deal',
         ('I play just as well, only with worse luck.', 'Cr', 'Ich spiele es gerade so gut, nur habe ich mehr Pech.'),
         ('The game hates me today.', 'Wa', 'Das Spiel hasst mich.', 'Spiel 274, Zusätze'),
-        ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
         ('Yours, then. Deal on.', 'T', 'Ihres also. Geben wir weiter.'),
-        ('The leaf will turn.', 'Wa', 'Das Blatt wird sich wenden.', 'Blatt 29'))
+        ('Not won yet; the cards still lie out.', 'Wa', "Das Spiel ist noch nicht gewonnen, die Kart liegt noch auf'm Tisch.", 'Spiel 42'),
+        ('One more round, then.', 'Ra', 'Nur noch eine Runde!'))
     add('result-won-yours', 'game_scored: the player wins the deal',
         ('Yours. Well played, and well turned.', 'T', 'Ihres. Gut gespielt und schön umgedreht.'),
         ('Easy to play when luck deals.', 'Wa', 'Wem das Glück die Karten gibt, der hat gut spielen.', 'Glück 665'),
-        ('Good cards get used to you.', 'Wa', 'An einen geschickten Spieler gewöhnen sich gute Karten.', 'Spieler 3'),
         ('Won with flair. My compliments.', 'Sc', 'Mit Glanz gewonnen. Mein Kompliment.'),
-        ('A deal for you. The evening is long.', 'T', 'Ein Spiel für Sie. Der Abend ist lang.'))
+        ('A deal for you. The evening is long.', 'T', 'Ein Spiel für Sie. Der Abend ist lang.'),
+        ('A deal to you, and fairly won.', 'T', 'Das Spiel geht an Sie, und ehrlich gewonnen.'))
     add('result-lost-yours', 'game_scored: the player loses the deal',
         ('Mine this time. Next one may be yours.', 'T', 'Diesmal meines. Das nächste vielleicht Ihres.'),
         ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
-        ('Luck at cards is April weather.', 'Wa', 'Glück im Spiel ist Wetter im April.', 'Glück'),
         ('You play as well; the luck was mine.', 'Cr', 'Sie spielen ebenso gut; das Glück war meines.'),
-        ('The leaf can turn yet.', 'Wa', 'Die Karte hat sich gewendet.', 'Karte 44'))
+        ('The leaf can turn yet.', 'Wa', 'Die Karte hat sich gewendet.', 'Karte 44'),
+        ('Mine this time; the evening is long.', 'T', 'Diesmal meines; der Abend ist lang.'))
     add('draw', 'game_scored, draw: 35 and 35, nothing decided',
         ('A draw. The next deal counts double.', 'Wn', 'Unentschieden. Das nächste Spiel zählt doppelt.'),
         ('A dead heat. Doubled next time.', 'Wn', 'Gleichstand. Das nächste Mal doppelt.'),
@@ -590,25 +645,24 @@ def phrase_groups():
         ('It happens. Go on.', 'T', 'Das kommt vor. Weiter.'),
         ('A slip is forfeit, but we forgive it.', 'Ve', "Versehen ist verspielt, wir verzeih'ns."))
     add('luck-yours', 'luck talk: the player is lucky',
-        ('Easy to play when luck deals.', 'Wa', 'Wem das Glück die Karten gibt, der hat gut spielen.', 'Glück 665'),
         ('Luck beats good play.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
-        ('Luck at cards is April weather.', 'Wa', 'Glück im Spiel ist Wetter im April.', 'Glück'),
         ('The luck is on your side tonight.', 'T', "Heut' Abend ist das Glück auf Ihrer Seite."),
         ('Good cards get used to you.', 'Wa', 'An einen geschickten Spieler gewöhnen sich gute Karten.', 'Spieler 3'),
-        ('Such a fluke!', 'Ra', 'Na, so einen Dusel!'))
+        ('Such a fluke!', 'Ra', 'Na, so einen Dusel!'),
+        ('Each is the smith of his own luck.', 'Ul', 'Jeder ist seines eigenen Glückes Schmied.'),
+        ('The cards fall your way; I wish you joy.', 'T', 'Die Karten fallen für Sie; viel Freude damit.'))
     add('luck-mine', 'luck talk: the opponent is lucky',
         ('Pure luck, I fear.', 'T', "Reines Glück, fürcht' ich."),
         ('Blind chance, nothing more.', 'Ha', 'Blinder Zufall, sonst nichts.'),
-        ('Luck beats good play, today.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
         ('Lucky today; tomorrow, who knows?', 'T', "Heut' hab' ich Glück; morgen, wer weiß?"),
         ('Luck at cards is April weather.', 'Wa', 'Glück im Spiel ist Wetter im April.', 'Glück'),
         ('Such a fluke! I admit it.', 'Ra', "Na, so einen Dusel! Ich gesteh's."))
     add('luck-bad-mine', "luck talk: the opponent's bad luck",
         ('The game hates me today.', 'Wa', 'Das Spiel hasst mich.', 'Spiel 274, Zusätze'),
         ('I play as well, with worse luck.', 'Cr', 'Ich spiele es gerade so gut, nur habe ich mehr Pech.'),
-        ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
         ('The leaf has turned against me.', 'Wa', 'Das Blatt hat sich gewandt.', 'Blatt 29'),
-        ('Luck is April weather. I wait.', 'Wa', 'Glück im Spiel ist Wetter im April.', 'Glück'))
+        ('Everyone plays against me, and with trumps!', 'Ra', 'Alles spielt gegen mich und trischakt mich mit Tarock?'),
+        ('Lost my calm, and my Pagat with it.', 'Mu', "Verloren ist die Seelenruh', der Pagat ultimo dazu."))
     add('kibitz', 'the kibitzer (the tutor, § 13) speaks or is asked',
         ('Paragraph thirteen: kibitzer, be quiet!', 'Ki', "§ 13: Kiebitz, halt's Maul!"),
         ('This game loves no audience.', 'Wa', 'Spiel liebt keine Zuschauer.', 'Spiel'),

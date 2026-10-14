@@ -9,17 +9,17 @@ not this file.
 Sources:
 
 - **T**: the table's own: a period formula carried to a case the sources do not spell out, or plain table talk
-- **Wn** [05-S3][03-S12][13-S2][05 headline 1]: Werner, Das moderne Tarokspiel, 2nd ed. (Hartleben, by 1891): Strohmann-Tarok "in der Umgangssprache Strohmanndl"; the Vorhand "hat sich zu erklären, ob sie 'aufnehmen', d. h. ein Spiel riskiren wolle. Paßt die Vorhand, so hat der Kartengeber ... das Recht, die Partie aufzunehmen"; Königrufen calls "Mein Spiel", "Ich rufe", "weiter", "gut"; "Ich sage die Troule an"; Troule and kings paid if "angesagt" at the latest as the first of them is played; a 35:35 tie is undecided and the next deal "sammt allen Ansagen doppelt zählt"; "Mondfang"; "das Impassiren"; "ein Conto ... bei fortlaufender Addition". "Mondfang" is Werner's noun in his other games (Kauf, Königrufen), not in the Strohmann section. The spoken "Ich nehme auf!", "Weiter!", "Ich passe!" are inflections of Werner's "aufnehmen", "weiter", "Paßt"; the exact sentences are as Mayr and Sedlaczek (2007) quote them [05-S5]
+- **Wn** [05-S3][03-S12][13-S2][05 headline 1]: Werner, Das moderne Tarokspiel, 2nd ed. (Hartleben, by 1891): Strohmann-Tarok "in der Umgangssprache Strohmanndl"; the Vorhand "hat sich zu erklären, ob sie 'aufnehmen', d. h. ein Spiel riskiren wolle. Paßt die Vorhand, so hat der Kartengeber ... das Recht, die Partie aufzunehmen"; Königrufen calls "Mein Spiel", "Ich rufe", "weiter", "gut"; "Ich sage die Troule an"; Troule and kings paid if "angesagt" at the latest as the first of them is played; a 35:35 tie is undecided and the next deal "sammt allen Ansagen doppelt zählt"; "Mondfang"; "das Impassiren"; "ein Conto ... bei fortlaufender Addition"; the Mond is not to be laid early "so lange man nicht weiß, wo der Skis steht". "Mondfang" is Werner's noun in his other games (Kauf, Königrufen), not in the Strohmann section. The spoken "Ich nehme auf!", "Weiter!", "Ich passe!" are inflections of Werner's "aufnehmen", "weiter", "Paßt"; the exact sentences are as Mayr and Sedlaczek (2007) quote them [05-S5]
 - **Ul** [03-S14][13-S1]: Ulmann, Illustrirtes Wiener Tarockbuch, 2nd ed. (1899): "Es ist üblich, ehe die Spielgesellschaft auseinandergeht, drei oder sechs Touren anzusagen" (p. 19); two players, "stets selbst seines eigenen Glückes Schmied" (p. 69); the honours "nur die Cadres der Kartenarmee" (p. 78); a 35:35 draw "zählt nicht"; Vorhand "hat die nächste Donne"
 - **Be** [13-S3]: Bermann (Vienna 1894), pp. 43-44: "Ist beim Beginne des Spieles nicht eine bestimmte Zeitdauer desselben festgesetzt, so ist es üblich, um es abzubrechen, die Schluß-Touren anzumelden. Gewöhnlich überläßt man dies aus Courtoisie dem im stärksten Verlust befindlichen Spieler ... Nur mit allseitiger Zustimmung können die angesagten Touren erstreckt werden"
 - **Hs** [13-S7]: Haas, Neuestes allgemeines Spielbuch (Vienna 1829), pp. 6-7: a sensible player will not stop abruptly but asks his fellow players "um die Festsetzung der letzten Tour, Partie oder Robber mit bescheidener Nachgiebigkeit"; slates and chalk for the score
 - **Ha** [05d POLY-S5]: Haas's Strohmandeln as printed in Alvensleben, Encyklopädie der Spiele (1853), pp. 561, 576-577: "da hierbei weit weniger die Geschicklichkeit als der blinde Zufall wirkt"; "Schmiert demnach der Strohmann zufälliger Weise dem Spieler viel Könige und Figuren ... so ist das Spiel leicht zu gewinnen"; "Es gilt ja Einem wie dem Andern"; "ich skisire mich"
-- **Ne1** [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3]: Nestroy, Zu ebener Erde und erster Stock (1835), Act 2, Bonz 1890 edition: Goldfuchs calls "Tous les trois ... vier Könige ... Pagat Ultimo!"; Johann's Lied: "Der macht drei, vier Ultimo in einem Nu". The wording is edition-dependent: the Projekt Gutenberg text prints "Tous les trois! – Vier Könige! – Pagat Ultimo!"
+- **Ne1** [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3]: Nestroy, Zu ebener Erde und erster Stock (1835), Act 2, Bonz 1890 edition: Goldfuchs calls "Tous les trois ... vier Könige ... Pagat Ultimo!"; Johann's Lied: "Der macht drei, vier Ultimo in einem Nu"; "Mein Herr hat halt überall 's Glück in Pacht" (Bonz 1890 only). The wording is edition-dependent: the Projekt Gutenberg text prints "Tous les trois! – Vier Könige! – Pagat Ultimo!"
 - **Ne2** [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3]: Nestroy, Nagerl und Handschuh (1832), Bonz 1891 edition (OCR): "Pagat Ultimo Volat! ... Ich bin matsch!" (the modern text has only "Ich bin matsch!")
 - **Ne3** [05-S7]: Nestroy, Die Familien Zwirn, Knieriem und Leim (1834), Zwirn: "Mein Herz hat ein' Solo Ultimo ang'sagt, und ich bin Matsch worden." (not compared with a modern text)
 - **Ne4** [05-S8][05c LIT-S2]: Nestroy, Einen Jux will er sich machen (1842), Weinberl's couplet on coffee-house onlookers: "Schaun zwei'n in die Karten und raten dem dritten, Ob er Carreau oder Pick spiel'n soll ... da muß ich bitten"
-- **Mo** [05-S11]: Moser, "Die Tarok- und Hundert-Eins-Brüder" (Vienna 1844): "Wann sich drei zum Spieltisch setzen, Seins im Anfang mäuserlstill"; "Da fragt Aner: wer spielt aus, der And're: wer hat Karten geb'n?"; "Und wanns G'spiel aus is, werd'n Stich zählt und dabei erst kritisirt"
-- **Ba** [05-S12][05d POLY-S1]: Bauer (Vienna and Nuremberg 1756), Ode auf das Taroc-Spiel: "Wenn mein Pagat den letzten sticht"; "Und kommt der lustge Scüs darzu, So sitz ich in vergnügter Ruh"; "Ein wenig Spielen bleibt erlaubt, Doch nur zum Zeitvertreib"; "Der Pagat ist den andern Mitspielern ein Dorn in den Augen"
+- **Mo** [05-S11]: Moser, "Die Tarok- und Hundert-Eins-Brüder" (Vienna 1844): "Wann sich drei zum Spieltisch setzen, Seins im Anfang mäuserlstill"; "Da fragt Aner: wer spielt aus, der And're: wer hat Karten geb'n?"; "Und wanns G'spiel aus is, werd'n Stich zählt und dabei erst kritisirt"; "Jeder Karten geben will"
+- **Ba** [05-S12][05d POLY-S1]: Bauer (Vienna and Nuremberg 1756), Ode auf das Taroc-Spiel: "Wenn mein Pagat den letzten sticht"; "Und kommt der lustge Scüs darzu, So sitz ich in vergnügter Ruh"; "Ein wenig Spielen bleibt erlaubt, Doch nur zum Zeitvertreib"; "Der Pagat ist den andern Mitspielern ein Dorn in den Augen"; "Ein andrer leg sich als ein Block ins weiche Bett: ich spiel Tarock"
 - **Hu** [05-S1][05 headline 8 REVIEW]: Hügel, Der Wiener Dialekt (1873): "Max'" as a name of the Sküs card and, separately, "Er hängt scho' der Max'" (his wish is near fulfilment). That the phrase is said of the card is the note's inference
 - **Wa** [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21]: Wander, Deutsches Sprichwörter-Lexikon (1867-1880), entry given as the locator; the original wording is the German column; Austrian and Viennese items are marked in 05b
 - **Me** [05-S4][05b LEX-S22 REVIEW]: Meyers Konversations-Lexikon, 4th ed. (1889), Tarock: "Ich skisiere (exküsiere) mich!"; the 6th ed. adds the etymology "vom ital. scusa"; cite the edition
@@ -51,6 +51,11 @@ Sources:
 - **Mu** [05c LIT-S36]: Die Muskete, 14 Aug 1913, p. 6 (verse, OCR snippet): "Verloren ist die Seelenruh', Der Pagat ultimo dazu."
 - **Wb** [05c LIT-S44]: (Neuigkeits) Welt Blatt, 1 Jun 1904, p. 7 (OCR snippet): "Das 'Kiebitz'-Reglement hat auch nur einen Paragraphen ... Schweigende Kiebitze werden geduldet"
 - **Mk** [05c LIT-S42]: Die Muskete, 1 Aug 1923, p. 6 (OCR snippet): "als Kiebitz darf ich höchstens ein Nachtmahl zahlen, aber nichts dreinreden"
+- **Ne5** [05-S9][05-S22][05c LIT-S3]: Nestroy, Unverhofft (1845), Bonz 1890 edition (OCR), Ledig: "Beim Tarock kann ich doch 'was g'winnen, wenn ich einige Ultimo mach'"
+- **Id** [05b LEX-S33][05b LEX-S16]: Idioticon Austriacum (Vienna 1824), also in Wander, Trumpf 5: "Den hab i an Trumpf geben" (a sharp retort)
+- **Sk** [05-S2]: Schranka, Wiener Dialekt-Lexikon (1905): "Auf jemanden einen Pick haben" (to bear a grudge, after the suit Pick)
+- **Kk** [05c LIT-S23]: Kikeriki, 9 Jan 1887, p. 3 (a riddle, OCR snippet): "Der Sküs sticht immer Alles"
+- **Gs** [05c LIT-S54]: Das kleine Volksblatt, 24 May 1934, p. 10 (OCR snippet): "der Mond nur, wann er in G'sellschaft vom Gstieß und Pagat is" (Gstieß: the Viennese street name of the Sküs)
 - **Bt** [05c LIT-S62]: Bettauers Wochenschrift, 3 Jan 1927, p. 7 (OCR snippet): "Den ganzen Nachmittag haben wir Tarock gespielt! ... Strohmandl!"
 
 ### `greet`
@@ -121,9 +126,9 @@ deal_start: the player deals
 |---|---|---|
 | Your deal. | Sie geben. | T |
 | Deal on; the straw men wait. | Geben Sie nur, die Strohmänner warten. | T |
-| Dealt one way, played another. Go on. | Die Karten werden anders gegeben, anders gespielet. | Wa, Karte 7 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Your deal. Good luck to us both. | Sie geben. Viel Glück uns beiden. | T |
 | A good shuffle is half the game. | Ein guter Misch ist das halbe Spiel. | Ra [05c LIT-S8] |
+| Everyone wants to deal; you first. | Jeder will Karten geben; Sie zuerst. | Mo [05-S11] |
 
 ### `void-deal`
 
@@ -243,6 +248,9 @@ card_pulled: a king pulled into the opponent's hand
 | A king: worth little, then worth much. | Wie der König im Kartenspiel, bald gilt er nichts, bald gilt er viel. | Wa, König 175 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The straw is generous today. | Das Stroh ist heut großzügig. | T |
 | Another king for my hand. | Noch ein König in die Hand. | T |
+| Kings and courts from the straw: an easy game. | Schmiert der Strohmann viel Könige und Figuren, so ist das Spiel leicht zu gewinnen. | Ha [05d POLY-S5] |
+| Honours are only the cadres of the army. | Die Honneurs sind nur die Cadres der Kartenarmee. | Ul [03-S14][13-S1] |
+| Everything has its charms. | Alles hat seine Reizes! | Ra [05c LIT-S8] |
 
 ### `pull-king-yours`
 
@@ -255,6 +263,9 @@ card_pulled: a king pulled into the player's hand
 | A king: worth little, then worth much. | Wie der König im Kartenspiel, bald gilt er nichts, bald gilt er viel. | Wa, König 175 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The straw is kind to you. | Das Stroh ist gut zu Ihnen. | T |
 | There goes a king, into the hand. | Da geht ein König in die Hand. | T |
+| Kings and courts from the straw: an easy game. | Schmiert der Strohmann viel Könige und Figuren, so ist das Spiel leicht zu gewinnen. | Ha [05d POLY-S5] |
+| Luck on lease, everywhere. | Der hat halt überall 's Glück in Pacht. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
+| Each is the smith of his own luck. | Jeder ist seines eigenen Glückes Schmied. | Ul [03-S14][13-S1] |
 
 ### `pull-tarock-mine`
 
@@ -266,7 +277,10 @@ card_pulled: a tarock pulled into the opponent's hand
 | Tarock from the straw. | Tarok aus dem Stroh. | T |
 | Besser mitgenommen als drumgekommen. | Besser mitgenommen als drumgekommen. | Wa, Mitnehmen 1 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | One more trump. That helps. | Noch ein Tarok. Das hilft. | T |
-| Dealt one way, turned another. | Die Karten werden anders gegeben, anders gespielet. | Wa, Karte 7 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| To play, one must know what is trump. | Wer spielen will, muss wissen, was Trumpf ist. | Wa, Spielen 72 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Without trumps there is no game. | Ohne Tarok is kein Spiel. | Jö [05c LIT-S27] |
+| Let others sleep like logs; I play Tarock. | Ein andrer leg sich als ein Block ins weiche Bett: ich spiel Tarock. | Ba [05-S12][05d POLY-S1] |
+| How splendidly that falls out! | Das trifft sich ja herrlich! | Fi [05c LIT-S15] |
 
 ### `pull-tarock-yours`
 
@@ -276,9 +290,12 @@ card_pulled: a tarock pulled into the player's hand
 |---|---|---|
 | A tarock for you. | Ein Tarok für Sie. | T |
 | Trumps from the straw: well turned. | Tarok aus dem Stroh: schön umgedreht. | T |
-| Good cards get used to you. | An einen geschickten Spieler gewöhnen sich gute Karten. | Wa, Spieler 3 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | One more trump to count. | Noch ein Tarok zu zählen. | T |
 | The straw gives, the straw takes. | Das Stroh gibt, das Stroh nimmt. | T |
+| To play, one must know what is trump. | Wer spielen will, muss wissen, was Trumpf ist. | Wa, Spielen 72 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| The little ones chase the big. | Die Kleinen jagen die Grossen. | Wa, Kleine 10 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Let others sleep like logs; I play Tarock. | Ein andrer leg sich als ein Block ins weiche Bett: ich spiel Tarock. | Ba [05-S12][05d POLY-S1] |
+| A few ultimos, and Tarock pays. | Beim Tarock kann man doch 'was g'winnen, wenn man einige Ultimo macht. | Ne5 [05-S9][05-S22][05c LIT-S3] |
 
 ### `pull-sku`
 
@@ -292,6 +309,8 @@ card_pulled: the Sküs pulled (either side)
 | The highest trump, out of the straw. | Der höchste Tarok, aus dem Stroh. | T |
 | A Sküs: the one card nothing beats. | Ein Sküs: die eine Karte, die keiner sticht. | T |
 | The irresistible Sküs! | Der unwiderstehliche, alles niederrennende Sküs! | Lv [05c LIT-S58] |
+| Sküs, Mond and the little sparrow. | Sküs, Mond und Spatz. | Kz [05c LIT-S57] |
+| The Sküs beats everything. | Der Sküs sticht immer Alles. | Kk [05c LIT-S23] |
 
 ### `pull-mond`
 
@@ -304,6 +323,9 @@ card_pulled: the Mond (XXI) pulled
 | The Mond is turned. | Der Mond ist umgedreht. | T |
 | The good, gentle Mond. | Der gute, sanfte Mond. | Lv [05c LIT-S58] |
 | Good moon, you come so quietly. | Guter Mond, du gehst so stille. | Ra [05c LIT-S8] |
+| Keep the Mond back while the Sküs is unknown. | Den Mond nicht früh legen, solange man nicht weiß, wo der Skis steht. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| Only the Sküs can trump the Mond. | Nur der Sküs kann den Mond stechen. | Fh [05c LIT-S60] |
+| The Mond counts only with Sküs and Pagat. | Der Mond zählt nur in G'sellschaft vom Gstieß und Pagat. | Gs [05c LIT-S54] |
 
 ### `pull-pagat`
 
@@ -316,6 +338,9 @@ card_pulled: the Pagat (I) pulled
 | The Pagat is here. | Der Pagat ist da. | T |
 | The Pagat: coquettish and cheerful. | Der kokette, fröhliche Pagat! | Lv [05c LIT-S58] |
 | Sküs, Mond and the little sparrow. | Sküs, Mond und Spatz. | Kz [05c LIT-S57] |
+| The Pagat, a thorn in my eye! | Der Pagat ist mir ein Dorn im Auge! | Ba [05-S12][05d POLY-S1] |
+| A few ultimos, and Tarock pays. | Beim Tarock kann man doch 'was g'winnen, wenn man einige Ultimo macht. | Ne5 [05-S9][05-S22][05c LIT-S3] |
+| Now the little sparrow goes under the knife! | Jetzt kommt der Spatz unters Messer! | Ra [05c LIT-S8] |
 
 ### `run-mine`
 
@@ -325,9 +350,10 @@ card_pulled, long chain: a lucky run for the opponent
 |---|---|---|
 | Three in a row! The straw is kind. | Drei hintereinander! Das Stroh ist gut. | T |
 | Glück ist besser als gut Spielen. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Luck at cards is April weather. | Glück im Spiel ist Wetter im April. | Wa, Glück [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | What a run from the straw! | Was für eine Serie aus dem Stroh! | T |
-| Easy to play when luck deals. | Wem das Glück die Karten gibt, der hat gut spielen. | Wa, Glück 665 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Luck on lease, everywhere. | Der hat halt überall 's Glück in Pacht. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
+| Lucky folk play weak cards well. | Wer Glück hat, spielt mit schlechten Karten gut. | Wa, Glück 850 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Three, four, in a flash! | Der macht drei, vier in einem Nu. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
 
 ### `run-yours`
 
@@ -340,6 +366,7 @@ card_pulled, long chain: a lucky run for the player
 | The cards run your way tonight. | Die Karten laufen Ihnen heute zu. | T |
 | The straw empties itself into the hand. | Das Stroh leert sich in die Hand. | T |
 | Luck at cards is April weather. | Glück im Spiel ist Wetter im April. | Wa, Glück [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Three, four, in a flash! | Der macht drei, vier in einem Nu. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
 
 ### `nothing-mine`
 
@@ -349,10 +376,12 @@ packet_turned, no pull: the opponent's packets give nothing
 |---|---|---|
 | Nothing but low cards! | Lauter Skartindeln! | Gl [05c LIT-S28] |
 | Nothing from the straw. Patience. | Nichts aus dem Stroh. Geduld. | T |
-| The game hates me today. | Das Spiel hasst mich. | Wa, Spiel 274, Zusätze [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Not a trump, not a king. | Kein Tarok, kein König. | T |
-| A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Not a single tarock all evening! | Den ganzen Abend hab' ich noch kein Tarock gesehen! | Ra [05c LIT-S8] |
+| Without the best cards, nothing takes a trick. | Wenn die besten Blätter verworffen, so kann man nichts mehr stechen. | Wa, Blatt 53 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Lead small; one can always grow big. | Klan ausg'spielt, gross koan ma oallweil wer'n. | Wa, Klein 14 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Not won yet; the cards still lie out. | Das Spiel ist noch nicht gewonnen, die Kart liegt noch auf'm Tisch. | Wa, Spiel 42 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| A card or a log of wood, either will do. | Eine Karte oder ein Scheit Holz! | Mw [05c LIT-S10] |
 
 ### `nothing-yours`
 
@@ -362,9 +391,12 @@ packet_turned, no pull: the player's packets give nothing
 |---|---|---|
 | Nothing for you. The straw is stingy. | Nichts für Sie. Das Stroh ist geizig. | T |
 | Blind chance, nothing more. | Blinder Zufall, sonst nichts. | Ha [05d POLY-S5] |
-| A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The straw gave you low cards only. | Das Stroh gab Ihnen nur kleine Karten. | T |
 | It counts the same for both of us. | Es gilt ja Einem wie dem Andern. | Ha [05d POLY-S5] |
+| Without the best cards, nothing takes a trick. | Wenn die besten Blätter verworffen, so kann man nichts mehr stechen. | Wa, Blatt 53 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Lead small; one can always grow big. | Klan ausg'spielt, gross koan ma oallweil wer'n. | Wa, Klein 14 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Nothing but low cards! | Lauter Skartindeln! | Gl [05c LIT-S28] |
+| The straw was frugal with you today. | Das Stroh war heut sparsam mit Ihnen. | T |
 
 ### `slow`
 
@@ -393,6 +425,10 @@ trick_won: a good trick for the opponent
 | Taken. Thank you. | Genommen. Danke. | T |
 | A trick for me, it seems. | Ein Stich für mich, scheint's. | T |
 | Another trick on my side. | Wieder ein Stich auf meiner Seite. | T |
+| Struck, the buck: why stray into the cabbage? | Gestochen der Bock, warum geht er ins Kraut. | Wa, Bock [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| I gave that one a trump. | Den hab i an Trumpf geben. | Id [05b LEX-S33][05b LEX-S16] |
+| A kind heart wins no game. | Mit einem guten Herzen gewinnt man kein Spiel. | Wa, Herz 239 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| The lesser beat the greater these days. | Die geringern stechen die höhern. | Wa, Spielen 22 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 
 ### `trick-good-yours`
 
@@ -405,6 +441,10 @@ trick_won: a good trick for the player
 | Your trick, and fairly won. | Ihr Stich, und ehrlich gewonnen. | T |
 | Good cards like you, it seems. | An einen geschickten Spieler gewöhnen sich gute Karten. | Wa, Spieler 3 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Trump against trump, and yours. | Trumpf wider Trumpf. | Wa, Trumpf 4 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Struck, the buck: why stray into the cabbage? | Gestochen der Bock, warum geht er ins Kraut. | Wa, Bock [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| The lesser beat the greater these days. | Die geringern stechen die höhern. | Wa, Spielen 22 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| You know what is trump. | Sie wissen, was Trumpf ist. | Wa, Wissen 541 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Early winners, late losers, they say. | Die ersten Hunde ertränkt man gern. | Wa, Hund [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 
 ### `trick-bad-mine`
 
@@ -414,9 +454,12 @@ trick_won: a bad trick for the opponent, points lost
 |---|---|---|
 | The leaf has turned. | Das Blatt hat sich gewandt. | Wa, Blatt 29 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Not won till the cards are out. | So lange die Karten auf dem Tisch liegen, ist das Spiel nicht gewonnen. | Wa, Karte 89 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | There goes a trick. It happens. | Da geht ein Stich. Das kommt vor. | T |
 | That one was yours, and rightly. | Das war Ihrer, und mit Recht. | T |
+| Everyone plays against me, and with trumps! | Alles spielt gegen mich und trischakt mich mit Tarock? | Ra [05c LIT-S8] |
+| A grudge against you, in play only. | Einen Pick auf Sie, nur im Spiel. | Sk [05-S2] |
+| Tricks counted, and criticised after. | Werd'n Stich zählt und dabei erst kritisirt. | Mo [05-S11] |
+| The card has turned. | Die Karte hat sich gewendet. | Wa, Karte 44 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 
 ### `trick-bad-yours`
 
@@ -425,10 +468,13 @@ trick_won: a bad trick for the player
 | English | German | Source |
 |---|---|---|
 | The next one may be yours. | Der nächste gehört vielleicht Ihnen. | T |
-| The leaf can turn yet. | Das Blatt kann sich noch wenden. | Wa, Blatt 29 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Nothing is lost while cards lie out. | So lange die Karten auf dem Tisch liegen, ist das Spiel nicht gewonnen. | Wa, Karte 89 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Dealt one way, played another. | Die Karten werden anders gegeben, anders gespielet. | Wa, Karte 7 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| I gave that one a trump. | Den hab i an Trumpf geben. | Id [05b LEX-S33][05b LEX-S16] |
+| A kind heart wins no game. | Mit einem guten Herzen gewinnt man kein Spiel. | Wa, Herz 239 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Count the tarocks diligently. | Zählen S' fleißig die Tarok! | Ro [05d POLY-S4] |
+| A trick lost is not a game lost. | Ein Stich verloren ist nicht das Spiel verloren. | T |
 
 ### `sku-played`
 
@@ -630,10 +676,10 @@ game_scored: the opponent wins the deal
 | English | German | Source |
 |---|---|---|
 | Gewonnen, and fairly, I hope. | Gewonnen, und ehrlich, hoff' ich. | T |
-| Luck beats good play, today. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Taken up and won. The straw obliged. | Aufgenommen und gewonnen. Das Stroh war willig. | T |
-| Luck at cards is April weather. | Glück im Spiel ist Wetter im April. | Wa, Glück [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Won with flair. | Mit Glanz gewonnen. | Sc [05-S21][05b LEX-S30] |
+| Hearts are trumps: boldness wins. | Herz ist Trumpf. | Wa, Herz 197 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Lucky folk play weak cards well. | Wer Glück hat, spielt mit schlechten Karten gut. | Wa, Glück 850 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| The deal is mine; the slate will say so. | Das Spiel geht an mich; die Tafel wird es sagen. | T |
 
 ### `result-lost-mine`
 
@@ -643,9 +689,9 @@ game_scored: the opponent loses the deal
 |---|---|---|
 | I play just as well, only with worse luck. | Ich spiele es gerade so gut, nur habe ich mehr Pech. | Cr [04-S26] |
 | The game hates me today. | Das Spiel hasst mich. | Wa, Spiel 274, Zusätze [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Yours, then. Deal on. | Ihres also. Geben wir weiter. | T |
-| The leaf will turn. | Das Blatt wird sich wenden. | Wa, Blatt 29 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Not won yet; the cards still lie out. | Das Spiel ist noch nicht gewonnen, die Kart liegt noch auf'm Tisch. | Wa, Spiel 42 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| One more round, then. | Nur noch eine Runde! | Ra [05c LIT-S8] |
 
 ### `result-won-yours`
 
@@ -655,9 +701,9 @@ game_scored: the player wins the deal
 |---|---|---|
 | Yours. Well played, and well turned. | Ihres. Gut gespielt und schön umgedreht. | T |
 | Easy to play when luck deals. | Wem das Glück die Karten gibt, der hat gut spielen. | Wa, Glück 665 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Good cards get used to you. | An einen geschickten Spieler gewöhnen sich gute Karten. | Wa, Spieler 3 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Won with flair. My compliments. | Mit Glanz gewonnen. Mein Kompliment. | Sc [05-S21][05b LEX-S30] |
 | A deal for you. The evening is long. | Ein Spiel für Sie. Der Abend ist lang. | T |
+| A deal to you, and fairly won. | Das Spiel geht an Sie, und ehrlich gewonnen. | T |
 
 ### `result-lost-yours`
 
@@ -667,9 +713,9 @@ game_scored: the player loses the deal
 |---|---|---|
 | Mine this time. Next one may be yours. | Diesmal meines. Das nächste vielleicht Ihres. | T |
 | A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Luck at cards is April weather. | Glück im Spiel ist Wetter im April. | Wa, Glück [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | You play as well; the luck was mine. | Sie spielen ebenso gut; das Glück war meines. | Cr [04-S26] |
 | The leaf can turn yet. | Die Karte hat sich gewendet. | Wa, Karte 44 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Mine this time; the evening is long. | Diesmal meines; der Abend ist lang. | T |
 
 ### `draw`
 
@@ -834,12 +880,12 @@ luck talk: the player is lucky
 
 | English | German | Source |
 |---|---|---|
-| Easy to play when luck deals. | Wem das Glück die Karten gibt, der hat gut spielen. | Wa, Glück 665 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Luck beats good play. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Luck at cards is April weather. | Glück im Spiel ist Wetter im April. | Wa, Glück [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The luck is on your side tonight. | Heut' Abend ist das Glück auf Ihrer Seite. | T |
 | Good cards get used to you. | An einen geschickten Spieler gewöhnen sich gute Karten. | Wa, Spieler 3 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Such a fluke! | Na, so einen Dusel! | Ra [05c LIT-S8] |
+| Each is the smith of his own luck. | Jeder ist seines eigenen Glückes Schmied. | Ul [03-S14][13-S1] |
+| The cards fall your way; I wish you joy. | Die Karten fallen für Sie; viel Freude damit. | T |
 
 ### `luck-mine`
 
@@ -849,7 +895,6 @@ luck talk: the opponent is lucky
 |---|---|---|
 | Pure luck, I fear. | Reines Glück, fürcht' ich. | T |
 | Blind chance, nothing more. | Blinder Zufall, sonst nichts. | Ha [05d POLY-S5] |
-| Luck beats good play, today. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Lucky today; tomorrow, who knows? | Heut' hab' ich Glück; morgen, wer weiß? | T |
 | Luck at cards is April weather. | Glück im Spiel ist Wetter im April. | Wa, Glück [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Such a fluke! I admit it. | Na, so einen Dusel! Ich gesteh's. | Ra [05c LIT-S8] |
@@ -862,9 +907,9 @@ luck talk: the opponent's bad luck
 |---|---|---|
 | The game hates me today. | Das Spiel hasst mich. | Wa, Spiel 274, Zusätze [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | I play as well, with worse luck. | Ich spiele es gerade so gut, nur habe ich mehr Pech. | Cr [04-S26] |
-| A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The leaf has turned against me. | Das Blatt hat sich gewandt. | Wa, Blatt 29 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Luck is April weather. I wait. | Glück im Spiel ist Wetter im April. | Wa, Glück [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Everyone plays against me, and with trumps! | Alles spielt gegen mich und trischakt mich mit Tarock? | Ra [05c LIT-S8] |
+| Lost my calm, and my Pagat with it. | Verloren ist die Seelenruh', der Pagat ultimo dazu. | Mu [05c LIT-S36] |
 
 ### `kibitz`
 

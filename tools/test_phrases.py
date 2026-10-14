@@ -268,6 +268,23 @@ class Signatures(unittest.TestCase):
         # a bare lemma is not an entry: two sayings under "Spiel" differ
         self.assertNotEqual(phrases.sig("a", 0, ("x", "Wa", "y", "Spiel")), phrases.sig("a", 1, ("x", "Wa", "z", "Spiel")))
 
+    def test_a_saying_is_in_at_most_two_groups(self):
+        """The talk's record (TABLE3D 5.3) cannot make up for a saying that turns up in
+        many groups: a sourced saying (not a table line) appears in two at most."""
+        groups = {}
+        for gid, _, ways in GROUPS:
+            for k, w in enumerate(ways):
+                if w[1] != "T":
+                    groups.setdefault(phrases.sig(gid, k, w), set()).add(gid)
+        crowded = {s: sorted(g) for s, g in groups.items() if len(g) > 2}
+        self.assertEqual(crowded, {})
+
+    def test_the_most_frequent_groups_have_eight_or_more_wordings(self):
+        by = {g: ways for g, _, ways in GROUPS}
+        for gid in by:
+            if gid.startswith(("pull-", "nothing-", "trick-")):
+                self.assertGreaterEqual(len(by[gid]), 8, gid)
+
 
 class Generated(unittest.TestCase):
     def test_generated_files_are_current(self):
