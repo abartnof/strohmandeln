@@ -302,7 +302,9 @@ impl Table {
             return Err(r);
         }
         let v = view(&self.sitting, opp);
-        let action = self.opponent.choose(&v);
+        let Some(action) = self.opponent.choose(&v) else {
+            return Err(error("no-action", json!({})));
+        };
         if let Err(refusal) = self.sitting.apply(opp, action.clone()) {
             return Err(error("opponent-refused", json!({"refusal": refusal})));
         }
@@ -686,6 +688,26 @@ mod tests {
         let mut h = host(CONFIG);
         assert_eq!(h.send("{\"action\":\"fold\"}"), 0);
         assert_eq!(out(&h)["error"], "bad-action");
+    }
+
+    #[test]
+    fn an_opponent_with_no_action_is_an_error_not_a_panic() {
+        struct Stuck;
+        impl Player for Stuck {
+            fn choose(&mut self, _: &View) -> Option<Action> {
+                None
+            }
+        }
+        let mut h = host(CONFIG);
+        while out(&h)["state"]["prompt"] != "opponent" {
+            let a = out(&h)["state"]["legal"][0].clone();
+            assert_eq!(h.send(&a.to_string()), 1);
+        }
+        h.table.as_mut().unwrap().set_opponent(Box::new(Stuck));
+        assert_eq!(h.step(), 0);
+        assert_eq!(out(&h)["error"], "no-action");
+        h.render();
+        assert_eq!(out(&h)["state"]["prompt"], "opponent", "nothing moved");
     }
 
     #[test]

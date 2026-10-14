@@ -97,7 +97,8 @@ Errors that are not rules refusals have no `state`:
 `bad-config`, `bad-action` (the action JSON does not parse or names an unknown
 action or card), `bad-record` (import: `field` or `setup` as for
 `bad-config`), `opponent-refused` (a bug in the opponent: it chose an action
-the engine refused; carries its `refusal`), `no-sitting` (any call before
+the engine refused; carries its `refusal`), `no-action` (the opponent found
+nothing to choose from; nothing moved), `no-sitting` (any call before
 `new`).
 
 ## The state

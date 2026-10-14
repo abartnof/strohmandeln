@@ -42,9 +42,12 @@ struct AnnouncingPlayer {
 }
 
 impl Player for AnnouncingPlayer {
-    fn choose(&mut self, v: &strohmandeln_core::view::View) -> Action {
+    fn choose(&mut self, v: &strohmandeln_core::view::View) -> Option<Action> {
+        if v.legal_actions.is_empty() {
+            return None;
+        }
         let a = v.legal_actions[self.rng.below(v.legal_actions.len() as u64) as usize].clone();
-        match a {
+        Some(match a {
             Action::Play { card, .. } => {
                 let held = self.sitting_hint.borrow().clone();
                 let announce = held
@@ -54,7 +57,7 @@ impl Player for AnnouncingPlayer {
                 Action::Play { card, announce }
             }
             other => other,
-        }
+        })
     }
 }
 
@@ -208,7 +211,7 @@ fn rules_8_to_12_the_engine_scores_every_played_deal_as_an_independent_reading_d
                 *held.borrow_mut() = d.legal_announcements(seat);
             }
             let v = view(&s, seat);
-            let a = players[seat.index()].choose(&v);
+            let a = players[seat.index()].choose(&v).unwrap();
             s.apply(seat, a).unwrap();
         }
         let mut log = DealLog::default();
@@ -316,7 +319,7 @@ fn rules_5_2_to_5_4_legal_plays_equal_an_independent_reading_at_every_step() {
                 assert!(!got.is_empty());
                 steps += 1;
             }
-            let a = players[seat.index()].choose(&v);
+            let a = players[seat.index()].choose(&v).unwrap();
             s.apply(seat, a).unwrap();
         }
     }
@@ -533,7 +536,7 @@ fn rules_13_the_events_returned_by_apply_leak_nothing_once_filtered() {
         ];
         while let Some(mover) = s.to_move() {
             let v = view(&s, mover);
-            let a = players[mover.index()].choose(&v);
+            let a = players[mover.index()].choose(&v).unwrap();
             let events = s.apply(mover, a).unwrap();
             // Events of a deal that just ended mention cards that the next
             // deal has shuffled again: look only at the newest deal's events.
@@ -608,7 +611,7 @@ fn rules_13_3_a_view_gives_no_more_than_the_public_record_and_own_hand() {
                 assert!(extra.is_empty(), "seed {seed}: {extra:?}");
             }
             let v = view(&s, mover);
-            let a = players[mover.index()].choose(&v);
+            let a = players[mover.index()].choose(&v).unwrap();
             s.apply(mover, a).unwrap();
         }
     }

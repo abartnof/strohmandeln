@@ -159,7 +159,7 @@ fn a_partial_record_replays_to_the_same_state_and_play_goes_on() {
     for _ in 0..200 {
         let seat = s.to_move().unwrap();
         let v = view(&s, seat);
-        let a = players[seat.index()].choose(&v);
+        let a = players[seat.index()].choose(&v).unwrap();
         s.apply(seat, a).unwrap();
     }
     let r = Sitting::replay(&s.record()).unwrap();
@@ -193,7 +193,7 @@ fn rules_4_8_every_non_empty_packet_has_a_low_cover_at_every_step() {
                 }
             }
             let v = view(&s, seat);
-            let a = players[seat.index()].choose(&v);
+            let a = players[seat.index()].choose(&v).unwrap();
             s.apply(seat, a).unwrap();
         }
     }
@@ -222,7 +222,7 @@ fn rules_5_4_every_card_not_legal_is_refused_with_a_key_and_changes_nothing() {
                 }
             }
             let v = view(&s, seat);
-            let a = players[seat.index()].choose(&v);
+            let a = players[seat.index()].choose(&v).unwrap();
             s.apply(seat, a).unwrap();
         }
     }

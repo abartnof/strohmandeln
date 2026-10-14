@@ -8,8 +8,10 @@ use crate::view::{view, View};
 
 /// Something that chooses an action from what its seat may know.
 pub trait Player {
-    /// Chooses one of `view.legal_actions`. Called only on the player's turn.
-    fn choose(&mut self, view: &View) -> Action;
+    /// Chooses one of `view.legal_actions`, or `None` when there is none (a
+    /// seat that is not to move): a view with nothing to choose from is not a
+    /// reason to panic.
+    fn choose(&mut self, view: &View) -> Option<Action>;
 }
 
 /// Picks uniformly among the legal actions, from the agent stream of its seed.
@@ -26,9 +28,12 @@ impl RandomPlayer {
 }
 
 impl Player for RandomPlayer {
-    fn choose(&mut self, view: &View) -> Action {
+    fn choose(&mut self, view: &View) -> Option<Action> {
         let n = view.legal_actions.len() as u64;
-        view.legal_actions[self.rng.below(n) as usize].clone()
+        if n == 0 {
+            return None;
+        }
+        Some(view.legal_actions[self.rng.below(n) as usize].clone())
     }
 }
 
@@ -37,11 +42,11 @@ impl Player for RandomPlayer {
 pub struct FirstLegal;
 
 impl Player for FirstLegal {
-    fn choose(&mut self, view: &View) -> Action {
-        match view.legal_actions[0] {
+    fn choose(&mut self, view: &View) -> Option<Action> {
+        Some(match view.legal_actions.first()? {
             Action::Extend { .. } => Action::Extend { accept: false },
-            ref a => a.clone(),
-        }
+            a => a.clone(),
+        })
     }
 }
 
@@ -61,7 +66,9 @@ pub fn play_out(
         if v.legal_actions.is_empty() {
             return Err(format!("seat {seat:?} to move with no legal action"));
         }
-        let action = players[seat.index()].choose(&v);
+        let action = players[seat.index()]
+            .choose(&v)
+            .ok_or_else(|| format!("seat {seat:?} has no action to choose"))?;
         sitting
             .apply(seat, action.clone())
             .map_err(|e| format!("{seat:?} chose {action:?}: {e}"))?;
@@ -80,8 +87,8 @@ mod tests {
         let s = Sitting::new(1, Settings::default(), 3).unwrap();
         let seat = s.to_move().unwrap();
         let v = view(&s, seat);
-        assert_eq!(FirstLegal.choose(&v), v.legal_actions[0]);
-        assert_eq!(FirstLegal.choose(&v), Action::Take);
+        assert_eq!(FirstLegal.choose(&v), Some(v.legal_actions[0].clone()));
+        assert_eq!(FirstLegal.choose(&v), Some(Action::Take));
     }
 
     #[test]
@@ -93,7 +100,10 @@ mod tests {
             ],
             ..view(&Sitting::new(1, Settings::default(), 3).unwrap(), Seat::A)
         };
-        assert_eq!(FirstLegal.choose(&v), Action::Extend { accept: false });
+        assert_eq!(
+            FirstLegal.choose(&v),
+            Some(Action::Extend { accept: false })
+        );
     }
 
     #[test]
@@ -104,7 +114,7 @@ mod tests {
         let mut p = RandomPlayer::new(5, seat);
         let mut seen = std::collections::HashSet::new();
         for _ in 0..50 {
-            let a = p.choose(&v);
+            let a = p.choose(&v).unwrap();
             assert!(v.legal_actions.contains(&a));
             seen.insert(serde_json::to_string(&a).unwrap());
         }
@@ -117,9 +127,20 @@ mod tests {
         let v = view(&s, s.to_move().unwrap());
         let run = |seed| {
             let mut p = RandomPlayer::new(seed, Seat::A);
-            (0..20).map(|_| p.choose(&v)).collect::<Vec<_>>()
+            (0..20).map(|_| p.choose(&v).unwrap()).collect::<Vec<_>>()
         };
         assert_eq!(run(9), run(9));
+    }
+
+    #[test]
+    fn a_view_with_no_legal_action_gets_no_choice_not_a_panic() {
+        // The seat that is not to move has an empty list of legal actions.
+        let s = Sitting::new(2, Settings::default(), 3).unwrap();
+        let waiting = s.to_move().unwrap().other();
+        let v = view(&s, waiting);
+        assert!(v.legal_actions.is_empty());
+        assert_eq!(FirstLegal.choose(&v), None);
+        assert_eq!(RandomPlayer::new(1, waiting).choose(&v), None);
     }
 
     #[test]
