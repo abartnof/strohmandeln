@@ -40,8 +40,10 @@ SOURCES = {
            "aufzunehmen\"; Königrufen calls \"Mein Spiel\", \"Ich rufe\", \"weiter\", \"gut\"; \"Ich sage die "
            "Troule an\"; Troule and kings paid if \"angesagt\" at the latest as the first of them is played; "
            "a 35:35 tie is undecided and the next deal \"sammt allen Ansagen doppelt zählt\"; \"Mondfang\"; "
-           "\"das Impassiren\"; \"ein Conto ... bei fortlaufender Addition\". The spoken \"Ich nehme auf!\", "
-           "\"Weiter!\", \"Ich passe!\" are quoted from Mayr and Sedlaczek (2007) [05-S5]", True),
+           "\"das Impassiren\"; \"ein Conto ... bei fortlaufender Addition\". \"Mondfang\" is Werner's noun in his "
+           "other games (Kauf, Königrufen), not in the Strohmann section. The spoken \"Ich nehme auf!\", "
+           "\"Weiter!\", \"Ich passe!\" are inflections of Werner's \"aufnehmen\", \"weiter\", \"Paßt\"; the "
+           "exact sentences are as Mayr and Sedlaczek (2007) quote them [05-S5]", True),
     "Ul": (1899, "[03-S14][13-S1]",
            "Ulmann, Illustrirtes Wiener Tarockbuch, 2nd ed. (1899): \"Es ist üblich, ehe die "
            "Spielgesellschaft auseinandergeht, drei oder sechs Touren anzusagen\" (p. 19); two players, "
@@ -139,7 +141,7 @@ SOURCES = {
            "Neues Wiener Tagblatt, 4 Sep 1887, p. 2: the Pagat ruined by the last straw-man card, \"und "
            "'Ultimo' samt Spiel sind verloren\"", False),
     "St": (1894, "[13-S13]",
-           "Johann Strauss on the stakes (1894): \"bei zwei bis drei Kreuzer der Point\"", False),
+           "Grazer Tagblatt, 15 Oct 1894, p. 2, on Johann Strauss's card play: \"bei zwei bis drei Kreuzer der Point\" (the newspaper's words, not Strauss's)", False),
     "Ga": (1869, "[09-S14]",
            "Die Gartenlaube (1869): \"das Fallen der Karten, das Rasseln der Sechser, die Seufzer der "
            "Verlierenden\"", False),
@@ -208,7 +210,7 @@ def phrase_groups():
         ('Let us say three Touren.', 'Ul', 'Sagen wir drei Touren an.'),
         ('Three Touren: six deals, a short evening.', 'T', 'Drei Touren: sechs Spiele, ein kurzer Abend.'),
         ('Three Touren, if that suits you.', 'Hs', 'Drei Touren, wenn es Ihnen recht ist.'),
-        ('Drei Touren, and then the reckoning.', 'Be', 'Drei Touren, dann die Abrechnung.'))
+        ('Three Touren, then the reckoning.', 'T', 'Drei Touren, dann die Abrechnung.'))
     add('touren-6', 'sitting_start, six Touren: the Touren announced',
         ('Six Touren: a full evening.', 'Ul', 'Sechs Touren: ein voller Abend.'),
         ('Let us say six Touren.', 'Ul', 'Sagen wir sechs Touren an.'),
@@ -217,50 +219,48 @@ def phrase_groups():
         ('Six Touren, and the slate to keep.', 'Wn', 'Sechs Touren, und das Conto wird geführt.'))
     add('cut', 'sitting_start: drawing for the first deal',
         ('Let us cut for the deal.', 'T', 'Ziehen wir, wer zuerst gibt.'),
-        ('Who deals? Who leads? Cut and see.', 'Mo', "Wer spielt aus? Wer hat Karten geb'n?"),
+        ('Who leads? Who deals?', 'Mo', "Wer spielt aus? Wer hat Karten geb'n?"),
         ('Draw a card; the Touren begin with the dealer.', 'Be', 'Die Touren beginnen bei dem, der zuerst die Karten ausgab.'),
         ('Seats by lot only, I say.', 'Ra', 'Nur mit gezogenen Plätzen spiele ich.'))
     add('deal-mine', 'deal_start: the opponent deals',
         ('My deal. Fifteen, and three fours.', 'T', 'Ich gebe. Fünfzehn und dreimal vier.'),
         ('Dealt right, laid neat, and the whole wrong.', 'Wa', "Liegen thut's tüchtig, gegeben ist's richtig und's Ganze ist unrichtig.", 'Liegen 122'),
         ('Dealt one way, played another.', 'Wa', 'Die Karten werden anders gegeben, anders gespielet.', 'Karte 7'),
-        ('Well shuffled, well dealt.', 'Wa', 'Hastus wol gemischt, so karts wol.', 'Mischen 2'),
         ('I deal. Then the straw men.', 'T', 'Ich gebe. Dann die Strohmänner.'),
         ('A good shuffle is half the game.', 'Ra', 'Ein guter Misch ist das halbe Spiel.'))
     add('deal-yours', 'deal_start: the player deals',
         ('Your deal.', 'T', 'Sie geben.'),
         ('Deal on; the straw men wait.', 'T', 'Geben Sie nur, die Strohmänner warten.'),
-        ('Shuffle well, deal well.', 'Wa', 'Hastus wol gemischt, so karts wol.', 'Mischen 2'),
         ('Dealt one way, played another. Go on.', 'Wa', 'Die Karten werden anders gegeben, anders gespielet.', 'Karte 7'),
-        ('Your deal, and a fair one.', 'T', 'Sie geben, und gerecht.'),
+        ('Your deal. Good luck to us both.', 'T', 'Sie geben. Viel Glück uns beiden.'),
         ('A good shuffle is half the game.', 'Ra', 'Ein guter Misch ist das halbe Spiel.'))
     add('void-deal', 'void_deal: a hand with no tarock, the deal annulled',
         ('No trumps, no game.', 'Jö', 'Ohne Tarok is kein Spiel.'),
         ('Void. Gather them up and deal again.', 'T', 'Vergeben! Zusammenwerfen und neu geben.'),
         ('A void deal. It does not count.', 'T', 'Ein vergebenes Spiel zählt nicht.'),
         ('Not a tarock to be had: dealt again.', 'T', 'Kein Tarok zu haben: neu gegeben.'),
-        ('Vergeben. The Tour waits.', 'Ne1', "'s is vergeb'n."))
+        ('Void: a misdeal.', 'Ne1', "'s is vergeb'n."))
     add('doubling-applied', 'doubling_applied: the deal counts double after a draw',
-        ("Doppelt zählt's: every payment twice.", 'Wn', "Doppelt zählt's, sammt allen Ansagen."),
+        ('Doubled: every payment twice.', 'Wn', "Doppelt zählt's, sammt allen Ansagen."),
         ('The last draw doubles this deal.', 'Wn', "Doppelt zählt's."),
         ('Double, mind: honours and all.', 'Wn', 'Doppelt, sammt allen Ansagen.'),
         ('This one counts twice.', 'T', 'Das zählt doppelt.'),
         ('Remember the draw: twice the Points.', 'T', 'Denken Sie an das Unentschieden: doppelte Points.'))
     add('bid-take-mine', 'bid: the opponent takes up',
-        ('Ich nehme auf!', 'Wn', 'Ich nehme auf!'),
+        ('I take it up!', 'Wn', 'Ich nehme auf!'),
         ('I take it up. Let the straw speak.', 'T', 'Ich nehme auf. Der Strohmann soll reden.'),
-        ('Mein Spiel.', 'Wn', 'Mein Spiel.'),
+        ('My game.', 'Wn', 'Mein Spiel.'),
         ("My own fortune's smith: I take it up.", 'Ul', 'Ich bin meines Glückes Schmied: ich nehme auf.'),
         ("I'll take it up, and trust the straw.", 'T', 'Ich nehme auf und vertraue dem Stroh.'),
         ('Taken up: a game, then.', 'T', 'Aufgenommen: ein Spiel also.'))
     add('bid-pass-mine', 'pass: the opponent passes',
-        ('Weiter!', 'Wn', 'Weiter!'),
-        ('Ich passe.', 'Wn', 'Ich passe!'),
-        ('Weiter, bitte.', 'Wn', 'Weiter, bitte.'),
+        ('Weiter: I pass.', 'Wn', 'Weiter!'),
+        ('I pass.', 'Wn', 'Ich passe!'),
+        ('Weiter, if you please.', 'Wn', 'Weiter, bitte.'),
         ('I pass, and keep my peace.', 'T', "Ich passe und halt' Ruh'."),
         ('Not this time. Weiter.', 'T', 'Diesmal nicht. Weiter.'))
     add('bid-take-yours', 'bid: the player takes up',
-        ('Aufgenommen! Gut.', 'Wn', 'Aufgenommen! Gut.'),
+        ('Taken up! Good.', 'Wn', 'Aufgenommen! Gut.'),
         ('Taken up. Let us see the straw.', 'T', 'Aufgenommen. Schauen wir den Strohmann an.'),
         ('Then it is a game in earnest.', 'T', "Dann ist's ein Spiel im Ernst."),
         ('Gut. Let it stand.', 'Wn', 'Gut. Es bleibt.'),
@@ -272,13 +272,12 @@ def phrase_groups():
         ('Passed. We shall see.', 'T', 'Gepasst. Wir werden sehen.'),
         ('Weiter: quite so.', 'Wn', 'Weiter: sehr wohl.'))
     add('both-pass', 'both_pass, play: both pass and a simple game is played',
-        ('Both pass: a simple game, then.', 'Ul', 'Beide passen: eine einfache Partie.'),
-        ('Nobody takes it up. A plain game.', 'Wn', 'Keiner nimmt auf. Eine einfache Partie.'),
-        ('A simple game for one Point.', 'Ul', 'Ein einfaches Spiel um einen Point.'),
+        ('Both pass: a simple game, then.', 'T', 'Beide passen: eine einfache Partie.'),
+        ('Nobody takes it up. A plain game.', 'T', 'Keiner nimmt auf. Eine einfache Partie.'),
         ('Both weiter. Plain play, then.', 'T', 'Beide weiter. Dann einfach gespielt.'),
         ('No one risks a game. On we go.', 'T', "Keiner riskiert ein Spiel. Weiter geht's."))
     add('thrown-in', 'thrown_in: both_pass = throw_in, nothing played',
-        ('Thrown in. The deal passes.', 'Ul', 'Hingeworfen. Die Vorhand hat die nächste Donne.'),
+        ('Thrown in. The other deals next.', 'T', 'Hingeworfen. Der andere gibt als Nächster.'),
         ('Nothing played; on to the next.', 'T', 'Nichts gespielt; weiter zum nächsten.'),
         ('Both pass, so we start afresh.', 'T', 'Beide passen, wir fangen neu an.'),
         ('Thrown in: the straw stays shut.', 'T', 'Hingeworfen: der Strohmann bleibt zu.'))
@@ -290,13 +289,13 @@ def phrase_groups():
         ('Look at the straw men, then.', 'T', 'Schauen wir die Strohmänner an.'))
     add('pull-king-mine', "card_pulled: a king pulled into the opponent's hand",
         ('A king from the straw!', 'T', 'Ein König aus dem Stroh!'),
-        ('Ah, ein König. Welcome.', 'T', 'Ah, ein König. Willkommen.'),
+        ('Ah, a king. Welcome.', 'T', 'Ah, ein König. Willkommen.'),
         ('A king: worth little, then worth much.', 'Wa', 'Wie der König im Kartenspiel, bald gilt er nichts, bald gilt er viel.', 'König 175'),
         ('The straw is generous today.', 'T', 'Das Stroh ist heut großzügig.'),
         ('Another king for my hand.', 'T', 'Noch ein König in die Hand.'))
     add('pull-king-yours', "card_pulled: a king pulled into the player's hand",
         ('A king for you. Well turned.', 'T', 'Ein König für Sie. Schön umgedreht.'),
-        ('Der König kommt zu Ihnen.', 'T', 'Der König kommt zu Ihnen.'),
+        ('The king comes to you.', 'T', 'Der König kommt zu Ihnen.'),
         ('A king: worth little, then worth much.', 'Wa', 'Wie der König im Kartenspiel, bald gilt er nichts, bald gilt er viel.', 'König 175'),
         ('The straw is kind to you.', 'T', 'Das Stroh ist gut zu Ihnen.'),
         ('There goes a king, into the hand.', 'T', 'Da geht ein König in die Hand.'))
@@ -313,7 +312,7 @@ def phrase_groups():
         ('One more trump to count.', 'T', 'Noch ein Tarok zu zählen.'),
         ('The straw gives, the straw takes.', 'T', 'Das Stroh gibt, das Stroh nimmt.'))
     add('pull-sku', 'card_pulled: the Sküs pulled (either side)',
-        ("The Sküs! Er hängt scho' der Max'.", 'Hu', "Er hängt scho' der Max'."),
+        ('The Sküs! A wish nearly granted.', 'Hu', "Der Sküs! Er hängt scho' der Max'."),
         ('And the merry Sküs joins in.', 'Ba', 'Und kommt der lustge Scüs darzu.'),
         ('The Sküs has come home.', 'T', 'Der Sküs ist heimgekehrt.'),
         ('The highest trump, out of the straw.', 'T', 'Der höchste Tarok, aus dem Stroh.'),
@@ -328,7 +327,7 @@ def phrase_groups():
     add('pull-pagat', 'card_pulled: the Pagat (I) pulled',
         ('The Pagat! A little trump, a great hope.', 'T', 'Der Pagat! Ein kleiner Tarok, eine große Hoffnung.'),
         ('Pagat out of the straw.', 'T', 'Pagat aus dem Stroh.'),
-        ('Der Pagat ist da.', 'T', 'Der Pagat ist da.'),
+        ('The Pagat is here.', 'T', 'Der Pagat ist da.'),
         ('The Pagat: coquettish and cheerful.', 'Lv', 'Der kokette, fröhliche Pagat!'),
         ('Sküs, Mond and the little sparrow.', 'Kz', 'Sküs, Mond und Spatz.'))
     add('run-mine', 'card_pulled, long chain: a lucky run for the opponent',
@@ -340,11 +339,11 @@ def phrase_groups():
     add('run-yours', 'card_pulled, long chain: a lucky run for the player',
         ('What a run! Three, four, five.', 'T', 'Was für eine Serie! Drei, vier, fünf.'),
         ('Easy to play when luck deals.', 'Wa', 'Wem das Glück die Karten gibt, der hat gut spielen.', 'Glück 665'),
-        ('Three or four ultimos in a flash!', 'Ne1', 'Der macht drei, vier Ultimo in einem Nu.'),
+        ('The cards run your way tonight.', 'T', 'Die Karten laufen Ihnen heute zu.'),
         ('The straw empties itself into the hand.', 'T', 'Das Stroh leert sich in die Hand.'),
         ('Luck at cards is April weather.', 'Wa', 'Glück im Spiel ist Wetter im April.', 'Glück'))
     add('nothing-mine', "packet_turned, no pull: the opponent's packets give nothing",
-        ('Lauter Skartindeln.', 'Gl', 'Lauter Skartindeln!'),
+        ('Nothing but low cards!', 'Gl', 'Lauter Skartindeln!'),
         ('Nothing from the straw. Patience.', 'T', 'Nichts aus dem Stroh. Geduld.'),
         ('The game hates me today.', 'Wa', 'Das Spiel hasst mich.', 'Spiel 274, Zusätze'),
         ('Not a trump, not a king.', 'T', 'Kein Tarok, kein König.'),
@@ -355,10 +354,9 @@ def phrase_groups():
         ('Blind chance, nothing more.', 'Ha', 'Blinder Zufall, sonst nichts.'),
         ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
         ('The straw gave you low cards only.', 'T', 'Das Stroh gab Ihnen nur kleine Karten.'),
-        ('Es gilt ja Einem wie dem Andern.', 'Ha', 'Es gilt ja Einem wie dem Andern.'))
+        ('It counts the same for both of us.', 'Ha', 'Es gilt ja Einem wie dem Andern.'))
     add('slow', 'the player is slow to play',
-        ('Out with it, then!', 'Wa', 'Heraus mit der Ziege!', 'Ziege 107'),
-        ('Who leads? I have forgotten.', 'Mo', "Wer spielt aus? Wer hat Karten geb'n?"),
+        ('Your turn, I believe.', 'T', "Sie sind an der Reihe, glaub' ich."),
         ('Mouse-quiet: the table waits.', 'Mo', 'Mäuserlstill.'),
         ('Take your time. The evening is long.', 'T', "Lassen S' Ihnen Zeit. Der Abend ist lang."),
         ('Your lead, whenever you are ready.', 'T', "Spielen S' aus, wann's Ihnen recht ist."),
@@ -368,11 +366,11 @@ def phrase_groups():
         ('A card or a log of wood, either will do.', 'Mw', 'Eine Karte oder ein Scheit Holz!'),
         ('This pace? We might have played chess.', 'Mw', 'Tun wir doch gleich lieber Schach spielen!'))
     add('trick-good-mine', 'trick_won: a good trick for the opponent',
-        ('Gestochen! The buck is stuck.', 'Wa', 'Gestochen der Bock, warum geht er ins Kraut.', 'Bock 142'),
-        ('Small trump, big catch.', 'Wa', 'Die geringern stechen die höhern.', 'Spielen 22'),
         ('Trump against trump, and mine.', 'Wa', 'Trumpf wider Trumpf.', 'Trumpf 4'),
         ('That one is mine, I think.', 'T', "Der gehört mir, glaub' ich."),
-        ('Taken. Thank you.', 'T', 'Genommen. Danke.'))
+        ('Taken. Thank you.', 'T', 'Genommen. Danke.'),
+        ('A trick for me, it seems.', 'T', "Ein Stich für mich, scheint's."),
+        ('Another trick on my side.', 'T', 'Wieder ein Stich auf meiner Seite.'))
     add('trick-good-yours', 'trick_won: a good trick for the player',
         ('Well taken.', 'T', 'Gut genommen.'),
         ('The little ones chase the big.', 'Wa', 'Die Kleinen jagen die Grossen.', 'Kleine 10'),
@@ -380,134 +378,131 @@ def phrase_groups():
         ('Good cards like you, it seems.', 'Wa', 'An einen geschickten Spieler gewöhnen sich gute Karten.', 'Spieler 3'),
         ('Trump against trump, and yours.', 'Wa', 'Trumpf wider Trumpf.', 'Trumpf 4'))
     add('trick-bad-mine', 'trick_won: a bad trick for the opponent, points lost',
-        ('Das Blatt hat sich gewandt.', 'Wa', 'Das Blatt hat sich gewandt.', 'Blatt 29'),
+        ('The leaf has turned.', 'Wa', 'Das Blatt hat sich gewandt.', 'Blatt 29'),
         ('Not won till the cards are out.', 'Wa', 'So lange die Karten auf dem Tisch liegen, ist das Spiel nicht gewonnen.', 'Karte 89'),
         ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
         ('There goes a trick. It happens.', 'T', 'Da geht ein Stich. Das kommt vor.'),
-        ('The better of that one is yours.', 'T', 'Das war Ihrer, und mit Recht.'))
+        ('That one was yours, and rightly.', 'T', 'Das war Ihrer, und mit Recht.'))
     add('trick-bad-yours', 'trick_won: a bad trick for the player',
         ('The next one may be yours.', 'T', 'Der nächste gehört vielleicht Ihnen.'),
-        ('The leaf can turn yet.', 'Wa', 'Die Karte hat sich gewendet.', 'Karte 44'),
+        ('The leaf can turn yet.', 'Wa', 'Das Blatt kann sich noch wenden.', 'Blatt 29'),
         ('Nothing is lost while cards lie out.', 'Wa', 'So lange die Karten auf dem Tisch liegen, ist das Spiel nicht gewonnen.', 'Karte 89'),
         ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
         ('Dealt one way, played another.', 'Wa', 'Die Karten werden anders gegeben, anders gespielet.', 'Karte 7'))
     add('sku-played', 'card_played: the Sküs played (either side)',
-        ('Ich skisiere mich!', 'Me', 'Ich skisiere mich!'),
+        ('Sküs: I excuse myself!', 'Me', 'Ich skisiere mich!'),
         ('Pardon me: the Sküs.', 'Ha', 'Pardon, ich skisire mich.'),
         ('And the merry Sküs joins in.', 'Ba', 'Und kommt der lustge Scüs darzu.'),
-        ('The Sküs: the highest of the trumps.', 'T', 'Der Sküs: der höchste der Tarok.'),
+        ('The Sküs: the highest of the trumps.', 'T', 'Der Sküs: der höchste Tarok.'),
         ('Sküs it is. Nothing beats it.', 'T', 'Sküs! Da hilft nichts mehr.'))
     add('mond-caught-mine', "trick_won: the opponent's Sküs catches the player's Mond",
         ('Mondfang! The Sküs has your Mond.', 'Wn', 'Mondfang!'),
-        ('Unnütze Mühe: the Sküs takes the Mond.', 'Ro', 'Unnütze Mühe, der Scüs sticht ja den Mond.'),
+        ('Wasted effort: the Sküs takes the Mond.', 'Ro', 'Unnütze Mühe, der Scüs sticht ja den Mond.'),
         ('Struck by the proud Sküs.', 'Zi', 'Vom stolzen Skis getroffen.'),
         ('A Mondfang: a special catastrophe.', 'NF', 'Der Mondfang ist eine Special-Katastrophe.'),
         ('The Sküs caught the Mond. Sorry.', 'T', 'Der Sküs hat den Mond. Verzeihung.'),
         ('Good moon, you go so quietly.', 'Ra', 'Guter Mond, du gehst so stille.'))
     add('mond-caught-yours', "trick_won: the player's Sküs catches the opponent's Mond",
-        ('Caught again: the Sküs hunts my Mond.', 'Fl', 'Es fangt mir der Sküs den Mond ab.'),
+        ('Caught again: the Sküs hunts my Mond.', 'Fl', 'Wieder fangt mir der Sküs den Mond ab.'),
         ('Mondfang! It had to happen.', 'Wn', 'Mondfang!'),
-        ('Unnütze Mühe: the Sküs takes the Mond.', 'Ro', 'Unnütze Mühe, der Scüs sticht ja den Mond.'),
+        ('Wasted effort: the Sküs takes the Mond.', 'Ro', 'Unnütze Mühe, der Scüs sticht ja den Mond.'),
         ('Well caught: the Sküs wins the Mond.', 'T', 'Gut gefangen: der Sküs hat den Mond.'),
         ('A Mondfang: a special catastrophe.', 'NF', 'Der Mondfang ist eine Special-Katastrophe.'),
-        ('Only the Sküs can trump the Mond.', 'Fh', 'Der den Mond kann stechen.'))
+        ('Only the Sküs can trump the Mond.', 'Fh', 'Nur der Sküs kann den Mond stechen.'))
     add('ultimo-won-mine', 'pagat_ultimo won by the opponent',
-        ('My Pagat takes the last trick!', 'Ba', 'Wenn mein Pagat den letzten sticht!'),
+        ('My Pagat takes the last trick!', 'Ba', 'Mein Pagat sticht den letzten!'),
         ('Pagat ultimo: made.', 'Ro', 'Ich habe den Pagat Ultimo gemacht!'),
-        ('Mit Glanz gewonnen.', 'Sc', 'Mit Glanz gewonnen.'),
-        ('Keep a good card for the last.', 'Wa', 'Behalt ein gute Kart auf die letzte Less.', 'Karte 2'),
-        ('One card kept back makes the last trick.', 'Hn', 'Manchmal bleibt ein Blatt in Händen, das macht den allerletzten Stich.'))
+        ('Won with flair.', 'Sc', 'Mit Glanz gewonnen.'),
+        ('One card kept back makes the last trick.', 'Hn', 'Manchmal bleibt ein Blatt in Händen, das macht den allerletzten Stich.'),
+        ('The Pagat comes last, and wins.', 'T', 'Der Pagat kommt zuletzt, und er gewinnt.'))
     add('ultimo-won-yours', 'pagat_ultimo won by the player',
-        ('Pagat ultimo for you. Mit Glanz.', 'Sc', 'Mit Glanz gewonnen.'),
-        ('The last card, and well kept.', 'Wa', 'Behalt ein gute Kart auf die letzte Less.', 'Karte 2'),
+        ('Pagat ultimo for you. Won with flair.', 'Sc', 'Mit Glanz gewonnen.'),
         ('Your Pagat takes the last trick.', 'Ba', 'Der Pagat sticht den letzten.'),
         ('One card kept back makes the last trick.', 'Hn', 'Manchmal bleibt ein Blatt in Händen, das macht den allerletzten Stich.'),
-        ('The Pagat, a thorn in my eye!', 'Ba', 'Der Pagat ist ein Dorn in den Augen.'))
+        ('The Pagat, a thorn in my eye!', 'Ba', 'Der Pagat ist mir ein Dorn im Auge!'),
+        ('The Pagat last of all: well done.', 'T', 'Der Pagat zuletzt: gut gemacht.'))
     add('ultimo-lost-mine', 'pagat_ultimo lost by the opponent',
         ('Lost on the very last card.', 'Wa', 'Man kann ein gutes Spiel noch mit der letzten Karte verlieren.', 'Spiel 104'),
         ('My ultimo has floated away.', 'Fg', "Der Pagat-Ultimo is wegg'schwommen."),
-        ('Ultimo and game both gone.', 'Nw', 'Ultimo samt Spiel sind verloren.'),
+        ('The ultimo is lost.', 'Nw', 'Der Ultimo ist verloren.'),
         ('Caught. I should have counted.', 'T', "Gefangen. Ich hätt' zählen sollen."),
         ('The Pagat falls; so it goes.', 'T', "Der Pagat fällt; so geht's."),
         ('Lost my calm, and my Pagat with it.', 'Mu', "Verloren ist die Seelenruh', der Pagat ultimo dazu."))
     add('ultimo-lost-yours', 'pagat_ultimo lost by the player',
         ('Lost on the very last card.', 'Wa', 'Man kann ein gutes Spiel noch mit der letzten Karte verlieren.', 'Spiel 104'),
         ('Count the tarocks next time.', 'Ro', "Zählen S' fleißig die Tarok!"),
-        ('Ultimo and game both gone.', 'Nw', 'Ultimo samt Spiel sind verloren.'),
+        ('The ultimo is lost.', 'Nw', 'Der Ultimo ist verloren.'),
         ('Caught! The Pagat will try again.', 'T', "Gefangen! Der Pagat versucht's wieder."),
         ('A pity: the Pagat was so near.', 'T', 'Schade: der Pagat war so nah.'),
         ('Now the little sparrow goes under the knife!', 'Ra', 'Jetzt kommt der Spatz unters Messer!'))
     add('trull-mine', 'announcement trull by the opponent',
-        ('Ich sage die Troule an.', 'Wn', 'Ich sage die Troule an.'),
+        ('I announce the Troule.', 'Wn', 'Ich sage die Troule an.'),
         ('Tous les trois!', 'Ne1', 'Tous les trois!'),
-        ('Die Troule: Sküs, Mond, Pagat.', 'Wn', 'Die Troule: Sküs, Mond, Pagat.'),
+        ('The Troule: Sküs, Mond, Pagat.', 'Wn', 'Die Troule: Sküs, Mond, Pagat.'),
         ('The Troule, announced aloud, one Point.', 'T', 'Die Troule, laut angesagt: ein Point.'),
         ('Tous les trois, if you please.', 'Ne1', 'Tous les trois, wenn ich bitten darf.'))
     add('trull-yours', 'announcement trull by the player',
         ('Tous les trois! One Point to you.', 'Ne1', 'Tous les trois! Ein Point für Sie.'),
         ('The Troule is announced. Noted.', 'Wn', 'Die Troule ist angesagt. Gut.'),
-        ('Die Troule: I shall mind the Sküs.', 'T', "Die Troule: ich pass' auf den Sküs auf."),
+        ('The Troule: I shall mind the Sküs.', 'T', "Die Troule: ich pass' auf den Sküs auf."),
         ('Tous les trois: the evening pays.', 'T', 'Tous les trois: der Abend zahlt sich aus.'),
         ('A Troule, and said in time.', 'Wn', 'Eine Troule, und rechtzeitig angesagt.'))
     add('kings-mine', 'announcement kings by the opponent',
-        ('Vier Könige!', 'Ne1', 'Vier Könige!'),
+        ('Four kings!', 'Ne1', 'Vier Könige!'),
         ('Four kings, announced.', 'T', 'Vier Könige, angesagt.'),
         ('All four kings: the straw was kind.', 'T', 'Alle vier Könige: das Stroh war gnädig.'),
         ('The four kings, one Point.', 'T', 'Die vier Könige: ein Point.'),
         ('Four kings, and said in time.', 'Wn', 'Vier Könige, rechtzeitig angesagt.'))
     add('kings-yours', 'announcement kings by the player',
         ('Four kings! One Point to you.', 'Ne1', 'Vier Könige! Ein Point für Sie.'),
-        ('Vier Könige: duly noted.', 'Ne1', 'Vier Könige: wohlvermerkt.'),
+        ('Four kings: duly noted.', 'Ne1', 'Vier Könige: wohlvermerkt.'),
         ('The four kings are announced.', 'T', 'Die vier Könige sind angesagt.'),
         ('Honours are only the cadres of the army.', 'Ul', 'Die Honneurs sind nur die Cadres der Kartenarmee.'),
         ('Four kings, and said in time.', 'Wn', 'Vier Könige, rechtzeitig angesagt.'))
     add('honour-forfeited', 'honour_forfeited: announced too late',
-        ('Not said in time: no honour.', 'Wn', 'Nicht rechtzeitig angesagt: keine Honneurs.'),
+        ('Not said in time: no honour.', 'T', 'Nicht rechtzeitig angesagt: kein Honneur.'),
         ('Too late to announce; it is forfeit.', 'T', 'Zu spät angesagt; es verfällt.'),
-        ('An honour must be said before it is played.', 'Wn', "Angesagt muß werden, eh' man ausspielt."),
-        ('The honour is lost by silence.', 'Wn', 'Wer schweigt, verliert den Honneur.'))
+        ('Say it by the first card played.', 'T', 'Spätestens mit der ersten Karte muß es angesagt sein.'),
+        ('The honour is lost by silence.', 'T', 'Wer schweigt, verliert den Honneur.'))
     add('valat-mine', 'valat by the opponent (every trick)',
-        ('Matsch! Every last trick.', 'Ne2', 'Matsch! Jeder Stich.'),
-        ('Valat! The whole table is mine.', 'Ne2', 'Valat! Der ganze Tisch gehört mir.'),
-        ('Pagat, ultimo, valat: all of it.', 'Ne2', 'Pagat, Ultimo, Volat: alles.'),
-        ('Not a trick for you. Quite matsch.', 'Ne3', 'Kein Stich für Sie. Ganz matsch.'),
+        ('Matsch! Every last trick.', 'T', 'Matsch! Jeder Stich.'),
+        ('Valat! The whole table is mine.', 'T', 'Valat! Der ganze Tisch gehört mir.'),
+        ('Not a trick for you. Quite matsch.', 'T', 'Kein Stich für Sie. Ganz matsch.'),
         ('Valat: every trick of the twenty-seven.', 'T', 'Valat: alle siebenundzwanzig Stich.'))
     add('valat-yours', 'valat by the player (every trick)',
-        ('Ich bin matsch!', 'Ne2', 'Ich bin matsch!'),
+        ('I am matsch: finished!', 'Ne2', 'Ich bin matsch!'),
         ('Not one trick for me. Matsch!', 'Ne3', 'Ich bin Matsch worden.'),
-        ('Pagat, ultimo, valat — and I am matsch.', 'Ne2', 'Pagat Ultimo Volat! ... Ich bin matsch!'),
         ('Every trick yours. Well played.', 'T', 'Jeder Stich gehört Ihnen. Gut gespielt.'),
-        ('Everyone beating me with trumps tonight!', 'Ra', 'Alles spielt gegen mich und trischakt mich mit Tarock!'))
+        ('Everyone plays against me tonight!', 'Ra', 'Alles spielt gegen mich!'))
     add('count-start', 'count: the tricks are counted',
         ('Now we count.', 'T', 'Jetzt wird gezählt.'),
         ('Counted, and then argued about.', 'Mo', 'Wird gezählt, und dann erst kritisirt.'),
-        ('To the thirds, if you please.', 'Pr', 'Auf die Drittel genau, bitte.'),
+        ('To the thirds, if you please.', 'T', 'Auf die Drittel genau, bitte.'),
         ('The count, honestly kept.', 'T', 'Das Zählen, ehrlich geführt.'),
         ('Let us count it out to the thirds.', 'T', "Zählen wir's auf die Drittel aus."))
     add('count-close', 'count: a very close count, 35 and two thirds',
-        ('Thirty-five and two Blatt: just enough.', 'Pr', 'Fünfunddreißig und zwei Blatt: gerade genug.'),
+        ('Thirty-five and two thirds: just enough.', 'Pr', 'Fünfunddreißig und zwei Blatt: gerade genug.'),
         ("A hair's breadth: thirty-five and two thirds.", 'Pr', 'Auf Haaresbreite: fünfunddreißig und zwei Blatt.'),
-        ('Not won while a card lies out.', 'Wa', 'Das Spiel ist noch nicht gewonnen, die Kart liegt noch vffm Tisch.', 'Spiel 42'),
-        ('Es gilt ja Einem wie dem Andern.', 'Ha', 'Es gilt ja Einem wie dem Andern.'),
+        ('It counts the same for both of us.', 'Ha', 'Es gilt ja Einem wie dem Andern.'),
         ('By a single third of a Point!', 'T', 'Um ein einziges Drittel!'),
-        ('Thirty-five and two cards: the proudest win.', 'Kg', 'Fünfunddreißig und zwei Blatt: der stolzeste Sieg.'))
+        ('Thirty-five and two thirds: the proudest win.', 'Kg', 'Fünfunddreißig und zwei Blatt: der stolzeste Sieg.'))
     add('result-won-mine', 'game_scored: the opponent wins the deal',
         ('Gewonnen, and fairly, I hope.', 'T', "Gewonnen, und ehrlich, hoff' ich."),
         ('Luck beats good play, today.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
         ('Taken up and won. The straw obliged.', 'T', 'Aufgenommen und gewonnen. Das Stroh war willig.'),
         ('Luck at cards is April weather.', 'Wa', 'Glück im Spiel ist Wetter im April.', 'Glück'),
-        ('Mit Glanz gewonnen.', 'Sc', 'Mit Glanz gewonnen.'))
+        ('Won with flair.', 'Sc', 'Mit Glanz gewonnen.'))
     add('result-lost-mine', 'game_scored: the opponent loses the deal',
         ('I play just as well, only with worse luck.', 'Cr', 'Ich spiele es gerade so gut, nur habe ich mehr Pech.'),
         ('The game hates me today.', 'Wa', 'Das Spiel hasst mich.', 'Spiel 274, Zusätze'),
         ('A good hand comes back.', 'Wa', 'Ein gut Spiel kommt wieder.', 'Spiel'),
         ('Yours, then. Deal on.', 'T', 'Ihres also. Geben wir weiter.'),
-        ('The leaf will turn.', 'Wa', 'Das Blatt hat sich gewandt.', 'Blatt 29'))
+        ('The leaf will turn.', 'Wa', 'Das Blatt wird sich wenden.', 'Blatt 29'))
     add('result-won-yours', 'game_scored: the player wins the deal',
         ('Yours. Well played, and well turned.', 'T', 'Ihres. Gut gespielt und schön umgedreht.'),
         ('Easy to play when luck deals.', 'Wa', 'Wem das Glück die Karten gibt, der hat gut spielen.', 'Glück 665'),
         ('Good cards get used to you.', 'Wa', 'An einen geschickten Spieler gewöhnen sich gute Karten.', 'Spieler 3'),
-        ('Mit Glanz gewonnen. My compliments.', 'Sc', 'Mit Glanz gewonnen. Mein Kompliment.'),
+        ('Won with flair. My compliments.', 'Sc', 'Mit Glanz gewonnen. Mein Kompliment.'),
         ('A deal for you. The evening is long.', 'T', 'Ein Spiel für Sie. Der Abend ist lang.'))
     add('result-lost-yours', 'game_scored: the player loses the deal',
         ('Mine this time. Next one may be yours.', 'T', 'Diesmal meines. Das nächste vielleicht Ihres.'),
@@ -516,10 +511,10 @@ def phrase_groups():
         ('You play as well; the luck was mine.', 'Cr', 'Sie spielen ebenso gut; das Glück war meines.'),
         ('The leaf can turn yet.', 'Wa', 'Die Karte hat sich gewendet.', 'Karte 44'))
     add('draw', 'game_scored, draw: 35 and 35, nothing decided',
-        ('Unentschieden. The next deal counts double.', 'Wn', 'Unentschieden. Das nächste Spiel zählt doppelt.'),
+        ('A draw. The next deal counts double.', 'Wn', 'Unentschieden. Das nächste Spiel zählt doppelt.'),
         ('A dead heat. Doubled next time.', 'Wn', 'Gleichstand. Das nächste Mal doppelt.'),
-        ('Thirty-five and thirty-five: it does not count.', 'Ul', 'Fünfunddreißig zu fünfunddreißig: es zählt nicht.'),
-        ("No one's game. The next one counts twice.", 'T', 'Keinem sein Spiel. Das nächste zählt doppelt.'),
+        ('Thirty-five each: nobody wins.', 'T', 'Fünfunddreißig zu fünfunddreißig: keiner gewinnt.'),
+        ('Nobody won. The next counts twice.', 'T', 'Keiner hat gewonnen. Das nächste zählt doppelt.'),
         ('Neither wins. The doubling waits.', 'T', 'Keiner gewinnt. Die Verdopplung wartet.'))
     add('doubling-lapsed', 'doubling_lapsed: a pending doubling ends with the sitting',
         ('The doubling lapses with the evening.', 'T', 'Die Verdopplung verfällt mit dem Abend.'),
@@ -528,73 +523,72 @@ def phrase_groups():
     add('tour-end', 'tour_end: two deals are done',
         ('A Tour done. The slate, if you please.', 'T', 'Eine Tour um. Die Tafel, bitte.'),
         ('Let us write it up.', 'Wn', "Schreiben wir's an."),
-        ('One Tour round the table.', 'Ul', 'Einmal herum um den Tisch.'),
-        ('Count the chalk.', 'Hs', 'Die Kreide her!'),
+        ('Two deals done: that is a Tour.', 'T', 'Zwei Spiele sind um: das ist eine Tour.'),
+        ('Fetch the chalk.', 'T', 'Die Kreide her!'),
         ('Tour over; the account runs on.', 'Wn', 'Tour vorbei; das Conto läuft weiter.'))
     add('tour-last', 'deal_start of the last Tour',
-        ('The last Tour, then.', 'Be', 'Die Schluß-Touren.'),
-        ('Die Schluß-Touren: play them well.', 'Be', "Die Schluß-Touren: spielen S' sie gut."),
-        ('One more Tour, and then the reckoning.', 'Ul', 'Noch eine Tour, dann die Abrechnung.'),
+        ('The closing Touren, then.', 'Be', 'Die Schluß-Touren.'),
+        ('The final Touren: play them well.', 'Be', "Die Schluß-Touren: spielen S' sie gut."),
+        ('One more Tour, and then the reckoning.', 'T', 'Noch eine Tour, dann die Abrechnung.'),
         ('The Touren run out. Deal with care.', 'T', "Die Touren gehen aus. Geben S' acht."),
         ('Last Tour: we are nearly home.', 'T', 'Letzte Tour: wir sind bald daheim.'))
     add('extend-ask', 'extension_offered: one more Tour?',
-        ('Noch eine Tour?', 'Be', 'Noch eine Tour?'),
-        ('Another Tour, if we both agree.', 'Be', 'Eine Tour mehr, wenn wir beide zustimmen.'),
+        ('One more Tour?', 'T', 'Noch eine Tour?'),
+        ('Another Tour, if we both agree.', 'T', 'Eine Tour mehr, wenn wir beide zustimmen.'),
         ('Shall we add a Tour?', 'T', 'Hängen wir eine Tour an?'),
-        ('Only if we both agree: one more?', 'Be', 'Nur mit allseitiger Zustimmung: noch eine?'),
-        ('Noch eine Tour, what do you say?', 'Be', "Noch eine Tour, was sagen S'?"),
+        ('Only if we both agree: one more?', 'Be', 'Nur mit beiderseitiger Zustimmung: noch eine?'),
+        ('One more Tour, what do you say?', 'T', "Noch eine Tour, was sagen S'?"),
         ('Just one more round?', 'Ra', 'Nur noch eine Runde?'))
     add('extend-yes', 'extension_decided, accepted',
-        ('Noch eine Tour! Gladly.', 'Be', 'Noch eine Tour! Gern.'),
+        ('One more Tour! Gladly.', 'T', 'Noch eine Tour! Gern.'),
         ('Agreed: the Touren are extended.', 'Be', 'Einverstanden: die Touren werden erstreckt.'),
         ('One more, then. Deal.', 'T', "Noch eine also. Geben S'."),
         ('Good. The evening is not over.', 'T', 'Gut. Der Abend ist noch nicht aus.'),
         ('One more round, then.', 'Ra', 'Nur noch eine Runde.'),
         ('Agreed. The cards are still warm.', 'T', 'Einverstanden. Die Karten sind noch warm.'))
     add('extend-no', 'extension_decided, declined',
-        ('Then we stop here, as friends.', 'Be', 'Dann hören wir hier auf, als Freunde.'),
+        ('Then we stop here, as friends.', 'T', 'Dann hören wir hier auf, als Freunde.'),
         ('Enough for tonight. The reckoning.', 'T', "Genug für heut'. Die Abrechnung."),
         ('No more Touren. To the slate.', 'T', 'Keine Touren mehr. Zur Tafel.'),
-        ('Schluß für heute.', 'Be', 'Schluß für heute.'),
+        ('That is all for tonight.', 'T', 'Schluß für heute.'),
         ('Enough: the cards may rest.', 'T', 'Genug: die Karten dürfen ruhen.'))
     add('settle-opp-pays', 'sitting_end: the opponent pays',
         ('Nothing for it: I owe you.', 'T', 'Da hilft nichts: ich schulde Ihnen was.'),
         ('Two kreuzer a Point: cheap at the price.', 'St', 'Zwei Kreuzer der Point: billig.'),
-        ('The rattle of the coins, and my sighs.', 'Ga', 'Das Rasseln der Sechser, die Seufzer der Verlierenden.'),
+        ('The rattle of the coins, and my sighs.', 'Ga', 'Das Rasseln der Sechser, und ich seufze.'),
         ('Paid is paid. Well played.', 'T', 'Bezahlt ist bezahlt. Gut gespielt.'),
-        ('The rest of the coins are yours.', 'T', 'Der Rest der Münzen gehört Ihnen.'))
+        ('The coins are yours.', 'T', 'Die Münzen gehören Ihnen.'))
     add('settle-player-pays', 'sitting_end: the player pays',
         ("Two kreuzer a Point; I'll take it gladly.", 'St', "Zwei Kreuzer der Point; ich nehm's gern."),
         ('The rattle of the coins: mine, this time.', 'Ga', 'Das Rasseln der Sechser: diesmal meine.'),
-        ('I stop while ahead, like Charlemagne.', 'Wa', 'Er hört auf, wenn er gewonnen hat.', 'Spielen 109'),
+        ('I stop while ahead, like Charlemagne.', 'Wa', "Ich spiele wie Karl der Große: ich hör' auf, wenn ich gewonnen hab'.", 'Spielen 109'),
         ('The slate is settled. My thanks.', 'T', 'Die Tafel ist abgerechnet. Meinen Dank.'),
         ('A small price for a good evening.', 'T', 'Ein kleiner Preis für einen guten Abend.'))
     add('settle-even', 'sitting_end: quits, nobody owes',
         ('Quits. Nobody owes anything.', 'T', 'Quitt. Keiner schuldet was.'),
-        ('An even evening. The luck was fair.', 'T', 'Ein gerader Abend. Das Glück war gerecht.'),
+        ('An even evening. The luck was fair.', 'T', 'Ein ausgeglichener Abend. Das Glück war gerecht.'),
         ('Not a kreuzer either way.', 'T', 'Kein Kreuzer hin oder her.'),
         ('Quits, and the evening was the gain.', 'T', 'Quitt, und der Abend war der Gewinn.'))
     add('farewell', 'after sitting_end: the farewell',
-        ('Tomorrow, the honour of another game?', 'Bl', 'Morgen bitte ich mir die Ehre auf eine Partie Tarock aus.'),
+        ('Tomorrow, the honour of another game?', 'Bl', 'Darf ich morgen wieder um die Ehre einer Partie bitten?'),
         ('Thank you for the game.', 'T', 'Ich danke für das Spiel.'),
         ('A good evening. Until the next.', 'T', 'Ein guter Abend. Bis zum nächsten Mal.'),
         ("Gut' Nacht, and good cards.", 'T', 'Gute Nacht, und gute Karten.'),
-        ('A little play is allowed, and this was a little.', 'Ba', 'Ein wenig Spielen bleibt erlaubt.'),
-        ('Schluß for tonight. Do come again.', 'T', "Schluß für heut'. Kommen S' wieder."),
-        ('All afternoon at Tarock; again tomorrow?', 'Bt', 'Den ganzen Nachmittag haben wir Tarock gespielt!'))
+        ('A little play is allowed, they say.', 'Ba', 'Ein wenig Spielen bleibt erlaubt.'),
+        ('That is all for tonight. Do come again.', 'T', "Schluß für heut'. Kommen S' wieder."),
+        ('All afternoon we played Tarock!', 'Bt', 'Den ganzen Nachmittag haben wir Tarock gespielt!'))
     add('blunder-own', "the opponent's own blunder",
-        ('Versehen ist verspielt, even for me.', 'Ve', 'Versehen ist verspielt.'),
+        ('A slip is forfeit, even for me.', 'Ve', 'Versehen ist verspielt.'),
         ('A slip; I play on.', 'Ve', "Ein Versehen; ich spiel' ruhig weiter."),
         ('I should have counted the tarocks.', 'Ro', "Ich hätt' fleißig die Tarok zählen sollen."),
         ('That one was a slip.', 'T', 'Das war ein Versehen.'),
         ("I wasn't looking. My own fault.", 'T', 'Nicht aufgepasst. Meine Schuld.'),
-        ('Unnütze Mühe, that play.', 'Ro', 'Unnütze Mühe, dieses Spiel.'),
         ('Twelve out, or fifteen? I lost count.', 'Lö', 'Jetzt waß i net, san zwölf oder fufzehn Tarock draußen!'))
     add('slip-yours', "the player's slip (a card played in error)",
-        ('Versehen ist verspielt. Play on.', 'Ve', "Versehen ist verspielt. Spielen S' ruhig weiter."),
-        ('A slip is a play, that is all.', 'Ve', 'Versehen ist verspielt.'),
+        ('A slip is forfeit. Play on.', 'Ve', "Versehen ist verspielt. Spielen S' ruhig weiter."),
+        ('A slip is forfeit, that is all.', 'Ve', 'Versehen ist verspielt.'),
         ('It happens. Go on.', 'T', 'Das kommt vor. Weiter.'),
-        ('Versehen ist verspielt, but I forgive it.', 'Ve', "Versehen ist verspielt, wir verzeihen's."))
+        ('A slip is forfeit, but we forgive it.', 'Ve', "Versehen ist verspielt, wir verzeih'ns."))
     add('luck-yours', 'luck talk: the player is lucky',
         ('Easy to play when luck deals.', 'Wa', 'Wem das Glück die Karten gibt, der hat gut spielen.', 'Glück 665'),
         ('Luck beats good play.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
@@ -617,8 +611,6 @@ def phrase_groups():
         ('Luck is April weather. I wait.', 'Wa', 'Glück im Spiel ist Wetter im April.', 'Glück'))
     add('kibitz', 'the kibitzer (the tutor, § 13) speaks or is asked',
         ('Paragraph thirteen: kibitzer, be quiet!', 'Ki', "§ 13: Kiebitz, halt's Maul!"),
-        ('Careful: a kibitz is at the table.', 'Wa', 'Es ist ein Kibitz.', 'Kibitz'),
-        ('Onlookers belong under the table.', 'Zi', 'Nichtspieler gehören unter den Tisch.'),
         ('This game loves no audience.', 'Wa', 'Spiel liebt keine Zuschauer.', 'Spiel'),
         ('Advice from the gallery? I beg your pardon.', 'Ne4', 'Da muß ich bitten!'),
         ('Let the cards be seen and you lose.', 'Wa', 'Wer sich in die Karten sehen lässt, verliert das Spiel.', 'Karte 36'),

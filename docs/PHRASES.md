@@ -9,7 +9,7 @@ not this file.
 Sources:
 
 - **T**: the table's own: a period formula carried to a case the sources do not spell out, or plain table talk
-- **Wn** [05-S3][03-S12][13-S2][05 headline 1]: Werner, Das moderne Tarokspiel, 2nd ed. (Hartleben, by 1891): Strohmann-Tarok "in der Umgangssprache Strohmanndl"; the Vorhand "hat sich zu erklären, ob sie 'aufnehmen', d. h. ein Spiel riskiren wolle. Paßt die Vorhand, so hat der Kartengeber ... das Recht, die Partie aufzunehmen"; Königrufen calls "Mein Spiel", "Ich rufe", "weiter", "gut"; "Ich sage die Troule an"; Troule and kings paid if "angesagt" at the latest as the first of them is played; a 35:35 tie is undecided and the next deal "sammt allen Ansagen doppelt zählt"; "Mondfang"; "das Impassiren"; "ein Conto ... bei fortlaufender Addition". The spoken "Ich nehme auf!", "Weiter!", "Ich passe!" are quoted from Mayr and Sedlaczek (2007) [05-S5]
+- **Wn** [05-S3][03-S12][13-S2][05 headline 1]: Werner, Das moderne Tarokspiel, 2nd ed. (Hartleben, by 1891): Strohmann-Tarok "in der Umgangssprache Strohmanndl"; the Vorhand "hat sich zu erklären, ob sie 'aufnehmen', d. h. ein Spiel riskiren wolle. Paßt die Vorhand, so hat der Kartengeber ... das Recht, die Partie aufzunehmen"; Königrufen calls "Mein Spiel", "Ich rufe", "weiter", "gut"; "Ich sage die Troule an"; Troule and kings paid if "angesagt" at the latest as the first of them is played; a 35:35 tie is undecided and the next deal "sammt allen Ansagen doppelt zählt"; "Mondfang"; "das Impassiren"; "ein Conto ... bei fortlaufender Addition". "Mondfang" is Werner's noun in his other games (Kauf, Königrufen), not in the Strohmann section. The spoken "Ich nehme auf!", "Weiter!", "Ich passe!" are inflections of Werner's "aufnehmen", "weiter", "Paßt"; the exact sentences are as Mayr and Sedlaczek (2007) quote them [05-S5]
 - **Ul** [03-S14][13-S1]: Ulmann, Illustrirtes Wiener Tarockbuch, 2nd ed. (1899): "Es ist üblich, ehe die Spielgesellschaft auseinandergeht, drei oder sechs Touren anzusagen" (p. 19); two players, "stets selbst seines eigenen Glückes Schmied" (p. 69); the honours "nur die Cadres der Kartenarmee" (p. 78); a 35:35 draw "zählt nicht"; Vorhand "hat die nächste Donne"
 - **Be** [13-S3]: Bermann (Vienna 1894), pp. 43-44: "Ist beim Beginne des Spieles nicht eine bestimmte Zeitdauer desselben festgesetzt, so ist es üblich, um es abzubrechen, die Schluß-Touren anzumelden. Gewöhnlich überläßt man dies aus Courtoisie dem im stärksten Verlust befindlichen Spieler ... Nur mit allseitiger Zustimmung können die angesagten Touren erstreckt werden"
 - **Hs** [13-S7]: Haas, Neuestes allgemeines Spielbuch (Vienna 1829), pp. 6-7: a sensible player will not stop abruptly but asks his fellow players "um die Festsetzung der letzten Tour, Partie oder Robber mit bescheidener Nachgiebigkeit"; slates and chalk for the score
@@ -37,7 +37,7 @@ Sources:
 - **Gl** [05c LIT-S28]: Glühlichter, 4 Aug 1898, p. 4 (OCR snippet): "zu fad! Lauter Skartindeln!"
 - **Cr** [04-S26]: Illustrirtes Wiener Extrablatt, 25 Aug 1900, p. 10, a Strohmanntarock case in court: "Ich spiele es gerade so gut, nur habe ich mehr Pech."
 - **Nw** [03 §4]: Neues Wiener Tagblatt, 4 Sep 1887, p. 2: the Pagat ruined by the last straw-man card, "und 'Ultimo' samt Spiel sind verloren"
-- **St** [13-S13]: Johann Strauss on the stakes (1894): "bei zwei bis drei Kreuzer der Point"
+- **St** [13-S13]: Grazer Tagblatt, 15 Oct 1894, p. 2, on Johann Strauss's card play: "bei zwei bis drei Kreuzer der Point" (the newspaper's words, not Strauss's)
 - **Ga** [09-S14]: Die Gartenlaube (1869): "das Fallen der Karten, das Rasseln der Sechser, die Seufzer der Verlierenden"
 - **Jö** [05c LIT-S27]: Jörgel Briefe, 24 Mar 1883, p. 9 (OCR snippet): "Ohne Tarok is kein Spiel"
 - **Hn** [05b LEX-S9]: Henrici (1727), in Grimm's Wörterbuch, s.v. Stich: "denn manchmahl bleibt ein blat in händen, das macht den allerletzten stich"
@@ -76,7 +76,7 @@ sitting_start, three Touren: the Touren announced
 | Let us say three Touren. | Sagen wir drei Touren an. | Ul [03-S14][13-S1] |
 | Three Touren: six deals, a short evening. | Drei Touren: sechs Spiele, ein kurzer Abend. | T |
 | Three Touren, if that suits you. | Drei Touren, wenn es Ihnen recht ist. | Hs [13-S7] |
-| Drei Touren, and then the reckoning. | Drei Touren, dann die Abrechnung. | Be [13-S3] |
+| Three Touren, then the reckoning. | Drei Touren, dann die Abrechnung. | T |
 
 ### `touren-6`
 
@@ -97,7 +97,7 @@ sitting_start: drawing for the first deal
 | English | German | Source |
 |---|---|---|
 | Let us cut for the deal. | Ziehen wir, wer zuerst gibt. | T |
-| Who deals? Who leads? Cut and see. | Wer spielt aus? Wer hat Karten geb'n? | Mo [05-S11] |
+| Who leads? Who deals? | Wer spielt aus? Wer hat Karten geb'n? | Mo [05-S11] |
 | Draw a card; the Touren begin with the dealer. | Die Touren beginnen bei dem, der zuerst die Karten ausgab. | Be [13-S3] |
 | Seats by lot only, I say. | Nur mit gezogenen Plätzen spiele ich. | Ra [05c LIT-S8] |
 
@@ -110,7 +110,6 @@ deal_start: the opponent deals
 | My deal. Fifteen, and three fours. | Ich gebe. Fünfzehn und dreimal vier. | T |
 | Dealt right, laid neat, and the whole wrong. | Liegen thut's tüchtig, gegeben ist's richtig und's Ganze ist unrichtig. | Wa, Liegen 122 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Dealt one way, played another. | Die Karten werden anders gegeben, anders gespielet. | Wa, Karte 7 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Well shuffled, well dealt. | Hastus wol gemischt, so karts wol. | Wa, Mischen 2 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | I deal. Then the straw men. | Ich gebe. Dann die Strohmänner. | T |
 | A good shuffle is half the game. | Ein guter Misch ist das halbe Spiel. | Ra [05c LIT-S8] |
 
@@ -122,9 +121,8 @@ deal_start: the player deals
 |---|---|---|
 | Your deal. | Sie geben. | T |
 | Deal on; the straw men wait. | Geben Sie nur, die Strohmänner warten. | T |
-| Shuffle well, deal well. | Hastus wol gemischt, so karts wol. | Wa, Mischen 2 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Dealt one way, played another. Go on. | Die Karten werden anders gegeben, anders gespielet. | Wa, Karte 7 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Your deal, and a fair one. | Sie geben, und gerecht. | T |
+| Your deal. Good luck to us both. | Sie geben. Viel Glück uns beiden. | T |
 | A good shuffle is half the game. | Ein guter Misch ist das halbe Spiel. | Ra [05c LIT-S8] |
 
 ### `void-deal`
@@ -137,7 +135,7 @@ void_deal: a hand with no tarock, the deal annulled
 | Void. Gather them up and deal again. | Vergeben! Zusammenwerfen und neu geben. | T |
 | A void deal. It does not count. | Ein vergebenes Spiel zählt nicht. | T |
 | Not a tarock to be had: dealt again. | Kein Tarok zu haben: neu gegeben. | T |
-| Vergeben. The Tour waits. | 's is vergeb'n. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
+| Void: a misdeal. | 's is vergeb'n. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
 
 ### `doubling-applied`
 
@@ -145,7 +143,7 @@ doubling_applied: the deal counts double after a draw
 
 | English | German | Source |
 |---|---|---|
-| Doppelt zählt's: every payment twice. | Doppelt zählt's, sammt allen Ansagen. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| Doubled: every payment twice. | Doppelt zählt's, sammt allen Ansagen. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | The last draw doubles this deal. | Doppelt zählt's. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | Double, mind: honours and all. | Doppelt, sammt allen Ansagen. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | This one counts twice. | Das zählt doppelt. | T |
@@ -157,9 +155,9 @@ bid: the opponent takes up
 
 | English | German | Source |
 |---|---|---|
-| Ich nehme auf! | Ich nehme auf! | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| I take it up! | Ich nehme auf! | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | I take it up. Let the straw speak. | Ich nehme auf. Der Strohmann soll reden. | T |
-| Mein Spiel. | Mein Spiel. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| My game. | Mein Spiel. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | My own fortune's smith: I take it up. | Ich bin meines Glückes Schmied: ich nehme auf. | Ul [03-S14][13-S1] |
 | I'll take it up, and trust the straw. | Ich nehme auf und vertraue dem Stroh. | T |
 | Taken up: a game, then. | Aufgenommen: ein Spiel also. | T |
@@ -170,9 +168,9 @@ pass: the opponent passes
 
 | English | German | Source |
 |---|---|---|
-| Weiter! | Weiter! | Wn [05-S3][03-S12][13-S2][05 headline 1] |
-| Ich passe. | Ich passe! | Wn [05-S3][03-S12][13-S2][05 headline 1] |
-| Weiter, bitte. | Weiter, bitte. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| Weiter: I pass. | Weiter! | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| I pass. | Ich passe! | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| Weiter, if you please. | Weiter, bitte. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | I pass, and keep my peace. | Ich passe und halt' Ruh'. | T |
 | Not this time. Weiter. | Diesmal nicht. Weiter. | T |
 
@@ -182,7 +180,7 @@ bid: the player takes up
 
 | English | German | Source |
 |---|---|---|
-| Aufgenommen! Gut. | Aufgenommen! Gut. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| Taken up! Good. | Aufgenommen! Gut. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | Taken up. Let us see the straw. | Aufgenommen. Schauen wir den Strohmann an. | T |
 | Then it is a game in earnest. | Dann ist's ein Spiel im Ernst. | T |
 | Gut. Let it stand. | Gut. Es bleibt. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
@@ -206,9 +204,8 @@ both_pass, play: both pass and a simple game is played
 
 | English | German | Source |
 |---|---|---|
-| Both pass: a simple game, then. | Beide passen: eine einfache Partie. | Ul [03-S14][13-S1] |
-| Nobody takes it up. A plain game. | Keiner nimmt auf. Eine einfache Partie. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
-| A simple game for one Point. | Ein einfaches Spiel um einen Point. | Ul [03-S14][13-S1] |
+| Both pass: a simple game, then. | Beide passen: eine einfache Partie. | T |
+| Nobody takes it up. A plain game. | Keiner nimmt auf. Eine einfache Partie. | T |
 | Both weiter. Plain play, then. | Beide weiter. Dann einfach gespielt. | T |
 | No one risks a game. On we go. | Keiner riskiert ein Spiel. Weiter geht's. | T |
 
@@ -218,7 +215,7 @@ thrown_in: both_pass = throw_in, nothing played
 
 | English | German | Source |
 |---|---|---|
-| Thrown in. The deal passes. | Hingeworfen. Die Vorhand hat die nächste Donne. | Ul [03-S14][13-S1] |
+| Thrown in. The other deals next. | Hingeworfen. Der andere gibt als Nächster. | T |
 | Nothing played; on to the next. | Nichts gespielt; weiter zum nächsten. | T |
 | Both pass, so we start afresh. | Beide passen, wir fangen neu an. | T |
 | Thrown in: the straw stays shut. | Hingeworfen: der Strohmann bleibt zu. | T |
@@ -242,7 +239,7 @@ card_pulled: a king pulled into the opponent's hand
 | English | German | Source |
 |---|---|---|
 | A king from the straw! | Ein König aus dem Stroh! | T |
-| Ah, ein König. Welcome. | Ah, ein König. Willkommen. | T |
+| Ah, a king. Welcome. | Ah, ein König. Willkommen. | T |
 | A king: worth little, then worth much. | Wie der König im Kartenspiel, bald gilt er nichts, bald gilt er viel. | Wa, König 175 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The straw is generous today. | Das Stroh ist heut großzügig. | T |
 | Another king for my hand. | Noch ein König in die Hand. | T |
@@ -254,7 +251,7 @@ card_pulled: a king pulled into the player's hand
 | English | German | Source |
 |---|---|---|
 | A king for you. Well turned. | Ein König für Sie. Schön umgedreht. | T |
-| Der König kommt zu Ihnen. | Der König kommt zu Ihnen. | T |
+| The king comes to you. | Der König kommt zu Ihnen. | T |
 | A king: worth little, then worth much. | Wie der König im Kartenspiel, bald gilt er nichts, bald gilt er viel. | Wa, König 175 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The straw is kind to you. | Das Stroh ist gut zu Ihnen. | T |
 | There goes a king, into the hand. | Da geht ein König in die Hand. | T |
@@ -289,7 +286,7 @@ card_pulled: the Sküs pulled (either side)
 
 | English | German | Source |
 |---|---|---|
-| The Sküs! Er hängt scho' der Max'. | Er hängt scho' der Max'. | Hu [05-S1][05 headline 8 REVIEW] |
+| The Sküs! A wish nearly granted. | Der Sküs! Er hängt scho' der Max'. | Hu [05-S1][05 headline 8 REVIEW] |
 | And the merry Sküs joins in. | Und kommt der lustge Scüs darzu. | Ba [05-S12][05d POLY-S1] |
 | The Sküs has come home. | Der Sküs ist heimgekehrt. | T |
 | The highest trump, out of the straw. | Der höchste Tarok, aus dem Stroh. | T |
@@ -316,7 +313,7 @@ card_pulled: the Pagat (I) pulled
 |---|---|---|
 | The Pagat! A little trump, a great hope. | Der Pagat! Ein kleiner Tarok, eine große Hoffnung. | T |
 | Pagat out of the straw. | Pagat aus dem Stroh. | T |
-| Der Pagat ist da. | Der Pagat ist da. | T |
+| The Pagat is here. | Der Pagat ist da. | T |
 | The Pagat: coquettish and cheerful. | Der kokette, fröhliche Pagat! | Lv [05c LIT-S58] |
 | Sküs, Mond and the little sparrow. | Sküs, Mond und Spatz. | Kz [05c LIT-S57] |
 
@@ -340,7 +337,7 @@ card_pulled, long chain: a lucky run for the player
 |---|---|---|
 | What a run! Three, four, five. | Was für eine Serie! Drei, vier, fünf. | T |
 | Easy to play when luck deals. | Wem das Glück die Karten gibt, der hat gut spielen. | Wa, Glück 665 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Three or four ultimos in a flash! | Der macht drei, vier Ultimo in einem Nu. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
+| The cards run your way tonight. | Die Karten laufen Ihnen heute zu. | T |
 | The straw empties itself into the hand. | Das Stroh leert sich in die Hand. | T |
 | Luck at cards is April weather. | Glück im Spiel ist Wetter im April. | Wa, Glück [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 
@@ -350,7 +347,7 @@ packet_turned, no pull: the opponent's packets give nothing
 
 | English | German | Source |
 |---|---|---|
-| Lauter Skartindeln. | Lauter Skartindeln! | Gl [05c LIT-S28] |
+| Nothing but low cards! | Lauter Skartindeln! | Gl [05c LIT-S28] |
 | Nothing from the straw. Patience. | Nichts aus dem Stroh. Geduld. | T |
 | The game hates me today. | Das Spiel hasst mich. | Wa, Spiel 274, Zusätze [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Not a trump, not a king. | Kein Tarok, kein König. | T |
@@ -367,7 +364,7 @@ packet_turned, no pull: the player's packets give nothing
 | Blind chance, nothing more. | Blinder Zufall, sonst nichts. | Ha [05d POLY-S5] |
 | A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The straw gave you low cards only. | Das Stroh gab Ihnen nur kleine Karten. | T |
-| Es gilt ja Einem wie dem Andern. | Es gilt ja Einem wie dem Andern. | Ha [05d POLY-S5] |
+| It counts the same for both of us. | Es gilt ja Einem wie dem Andern. | Ha [05d POLY-S5] |
 
 ### `slow`
 
@@ -375,8 +372,7 @@ the player is slow to play
 
 | English | German | Source |
 |---|---|---|
-| Out with it, then! | Heraus mit der Ziege! | Wa, Ziege 107 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Who leads? I have forgotten. | Wer spielt aus? Wer hat Karten geb'n? | Mo [05-S11] |
+| Your turn, I believe. | Sie sind an der Reihe, glaub' ich. | T |
 | Mouse-quiet: the table waits. | Mäuserlstill. | Mo [05-S11] |
 | Take your time. The evening is long. | Lassen S' Ihnen Zeit. Der Abend ist lang. | T |
 | Your lead, whenever you are ready. | Spielen S' aus, wann's Ihnen recht ist. | T |
@@ -392,11 +388,11 @@ trick_won: a good trick for the opponent
 
 | English | German | Source |
 |---|---|---|
-| Gestochen! The buck is stuck. | Gestochen der Bock, warum geht er ins Kraut. | Wa, Bock 142 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Small trump, big catch. | Die geringern stechen die höhern. | Wa, Spielen 22 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Trump against trump, and mine. | Trumpf wider Trumpf. | Wa, Trumpf 4 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | That one is mine, I think. | Der gehört mir, glaub' ich. | T |
 | Taken. Thank you. | Genommen. Danke. | T |
+| A trick for me, it seems. | Ein Stich für mich, scheint's. | T |
+| Another trick on my side. | Wieder ein Stich auf meiner Seite. | T |
 
 ### `trick-good-yours`
 
@@ -416,11 +412,11 @@ trick_won: a bad trick for the opponent, points lost
 
 | English | German | Source |
 |---|---|---|
-| Das Blatt hat sich gewandt. | Das Blatt hat sich gewandt. | Wa, Blatt 29 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| The leaf has turned. | Das Blatt hat sich gewandt. | Wa, Blatt 29 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Not won till the cards are out. | So lange die Karten auf dem Tisch liegen, ist das Spiel nicht gewonnen. | Wa, Karte 89 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | There goes a trick. It happens. | Da geht ein Stich. Das kommt vor. | T |
-| The better of that one is yours. | Das war Ihrer, und mit Recht. | T |
+| That one was yours, and rightly. | Das war Ihrer, und mit Recht. | T |
 
 ### `trick-bad-yours`
 
@@ -429,7 +425,7 @@ trick_won: a bad trick for the player
 | English | German | Source |
 |---|---|---|
 | The next one may be yours. | Der nächste gehört vielleicht Ihnen. | T |
-| The leaf can turn yet. | Die Karte hat sich gewendet. | Wa, Karte 44 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| The leaf can turn yet. | Das Blatt kann sich noch wenden. | Wa, Blatt 29 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Nothing is lost while cards lie out. | So lange die Karten auf dem Tisch liegen, ist das Spiel nicht gewonnen. | Wa, Karte 89 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Dealt one way, played another. | Die Karten werden anders gegeben, anders gespielet. | Wa, Karte 7 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
@@ -440,10 +436,10 @@ card_played: the Sküs played (either side)
 
 | English | German | Source |
 |---|---|---|
-| Ich skisiere mich! | Ich skisiere mich! | Me [05-S4][05b LEX-S22 REVIEW] |
+| Sküs: I excuse myself! | Ich skisiere mich! | Me [05-S4][05b LEX-S22 REVIEW] |
 | Pardon me: the Sküs. | Pardon, ich skisire mich. | Ha [05d POLY-S5] |
 | And the merry Sküs joins in. | Und kommt der lustge Scüs darzu. | Ba [05-S12][05d POLY-S1] |
-| The Sküs: the highest of the trumps. | Der Sküs: der höchste der Tarok. | T |
+| The Sküs: the highest of the trumps. | Der Sküs: der höchste Tarok. | T |
 | Sküs it is. Nothing beats it. | Sküs! Da hilft nichts mehr. | T |
 
 ### `mond-caught-mine`
@@ -453,7 +449,7 @@ trick_won: the opponent's Sküs catches the player's Mond
 | English | German | Source |
 |---|---|---|
 | Mondfang! The Sküs has your Mond. | Mondfang! | Wn [05-S3][03-S12][13-S2][05 headline 1] |
-| Unnütze Mühe: the Sküs takes the Mond. | Unnütze Mühe, der Scüs sticht ja den Mond. | Ro [05d POLY-S4] |
+| Wasted effort: the Sküs takes the Mond. | Unnütze Mühe, der Scüs sticht ja den Mond. | Ro [05d POLY-S4] |
 | Struck by the proud Sküs. | Vom stolzen Skis getroffen. | Zi [05-S14] |
 | A Mondfang: a special catastrophe. | Der Mondfang ist eine Special-Katastrophe. | NF [05c LIT-S56] |
 | The Sküs caught the Mond. Sorry. | Der Sküs hat den Mond. Verzeihung. | T |
@@ -465,12 +461,12 @@ trick_won: the player's Sküs catches the opponent's Mond
 
 | English | German | Source |
 |---|---|---|
-| Caught again: the Sküs hunts my Mond. | Es fangt mir der Sküs den Mond ab. | Fl [05c LIT-S20] |
+| Caught again: the Sküs hunts my Mond. | Wieder fangt mir der Sküs den Mond ab. | Fl [05c LIT-S20] |
 | Mondfang! It had to happen. | Mondfang! | Wn [05-S3][03-S12][13-S2][05 headline 1] |
-| Unnütze Mühe: the Sküs takes the Mond. | Unnütze Mühe, der Scüs sticht ja den Mond. | Ro [05d POLY-S4] |
+| Wasted effort: the Sküs takes the Mond. | Unnütze Mühe, der Scüs sticht ja den Mond. | Ro [05d POLY-S4] |
 | Well caught: the Sküs wins the Mond. | Gut gefangen: der Sküs hat den Mond. | T |
 | A Mondfang: a special catastrophe. | Der Mondfang ist eine Special-Katastrophe. | NF [05c LIT-S56] |
-| Only the Sküs can trump the Mond. | Der den Mond kann stechen. | Fh [05c LIT-S60] |
+| Only the Sküs can trump the Mond. | Nur der Sküs kann den Mond stechen. | Fh [05c LIT-S60] |
 
 ### `ultimo-won-mine`
 
@@ -478,11 +474,11 @@ pagat_ultimo won by the opponent
 
 | English | German | Source |
 |---|---|---|
-| My Pagat takes the last trick! | Wenn mein Pagat den letzten sticht! | Ba [05-S12][05d POLY-S1] |
+| My Pagat takes the last trick! | Mein Pagat sticht den letzten! | Ba [05-S12][05d POLY-S1] |
 | Pagat ultimo: made. | Ich habe den Pagat Ultimo gemacht! | Ro [05d POLY-S4] |
-| Mit Glanz gewonnen. | Mit Glanz gewonnen. | Sc [05-S21][05b LEX-S30] |
-| Keep a good card for the last. | Behalt ein gute Kart auf die letzte Less. | Wa, Karte 2 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Won with flair. | Mit Glanz gewonnen. | Sc [05-S21][05b LEX-S30] |
 | One card kept back makes the last trick. | Manchmal bleibt ein Blatt in Händen, das macht den allerletzten Stich. | Hn [05b LEX-S9] |
+| The Pagat comes last, and wins. | Der Pagat kommt zuletzt, und er gewinnt. | T |
 
 ### `ultimo-won-yours`
 
@@ -490,11 +486,11 @@ pagat_ultimo won by the player
 
 | English | German | Source |
 |---|---|---|
-| Pagat ultimo for you. Mit Glanz. | Mit Glanz gewonnen. | Sc [05-S21][05b LEX-S30] |
-| The last card, and well kept. | Behalt ein gute Kart auf die letzte Less. | Wa, Karte 2 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Pagat ultimo for you. Won with flair. | Mit Glanz gewonnen. | Sc [05-S21][05b LEX-S30] |
 | Your Pagat takes the last trick. | Der Pagat sticht den letzten. | Ba [05-S12][05d POLY-S1] |
 | One card kept back makes the last trick. | Manchmal bleibt ein Blatt in Händen, das macht den allerletzten Stich. | Hn [05b LEX-S9] |
-| The Pagat, a thorn in my eye! | Der Pagat ist ein Dorn in den Augen. | Ba [05-S12][05d POLY-S1] |
+| The Pagat, a thorn in my eye! | Der Pagat ist mir ein Dorn im Auge! | Ba [05-S12][05d POLY-S1] |
+| The Pagat last of all: well done. | Der Pagat zuletzt: gut gemacht. | T |
 
 ### `ultimo-lost-mine`
 
@@ -504,7 +500,7 @@ pagat_ultimo lost by the opponent
 |---|---|---|
 | Lost on the very last card. | Man kann ein gutes Spiel noch mit der letzten Karte verlieren. | Wa, Spiel 104 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | My ultimo has floated away. | Der Pagat-Ultimo is wegg'schwommen. | Fg [05c LIT-S29] |
-| Ultimo and game both gone. | Ultimo samt Spiel sind verloren. | Nw [03 §4] |
+| The ultimo is lost. | Der Ultimo ist verloren. | Nw [03 §4] |
 | Caught. I should have counted. | Gefangen. Ich hätt' zählen sollen. | T |
 | The Pagat falls; so it goes. | Der Pagat fällt; so geht's. | T |
 | Lost my calm, and my Pagat with it. | Verloren ist die Seelenruh', der Pagat ultimo dazu. | Mu [05c LIT-S36] |
@@ -517,7 +513,7 @@ pagat_ultimo lost by the player
 |---|---|---|
 | Lost on the very last card. | Man kann ein gutes Spiel noch mit der letzten Karte verlieren. | Wa, Spiel 104 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Count the tarocks next time. | Zählen S' fleißig die Tarok! | Ro [05d POLY-S4] |
-| Ultimo and game both gone. | Ultimo samt Spiel sind verloren. | Nw [03 §4] |
+| The ultimo is lost. | Der Ultimo ist verloren. | Nw [03 §4] |
 | Caught! The Pagat will try again. | Gefangen! Der Pagat versucht's wieder. | T |
 | A pity: the Pagat was so near. | Schade: der Pagat war so nah. | T |
 | Now the little sparrow goes under the knife! | Jetzt kommt der Spatz unters Messer! | Ra [05c LIT-S8] |
@@ -528,9 +524,9 @@ announcement trull by the opponent
 
 | English | German | Source |
 |---|---|---|
-| Ich sage die Troule an. | Ich sage die Troule an. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| I announce the Troule. | Ich sage die Troule an. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | Tous les trois! | Tous les trois! | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
-| Die Troule: Sküs, Mond, Pagat. | Die Troule: Sküs, Mond, Pagat. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| The Troule: Sküs, Mond, Pagat. | Die Troule: Sküs, Mond, Pagat. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | The Troule, announced aloud, one Point. | Die Troule, laut angesagt: ein Point. | T |
 | Tous les trois, if you please. | Tous les trois, wenn ich bitten darf. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
 
@@ -542,7 +538,7 @@ announcement trull by the player
 |---|---|---|
 | Tous les trois! One Point to you. | Tous les trois! Ein Point für Sie. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
 | The Troule is announced. Noted. | Die Troule ist angesagt. Gut. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
-| Die Troule: I shall mind the Sküs. | Die Troule: ich pass' auf den Sküs auf. | T |
+| The Troule: I shall mind the Sküs. | Die Troule: ich pass' auf den Sküs auf. | T |
 | Tous les trois: the evening pays. | Tous les trois: der Abend zahlt sich aus. | T |
 | A Troule, and said in time. | Eine Troule, und rechtzeitig angesagt. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 
@@ -552,7 +548,7 @@ announcement kings by the opponent
 
 | English | German | Source |
 |---|---|---|
-| Vier Könige! | Vier Könige! | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
+| Four kings! | Vier Könige! | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
 | Four kings, announced. | Vier Könige, angesagt. | T |
 | All four kings: the straw was kind. | Alle vier Könige: das Stroh war gnädig. | T |
 | The four kings, one Point. | Die vier Könige: ein Point. | T |
@@ -565,7 +561,7 @@ announcement kings by the player
 | English | German | Source |
 |---|---|---|
 | Four kings! One Point to you. | Vier Könige! Ein Point für Sie. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
-| Vier Könige: duly noted. | Vier Könige: wohlvermerkt. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
+| Four kings: duly noted. | Vier Könige: wohlvermerkt. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
 | The four kings are announced. | Die vier Könige sind angesagt. | T |
 | Honours are only the cadres of the army. | Die Honneurs sind nur die Cadres der Kartenarmee. | Ul [03-S14][13-S1] |
 | Four kings, and said in time. | Vier Könige, rechtzeitig angesagt. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
@@ -576,10 +572,10 @@ honour_forfeited: announced too late
 
 | English | German | Source |
 |---|---|---|
-| Not said in time: no honour. | Nicht rechtzeitig angesagt: keine Honneurs. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| Not said in time: no honour. | Nicht rechtzeitig angesagt: kein Honneur. | T |
 | Too late to announce; it is forfeit. | Zu spät angesagt; es verfällt. | T |
-| An honour must be said before it is played. | Angesagt muß werden, eh' man ausspielt. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
-| The honour is lost by silence. | Wer schweigt, verliert den Honneur. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| Say it by the first card played. | Spätestens mit der ersten Karte muß es angesagt sein. | T |
+| The honour is lost by silence. | Wer schweigt, verliert den Honneur. | T |
 
 ### `valat-mine`
 
@@ -587,10 +583,9 @@ valat by the opponent (every trick)
 
 | English | German | Source |
 |---|---|---|
-| Matsch! Every last trick. | Matsch! Jeder Stich. | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
-| Valat! The whole table is mine. | Valat! Der ganze Tisch gehört mir. | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
-| Pagat, ultimo, valat: all of it. | Pagat, Ultimo, Volat: alles. | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
-| Not a trick for you. Quite matsch. | Kein Stich für Sie. Ganz matsch. | Ne3 [05-S7] |
+| Matsch! Every last trick. | Matsch! Jeder Stich. | T |
+| Valat! The whole table is mine. | Valat! Der ganze Tisch gehört mir. | T |
+| Not a trick for you. Quite matsch. | Kein Stich für Sie. Ganz matsch. | T |
 | Valat: every trick of the twenty-seven. | Valat: alle siebenundzwanzig Stich. | T |
 
 ### `valat-yours`
@@ -599,11 +594,10 @@ valat by the player (every trick)
 
 | English | German | Source |
 |---|---|---|
-| Ich bin matsch! | Ich bin matsch! | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
+| I am matsch: finished! | Ich bin matsch! | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
 | Not one trick for me. Matsch! | Ich bin Matsch worden. | Ne3 [05-S7] |
-| Pagat, ultimo, valat — and I am matsch. | Pagat Ultimo Volat! ... Ich bin matsch! | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
 | Every trick yours. Well played. | Jeder Stich gehört Ihnen. Gut gespielt. | T |
-| Everyone beating me with trumps tonight! | Alles spielt gegen mich und trischakt mich mit Tarock! | Ra [05c LIT-S8] |
+| Everyone plays against me tonight! | Alles spielt gegen mich! | Ra [05c LIT-S8] |
 
 ### `count-start`
 
@@ -613,7 +607,7 @@ count: the tricks are counted
 |---|---|---|
 | Now we count. | Jetzt wird gezählt. | T |
 | Counted, and then argued about. | Wird gezählt, und dann erst kritisirt. | Mo [05-S11] |
-| To the thirds, if you please. | Auf die Drittel genau, bitte. | Pr [03 §4] |
+| To the thirds, if you please. | Auf die Drittel genau, bitte. | T |
 | The count, honestly kept. | Das Zählen, ehrlich geführt. | T |
 | Let us count it out to the thirds. | Zählen wir's auf die Drittel aus. | T |
 
@@ -623,12 +617,11 @@ count: a very close count, 35 and two thirds
 
 | English | German | Source |
 |---|---|---|
-| Thirty-five and two Blatt: just enough. | Fünfunddreißig und zwei Blatt: gerade genug. | Pr [03 §4] |
+| Thirty-five and two thirds: just enough. | Fünfunddreißig und zwei Blatt: gerade genug. | Pr [03 §4] |
 | A hair's breadth: thirty-five and two thirds. | Auf Haaresbreite: fünfunddreißig und zwei Blatt. | Pr [03 §4] |
-| Not won while a card lies out. | Das Spiel ist noch nicht gewonnen, die Kart liegt noch vffm Tisch. | Wa, Spiel 42 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Es gilt ja Einem wie dem Andern. | Es gilt ja Einem wie dem Andern. | Ha [05d POLY-S5] |
+| It counts the same for both of us. | Es gilt ja Einem wie dem Andern. | Ha [05d POLY-S5] |
 | By a single third of a Point! | Um ein einziges Drittel! | T |
-| Thirty-five and two cards: the proudest win. | Fünfunddreißig und zwei Blatt: der stolzeste Sieg. | Kg [05c LIT-S16][03 §4 REVIEW RD] |
+| Thirty-five and two thirds: the proudest win. | Fünfunddreißig und zwei Blatt: der stolzeste Sieg. | Kg [05c LIT-S16][03 §4 REVIEW RD] |
 
 ### `result-won-mine`
 
@@ -640,7 +633,7 @@ game_scored: the opponent wins the deal
 | Luck beats good play, today. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Taken up and won. The straw obliged. | Aufgenommen und gewonnen. Das Stroh war willig. | T |
 | Luck at cards is April weather. | Glück im Spiel ist Wetter im April. | Wa, Glück [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Mit Glanz gewonnen. | Mit Glanz gewonnen. | Sc [05-S21][05b LEX-S30] |
+| Won with flair. | Mit Glanz gewonnen. | Sc [05-S21][05b LEX-S30] |
 
 ### `result-lost-mine`
 
@@ -652,7 +645,7 @@ game_scored: the opponent loses the deal
 | The game hates me today. | Das Spiel hasst mich. | Wa, Spiel 274, Zusätze [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Yours, then. Deal on. | Ihres also. Geben wir weiter. | T |
-| The leaf will turn. | Das Blatt hat sich gewandt. | Wa, Blatt 29 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| The leaf will turn. | Das Blatt wird sich wenden. | Wa, Blatt 29 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 
 ### `result-won-yours`
 
@@ -663,7 +656,7 @@ game_scored: the player wins the deal
 | Yours. Well played, and well turned. | Ihres. Gut gespielt und schön umgedreht. | T |
 | Easy to play when luck deals. | Wem das Glück die Karten gibt, der hat gut spielen. | Wa, Glück 665 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Good cards get used to you. | An einen geschickten Spieler gewöhnen sich gute Karten. | Wa, Spieler 3 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Mit Glanz gewonnen. My compliments. | Mit Glanz gewonnen. Mein Kompliment. | Sc [05-S21][05b LEX-S30] |
+| Won with flair. My compliments. | Mit Glanz gewonnen. Mein Kompliment. | Sc [05-S21][05b LEX-S30] |
 | A deal for you. The evening is long. | Ein Spiel für Sie. Der Abend ist lang. | T |
 
 ### `result-lost-yours`
@@ -684,10 +677,10 @@ game_scored, draw: 35 and 35, nothing decided
 
 | English | German | Source |
 |---|---|---|
-| Unentschieden. The next deal counts double. | Unentschieden. Das nächste Spiel zählt doppelt. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| A draw. The next deal counts double. | Unentschieden. Das nächste Spiel zählt doppelt. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | A dead heat. Doubled next time. | Gleichstand. Das nächste Mal doppelt. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
-| Thirty-five and thirty-five: it does not count. | Fünfunddreißig zu fünfunddreißig: es zählt nicht. | Ul [03-S14][13-S1] |
-| No one's game. The next one counts twice. | Keinem sein Spiel. Das nächste zählt doppelt. | T |
+| Thirty-five each: nobody wins. | Fünfunddreißig zu fünfunddreißig: keiner gewinnt. | T |
+| Nobody won. The next counts twice. | Keiner hat gewonnen. Das nächste zählt doppelt. | T |
 | Neither wins. The doubling waits. | Keiner gewinnt. Die Verdopplung wartet. | T |
 
 ### `doubling-lapsed`
@@ -708,8 +701,8 @@ tour_end: two deals are done
 |---|---|---|
 | A Tour done. The slate, if you please. | Eine Tour um. Die Tafel, bitte. | T |
 | Let us write it up. | Schreiben wir's an. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
-| One Tour round the table. | Einmal herum um den Tisch. | Ul [03-S14][13-S1] |
-| Count the chalk. | Die Kreide her! | Hs [13-S7] |
+| Two deals done: that is a Tour. | Zwei Spiele sind um: das ist eine Tour. | T |
+| Fetch the chalk. | Die Kreide her! | T |
 | Tour over; the account runs on. | Tour vorbei; das Conto läuft weiter. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 
 ### `tour-last`
@@ -718,9 +711,9 @@ deal_start of the last Tour
 
 | English | German | Source |
 |---|---|---|
-| The last Tour, then. | Die Schluß-Touren. | Be [13-S3] |
-| Die Schluß-Touren: play them well. | Die Schluß-Touren: spielen S' sie gut. | Be [13-S3] |
-| One more Tour, and then the reckoning. | Noch eine Tour, dann die Abrechnung. | Ul [03-S14][13-S1] |
+| The closing Touren, then. | Die Schluß-Touren. | Be [13-S3] |
+| The final Touren: play them well. | Die Schluß-Touren: spielen S' sie gut. | Be [13-S3] |
+| One more Tour, and then the reckoning. | Noch eine Tour, dann die Abrechnung. | T |
 | The Touren run out. Deal with care. | Die Touren gehen aus. Geben S' acht. | T |
 | Last Tour: we are nearly home. | Letzte Tour: wir sind bald daheim. | T |
 
@@ -730,11 +723,11 @@ extension_offered: one more Tour?
 
 | English | German | Source |
 |---|---|---|
-| Noch eine Tour? | Noch eine Tour? | Be [13-S3] |
-| Another Tour, if we both agree. | Eine Tour mehr, wenn wir beide zustimmen. | Be [13-S3] |
+| One more Tour? | Noch eine Tour? | T |
+| Another Tour, if we both agree. | Eine Tour mehr, wenn wir beide zustimmen. | T |
 | Shall we add a Tour? | Hängen wir eine Tour an? | T |
-| Only if we both agree: one more? | Nur mit allseitiger Zustimmung: noch eine? | Be [13-S3] |
-| Noch eine Tour, what do you say? | Noch eine Tour, was sagen S'? | Be [13-S3] |
+| Only if we both agree: one more? | Nur mit beiderseitiger Zustimmung: noch eine? | Be [13-S3] |
+| One more Tour, what do you say? | Noch eine Tour, was sagen S'? | T |
 | Just one more round? | Nur noch eine Runde? | Ra [05c LIT-S8] |
 
 ### `extend-yes`
@@ -743,7 +736,7 @@ extension_decided, accepted
 
 | English | German | Source |
 |---|---|---|
-| Noch eine Tour! Gladly. | Noch eine Tour! Gern. | Be [13-S3] |
+| One more Tour! Gladly. | Noch eine Tour! Gern. | T |
 | Agreed: the Touren are extended. | Einverstanden: die Touren werden erstreckt. | Be [13-S3] |
 | One more, then. Deal. | Noch eine also. Geben S'. | T |
 | Good. The evening is not over. | Gut. Der Abend ist noch nicht aus. | T |
@@ -756,10 +749,10 @@ extension_decided, declined
 
 | English | German | Source |
 |---|---|---|
-| Then we stop here, as friends. | Dann hören wir hier auf, als Freunde. | Be [13-S3] |
+| Then we stop here, as friends. | Dann hören wir hier auf, als Freunde. | T |
 | Enough for tonight. The reckoning. | Genug für heut'. Die Abrechnung. | T |
 | No more Touren. To the slate. | Keine Touren mehr. Zur Tafel. | T |
-| Schluß für heute. | Schluß für heute. | Be [13-S3] |
+| That is all for tonight. | Schluß für heute. | T |
 | Enough: the cards may rest. | Genug: die Karten dürfen ruhen. | T |
 
 ### `settle-opp-pays`
@@ -770,9 +763,9 @@ sitting_end: the opponent pays
 |---|---|---|
 | Nothing for it: I owe you. | Da hilft nichts: ich schulde Ihnen was. | T |
 | Two kreuzer a Point: cheap at the price. | Zwei Kreuzer der Point: billig. | St [13-S13] |
-| The rattle of the coins, and my sighs. | Das Rasseln der Sechser, die Seufzer der Verlierenden. | Ga [09-S14] |
+| The rattle of the coins, and my sighs. | Das Rasseln der Sechser, und ich seufze. | Ga [09-S14] |
 | Paid is paid. Well played. | Bezahlt ist bezahlt. Gut gespielt. | T |
-| The rest of the coins are yours. | Der Rest der Münzen gehört Ihnen. | T |
+| The coins are yours. | Die Münzen gehören Ihnen. | T |
 
 ### `settle-player-pays`
 
@@ -782,7 +775,7 @@ sitting_end: the player pays
 |---|---|---|
 | Two kreuzer a Point; I'll take it gladly. | Zwei Kreuzer der Point; ich nehm's gern. | St [13-S13] |
 | The rattle of the coins: mine, this time. | Das Rasseln der Sechser: diesmal meine. | Ga [09-S14] |
-| I stop while ahead, like Charlemagne. | Er hört auf, wenn er gewonnen hat. | Wa, Spielen 109 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| I stop while ahead, like Charlemagne. | Ich spiele wie Karl der Große: ich hör' auf, wenn ich gewonnen hab'. | Wa, Spielen 109 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The slate is settled. My thanks. | Die Tafel ist abgerechnet. Meinen Dank. | T |
 | A small price for a good evening. | Ein kleiner Preis für einen guten Abend. | T |
 
@@ -793,7 +786,7 @@ sitting_end: quits, nobody owes
 | English | German | Source |
 |---|---|---|
 | Quits. Nobody owes anything. | Quitt. Keiner schuldet was. | T |
-| An even evening. The luck was fair. | Ein gerader Abend. Das Glück war gerecht. | T |
+| An even evening. The luck was fair. | Ein ausgeglichener Abend. Das Glück war gerecht. | T |
 | Not a kreuzer either way. | Kein Kreuzer hin oder her. | T |
 | Quits, and the evening was the gain. | Quitt, und der Abend war der Gewinn. | T |
 
@@ -803,13 +796,13 @@ after sitting_end: the farewell
 
 | English | German | Source |
 |---|---|---|
-| Tomorrow, the honour of another game? | Morgen bitte ich mir die Ehre auf eine Partie Tarock aus. | Bl [05b LEX-S32] |
+| Tomorrow, the honour of another game? | Darf ich morgen wieder um die Ehre einer Partie bitten? | Bl [05b LEX-S32] |
 | Thank you for the game. | Ich danke für das Spiel. | T |
 | A good evening. Until the next. | Ein guter Abend. Bis zum nächsten Mal. | T |
 | Gut' Nacht, and good cards. | Gute Nacht, und gute Karten. | T |
-| A little play is allowed, and this was a little. | Ein wenig Spielen bleibt erlaubt. | Ba [05-S12][05d POLY-S1] |
-| Schluß for tonight. Do come again. | Schluß für heut'. Kommen S' wieder. | T |
-| All afternoon at Tarock; again tomorrow? | Den ganzen Nachmittag haben wir Tarock gespielt! | Bt [05c LIT-S62] |
+| A little play is allowed, they say. | Ein wenig Spielen bleibt erlaubt. | Ba [05-S12][05d POLY-S1] |
+| That is all for tonight. Do come again. | Schluß für heut'. Kommen S' wieder. | T |
+| All afternoon we played Tarock! | Den ganzen Nachmittag haben wir Tarock gespielt! | Bt [05c LIT-S62] |
 
 ### `blunder-own`
 
@@ -817,12 +810,11 @@ the opponent's own blunder
 
 | English | German | Source |
 |---|---|---|
-| Versehen ist verspielt, even for me. | Versehen ist verspielt. | Ve [05c LIT-S39][05c LIT-S38] |
+| A slip is forfeit, even for me. | Versehen ist verspielt. | Ve [05c LIT-S39][05c LIT-S38] |
 | A slip; I play on. | Ein Versehen; ich spiel' ruhig weiter. | Ve [05c LIT-S39][05c LIT-S38] |
 | I should have counted the tarocks. | Ich hätt' fleißig die Tarok zählen sollen. | Ro [05d POLY-S4] |
 | That one was a slip. | Das war ein Versehen. | T |
 | I wasn't looking. My own fault. | Nicht aufgepasst. Meine Schuld. | T |
-| Unnütze Mühe, that play. | Unnütze Mühe, dieses Spiel. | Ro [05d POLY-S4] |
 | Twelve out, or fifteen? I lost count. | Jetzt waß i net, san zwölf oder fufzehn Tarock draußen! | Lö [05c LIT-S9] |
 
 ### `slip-yours`
@@ -831,10 +823,10 @@ the player's slip (a card played in error)
 
 | English | German | Source |
 |---|---|---|
-| Versehen ist verspielt. Play on. | Versehen ist verspielt. Spielen S' ruhig weiter. | Ve [05c LIT-S39][05c LIT-S38] |
-| A slip is a play, that is all. | Versehen ist verspielt. | Ve [05c LIT-S39][05c LIT-S38] |
+| A slip is forfeit. Play on. | Versehen ist verspielt. Spielen S' ruhig weiter. | Ve [05c LIT-S39][05c LIT-S38] |
+| A slip is forfeit, that is all. | Versehen ist verspielt. | Ve [05c LIT-S39][05c LIT-S38] |
 | It happens. Go on. | Das kommt vor. Weiter. | T |
-| Versehen ist verspielt, but I forgive it. | Versehen ist verspielt, wir verzeihen's. | Ve [05c LIT-S39][05c LIT-S38] |
+| A slip is forfeit, but we forgive it. | Versehen ist verspielt, wir verzeih'ns. | Ve [05c LIT-S39][05c LIT-S38] |
 
 ### `luck-yours`
 
@@ -881,8 +873,6 @@ the kibitzer (the tutor, § 13) speaks or is asked
 | English | German | Source |
 |---|---|---|
 | Paragraph thirteen: kibitzer, be quiet! | § 13: Kiebitz, halt's Maul! | Ki [05c LIT-S11][05c headline 1 REVIEW RD] |
-| Careful: a kibitz is at the table. | Es ist ein Kibitz. | Wa, Kibitz [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
-| Onlookers belong under the table. | Nichtspieler gehören unter den Tisch. | Zi [05-S14] |
 | This game loves no audience. | Spiel liebt keine Zuschauer. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Advice from the gallery? I beg your pardon. | Da muß ich bitten! | Ne4 [05-S8][05c LIT-S2] |
 | Let the cards be seen and you lose. | Wer sich in die Karten sehen lässt, verliert das Spiel. | Wa, Karte 36 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |

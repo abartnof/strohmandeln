@@ -25,10 +25,33 @@ pub struct Move {
     pub action: Action,
 }
 
+mod seed_string {
+    use serde::{de, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S: Serializer>(seed: &u64, s: S) -> Result<S::Ok, S::Error> {
+        s.collect_str(seed)
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<u64, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Seed {
+            Number(u64),
+            Text(String),
+        }
+        match Seed::deserialize(d)? {
+            Seed::Number(n) => Ok(n),
+            Seed::Text(t) => t.parse().map_err(de::Error::custom),
+        }
+    }
+}
+
 /// Everything needed to replay a sitting exactly.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Record {
     pub version: u32,
+    /// A string on the wire: a JavaScript number cannot hold every u64.
+    #[serde(with = "seed_string")]
     pub seed: u64,
     pub settings: Settings,
     pub touren: u32,
@@ -64,7 +87,7 @@ pub struct Sitting {
 impl Sitting {
     /// Begins a sitting of 3 or 6 Touren (RULES 15.2). The first dealer is
     /// drawn by lot (2.1).
-    pub fn new(seed: u64, settings: Settings, touren: u32) -> Result<Sitting, String> {
+    pub fn new(seed: u64, settings: Settings, touren: u32) -> Result<Sitting, SetupError> {
         Sitting::with_decks(seed, settings, touren, Vec::new())
     }
 
@@ -75,9 +98,14 @@ impl Sitting {
         settings: Settings,
         touren: u32,
         decks: Vec<Vec<Card>>,
-    ) -> Result<Sitting, String> {
+    ) -> Result<Sitting, SetupError> {
         if touren != 3 && touren != 6 {
-            return Err(format!("a sitting is 3 or 6 Touren, not {touren}"));
+            return Err(SetupError::BadTouren { touren });
+        }
+        if !(1..=2).contains(&settings.ultimo) {
+            return Err(SetupError::BadUltimo {
+                ultimo: settings.ultimo,
+            });
         }
         let first = Seat::from_index(Rng::stream(seed, purpose::LOT).below(2) as usize);
         let mut s = Sitting {
@@ -107,17 +135,17 @@ impl Sitting {
     }
 
     /// Rebuilds a sitting from its record, move by move.
-    pub fn replay(record: &Record) -> Result<Sitting, String> {
+    pub fn replay(record: &Record) -> Result<Sitting, SetupError> {
         if record.version != RECORD_VERSION {
-            return Err(format!(
-                "record version {} is not {RECORD_VERSION}",
-                record.version
-            ));
+            return Err(SetupError::RecordVersion {
+                found: record.version,
+                expected: RECORD_VERSION,
+            });
         }
         let mut s = Sitting::new(record.seed, record.settings, record.touren)?;
         for (i, m) in record.moves.iter().enumerate() {
             s.apply(m.seat, m.action.clone())
-                .map_err(|e| format!("move {i} refused on replay: {e}"))?;
+                .map_err(|refusal| SetupError::ReplayRefused { index: i, refusal })?;
         }
         Ok(s)
     }
@@ -452,6 +480,70 @@ mod tests {
             ));
         }
         assert_eq!(seen, [true, true]);
+    }
+
+    #[test]
+    fn rules_0_the_ultimo_setting_is_1_or_2_and_nothing_else() {
+        for bad in [0, 3, u32::MAX] {
+            let settings = Settings {
+                ultimo: bad,
+                ..Settings::default()
+            };
+            let err = Sitting::new(1, settings, 3).unwrap_err();
+            assert_eq!(err, SetupError::BadUltimo { ultimo: bad });
+        }
+        assert!(Sitting::new(
+            1,
+            Settings {
+                ultimo: 2,
+                ..Settings::default()
+            },
+            3
+        )
+        .is_ok());
+    }
+
+    #[test]
+    fn setup_errors_are_keys_with_parameters_not_sentences() {
+        let err = Sitting::new(1, Settings::default(), 4).unwrap_err();
+        assert_eq!(
+            serde_json::to_string(&err).unwrap(),
+            r#"{"key":"bad-touren","touren":4}"#
+        );
+        let mut r = Sitting::new(1, Settings::default(), 3).unwrap().record();
+        r.version = 9;
+        assert_eq!(
+            serde_json::to_string(&Sitting::replay(&r).unwrap_err()).unwrap(),
+            r#"{"key":"record-version","found":9,"expected":1}"#
+        );
+        let mut r = Sitting::new(1, Settings::default(), 3).unwrap().record();
+        let wrong = Sitting::new(1, Settings::default(), 3)
+            .unwrap()
+            .to_move()
+            .unwrap()
+            .other();
+        r.moves.push(Move {
+            seat: wrong,
+            action: Action::Take,
+        });
+        let json = serde_json::to_value(Sitting::replay(&r).unwrap_err()).unwrap();
+        assert_eq!(json["key"], "replay-refused");
+        assert_eq!(json["index"], 0);
+        assert_eq!(json["refusal"]["key"], "not-your-turn");
+    }
+
+    #[test]
+    fn the_record_keeps_a_seed_beyond_2_pow_53_exactly_through_json() {
+        // A JavaScript number cannot hold it; the record writes it as a string.
+        let seed = (1u64 << 63) + 12345;
+        let s = Sitting::new(seed, Settings::default(), 3).unwrap();
+        let json = serde_json::to_string(&s.record()).unwrap();
+        assert!(json.contains(&format!("\"seed\":\"{seed}\"")), "{json}");
+        let back: Record = serde_json::from_str(&json).unwrap();
+        assert_eq!(back.seed, seed);
+        // a record with a plain number still reads
+        let number = json.replace(&format!("\"{seed}\""), &seed.to_string());
+        assert_eq!(serde_json::from_str::<Record>(&number).unwrap().seed, seed);
     }
 
     #[test]

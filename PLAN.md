@@ -39,16 +39,18 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 2 | `kit/`: the shared JS (render core, motion, dialogue, tutorial) and `build.py`, from Cassino; `bin/gate` | — | done |
 | 3 | Phrase bank: `tools/phrases.py` → `web3d/words.json` + `docs/PHRASES.md`, with a kindness test | 1 (moments) | done |
 | 4 | `strohmandeln-core`: cards, deal, straw men, legal plays, tricks, counting in thirds, bonuses, settings, session and slate, records | 1 | done |
-| 5 | `strohmandeln-wasm` and `strohmandeln-cli`, with `docs/PROTOCOL.md` | 4 | todo |
-| 6 | Computer opponent: a ladder of rungs, each measured against the one below | 4 | todo |
+| 5 | `strohmandeln-wasm` and `strohmandeln-cli`, with `docs/PROTOCOL.md` | 4 | done |
+| 6 | Computer opponent: a ladder of rungs, each measured against the one below | 4 | in progress: rungs 1–4, solver, sequential test built; hint and measurement open |
 | 7 | Card faces: 54 large-type faces and a back, drawn at runtime (`docs/img/faces.png`) | 2 | done |
-| 8 | The table: layout, choreography, play, slate, settings, phone. The count and score use the kit's score HUD and scoring popups (moved from Cassino), configured for counting won cards in threes against 36 | 2, 5, 7 | todo |
+| 8 | The table (spec: `docs/TABLE3D.md`): layout, choreography, play, slate, settings, phone. The count and score use the kit's score HUD and scoring popups (moved from Cassino), configured for counting won cards in threes against 36 | 2, 5, 7 | todo |
 | 9 | Tutor: tutorial pages, the kibitzer's hints and explanations, end-of-deal review | 5, 8 | todo |
 | 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | todo |
 | 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | todo |
 
 ## Open
 
-- Card faces: the 2, 3 and 4 pip layouts sit off-centre beside the index column; rebalance.
+- Phrase bank (review RK): Wander proverbs repeat across groups (one appears in 7), and the most frequent groups (pull-*, nothing-*, trick-*) need more wordings; the talk system needs cross-group repeat control, not only the per-group bag.
+
+- Kit (review CR-KIT, docs/review/kit-and-faces.md): textures for phones at 384 px or less, built lazily (54 at 512 px is ~105 MB with mipmaps); the HUD must be rebuilt to switch language; Cassino defaults left in the kit (HAND_H, end = 21, cards = 52); kit/node_modules is a symlink (unsafe on Windows without core.symlinks; root npm workspaces if that ever matters); tools/contact_sheet.mjs depends on ~/piquet/.venv.
 
 - The currency on the slate (gulden and kreuzer, or krone). Note 13's dates for the krone are unsourced.

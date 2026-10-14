@@ -4,7 +4,7 @@
 //! the viewer's own private cards. It never contains the other player's
 //! private hand cards or any face-down packet card, and neither the seed nor
 //! the deck. `events` are the events of the current deal, filtered for the
-//! viewer (the other seat's `dealt` is dropped).
+//! viewer (the other seat's `dealt` and `honour_forfeited` are dropped).
 
 use crate::cards::{Card, Honour};
 use crate::deal::{HandCard, HonourState, TrickRecord};
@@ -74,8 +74,20 @@ pub struct View {
 pub fn filter_event(event: &Event, seat: Seat) -> Option<Event> {
     match event {
         Event::Dealt { seat: owner, .. } if *owner != seat => None,
+        // A forfeit is private to its holder (RULES 11.5, 13.2).
+        Event::HonourForfeited { seat: owner, .. } if *owner != seat => None,
         other => Some(other.clone()),
     }
+}
+
+/// The events `apply` returned, as `seat` may see them. `Sitting::apply`
+/// returns every event, the other seat's `dealt` included; whatever carries
+/// events to a player must pass them through this.
+pub fn filter_events(events: &[Event], seat: Seat) -> Vec<Event> {
+    events
+        .iter()
+        .filter_map(|e| filter_event(e, seat))
+        .collect()
 }
 
 /// The view of `sitting` for `seat`.
@@ -85,10 +97,7 @@ pub fn view(sitting: &Sitting, seat: Seat) -> View {
         .iter()
         .rposition(|e| matches!(e, Event::DealStart { .. }))
         .unwrap_or(0);
-    let events = all[from..]
-        .iter()
-        .filter_map(|e| filter_event(e, seat))
-        .collect();
+    let events = filter_events(&all[from..], seat);
     let to_move = sitting.to_move();
     View {
         seat,
@@ -134,7 +143,9 @@ pub fn deal_view(deal: &crate::deal::Deal, seat: Seat) -> DealView {
         let mut v = Vec::new();
         for honour in [Honour::Trull, Honour::Kings] {
             for s in Seat::BOTH {
-                if deal.honour_state(s, honour) == state {
+                // A forfeit is private to its holder (RULES 13.2).
+                let visible = state != HonourState::Forfeited || s == seat;
+                if visible && deal.honour_state(s, honour) == state {
                     v.push(AnnouncementView { seat: s, honour });
                 }
             }
@@ -392,6 +403,26 @@ mod tests {
     }
 
     #[test]
+    fn filter_events_keeps_everything_but_the_other_seats_dealt() {
+        let mut s = Sitting::new(4, Settings::default(), 3).unwrap();
+        let first = s.to_move().unwrap();
+        let mut all = s.events().to_vec();
+        all.extend(s.apply(first, Action::Take).unwrap());
+        for seat in Seat::BOTH {
+            let kept = filter_events(&all, seat);
+            let others = all
+                .iter()
+                .filter(|e| matches!(e, Event::Dealt { seat: o, .. } if *o != seat))
+                .count();
+            assert!(others >= 1);
+            assert_eq!(kept.len(), all.len() - others);
+            assert!(kept
+                .iter()
+                .all(|e| !matches!(e, Event::Dealt { seat: o, .. } if *o != seat)));
+        }
+    }
+
+    #[test]
     fn legal_actions_are_in_the_view_only_on_your_turn() {
         let s = Sitting::new(4, Settings::default(), 3).unwrap();
         let mover = s.to_move().unwrap();
@@ -419,5 +450,50 @@ mod tests {
         });
         assert_eq!(d.take_thirds, want);
         assert_eq!(d.tricks.len(), deal.tricks().len());
+    }
+
+    /// A deck in which forehand holds the whole Trull (the first three cards
+    /// go to forehand, RULES 2.3).
+    fn trull_deck() -> Vec<Card> {
+        let trull: Vec<Card> = ["SK", "T21", "T1"]
+            .iter()
+            .map(|c| Card::parse(c).unwrap())
+            .collect();
+        let rest = Card::all().filter(|c| !trull.contains(c));
+        trull.iter().copied().chain(rest).collect()
+    }
+
+    #[test]
+    fn rules_13_a_forfeit_is_private_to_its_holder() {
+        use crate::types::{Action, Event, Settings};
+        let mut s = Sitting::with_decks(1, Settings::default(), 3, vec![trull_deck()]).unwrap();
+        let holder = s.deal().unwrap().forehand();
+        let other = holder.other();
+        while s.to_move() != Some(holder) || s.legal_actions().first() == Some(&Action::Take) {
+            let seat = s.to_move().unwrap();
+            let a = s.legal_actions()[0].clone();
+            s.apply(seat, a).unwrap();
+        }
+        // The holder leads a card of the Trull without announcing it.
+        let t1 = Card::parse("T1").unwrap();
+        let events = s.apply(holder, Action::play(t1)).unwrap();
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::HonourForfeited { seat, .. } if *seat == holder)));
+
+        // The holder is told; the opponent is not, by event or by view.
+        let is_forfeit = |e: &Event| matches!(e, Event::HonourForfeited { .. });
+        assert!(filter_events(&events, holder).iter().any(is_forfeit));
+        assert!(!filter_events(&events, other).iter().any(is_forfeit));
+        let mine = view(&s, holder);
+        assert_eq!(mine.deal.as_ref().unwrap().forfeited.len(), 1);
+        assert!(mine.events.iter().any(is_forfeit));
+        let theirs = view(&s, other);
+        assert!(theirs.deal.as_ref().unwrap().forfeited.is_empty());
+        assert!(!theirs.events.iter().any(is_forfeit));
+        let wire = serde_json::to_string(&theirs).unwrap();
+        assert!(!wire.contains("honour_forfeited"), "{wire}");
+        // Nor can it be read from the filtered stream of the whole sitting.
+        assert!(!filter_events(s.events(), other).iter().any(is_forfeit));
     }
 }
