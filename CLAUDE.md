@@ -36,6 +36,15 @@ Standing rules:
   briefs, decides and checks; reading, research, coding, testing and review
   go to agents wherever the work can be handed off, in parallel when the
   pieces are independent.
+- **Every module is reviewed.** When a module or area of code is written
+  (engine, kit, table, faces, phrase bank, opponent, tutor, build), an agent
+  that did not write it does a code review: correctness against
+  `docs/RULES.md` and the tests, bugs, simplicity, and fit with the rest. Its
+  findings are fixed, or recorded as open in `PLAN.md`, before the work
+  package is called done. Review logs go in `docs/review/`.
+- **Only the orchestrating session edits `PLAN.md`.** Agents report what they
+  did; the plan is updated from their reports. That keeps parallel branches
+  from colliding in it.
 - **Agents run on Sonnet or smaller.** Pass `model: "sonnet"` (or `"haiku"`
   for simple, mechanical work) on every agent call; never Opus.
 - **Documents are public-facing, and terse.** Write notes the way a software
