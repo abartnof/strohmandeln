@@ -33,7 +33,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 5 | `strohmandeln-wasm` and `strohmandeln-cli`, with `docs/PROTOCOL.md` | 4 | todo |
 | 6 | Computer opponent: a ladder of rungs, each measured against the one below | 4 | todo |
 | 7 | Card faces: 54 large-type faces and a back, drawn at runtime | 2 | todo |
-| 8 | The table: layout, choreography, play, slate, settings, phone | 2, 5, 7 | todo |
+| 8 | The table: layout, choreography, play, slate, settings, phone. The count and score start from Cassino's score HUD (`~/cassino/web3d/src/hud.js`, its popups a line a beat with each counted card turned up, `docs/TABLE3D.md` §8 and the HUD section): the same ritual, counting won cards in threes against 36 | 2, 5, 7 | todo |
 | 9 | Tutor: tutorial pages, the kibitzer's hints and explanations, end-of-deal review | 5, 8 | todo |
 | 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | todo |
 
