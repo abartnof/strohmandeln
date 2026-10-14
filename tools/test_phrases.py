@@ -244,6 +244,31 @@ class Shape(unittest.TestCase):
         self.assertEqual(len(ids), len(set(ids)))
 
 
+class Signatures(unittest.TestCase):
+    """Each text carries a `sig`, the saying it is (docs/TABLE3D.md 5.3.1): the talk
+    keeps one saying from being heard again from another group."""
+
+    def test_every_text_in_words_json_has_a_sig(self):
+        import json
+        data = json.loads(phrases.WORDS.read_text())
+        for key, t in data["texts"].items():
+            self.assertTrue(t.get("sig"), key)
+
+    def test_a_table_text_is_its_own_sig(self):
+        import json
+        data = json.loads(phrases.WORDS.read_text())
+        for gid, _, ways in GROUPS:
+            for k, w in enumerate(ways):
+                if w[1] == "T":
+                    self.assertEqual(data["texts"][f"{gid}.{k}"]["sig"], f"{gid}.{k}")
+
+    def test_the_same_saying_has_the_same_sig_whatever_the_group(self):
+        self.assertEqual(phrases.sig("a", 0, ("x", "Wa", "y", "Karte 7")), phrases.sig("b", 3, ("z", "Wa", "q", "Karte 7")))
+        self.assertNotEqual(phrases.sig("a", 0, ("x", "Wa", "y")), phrases.sig("a", 1, ("x", "Wa", "z")))
+        # a bare lemma is not an entry: two sayings under "Spiel" differ
+        self.assertNotEqual(phrases.sig("a", 0, ("x", "Wa", "y", "Spiel")), phrases.sig("a", 1, ("x", "Wa", "z", "Spiel")))
+
+
 class Generated(unittest.TestCase):
     def test_generated_files_are_current(self):
         for path, text in ((phrases.DOC, phrases.document()), (phrases.WORDS, phrases.words_json())):

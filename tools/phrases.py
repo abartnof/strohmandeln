@@ -623,9 +623,20 @@ def phrase_groups():
     return out
 
 
+def sig(gid, k, w):
+    """The saying a wording is, whatever group says it (docs/TABLE3D.md 5.3.1): a
+    table line is its own key; a sourced one is its source with the locator when
+    that pins an entry (it has a number: "Karte 7"), else with its German wording
+    (a bare lemma such as "Spiel" holds many sayings)."""
+    if w[1] == "T":
+        return f"{gid}.{k}"
+    return f"{w[1]} {w[3]}" if len(w) > 3 and any(c.isdigit() for c in w[3]) else f"{w[1]} {w[2]}"
+
+
 def texts():
-    """Every wording: key -> {en, de}."""
-    return {f"{gid}.{k}": {"en": w[0], "de": w[2]} for gid, _, ways in phrase_groups() for k, w in enumerate(ways)}
+    """Every wording: key -> {en, de, sig}."""
+    return {f"{gid}.{k}": {"en": w[0], "de": w[2], "sig": sig(gid, k, w)}
+            for gid, _, ways in phrase_groups() for k, w in enumerate(ways)}
 
 
 def groups():
