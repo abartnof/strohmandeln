@@ -75,3 +75,11 @@ test("a file without extras still loads", () => {
   assert.equal(r.ok, true);
   assert.deepEqual(r.extras, {});
 });
+
+test("the caps count bytes, not characters", () => {
+  // "ä" is 2 bytes in UTF-8: half the cap in characters is over it in bytes.
+  const store = fakeStore();
+  const wide = { ...EXPORT, note: "ä".repeat(MAX_SAVED / 2 + 1000) };
+  assert.deepEqual(saveSitting(wide, EXTRAS, {}, store), { ok: false, reason: "too-big" });
+  assert.deepEqual(parseFile("ä".repeat(MAX_FILE / 2 + 1)), { ok: false, error: "load-big" });
+});

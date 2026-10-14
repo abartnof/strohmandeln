@@ -16,6 +16,9 @@ export const MAX_SAVED = 200 * 1024; // bytes (9.1)
 export const MAX_FILE = 1024 * 1024; // bytes (9.3)
 export const FILE_NAME = "strohmandeln-sitting.json";
 
+// Size in UTF-8 bytes: the caps are bytes, and "ä" is two of them.
+const bytes = (text) => new TextEncoder().encode(text).length;
+
 function defaultStore() {
   try {
     return globalThis.localStorage ?? null;
@@ -40,7 +43,7 @@ export function saveSitting(exported, extras, { over = false } = {}, store = def
       return { ok: true };
     }
     const text = JSON.stringify({ v: VERSION, export: exported, extras: extras ?? {} });
-    if (text.length > MAX_SAVED) return { ok: false, reason: "too-big" };
+    if (bytes(text) > MAX_SAVED) return { ok: false, reason: "too-big" };
     store.setItem(KEY, text);
     return { ok: true };
   } catch {
@@ -78,7 +81,7 @@ export function fileText(exported, extras) {
 // error} with a key of strings.json (`error.<error>`); nothing is changed
 // either way.
 export function parseFile(text) {
-  if (typeof text !== "string" || text.length > MAX_FILE) return { ok: false, error: "load-big" };
+  if (typeof text !== "string" || bytes(text) > MAX_FILE) return { ok: false, error: "load-big" };
   try {
     const f = JSON.parse(text);
     if (!f || f.v !== VERSION || f.protocol !== PROTOCOL || !validExport(f.export)) return { ok: false, error: "load-bad" };
