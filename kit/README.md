@@ -21,8 +21,11 @@ inside it. A plain directory is in every worktree from the start.
 | Motion | `easing.js`, `kinematics.js` (card paths: pose, layDown, pull, toss, flip, fan, peelOff, carryBlock ...), `timeline.js` |
 | Loop | `director.js` (render on demand, a clock a gate can hold, picking, screen points) |
 | Talk | `bag.js` (shuffle bag), `dialogue.js` (when and where a line is said) |
+| Score | `scoring.js` (a game's definition, the per-hand ledger, segments, the count's popups), `hud.js` (the HUD widget), `count.js` (the count's timing, the talk system's quiet) |
 | Shell | `tutorial.js` (the small Markdown parser), `engine.js` (wasm wrapper) |
 | Constants | `units.js` (CARD, TABLE, CAMERA*, PORTRAIT_BELOW), `reveal.js` (table edges, fog, the camera's way back) |
+
+`css/hud.css`: the HUD's styling (inlined by `build.py`, below).
 
 `test/`: the Node tests that cover them, plus tests for what the kit changed
 (`engine`, `tutorial`, `director`, `modules`) and `test_build.py` for
@@ -33,7 +36,7 @@ inside it. A plain directory is in every worktree from the start.
 - `prefs.js`, `progress.js`: generic in shape (versioned `localStorage`, try/catch,
   URL overrides) but every key, default and the evidence format is Cassino's.
   Copy them as a pattern when the game needs settings.
-- `layout.js`, `choreography.js`, `main.js`, `overlay.js`, `talk.js`, `hud.js`,
+- `layout.js`, `choreography.js`, `main.js`, `overlay.js`, `talk.js`,
   `chrome.js`, `style.css`, `index.html`: game logic or page design. `ZONES*` of
   `units.js` and the courts of `reveal.js` went with them.
 - `tutorial.js`'s page keys, `moveKinds`, `pageDue`: Cassino's pages. The
@@ -72,6 +75,59 @@ What the game supplies:
   API object (its commands) is the game's; wrap it in `guard`.
 - Card art and the tutorial text, the phrase bank, a page template and style.
 
+### The score HUD
+
+`scoring.js`, `hud.js`, `count.js` and `css/hud.css` are Cassino's score HUD
+and count popups, made generic (a row a player; popups a line a beat; each
+counted card turned up as its popup comes). The game supplies one definition:
+
+```js
+import { defineGame, countEvents, countLedger } from "../../kit/js/scoring.js";
+import { createHud } from "../../kit/js/hud.js";
+import { paceOf, scalePace, countSchedule, quietWindow, muted } from "../../kit/js/count.js";
+
+const game = defineGame({
+  categories: [["count", "Cards counted"], ["bonus", "Bonuses"]], // keys and ledger labels, in order
+  target: 36,                  // the line's length (`segments` overrides); total: 70 if wanted
+  scale: 3,                    // units to a point: scores are whole numbers of thirds
+  format: (units, cat) => "35⅔",     // how any value reads (popups, numbers, ledger)
+  goal: "36 of 70",            // the target as the HUD says it
+  names: { you: "You", opp: "Anna" },  // each player's label (reset() can change them)
+  words: { hand: "Deal" },     // the HUD's own words (hud.js WORDS), optional
+  line: (l) => ({ side, cat, pts }),   // reads one line of the game's count; side: "you" | "opp"
+  popup: (l, i, lines, info) => ({ pts, label }) | null, // what a line tells; null: nothing
+                               // (default: each line tells itself, labelled by its category)
+  cards: (l, i, lines) => [codes],     // the cards that line turns up
+});
+const hud = createHud(slot, game, { later: (ms, fn) => director.at(ms, fn), onToggle, room, reduced });
+hud.reset({ hands: [ledger...], live: ledger | null });  // a ledger is countLedger(game, lines)
+```
+
+Per scoring event: `countEvents(game, lines, { at, hand })` gives the popups
+(`{ side, cat, label, pts, line, hand, cards }`) and a final `{ end: true }`;
+call `hud.score(e)` at the time its line is said, `hud.endHand(e.hand)` for
+the end and `hud.dealt(n)` as a hand is dealt. Points the game shows as they
+happen (a sweep) go straight to `hud.score` and are `null` in `popup`, so the
+count does not tell them again. For the cards,
+`countSchedule(game, lines, { start, pace })` returns `lines` (when each is
+said), `turns` (`{ line, at, side, cards }`) and `end`; the game's
+choreography moves the cards at those times (`kinematics.js`).
+`pace = scalePace(paceOf(game, lines), timeline.speed)` makes a side's next
+popup wait for its last (and nothing wait at Instant: `null`). For the talk
+system, `quiet = quietWindow(count, beats)` and `muted(quiet, ms, words)` drop
+what would be said while the hand is scored.
+
+Values are whole units, so sums are exact. The page gives `.hud` its place and
+width (Cassino's `.info` slot is the game's layout, not the kit's); add
+`kit_styles = ["../kit/css/hud.css"]` to `game.toml`. The HUD keeps its own
+dark card (greys, three springs); it uses none of the page's `--md-sys-*`
+Material tokens, which stay in the game's `style.css`. Reduced motion: the
+stylesheet collapses every duration, and `reduced()` lands a number in one tick.
+
+What the game keeps: deriving its scoring events from its own state (Cassino's
+`ledgerOf`, `hudEvents`, sweeps), its category names, the celebrations on the
+table, and the layout of the count row.
+
 ### The `three` problem, and why it does not recur
 
 `kit/js/*.js` import the bare specifier `three`. Node and esbuild resolve a bare
@@ -100,7 +156,8 @@ deterministic); `--dry-run` prints the plan and what is missing; `--help` has
 the rest. The config format is at the top of `build.py`: game name, wasm crate
 (omit it before there is an engine), entry, template, style, output, optional
 `worker_entry` (the tutor's worker, bundled apart and inlined as text),
-`[[assets]]` (images folder, json, text) and a size guideline. The weigh-in
+`[[assets]]` (images folder, json, text), `kit_styles` (the kit's stylesheets,
+inlined before the game's `style`) and a size guideline. The weigh-in
 names the kit's bytes separately from three.js and the game's own.
 
 ## Changing the kit

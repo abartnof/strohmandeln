@@ -22,6 +22,12 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
   `kit/STAMP` file naming the source commit, not a submodule
   (`research/review/RC.md`). It becomes a package once a second game uses it.
 
+- 14 Oct 2026: the score HUD and the count's per-card popups are in the kit
+  (`kit/js/scoring.js`, `hud.js`, `count.js`, `kit/css/hud.css`), generic and
+  parameterised by a game definition, because several games in the series score
+  by counting cards. Strohmandeln supplies its categories, thirds format and
+  36 of 70 (`kit/README.md`, "The score HUD").
+
 ## Work packages
 
 | # | Package | Depends on | State |
