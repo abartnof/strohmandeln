@@ -51,6 +51,6 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 
 - Phrase bank (review RK): Wander proverbs repeat across groups (one appears in 7), and the most frequent groups (pull-*, nothing-*, trick-*) need more wordings; the talk system needs cross-group repeat control, not only the per-group bag.
 
-- Card faces: the 2, 3 and 4 pip layouts sit off-centre beside the index column; rebalance.
+- Kit (review CR-KIT, docs/review/kit-and-faces.md): textures for phones at 384 px or less, built lazily (54 at 512 px is ~105 MB with mipmaps); the HUD must be rebuilt to switch language; Cassino defaults left in the kit (HAND_H, end = 21, cards = 52); kit/node_modules is a symlink (unsafe on Windows without core.symlinks; root npm workspaces if that ever matters); tools/contact_sheet.mjs depends on ~/piquet/.venv.
 
 - The currency on the slate (gulden and kreuzer, or krone). Note 13's dates for the krone are unsourced.
