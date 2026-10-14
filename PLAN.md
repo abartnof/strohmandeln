@@ -34,11 +34,13 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 4 | `strohmandeln-core`: cards, deal, straw men, legal plays, tricks, counting in thirds, bonuses, settings, session and slate, records | 1 | todo |
 | 5 | `strohmandeln-wasm` and `strohmandeln-cli`, with `docs/PROTOCOL.md` | 4 | todo |
 | 6 | Computer opponent: a ladder of rungs, each measured against the one below | 4 | todo |
-| 7 | Card faces: 54 large-type faces and a back, drawn at runtime | 2 | todo |
+| 7 | Card faces: 54 large-type faces and a back, drawn at runtime (`docs/img/faces.png`) | 2 | done |
 | 8 | The table: layout, choreography, play, slate, settings, phone. The count and score use the kit's score HUD and scoring popups (moved from Cassino), configured for counting won cards in threes against 36 | 2, 5, 7 | todo |
 | 9 | Tutor: tutorial pages, the kibitzer's hints and explanations, end-of-deal review | 5, 8 | todo |
 | 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | todo |
 
 ## Open
+
+- Card faces: the 2, 3 and 4 pip layouts sit off-centre beside the index column; rebalance.
 
 - The currency on the slate (gulden and kreuzer, or krone). Note 13's dates for the krone are unsourced.
