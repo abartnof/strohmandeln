@@ -19,6 +19,8 @@ pub struct Knowledge {
     /// Whether the bidding is over and play has begun.
     pub playing: bool,
     pub declarer: Option<Seat>,
+    /// The non-dealer, who bids first and leads the first trick.
+    pub forehand: Seat,
     /// 1 to 27.
     pub trick_number: u32,
     /// The card the opponent led to the open trick, when I follow.
@@ -103,6 +105,7 @@ impl Knowledge {
             opp,
             playing: d.playing,
             declarer: d.declarer,
+            forehand: d.forehand,
             trick_number: d.trick_number,
             lead,
             hand,
@@ -131,6 +134,16 @@ impl Knowledge {
     pub fn playable(&self) -> CardSet {
         let mut s = self.hand;
         for c in self.covers.iter().flatten() {
+            s.insert(*c);
+        }
+        s
+    }
+
+    /// Every card the opponent might still play: the unseen ones, those he
+    /// is known to hold and his covers.
+    pub fn opp_possible(&self) -> CardSet {
+        let mut s = self.unseen.union(self.opp_known);
+        for c in self.opp_covers.iter().flatten() {
             s.insert(*c);
         }
         s

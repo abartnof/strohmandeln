@@ -109,6 +109,14 @@ fn replayed(deck: &[Card], history: &[(Seat, Action)]) -> Option<Scene> {
 /// the same in all of them (the bids included). Returns how many twins were
 /// checked.
 pub fn blind_check(decide: &dyn Fn(&View) -> Action, deals: u64) -> usize {
+    blind_check_values(decide, deals)
+}
+
+/// As `blind_check`, for any value computed from a view.
+pub fn blind_check_values<T: PartialEq + std::fmt::Debug>(
+    decide: &dyn Fn(&View) -> T,
+    deals: u64,
+) -> usize {
     let mut twins_checked = 0;
     for seed in 0..deals {
         let mut rng = Rng::stream(seed, 77);
@@ -140,11 +148,8 @@ pub fn blind_check(decide: &dyn Fn(&View) -> Action, deals: u64) -> usize {
                 if tv != v {
                     continue;
                 }
-                assert_eq!(
-                    decide(&tv),
-                    a,
-                    "seed {seed}: the hidden cards changed a decision"
-                );
+                let again = decide(&tv);
+                assert_eq!(again, a, "seed {seed}: the hidden cards changed a decision");
                 twins_checked += 1;
             }
             let legal = v.legal_actions;
@@ -211,6 +216,7 @@ pub fn know(
         opp: Seat::A,
         playing: true,
         declarer: Some(Seat::A),
+        forehand: Seat::A,
         trick_number: 1,
         lead,
         hand: hand_set,

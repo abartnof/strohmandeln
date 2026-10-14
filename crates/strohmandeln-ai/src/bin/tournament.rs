@@ -9,7 +9,8 @@
 //!
 //! A and B are specs: a level (`1` to `4`, or in halves `2.5`), optionally
 //! followed by `@` and comma-separated settings, such as `2@bid=40/5` (the
-//! rung-2 bid rule: sure-winner thirds / least tarocks). The unit of
+//! rung-2 bid rule: sure-winner thirds / least tarocks); `worlds=`, `nodes=`,
+//! `bidworlds=` and `bidmargin=` set rung 4's search. The unit of
 //! observation is the Points A takes from B over one mirrored pair of
 //! sittings (each of `--touren` Touren, so 6 or 12 deals a seating).
 
@@ -39,6 +40,11 @@ fn parse_spec(spec: &str) -> (Level, Config) {
                     min_tarocks: n.parse().expect("tarocks"),
                 };
             }
+            "worlds" => config.budget.worlds = v.parse().expect("worlds"),
+            "nodes" => config.budget.nodes = v.parse().expect("nodes"),
+            "bidworlds" => config.budget.bid_worlds = v.parse().expect("bidworlds"),
+            "bidmargin" => config.bid_margin = Some(v.parse().expect("bidmargin")),
+            "bidrule" => config.bid_margin = None,
             other => panic!("unknown setting {other}"),
         }
     }

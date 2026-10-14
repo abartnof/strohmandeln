@@ -59,19 +59,19 @@ pub struct Choice {
     pub reason: &'static str,
 }
 
-struct Tally {
-    total: f64,
-    best: (f64, &'static str),
+pub(crate) struct Tally {
+    pub(crate) total: f64,
+    pub(crate) best: (f64, &'static str),
 }
 
 impl Tally {
-    fn new(base_reason: &'static str) -> Tally {
+    pub(crate) fn new(base_reason: &'static str) -> Tally {
         Tally {
             total: 0.0,
             best: (0.0, base_reason),
         }
     }
-    fn add(&mut self, v: f64, reason: &'static str) {
+    pub(crate) fn add(&mut self, v: f64, reason: &'static str) {
         self.total += v;
         if v.abs() > self.best.0.abs() {
             self.best = (v, reason);
@@ -79,12 +79,12 @@ impl Tally {
     }
 }
 
-fn cover_index(k: &Knowledge, c: Card) -> Option<usize> {
+pub(crate) fn cover_index(k: &Knowledge, c: Card) -> Option<usize> {
     k.covers.iter().position(|&x| x == Some(c))
 }
 
 /// Cards of `kind` the opponent is known to hold or show.
-fn opp_visible(k: &Knowledge, kind: Kind) -> Vec<Card> {
+pub(crate) fn opp_visible(k: &Knowledge, kind: Kind) -> Vec<Card> {
     k.opp_covers
         .iter()
         .flatten()
@@ -94,7 +94,7 @@ fn opp_visible(k: &Knowledge, kind: Kind) -> Vec<Card> {
         .collect()
 }
 
-fn my_value_in(k: &Knowledge, suit: Suit) -> u32 {
+pub(crate) fn my_value_in(k: &Knowledge, suit: Suit) -> u32 {
     k.playable()
         .iter()
         .filter(|c| c.suit() == Some(suit))
@@ -104,7 +104,7 @@ fn my_value_in(k: &Knowledge, suit: Suit) -> u32 {
 
 /// The packet to keep unplayed when a Pagat ultimo threatens: the one with
 /// the most face-down cards.
-fn reserved_packet(k: &Knowledge) -> Option<usize> {
+pub(crate) fn reserved_packet(k: &Knowledge) -> Option<usize> {
     let threat = k.opp_known.iter().filter(|c| c.is_tarock()).count() >= THREAT_TAROCKS;
     if !threat {
         return None;
@@ -118,7 +118,7 @@ fn reserved_packet(k: &Knowledge) -> Option<usize> {
 }
 
 /// What spending a card costs the hand's future.
-fn spend(c: Card) -> f64 {
+pub(crate) fn spend(c: Card) -> f64 {
     if c.is_tarock() {
         f64::from(c.strength()) / 21.0 * 3.0
     } else {
@@ -237,7 +237,7 @@ fn lead(k: &Knowledge, c: Card) -> Tally {
 }
 
 /// The maxims that hold for leading and following alike.
-fn common(k: &Knowledge, c: Card, t: &mut Tally, choice: bool) {
+pub(crate) fn common(k: &Knowledge, c: Card, t: &mut Tally, choice: bool) {
     if let Some(i) = cover_index(k, c) {
         t.add(w::COVER, "play-packet-off");
         if reserved_packet(k) == Some(i) {

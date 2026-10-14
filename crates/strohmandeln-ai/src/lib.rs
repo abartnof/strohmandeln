@@ -9,7 +9,12 @@ pub mod know;
 pub mod opponent;
 pub mod rung1;
 pub mod rung2;
+pub mod rung3;
+pub mod rung4;
+pub mod sampler;
 pub mod seed;
+pub mod sim;
+pub mod solver;
 pub mod stats;
 #[cfg(test)]
 mod testutil;

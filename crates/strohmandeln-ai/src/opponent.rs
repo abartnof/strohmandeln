@@ -11,7 +11,7 @@
 
 use crate::rung2::BidRule;
 use crate::seed::view_seed;
-use crate::{rung1, rung2};
+use crate::{rung1, rung2, rung3, rung4};
 use strohmandeln_core::agents::Player;
 use strohmandeln_core::rng::Rng;
 use strohmandeln_core::types::Action;
@@ -62,12 +62,19 @@ impl Level {
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Config {
     pub bid: BidRule,
+    /// Rung 4's search budget.
+    pub budget: rung4::Budget,
+    /// Rung 4 takes up when the sampled advantage exceeds this (Points);
+    /// `None` bids by rung 2's rule.
+    pub bid_margin: Option<f64>,
 }
 
 impl Default for Config {
     fn default() -> Config {
         Config {
             bid: rung2::BID_RULE,
+            budget: rung4::Budget::default(),
+            bid_margin: Some(0.0),
         }
     }
 }
@@ -121,6 +128,14 @@ impl Opponent {
         let mut rng = Rng::seeded(draws.next_u64());
         match self.rung_for(view) {
             1 => rung1::decide(view, &mut rng),
+            3 => rung3::decide_with(view, &mut rng, self.config.bid),
+            4 => rung4::decide(
+                view,
+                &mut rng,
+                self.config.budget,
+                self.config.bid_margin,
+                self.config.bid,
+            ),
             _ => rung2::decide_with(view, &mut rng, self.config.bid),
         }
     }
@@ -158,8 +173,8 @@ mod tests {
 
     #[test]
     fn a_decision_is_a_function_of_the_seed_and_the_view() {
-        for halves in 2..=4 {
-            for seed in 0..6 {
+        for halves in 2..=6 {
+            for seed in 0..4 {
                 walk(seed, |s, seat| {
                     let v = view(s, seat);
                     let a = Opponent::new(Level::from_halves(halves), 7);
@@ -193,7 +208,7 @@ mod tests {
     fn it_plays_a_sitting_to_its_end_at_every_level() {
         use strohmandeln_core::agents::play_out;
         use strohmandeln_core::session::Sitting;
-        for halves in 2..=6 {
+        for halves in 2..=8 {
             let mut s = Sitting::new(halves as u64, Default::default(), 3).unwrap();
             let mut players: [Box<dyn Player>; 2] = [
                 Box::new(Opponent::new(Level::from_halves(halves), 1)),
