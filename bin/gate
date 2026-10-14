@@ -7,6 +7,7 @@
 #   - cargo fmt --check, clippy -D warnings, cargo test   (a Cargo.toml at the root)
 #   - node --test over kit/test and web3d/test            (those folders)
 #   - python3 -m unittest over kit/test                   (the kit's build.py tests)
+#   - the phrase bank's tests and tools/phrases.py --check (tools/)
 #   - kit/build.py --check                                (the game's page)
 # Unlike cassino's, it does not skip the Node tests when web3d/node_modules is
 # missing: the kit imports `three` from there, so a missing install is a
@@ -69,6 +70,16 @@ if ls kit/test/test_*.py >/dev/null 2>&1; then
     fail "python tests (kit/build.py)"
   fi
   parts+=("$(echo "$py_out" | grep -oE "^Ran [0-9]+" | awk '{print $2}') in Python")
+fi
+
+# ---- Python: the phrase bank (its rules, and generated files kept current)
+if [ -f tools/phrases.py ]; then
+  if ! ph_out=$(cd tools && python3 -m unittest discover -s . -p 'test_*.py' 2>&1); then
+    echo "$ph_out" | tail -30 >&2
+    fail "phrase bank tests (tools/)"
+  fi
+  python3 tools/phrases.py --check >/dev/null 2>&1 || fail "the phrase bank's generated files are stale (run python3 tools/phrases.py)"
+  parts+=("$(echo "$ph_out" | grep -oE "^Ran [0-9]+" | awk '{print $2}') in the phrase bank")
 fi
 
 # ---- The page: it must be built from these sources (the build is deterministic)
