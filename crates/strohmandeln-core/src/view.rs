@@ -78,6 +78,16 @@ pub fn filter_event(event: &Event, seat: Seat) -> Option<Event> {
     }
 }
 
+/// The events `apply` returned, as `seat` may see them. `Sitting::apply`
+/// returns every event, the other seat's `dealt` included; whatever carries
+/// events to a player must pass them through this.
+pub fn filter_events(events: &[Event], seat: Seat) -> Vec<Event> {
+    events
+        .iter()
+        .filter_map(|e| filter_event(e, seat))
+        .collect()
+}
+
 /// The view of `sitting` for `seat`.
 pub fn view(sitting: &Sitting, seat: Seat) -> View {
     let all = sitting.events();
@@ -85,10 +95,7 @@ pub fn view(sitting: &Sitting, seat: Seat) -> View {
         .iter()
         .rposition(|e| matches!(e, Event::DealStart { .. }))
         .unwrap_or(0);
-    let events = all[from..]
-        .iter()
-        .filter_map(|e| filter_event(e, seat))
-        .collect();
+    let events = filter_events(&all[from..], seat);
     let to_move = sitting.to_move();
     View {
         seat,
@@ -378,6 +385,26 @@ mod tests {
             None
         );
         assert!(filter_event(&Event::ThrownIn, Seat::A).is_some());
+    }
+
+    #[test]
+    fn filter_events_keeps_everything_but_the_other_seats_dealt() {
+        let mut s = Sitting::new(4, Settings::default(), 3).unwrap();
+        let first = s.to_move().unwrap();
+        let mut all = s.events().to_vec();
+        all.extend(s.apply(first, Action::Take).unwrap());
+        for seat in Seat::BOTH {
+            let kept = filter_events(&all, seat);
+            let others = all
+                .iter()
+                .filter(|e| matches!(e, Event::Dealt { seat: o, .. } if *o != seat))
+                .count();
+            assert!(others >= 1);
+            assert_eq!(kept.len(), all.len() - others);
+            assert!(kept
+                .iter()
+                .all(|e| !matches!(e, Event::Dealt { seat: o, .. } if *o != seat)));
+        }
     }
 
     #[test]
