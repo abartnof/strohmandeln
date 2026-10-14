@@ -798,7 +798,7 @@ menu ("Help").
 | `from-a-packet` | the first human play of a cover | the cover is played like a hand card; afterwards the card beneath is turned and may be pulled; the opponent plays before seeing it |
 | `honours` | the first time the human holds the Trull or four kings, or the first `announcement` | announce the Trull (Sküs, Mond, Pagat) or four kings before the first card of it is played; 1 Point; paid even if lost; staying silent is allowed, unpaid; the prompt (3.3) |
 | `pagat-ultimo` | the first time the human holds `T1` at the last 5 tricks, or the first `pagat_ultimo` | the Pagat in the last trick wins or loses a Point; it is quiet, never announced; the Pagat is the lowest tarock |
-| `thirds` | the first `count` | the count in thirds: cards count 5 / 4 / 3 / 2 / 1 less one-third in a group of three; 36 of 70 is 35⅔; 35⅓ loses; the HUD shows the tally |
+| `thirds` | the first `count` | the count in thirds: cards count 5 / 4 / 3 / 2 / 1, each less two-thirds (a group of three: the sum less 2) [RULES 8.1]; 36 of 70 is 35⅔; 35⅓ loses; the HUD shows the tally |
 | `draw` | the first `draw` | a simple game that ends 35 : 35 is undecided; the next deal counts double |
 | `touren-slate` | the first `tour_end`, or the first slate opening | the Touren, two deals each; the slate; the settlement at 2 kreuzer a Point; the note that this is a reconstruction (4.6), said once |
 | `extension` | the first `extension_offered` | one more Tour needs both players' consent |
