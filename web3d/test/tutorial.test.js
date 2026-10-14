@@ -76,3 +76,12 @@ test("the pages name the buttons as the strings do", () => {
   const label = { "I take it up": "ui.take", Pass: "ui.pass", Play: "ui.play", "Announce Trull": "ui.announce.trull", "Announce four kings": "ui.announce.kings", Slate: "ui.menu.slate", "One more Tour": "ui.ext.yes", Enough: "ui.ext.no" };
   for (const [en, key] of Object.entries(label)) assert.equal(STRINGS[key].en, en);
 });
+
+test("the spec and the pages state the count as RULES 8.1 does: value less two-thirds, a group of three less 2", () => {
+  const row = read("../../docs/TABLE3D.md").split("| `thirds` |")[1].split("\n")[0];
+  assert.match(row, /less two-thirds/);
+  assert.doesNotMatch(row, /one-third/);
+  const text = (lang) => pages(lang).find((p) => p.key === "thirds").blocks.flatMap((b) => (b.spans ? [b.spans] : b.items)).map((s) => s.map((x) => x.text).join("")).join("\n");
+  assert.match(text("en"), /two-thirds[^\n]*sum less 2/);
+  assert.match(text("de"), /zwei Drittel[^\n]*Summe weniger 2/);
+});
