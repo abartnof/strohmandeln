@@ -12,7 +12,9 @@
 
 use serde::Deserialize;
 use serde_json::{json, Map, Value};
-use strohmandeln_core::agents::{Player, RandomPlayer};
+use strohmandeln_ai::hint::hint as ai_hint;
+use strohmandeln_ai::opponent::{Config as AiConfig, Level, Opponent};
+use strohmandeln_core::agents::Player;
 use strohmandeln_core::cards::{Card, Honour};
 use strohmandeln_core::session::{Record, Sitting};
 use strohmandeln_core::types::{Action, Event, Seat, Settings, SetupError, Source};
@@ -21,14 +23,28 @@ use strohmandeln_core::view::{filter_events, view, View};
 /// Bumped whenever the wire format changes in a way a client would notice.
 pub const PROTOCOL: u32 = 1;
 
-/// Builds the opponent for a seat from the sitting's seed and the opaque
-/// `level` the host passed. Work package 6 replaces this with its ladder.
-pub type OpponentFactory = fn(seed: u64, seat: Seat, level: u32) -> Box<dyn Player>;
+/// Builds the opponent for a seat from the sitting's seed and the `level`
+/// (1 to 4 in half steps, `docs/OPPONENT.md`) the host passed.
+pub type OpponentFactory = fn(seed: u64, seat: Seat, level: f64) -> Box<dyn Player>;
 
-/// The opponent until the ladder exists: the core's random player. The level
-/// is carried through the protocol but does not change it yet.
-pub fn default_opponent(seed: u64, seat: Seat, _level: u32) -> Box<dyn Player> {
-    Box::new(RandomPlayer::new(seed, seat))
+/// The ladder's opponent (`strohmandeln-ai`) at the requested level. A level
+/// outside 1 to 4 is clamped, one that is not a number is the top.
+pub fn default_opponent(seed: u64, seat: Seat, level: f64) -> Box<dyn Player> {
+    let seed = seed ^ (u64::from(seat.index() as u8) + 1).rotate_left(56);
+    Box::new(Opponent::new(Level::from_f64(level), seed).with_config(browser_config()))
+}
+
+/// The tuning the browser plays with: the crate's defaults (the search budget
+/// is capped there; `docs/OPPONENT.md`).
+fn browser_config() -> AiConfig {
+    AiConfig::default()
+}
+
+/// The level of the tutor's hint: always the top rung, whole.
+const HINT_LEVEL: f64 = 4.0;
+
+fn normal_level(x: f64) -> f64 {
+    Level::from_f64(x).as_f64()
 }
 
 /// FNV-1a, 64 bits: the hash of the golden games (`tests/golden.txt`).
@@ -52,9 +68,13 @@ struct Config {
     /// The seat the human takes, 0 or 1.
     #[serde(default)]
     human: u8,
-    /// The opponent's level; opaque to the protocol.
-    #[serde(default)]
-    level: u32,
+    /// The opponent's level, 1 to 4 in half steps (default 1).
+    #[serde(default = "one")]
+    level: f64,
+}
+
+fn one() -> f64 {
+    1.0
 }
 
 /// What a saved sitting holds.
@@ -62,8 +82,8 @@ struct Config {
 struct Saved {
     protocol: u32,
     human: u8,
-    #[serde(default)]
-    level: u32,
+    #[serde(default = "one")]
+    level: f64,
     record: Record,
 }
 
@@ -108,7 +128,7 @@ fn settings_of(overrides: Map<String, Value>) -> Result<Settings, Fail> {
 pub struct Table {
     sitting: Sitting,
     human: Seat,
-    level: u32,
+    level: f64,
     opponent: Box<dyn Player>,
     /// How many of the sitting's events the host has been sent.
     sent: usize,
@@ -131,13 +151,14 @@ impl Table {
     fn build(
         sitting: Sitting,
         human: Seat,
-        level: u32,
+        level: f64,
         factory: OpponentFactory,
         sent: usize,
     ) -> Table {
         // A restored sitting gets a different opponent stream than the first
         // run would have had; the record holds moves, not the opponent's mind.
         let seed = sitting.seed() ^ (sitting.record().moves.len() as u64).rotate_left(32);
+        let level = normal_level(level);
         Table {
             opponent: factory(seed, human.other(), level),
             sitting,
@@ -322,9 +343,36 @@ impl Table {
         })
     }
 
-    /// A hint for the human's move. The opponent work package fills this in.
+    /// The tutor's hint for the human's move: the move the top rung would
+    /// make, with a reason as a message key (`docs/MESSAGES.md`). Without a
+    /// move to make (not the human's turn, or the sitting is over) the hint is
+    /// `null` and the reason `not-your-turn`.
     pub fn hint(&self) -> Value {
-        json!({"protocol": PROTOCOL, "hint": null, "reason": "unavailable"})
+        let Some(legal) = self.my_hint_legal() else {
+            return json!({
+                "protocol": PROTOCOL,
+                "hint": null,
+                "reason": "not-your-turn",
+                "params": {},
+            });
+        };
+        let v = self.my_view();
+        let seed = self.sitting.seed() ^ 0x7417_0000_0000_0001;
+        let h = ai_hint(&v, seed, Level::from_f64(HINT_LEVEL), AiConfig::default());
+        let action = match &h.action {
+            Action::Play { card, .. } => legal
+                .iter()
+                .find(|a| a["action"] == "play" && a["card"] == json!(card))
+                .cloned()
+                .unwrap_or(Value::Null),
+            other => serde_json::to_value(other).unwrap_or(Value::Null),
+        };
+        json!({"protocol": PROTOCOL, "hint": action, "reason": h.key, "params": {}})
+    }
+
+    fn my_hint_legal(&self) -> Option<Vec<Value>> {
+        let legal = self.legal();
+        (!legal.is_empty()).then_some(legal)
     }
 
     /// For tests and the smoke test only: every card the human must not be
@@ -566,8 +614,8 @@ pub mod ffi {
         HOST.with(|h| h.borrow_mut().import(&saved, default_opponent))
     }
 
-    /// Renders a hint for the human's move (a stub until the opponent work
-    /// package fills it: `{"hint": null}`).
+    /// Renders the tutor's hint for the human's move
+    /// (`{"hint": <a legal action>, "reason": <key>, "params": {}}`).
     #[no_mangle]
     pub extern "C" fn strohmandeln_hint() {
         HOST.with(|h| h.borrow_mut().show(|t| t.hint()))
@@ -866,9 +914,83 @@ mod tests {
     }
 
     #[test]
-    fn the_hint_is_a_stub() {
+    fn the_hint_is_a_legal_action_with_a_known_reason_key() {
+        for level in [1, 2] {
+            let mut h = host(&format!(r#"{{"seed":7,"touren":3,"level":{level}}}"#));
+            let mut n = 0;
+            loop {
+                h.render();
+                if out(&h)["state"]["prompt"] == "over" || n >= 40 {
+                    break;
+                }
+                n += 1;
+                let s = out(&h)["state"].clone();
+                if s["prompt"] == "opponent" {
+                    h.show(|t| t.hint());
+                    assert_eq!(out(&h)["hint"], Value::Null, "not the human's turn");
+                    assert_eq!(out(&h)["reason"], "not-your-turn");
+                    h.step();
+                    continue;
+                }
+                h.show(|t| t.hint());
+                let r = out(&h);
+                assert!(s["legal"].as_array().unwrap().contains(&r["hint"]), "{r}");
+                let key = r["reason"].as_str().unwrap();
+                assert!(strohmandeln_ai::hint::KEYS.contains(&key), "{key}");
+                assert!(r["params"].is_object());
+                let a = if r["hint"]["action"] == "play" {
+                    json!({"action":"play","card":r["hint"]["card"]})
+                } else {
+                    r["hint"].clone()
+                };
+                assert_eq!(h.send(&a.to_string()), 1, "the hint is playable: {a}");
+            }
+        }
+    }
+
+    #[test]
+    fn the_hint_does_not_move_the_game() {
         let mut h = host(CONFIG);
+        while out(&h)["state"]["prompt"] != "you" {
+            h.step();
+        }
+        h.render();
+        let before = out(&h);
         h.show(|t| t.hint());
-        assert_eq!(out(&h)["hint"], Value::Null);
+        h.render();
+        assert_eq!(out(&h), before);
+    }
+
+    #[test]
+    fn the_level_is_clamped_to_half_steps_and_echoed() {
+        for (given, shown) in [("3", 3.0), ("2.4", 2.5), ("9", 4.0), ("0", 1.0)] {
+            let h = host(&format!(r#"{{"seed":7,"touren":3,"level":{given}}}"#));
+            assert_eq!(out(&h)["state"]["level"], shown, "{given}");
+        }
+        assert_eq!(out(&host(CONFIG))["state"]["level"], 1.0, "default");
+    }
+
+    #[test]
+    fn every_level_plays_a_sitting_through() {
+        for level in ["1", "2.5", "3"] {
+            let mut h = host(&format!(r#"{{"seed":3,"touren":3,"level":{level}}}"#));
+            for _ in 0..5000 {
+                let s = out(&h)["state"].clone();
+                match s["prompt"].as_str().unwrap() {
+                    "over" => break,
+                    "opponent" => assert_eq!(h.step(), 1, "level {level}"),
+                    _ => {
+                        let a = s["legal"][0].clone();
+                        let a = if a["action"] == "extend" {
+                            json!({"action":"extend","accept":false})
+                        } else {
+                            a
+                        };
+                        assert_eq!(h.send(&a.to_string()), 1);
+                    }
+                }
+            }
+            assert_eq!(out(&h)["state"]["prompt"], "over", "level {level}");
+        }
     }
 }
