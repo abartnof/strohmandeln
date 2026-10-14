@@ -76,6 +76,8 @@ export function createTalk({ words, getLang, rng = Math.random, say }) {
     firstPulls = new Map();
     firstTrickDone = false;
     luckSaid = false;
+    lastCount = null;
+    quiet = false;
   };
   newDeal();
 
@@ -245,7 +247,8 @@ export function createTalk({ words, getLang, rng = Math.random, say }) {
       case "count_close": {
         quiet = false;
         const d = lastCount;
-        if (d && Math.abs((d.thirds?.[d.declarer] ?? 0) - d.threshold) <= 1) speak("count-close");
+        // The lines name the figure (35 and two thirds), so only the exact threshold is close.
+        if (d && d.thirds?.[d.declarer] === d.threshold) speak("count-close");
         break;
       }
       case "game_scored":

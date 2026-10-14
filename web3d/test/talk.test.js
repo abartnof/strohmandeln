@@ -323,3 +323,23 @@ test("snapshot and restore keep the record across a reload", () => {
   u.feed(pulled(O, "Kh"));
   assert.notEqual(u.said[0].key, t.said[0].key);
 });
+
+test("count-close is only for the exact 35 and two thirds the lines name (107)", () => {
+  for (const [thirds, closes] of [[[108, 102], false], [[106, 104], false], [[107, 103], true]]) {
+    const t = make();
+    t.feed({ type: "count", thirds, declarer: 0, threshold: 107 }, { type: "count_start" }, { type: "count_close" });
+    assert.equal(t.groups().includes("count-close"), closes, String(thirds));
+  }
+});
+
+test("a new deal ends a count that never closed, and forgets the last count", () => {
+  const t = make();
+  t.feed(deal(1), { type: "count", thirds: [150, 60], declarer: 0, threshold: 107 }, { type: "count_start" });
+  t.feed(deal(2));
+  assert.equal(t.groups().at(-1).startsWith("deal-"), true, "quiet lifted by the next deal");
+  // no stale count: a deal scored without a count event of its own is not 'wide'
+  const u = make();
+  u.feed(deal(1), { type: "count", thirds: [150, 60], declarer: 0, threshold: 107 }, scored(O));
+  u.feed(deal(2), scored(O));
+  assert.equal(u.groups().filter((g) => g.startsWith("luck-")).length, 1);
+});
