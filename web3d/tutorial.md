@@ -17,7 +17,7 @@ TABLE3D 6.5. Text vor der ersten Überschrift überliest der Parser.
 
 - Sie halten 15 Karten. Vor Ihnen liegen **drei Pakete** zu vier Karten, verdeckt.
 - Ihr Gegner hat dasselbe. Die verdeckten Karten kennt niemand, auch ihr Besitzer nicht.
-- Gleich wird die oberste Karte jedes Pakets aufgedeckt. Diese Karte heißt **Deckkarte**.
+- Gleich wird die oberste Karte jedes Pakets aufgedeckt. Eine Karte, die offen auf dem Paket liegen bleibt, heißt **Deckkarte**.
 - Eine Deckkarte dürfen Sie ausspielen wie eine Karte aus der Hand.
 - Die kleine Zahl am Paket zählt die Karten, die darunter noch verdeckt liegen.
 - Wenn ich mir erlauben darf: Sehen Sie auch die Deckkarten Ihres Gegners an. Sie sind kein Geheimnis.
@@ -52,7 +52,7 @@ TABLE3D 6.5. Text vor der ersten Überschrift überliest der Parser.
 - Haben Sie die Farbe? Dann müssen Sie bedienen. Sonst müssen Sie stechen, mit einem Tarock. Haben Sie auch keines, dürfen Sie irgendeine Karte spielen.
 - Handkarten und Deckkarten gelten gleich. Sind beide hell, wählen Sie frei.
 - Helle Karten sind erlaubt, abgedunkelte nicht. Tippen Sie auf eine abgedunkelte, und ich sage Ihnen, warum.
-- Sie müssen nicht höher spielen. Das höhere Tarock, oder die höhere Karte der Farbe, gewinnt den Stich.
+- Sie müssen nicht höher spielen. Ein Tarock sticht jede Farbkarte; das höhere Tarock gewinnt. Sonst gewinnt die höhere Karte der ausgespielten Farbe.
 
 # Aus einem Paket spielen
 
@@ -60,8 +60,8 @@ TABLE3D 6.5. Text vor der ersten Überschrift überliest der Parser.
 
 - Tippen Sie eine Deckkarte an wie eine Handkarte. Tippen Sie nochmals oder drücken Sie **Ausspielen**.
 - Ist der Stich eingezogen, wird die Karte darunter aufgedeckt. Ein Tarock oder König kommt in Ihre Hand, eine niedrige Karte wird die neue Deckkarte.
-- Die Karte darunter kennen Sie nicht, und Ihr Gegner auch nicht; er spielt, ehe sie gezeigt wird.
-- Bleibt von einem Paket nur eine Karte, so kommt sie in Ihre Hand.
+- Die Karte darunter kennen weder Sie noch Ihr Gegner, bis sie aufgedeckt wird.
+- Ist die Karte darunter die letzte des Pakets, kommt sie in Ihre Hand, was sie auch sei.
 - Wenn ich mir erlauben darf: Eine gespielte Deckkarte deckt eine neue auf. Mehr ist es nicht.
 
 # Troule und vier Könige
@@ -83,7 +83,7 @@ TABLE3D 6.5. Text vor der ersten Überschrift überliest der Parser.
 - Der Pagat (I) ist das niedrigste Tarock.
 - Spielen Sie ihn im letzten, dem 27. Stich aus und gewinnen: ein Point von Ihrem Gegner.
 - Spielen Sie ihn dort aus und verlieren: Sie zahlen Ihrem Gegner einen Point.
-- Er wird nie angesagt. Die letzte Karte eines Pakets könnte ein höheres Tarock sein.
+- Er wird nie angesagt; er wird einfach bezahlt, wenn es so kommt.
 - Der Pagat wird zusätzlich zur Partie und zu den Honneurs bezahlt.
 - Wenn ich mir erlauben darf: Ein Point, der an der letzten Karte hängt. Schonen Sie Ihre Nerven.
 

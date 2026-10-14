@@ -17,7 +17,7 @@ Text before the first heading is ignored by the parser.
 
 - You hold 15 cards. In front of you lie **three packets** of four cards, face down.
 - Your opponent has the same. Nobody knows the hidden cards, not even the owner.
-- Soon the top card of each packet is turned face up. That card is a **cover**.
+- Soon the top card of each packet is turned face up. A card left face up on a packet is a **cover**.
 - A cover is yours to play, like a card in your hand.
 - The small number on a packet counts the cards still hidden beneath.
 - If I may: look at your opponent's covers too. They are no secret.
@@ -52,7 +52,7 @@ Text before the first heading is ignored by the parser.
 - Have the suit led? You must play that suit. No such card? You must play a tarock. Neither? Any card.
 - Hand cards and covers count alike. Choose either, if both are lit.
 - Lit cards are allowed; dimmed ones are not. Tap a dimmed card and I will say why.
-- You need not play higher. The higher tarock, or the higher card of the suit, wins the trick.
+- You need not play higher. A tarock beats any suit card; the higher tarock wins. Otherwise the higher card of the suit led wins.
 
 # Playing from a packet
 
@@ -60,8 +60,8 @@ Text before the first heading is ignored by the parser.
 
 - Tap a cover as you would a card in your hand. Tap again, or press **Play**.
 - When the trick is gathered, the card beneath is turned. A tarock or king goes into your hand; a low card is the new cover.
-- You cannot know the card beneath, and neither can your opponent, who plays before it is shown.
-- A packet down to its last card gives that card to your hand.
+- Neither you nor your opponent knows the card beneath until it is turned.
+- If the card beneath is the last of its packet, it goes into your hand, whatever it is.
 - If I may: a cover played is a card turned. That is all.
 
 # The Trull and the four kings
@@ -83,7 +83,7 @@ Text before the first heading is ignored by the parser.
 - The Pagat (I) is the lowest tarock.
 - Play it in the last trick, the 27th, and win: one Point from your opponent.
 - Play it there and lose: you pay your opponent one Point.
-- This is never announced. The last card of a packet might turn up higher.
+- It is never announced; it is simply paid when it happens.
 - The Pagat is paid on top of the game and the honours.
 - If I may: a Point won or lost at the last card. Mind your nerves.
 
