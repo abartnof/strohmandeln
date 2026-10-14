@@ -29,7 +29,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 1 | `docs/RULES.md`: the engine's rules, every one cited; the session; the events the table and talk follow | — | todo |
 | 2 | `kit/`: the shared JS (render core, motion, dialogue, tutorial) and `build.py`, from Cassino; `bin/gate` | — | todo |
 | 3 | Phrase bank: `tools/phrases.py` → `web3d/words.json` + `docs/PHRASES.md`, with a kindness test | 1 (moments) | todo |
-| 4 | `strohmandeln-core`: cards, deal, straw men, legal plays, tricks, counting in thirds, bonuses, settings, session and slate, records | 1 | todo |
+| 4 | `strohmandeln-core`: cards, deal, straw men, legal plays, tricks, counting in thirds, bonuses, settings, session and slate, records | 1 | done: `crates/strohmandeln-core`; message keys in `docs/MESSAGES.md` |
 | 5 | `strohmandeln-wasm` and `strohmandeln-cli`, with `docs/PROTOCOL.md` | 4 | todo |
 | 6 | Computer opponent: a ladder of rungs, each measured against the one below | 4 | todo |
 | 7 | Card faces: 54 large-type faces and a back, drawn at runtime | 2 | todo |
