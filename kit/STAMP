@@ -1,0 +1,47 @@
+source: cassino (/home/andrewbartnof/cassino, branch main)
+commit: 73f0cd75b5e943b4abe6dd76d84fed062628fc93
+date: 2026-10-13T23:24:53Z
+copied: 2026-10-14, from the working tree (no uncommitted change in the files below was looked for beyond their modification times, all older than the commit)
+
+Every kit/js and kit/test file copied carries a first line
+"// From cassino web3d/src/<file> @ 73f0cd7". bin/gate fails if a file listed
+under "files:" is missing. Re-sync: see README.md.
+
+The columns are: kit path (relative to kit/), source path (relative to the
+cassino repository), how it differs.
+
+files:
+js/art.js                web3d/src/art.js               verbatim
+js/bag.js                web3d/src/bag.js               verbatim
+js/cards.js              web3d/src/cards.js             verbatim
+js/deck.js               web3d/src/deck.js              verbatim
+js/materials.js          web3d/src/materials.js         verbatim
+js/surfaces.js           web3d/src/surfaces.js          verbatim
+js/timeline.js           web3d/src/timeline.js          verbatim
+js/easing.js             web3d/src/easing.js            verbatim
+js/kinematics.js         web3d/src/kinematics.js        verbatim
+js/framing.js            web3d/src/framing.js           verbatim
+js/scene.js              web3d/src/scene.js             verbatim
+js/faces.js              web3d/src/faces.js             verbatim
+js/dialogue.js           web3d/src/dialogue.js          verbatim
+js/units.js              web3d/src/units.js             without ZONES, ZONES_PORTRAIT, ZONES_TOUCH
+js/reveal.js             web3d/src/reveal.js            without COURTS, courtName, courtFor, FIGURE, figureHead, figureSides
+js/director.js           web3d/src/director.js          choreography, zones and card count are createDirector options
+js/tutorial.js           web3d/src/tutorial.js          parseTutorial only; page keys are an argument
+js/engine.js             web3d/src/engine.js            generic part only: loadWasm (alloc/write/out), guard, decodeBase64
+test/bag.test.js         web3d/test/bag.test.js         verbatim (imports ../src -> ../js)
+test/easing.test.js      web3d/test/easing.test.js      verbatim (imports ../src -> ../js)
+test/timeline.test.js    web3d/test/timeline.test.js    verbatim (imports ../src -> ../js)
+test/cards.test.js       web3d/test/cards.test.js       verbatim (imports ../src -> ../js)
+test/surfaces.test.js    web3d/test/surfaces.test.js    verbatim (imports ../src -> ../js)
+test/kinematics.test.js  web3d/test/kinematics.test.js  verbatim (imports ../src -> ../js)
+test/faces.test.js       web3d/test/faces.test.js       CHANGED: without the test that needs cassino's layout.js and ZONES_PORTRAIT
+test/dialogue.test.js    web3d/test/dialogue.test.js    verbatim (imports ../src -> ../js)
+test/engine.test.js      web3d/test/engine.test.js      new tests for loadWasm; the guard test is cassino's
+test/tutorial.test.js    web3d/test/tutorial.test.js    new tests for the parser
+test/director.test.js    -                              new
+test/modules.test.js     -                              new
+test/test_build.py       -                              new
+build.py                 web3d/build.py                 generalised: config file, no wasm/art/courts specifics
+package.json             -                              new: marks kit/js as ES modules
+node_modules             -                              new: symlink to ../web3d/node_modules
