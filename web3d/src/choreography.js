@@ -523,7 +523,7 @@ class Plan {
 
   // The result is held for a tap.
   banner() {
-    this.moments.start = Math.max(this.clock, this.end);
+    this.moments.start = Math.max(this.clock, this.end) + TIMING.beat;
     this.clock = this.moments.start + TIMING.banner;
   }
 

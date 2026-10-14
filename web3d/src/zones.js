@@ -30,15 +30,15 @@ export const EYE_TOUCH = Object.freeze({
   position: over(TARGET_TOUCH, 108),
   target: TARGET_TOUCH,
   fov: 30,
-  widthTan: 0.34,
-  reach: Object.freeze({ up: 0.3, foot: 0.24 }),
+  widthTan: 0.4,
+  reach: Object.freeze({ up: 0.335, foot: 0.3 }),
 });
 const TARGET_PORTRAIT = Object.freeze([0, 0, -12]);
 export const EYE_PORTRAIT = Object.freeze({
   ...CAMERA_PORTRAIT,
   position: over(TARGET_PORTRAIT, 96),
   target: TARGET_PORTRAIT,
-  reach: Object.freeze({ up: 0.4, down: -0.4, across: 0.33 }),
+  reach: Object.freeze({ up: 0.32, down: -0.34, across: 0.2 }),
 });
 
 // The shape of every arrangement.
@@ -90,10 +90,10 @@ export const ZONES_TOUCH = arrangement({
 
 export const ZONES_PORTRAIT = arrangement({
   eye: EYE_PORTRAIT,
-  yours: hand([0, 1.2, 19], EYE_PORTRAIT, { fan: false, pitch: 3.2, width: 34 }),
-  theirs: hand([0, 6, -43], EYE_PORTRAIT, { fan: true, radius: 30, spacing: 1.1, width: 20 }),
-  packets: { you: 4, them: -29, xs: [-11, 0, 11] },
-  trick: { x: 0, z: -12.5, gap: 0.8, offset: 2.2 },
+  yours: hand([0, 7, 14], EYE_PORTRAIT, { fan: false, pitch: 3.2, width: 34 }),
+  theirs: hand([0, 6, -38], EYE_PORTRAIT, { fan: true, radius: 30, spacing: 1.1, width: 20 }),
+  packets: { you: -3, them: -27, xs: [-11, 0, 11] },
+  trick: { x: 0, z: -15, gap: 0.8, offset: 2.2 },
   won: { x: 17, you: 8, them: -8 },
   pack: { you: { x: 17, z: 8 }, them: { x: -17, z: -8 } },
   count: { perRow: 3, step: 2.3, gap: 1.2, row: 5.5, you: { z: 12 }, them: { z: -38 }, x: 0 },

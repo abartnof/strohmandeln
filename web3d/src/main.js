@@ -25,6 +25,7 @@ import { choreograph, initialPlacement, opening } from "./choreography.js";
 import { TRULL, KINGS } from "./cardinfo.js";
 import { countGame, countLines, TARGET } from "./counting.js";
 import { loadEngine } from "./engine.js";
+import { momentsOf } from "./moments.js";
 import { check, emptyModel, fromState, reduce } from "./model.js";
 import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
 import { loadPrefsInfo, savePrefs, sittingConfig, speedScale, urlOverrides, withUrl } from "./prefs.js";
@@ -98,6 +99,7 @@ async function main() {
   let sawRefusal = false;
   let ledgerNow = null; // the count so far, for a rebuilt HUD
   let idleTimers = [];
+  let lastTiming = null;
 
   const lit = new Set();
   const view = () => ({ chosen: sel.chosen, scroll: sel.scroll, zones: zonesNow(), left: prefs.leftHanded, reduced: calm() });
@@ -237,7 +239,7 @@ async function main() {
       }
     }
     // The dealer's marker and the declarer's badge, by their hands.
-    for (const [key, seat, text] of [["dealer", m.dealer, t("marker.dealer")], ["declarer", m.declarer, t("ui.take")]]) {
+    for (const [key, seat, text] of [["dealer", m.dealer, t("hud.dealer.short")], ["declarer", m.declarer, t("ui.take")]]) {
       if (seat === null || seat === undefined || (key === "declarer" && !wasm?.deal?.playing && m.declarer === null)) continue;
       const who = seat === m.human ? "you" : "them";
       const edge = director.handEdge(who);
@@ -274,10 +276,13 @@ async function main() {
     const pace = countEvent ? paceOf(game, lines) : null;
     const timing = first ? director.restart(next, { dealt: true }) : director.advance(next, { pace });
     S = next;
+    lastTiming = { ...timing, base: director.clock() };
     sel = { ...sel, chosen: null };
     hintCard = null;
     ui.setRefusal(null);
-    events.forEach((e, k) => later(timing.beats[since + k] ?? 0, () => onEvent(e, since + k, model, timing)));
+    for (const m of momentsOf({ events, since, beats: timing.beats, count: countEvent ? timing.count : null })) {
+      later(m.ms, () => (m.synthetic ? talk.onEvent(m.event, { human }) : onEvent(m.event, m.index, model, timing)));
+    }
     if (countEvent) schedulePopups(timing.count, lines, since + events.indexOf(countEvent));
     persist(reply);
     refresh();
@@ -295,12 +300,10 @@ async function main() {
   function schedulePopups(count, lines, at) {
     if (!count) return;
     const events = countEvents(game, lines, { at, hand: 1 });
-    later(Math.max(0, count.lines[0] - 1), () => talk.onEvent({ type: "count_start" }, { human }));
     for (const ev of events) {
       later(ev.end ? count.end : (count.lines[ev.line] ?? count.end), () => (ev.end ? hud.endHand(1) : hud.score(ev)));
     }
     later(count.end + 200, () => {
-      talk.onEvent({ type: "count_close" }, { human });
       const totals = hud.totals();
       for (const side of ["you", "opp"]) if (totals[side] === TARGET - 1) ui.chip(t("chip.not-36", { a: thirds(totals[side]) }), { x: 120, y: side === "you" ? 150 : 100, kind: "edge", ms: 3000 });
     });
@@ -901,9 +904,17 @@ async function main() {
       }
     }
   });
+  // The table is framed between the score and the controls (kit/js/framing.js).
+  function fitStrips() {
+    const hud = document.querySelector(".info").getBoundingClientRect();
+    const controls = ui.controls.getBoundingClientRect();
+    stage.setStrips({ top: hud.bottom + 6, foot: window.innerHeight - controls.top + 6, raised: 0 });
+  }
   new ResizeObserver(() => {
+    fitStrips();
     if (S) director.relayout();
   }).observe(document.getElementById("overlay"));
+  fitStrips();
   stage.onReframe = () => S && director.relayout();
 
   stopped = () => ui.dialog({ id: "error", title: t("error.opponent-refused"), body: "", buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
@@ -937,6 +948,8 @@ async function main() {
     shown: () => director.meshes.map((m) => m.userData.code),
     hidden: () => engine.audit().hidden,
     busy: () => director.busy() || pending > 0 || stage.reframing(),
+    timing: () => lastTiming,
+    debug: () => ({ pending, dbusy: director.busy(), reframing: stage.reframing(), held: director.held(), stepping, prompt: wasm?.prompt, events: log.length }),
     said: () => ui.said(),
     live: () => ui.lived(),
     hud: () => ({ totals: hud.totals(), shown: hud.shown(), idle: hud.idle() }),
@@ -954,6 +967,7 @@ async function main() {
     clock: () => director.clock(),
     meshInfo: () => director.meshes.map((m) => ({ x: m.position.x, y: m.position.y, z: m.position.z, code: m.userData.code })),
     newSitting,
+    act: (action) => send(action),
     step,
     sittingOver: () => sittingOver,
     stage: () => ({ portrait: stage.portrait, strips: stage.strips() }),

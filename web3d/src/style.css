@@ -23,12 +23,13 @@ button { font: inherit; }
 .info .hud { pointer-events: auto; }
 .tour-line { margin: 4px 2px 0; font-size: 13px; color: #333; text-shadow: 0 0 3px #fff; }
 .top-right { position: absolute; top: 8px; right: 8px; display: flex; gap: 8px; pointer-events: auto; z-index: 30; }
-.left .top-right { right: auto; left: auto; flex-direction: row-reverse; }
+.left .top-right { right: auto; left: 8px; flex-direction: row-reverse; }
+.left .info { left: auto; right: 8px; }
 .tab { min-height: 44px; min-width: 44px; padding: 0 14px; border: 0; border-radius: 22px; background: var(--dark); color: #fff; cursor: pointer; }
 .slate-root, .settings-root { pointer-events: none; }
 .slate-root:not([hidden]), .settings-root:not([hidden]) { pointer-events: auto; }
 
-.controls { position: absolute; left: 0; right: 0; bottom: 0; padding: 6px 12px calc(10px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 88px; pointer-events: none; }
+.controls { position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; height: 100px; padding: 4px 12px calc(8px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; pointer-events: none; }
 .controls > * { pointer-events: auto; }
 .prompt, .refusal, .aid-line { margin: 0; padding: 4px 12px; border-radius: 14px; font-size: 15px; background: rgba(255, 255, 255, 0.85); color: #1d2433; }
 .prompt:empty, .refusal[hidden], .refusal:empty { display: none; }
@@ -74,7 +75,7 @@ button { font: inherit; }
 .upright .controls { padding-bottom: 8px; }
 @media (max-width: 520px) {
   .big { min-width: 96px; padding: 0 14px; font-size: 16px; }
-  .info { width: calc(100vw - 130px); }
+  .info { top: 58px; width: min(340px, calc(100vw - 16px)); }
 }
 @media (prefers-reduced-motion: reduce) {
   .chip { animation: none; transition: none; }
