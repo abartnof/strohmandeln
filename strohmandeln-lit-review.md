@@ -32,7 +32,7 @@
    - 11 the game in the other languages of the empire;
    - 12 a chaser for open questions left by the others.
 
-   Two notes were added later. Note 13 studies how a period sitting was structured, scored and settled. Note 14, by the coordinator, is the canonical ruleset by tally of the sources (§3), with the session decision (§4).
+   Two notes were added later. Note 13 studies how a period sitting was structured, scored and settled. Note 14 is the canonical ruleset by tally of the sources (§3), with the session decision (§4).
 2. **Libraries reached**:
    - the Austrian National Library's book scans (ÖNB ABO, via its IIIF API) and its newspaper archive ANNO;
    - the Wienbibliothek;
@@ -139,7 +139,7 @@ Strohmandeln is a game for two people, played in Vienna and the rest of Austria 
 
 **Bidding and winning.**
 - The player who is not dealing is *forehand* and leads the first trick. He may say "Ich nehme auf" ("I take it up"), which makes him the *declarer*, or pass ("Weiter"). If he passes, the dealer may take it up [03-S12][14 rule 5].
-- Each card has a value: kings, the Sküs, trump XXI and trump I 5 each, queens 4, Cavalls 3, jacks 2, everything else 1 [REVIEW RJ: the text said "the three top trumps (Sküs, XXI, I)", but I is the lowest trump, not a top one; note 14 rule 15 lists the three as Sküs, XXI and I]. Won cards are counted three at a time, and 2 is taken off the total of each group of three, which comes to the same as taking 2/3 of a point off every card; so a score can be a whole number and a third or two thirds, and the whole pack comes to 70 points [14 rule 15][02 §4 item 2][07 §5.1]. [REVIEW RJ: this explanation follows note 02's counting table ("threes, subtract 2 per group") and note 14's "2/3 off per card"; the handling of one or two left-over cards (note 02 A17) is not spelled out here and the tutor will need it.]
+- Each card has a value: kings, the Sküs, trump XXI and trump I 5 each, queens 4, Cavalls 3, jacks 2, everything else 1 [REVIEW RJ: corrected from "the three top trumps"; I is the lowest trump, and note 14 rule 15 lists Sküs, XXI and I]. Won cards are counted three at a time, and 2 is taken off the total of each group of three, which comes to the same as taking 2/3 of a point off every card; so a score can be a whole number and a third or two thirds, and the whole pack comes to 70 points [14 rule 15][02 §4 item 2][07 §5.1]. [REVIEW RJ: follows note 02's counting table and note 14; the handling of one or two left-over cards (note 02 A17) is open and the tutor needs it.]
 - The declarer must win 36 of the 70 to win the deal [14 rule 16].
 - If both players pass, a "simple game" is played instead: nobody is the declarer, whoever makes 36 of the 70 wins, 35 each is a draw, and the stakes are lower. (Whether to play it or throw the cards in and redeal is one of the three settings, §3.3.) After a draw the next deal counts double [14 rules 7, 17, 18].
 - If a player's 15 hand cards hold no trump at all, the deal is void and the same dealer deals again [14 rule 4].
@@ -172,7 +172,7 @@ These are the canonical rules of note 14, which tallies the sources rule by rule
   - each player turns the top card of each of his packets in turn, left to right. A tarock or king is shown to the opponent and taken into the hand, and the next card is turned. The first card that is neither stays face up on its packet [03-S12][03-S14];
   - on average 2.8 cards come into the hand this way, and none at all 13% of the time (original computation) [07 §5.3].
 - **The last card of a packet** [14 rule 10]:
-  - the last card of a packet is **taken into the hand whatever it is, and shown to the opponent before it is taken** [14 §Decisions recorded by the coordinator];
+  - the last card of a packet is **taken into the hand whatever it is, and shown to the opponent before it is taken** [14 §Decisions];
   - this is the one point where the canon departs from Werner, who leaves a last card unfit for the hand face up "bis es gelegentlich gespielt wird" (until it is played). The count is 3 to 1 on explicit statements (Beck, Babsch and Mayr & Sedlaczek against Werner), and RH calls it the weakest tie-break in the note [14 rule 10][RH].
 - **Play** [14 rules 11–14]:
   - forehand leads; the winner of each trick leads to the next. 27 tricks are played [03-S12][02 A8];
@@ -234,7 +234,7 @@ The history is told as two games and an ancestor: the 1800 "Taroc en deux" never
 - **The name, without rules.** Vanderheid (1855) ranks "Strohmann-Tarok" among the three "besonders beliebte" (especially popular) Tarok games, and an 1866 advertisement mentions an appendix on it. The ÖNB copy has no such chapter, so which game he meant is unknown [03-S10][03-S11].
 - **The modern game is described in full from 1891; the earlier attestations are weaker:**
   - "das Strohmann-Tarok (en deux)" in a list of Tarok kinds in *An der schönen blauen Donau*, 1886: **downgraded.** It is an OCR snippet only, and "(en deux)" is also a label for Neunzehnerrufen with two Strohmänner, as an 1887 Brno article shows ("auch en deux mit zwei Strohmännern gespielt"). RC found that the Brno article may mean Neunzehnerrufen, not Werner's pile game, so the pile game is not certain in 1886 [03-S27][06-S4a][RC][REVIEW RF];
-  - the *Klagenfurter Zeitung* review of Ulmann's *Tarokbuch*, 30 March 1888, which names "Strohmann-Tarok (en deux)" [03-S15]. [REVIEW RJ: checked on the page images (`research/sources/03/anno/kfz18880330_p1_a/b/c.jpg`) and the saved Brno OCR (`research/sources/06/cz/ocr/0429f8b0...txt`, *Mährisch-schlesischer Correspondent*, 22 Oct 1887). The two papers print the same paragraph, a short survey of Tarock kinds (Tapp-Tarock, Block-Tarock, Königrufen, Steirisch-Tarock, Neunzehnerrufen), so the "two sources" are one syndicated text, not independent attestations. In it the praise sentence is a separate sentence, naming "Das 'Strohmann-Tarok' (en deux)" as its own game; the sentence just before it, "Diese in Mähren so beliebte Tarockart kann als eine gute Schule … bezeichnet werden", is about Neunzehnerrufen, which "auch en deux mit zwei Strohmännern gespielt wird". Ulmann's own preface (1899 ed., p. V, 1st-ed. preface) lists "das Strohmann-Tarok en deux, das Paskiewitsch, das Neunzehnerrufen mit Strohmann" as three different games [03-S14]. So the praise is most probably about the two-hand Strohmann-Tarok, with the Neunzehnerrufen sentence as its neighbour; the OCR reading "(en deux) = Neunzehnerrufen" is not supported for this sentence, though it cannot be excluded for the 1886 list. The Klagenfurt page ties the paragraph to Ulmann's book only by a footnote ("Illustrirtes Wiener Tarokbuch") after it; the Brno OCR ends mid-column, so whether the 1887 article carried the same footnote is unknown. Both texts are reviewers' prose, not Ulmann's];
+  - the *Klagenfurter Zeitung* review of Ulmann's *Tarokbuch*, 30 March 1888, which names "Strohmann-Tarok (en deux)" [03-S15]. [REVIEW RJ: checked on the page images (`research/sources/03/anno/kfz18880330_p1_a/b/c.jpg`) and the saved Brno OCR (`research/sources/06/cz/ocr/0429f8b0...txt`, *Mährisch-schlesischer Correspondent*, 22 Oct 1887). Both papers print the same syndicated survey of Tarock kinds, so these are not two independent attestations. The praise is a separate sentence naming "Das 'Strohmann-Tarok' (en deux)" as its own game; the sentence before it, "Diese in Mähren so beliebte Tarockart kann als eine gute Schule … bezeichnet werden", concerns Neunzehnerrufen, which "auch en deux mit zwei Strohmännern gespielt wird". Ulmann's preface (1899 ed., p. V, 1st-ed. preface) lists "das Strohmann-Tarok en deux, das Paskiewitsch, das Neunzehnerrufen mit Strohmann" as three games [03-S14]. The praise is most probably about the two-hand game; "(en deux) = Neunzehnerrufen" is not supported for this sentence, though it cannot be excluded for the 1886 list. The Klagenfurt page ties the paragraph to Ulmann only by a trailing footnote ("Illustrirtes Wiener Tarokbuch"); the Brno OCR ends mid-column, so the footnote there is unknown. Both texts are reviewers' prose, not Ulmann's];
   - Ulmann's *Illustrirtes Wiener Tarokbuch* (1st ed. by March 1888), whose preface claims the game had been "in der Tarokliteratur bisher gar nicht besprochen, ja nicht einmal erwähnt" (not discussed in the Tarock literature, indeed not even mentioned). [REVIEW RJ: the preface text was read in the 1899 edition (p. V, headed as the first edition's preface; OCR at `research/sources/03/abo/ulmann1899/ocr.txt` line ~795), not only through the review.] The copy read is the 2nd edition of 1899 [03-S14][03-S15];
   - Werner's *Das moderne Tarokspiel*, 2nd ed., 1891, which adds the chapter and calls the game "Strohmann-Tarok (in der Umgangssprache Strohmanndl genannt)" (colloquially called Strohmanndl), an "ältere" (older) variant [03-S12][12 item 6];
   - Bermann's *Der praktische Tarokspieler*, 1894 [03-S13];
@@ -294,7 +294,7 @@ The history is told as two games and an ancestor: the 1800 "Taroc en deux" never
 
 ### 3.2 The canonical rules
 
-**The maintainer asked for one canonical game, built from a consensus of the legitimate sources, not a menu of presets.** A setting exists only for "true differences in opinion that have persisted through this game", in the maintainer's guidance, like whether aces are high in poker [14 §Settings]. The synthesis's earlier "Vienna 1891" and "Vienna 2007" presets and its options menu are superseded by note 14 [14 §What the consensus amounts to].
+**Decided: one canonical game, built from a consensus of the legitimate sources, not a menu of presets.** A setting exists only for true differences of opinion that have persisted through the game's life, like whether aces are high in poker [14 §Settings]. The synthesis's earlier "Vienna 1891" and "Vienna 2007" presets and its options menu are superseded by note 14 [14 §What the consensus amounts to].
 
 **How the canon was decided** [14 §Method]:
 - The describers are five primary texts read in full (Werner 1891, Ulmann 1888/1899, Bermann 1894, Mayr & Sedlaczek 2007, Furr 2009) and others known only through Dummett's digest or Wikipedia and flagged second-hand (Dummett's norm, Beck, Löw, Babsch, Unger, Widder, the Piatnik leaflet) [14 §Method].
@@ -328,7 +328,7 @@ The history is told as two games and an ancestor: the 1800 "Taroc en deux" never
 2. **The last card (rule 10)** is 3–1 on explicit statements for taking it into the hand. Werner's rule has period weight, but no other source states it [14 rule 10][RH].
 3. **Game values (rule 19)** is a plurality, not a majority [14 rule 19].
 
-Two decisions the coordinator recorded [14 §Decisions recorded by the coordinator]:
+Two decisions recorded in note 14 [14 §Decisions]:
 - **Rule 10 (the last card)** is canonical, with no setting.
 - **Rule 25 (Valat)** stays at 12 with no setting. Wikipedia's table has a dash in Beck's column, which may mean "none" or merely "not mentioned"; that is too weak to establish a modern split, so the persistent-split test is not met [RH].
 
@@ -344,7 +344,7 @@ Two decisions the coordinator recorded [14 §Decisions recorded by the coordinat
 | Game values (simple / won / lost) | 2 / 3 / 4 | 1 / 2 / 3; 1 / 2 / 4 | Werner 2/3/4; Ulmann 1/2/4 | Mayr & Sedlaczek 2/3/4; Beck and Dummett 1/2/3 [14 rule 19] |
 | Pagat ultimo value | 1 | 2 | Werner 1; Ulmann "in manchen Kreisen" 2; Bermann a lost ultimo costs double; Unger 5 or 1 | Mayr & Sedlaczek, Furr, Beck 1; Beck "some 2–3" [14 rule 21][RH] |
 
-One caution on the second row: RH observes that 1/2/4 has one period source (Ulmann) and no modern one, so strictly it is not a persistent value. Note 14 leaves it in the menu, and the question is left to the coordinator [RH].
+One caution on the second row: RH observes that 1/2/4 has one period source (Ulmann) and no modern one, so strictly it is not a persistent value. Note 14 leaves it in the menu, and the question is open [RH].
 
 **Rules that failed the test, and so are canonical with no setting** [14 §Settings; RH (a)–(g)]:
 - Last packet card: only Werner states a rule (rule 10).
@@ -388,7 +388,7 @@ The earlier synthesis said that no source gives a match length [02 §Headline 7]
 - **The unit is the single deal**, called *Partie* or *Spiel*. A sitting was open-ended [13 §Headline 1][13-S1][13-S2].
 - **A *Tour* is one full round of dealing, each player dealing once.** Before the company broke up, it was usual to announce three or six Touren, and play ended when they were done. Ulmann: "Es ist üblich, ehe die Spielgesellschaft auseinandergeht, drei oder sechs Touren anzusagen" (it is usual, before the company breaks up, to announce three or six Touren) [13 §Headline 1][13-S1 p. 19][13-S3 pp. 43–44].
 - **The biggest loser calls it, out of courtesy.** Bermann: "Gewöhnlich überläßt man dies aus Courtoisie dem im stärksten Verlust befindlichen Spieler" (this is usually left, out of courtesy, to the player with the biggest loss). The announced Touren can be extended "nur mit allseitiger Zustimmung" (only with everyone's consent) [13-S3][RI (b)].
-- **The account was a running total per player.** Werner (1891) describes a *Conto* for each player, "bei fortlaufender Addition" (with running addition), and a final settlement by differences, checked by the rule that "Gewinn und Verlust natürlich einander gleich sein müssen" (gain and loss must of course be equal). It was written on a slate: Haas (1829) prefers "kleine Schiefertafeln mit Griffeln" (small slates with styluses) to chalk [REVIEW RJ: the saved OCR of Haas (`research/sources/03/abo/haas1829/ocr.txt` line 455) reads "mit Niedenſtiften", not "Griffeln"; note 13 gives "Griffeln" without a page image, so the word is [UNVERIFIED — review]; the sense (small slates with a writing tool, or parchment sheets and lead pencils, instead of dirty chalk) is secure] [13 §2.1, §2.3][13-S2][13-S7].
+- **The account was a running total per player.** Werner (1891) describes a *Conto* for each player, "bei fortlaufender Addition" (with running addition), and a final settlement by differences, checked by the rule that "Gewinn und Verlust natürlich einander gleich sein müssen" (gain and loss must of course be equal). It was written on a slate: Haas (1829) prefers "kleine Schiefertafeln mit Griffeln" (small slates with styluses) to chalk [REVIEW RJ: the saved OCR of Haas (`research/sources/03/abo/haas1829/ocr.txt` line 455) reads "mit Niedenſtiften", not "Griffeln"; note 13 gives "Griffeln" without a page image, so the word is [UNVERIFIED — review]; the sense (slates or parchment with a writing tool, not dirty chalk) is secure] [13 §2.1, §2.3][13-S2][13-S7].
 - **Cash after each deal was the alternative**, which "verliert aber durch Wechseln und Herausgeben des Geldes umsomehr Zeit" (loses time through changing and giving change) [13-S2].
 - **Prices** are for Tarock in general. Werner prices a Point at half a kreuzer, but only as a hypothetical for a four-hand example. A newspaper of 1894 says of Johann Strauss that his winnings were "bei zwei bis drei Kreuzer der Point" (at two to three kreuzer the Point), and a 1896 snippet has "den Point um 5 kr." in a Viennese coffee house [13-S2][13-S13][13-S14][RI (c)]. These are newspaper snippets, and none is about Strohmandl.
 - **For Strohmandl itself, no session rule is stated** in Ulmann or Werner. What they give is a deal scored in Points, with the deal alternating (Werner) [13 §Headline 6][13-S1][13-S2].
@@ -396,12 +396,12 @@ The earlier synthesis said that no source gives a match length [02 §Headline 7]
 
 ### 4.2 The canonical session: design A, "the evening"
 
-The maintainer chose design A of note 13 on 14 October 2026: the period "Abend" [14 §Decisions]. It runs as follows [14 §The session in detail][RI]:
+Decided (14 October 2026): design A of note 13, the period "Abend" [14 §Decisions]. It runs as follows [14 §The session in detail][RI]:
 
 - **A Tour is two deals.** Bermann and Ulmann say each player deals once per Tour, and Werner has the deal alternate in Strohmanndl, so with two players a Tour is two deals. "Drei Touren" is then 6 deals and "sechs Touren" is 12 [14][RI (a)].
 - **The length is announced: 3 or 6 Touren.** Design A has them called at the start. The period custom was to announce them when the company wanted to stop, by courtesy the biggest loser [13-S3][RI (b)]. At the end the sitting may be extended by mutual consent, as in the period [14][13-S3].
 - **A running account is kept on a slate**, with a total for each player, in the manner of Werner's Conto. With two players the final settlement is a single difference [13 §2.1, Design implications][14].
-- **After a 35:35 draw the next deal counts double**, with its announcements. This is Werner's rule, our rules base, and Beck as reported. Ulmann voids the game, Bermann leaves it to agreement, Mayr & Sedlaczek double the next round of two deals, and Dummett the following round [REVIEW RJ: "of two deals" is Mayr & Sedlaczek's alone, per RI (d) and note 02 A12; note 14's session text says only "the next round"] [14][RI (d)][02 A12].
+- **After a 35:35 draw the next deal counts double**, with its announcements. This is Werner's rule, the rules base, and Beck as reported. Ulmann voids the game, Bermann leaves it to agreement, Mayr & Sedlaczek double the next round of two deals, and Dummett the following round [REVIEW RJ: "of two deals" is Mayr & Sedlaczek's alone, per RI (d) and note 02 A12; note 14's session text says only "the next round"] [14][RI (d)][02 A12].
 - **Points are converted to money at 2 kreuzer each, at the end.** No Strohmandl stake is sourced. The figure sits within the Tarock stake of "zwei bis drei Kreuzer der Point" reported for 1894, and **it is labelled as general Tarock evidence, not Strohmandl evidence** [14][13-S13][RI (c)].
 - **Currency is open.** Gulden and kreuzer against krone and heller is undecided, because note 13's dates for the krone ("from 1892", "sole currency 1900") are unsourced [RI (c)].
 - **A doubling still pending when the sitting ends lapses.** No source covers this case; it is a design choice [14][RI (e)].
@@ -463,7 +463,7 @@ All newspaper items below are OCR snippets from ANNO, with the damage that impli
 - **Courts and police.**
   - 1895: a libel case over a Strohmandl game at the Café de l'Europe, with a kibitzer accused of signalling [03-S34].
   - 1895: a court declines Tarock experts because "das Tarokspiel weder eine Wissenschaft noch eine Kunst sei" (Tarock is neither a science nor an art) [04 §Headline 3].
-  - 1912: police commissioner Fried raided a gambling den by asking for "Strohmandelkarten" (Strohmandl cards) and playing a game with a colleague, "sich scheinbar um die Hasardspieler nicht bekümmernd" (seemingly paying the gamblers no heed), "wobei ihm der Polizeiagent Garhofer kiebitzte" (while police agent Garhofer kibitzed); "Die Hasardspieler wurden tatsächlich auf die harmlose Strohmandlpartie nicht aufmerksam" (the gamblers really did not notice the harmless Strohmandl game) [04-S33]; page image read by the coordinator, settling the 03/04 difference [03 §4][04 §2].
+  - 1912: police commissioner Fried raided a gambling den by asking for "Strohmandelkarten" (Strohmandl cards) and playing a game with a colleague, "sich scheinbar um die Hasardspieler nicht bekümmernd" (seemingly paying the gamblers no heed), "wobei ihm der Polizeiagent Garhofer kiebitzte" (while police agent Garhofer kibitzed); "Die Hasardspieler wurden tatsächlich auf die harmlose Strohmandlpartie nicht aufmerksam" (the gamblers really did not notice the harmless Strohmandl game) [04-S33]; page image read, settling the 03/04 difference [03 §4][04 §2].
   - 1937: defendants argue "Strohmandl ist kein Hasard, sondern ein Kunstspiel, man muß kombinieren, allerdings kommt es auch auf das Blatt an" (Strohmandl is not a game of chance but of skill; you have to think, though the hand matters too) [03-S40c].
 - **The Tepl "First European Tarock Congress"**, 15 January 1893, was a jolly local gathering called by the school catechist [12 item 5]:
   - it was greeted by telegram from, among others, "den 64 Tarockirern von Auschowitz" (the 64 Tarock players of Auschowitz, i.e. Úšovice by Marienbad) [REVIEW RF: "Anschowitz" was an OCR reading; the page image reads Auschowitz];
@@ -586,11 +586,11 @@ Excluded under the kindness rule, though attested [03 §4][04][05 §Kindness][05
 
 ## 10. The cards
 
-**The decision (the maintainer's, in the project's working session, 14 October 2026):** we draw our own cards, in the large-type high-visibility style of the cassino and piquet phone faces. We don't reproduce period art.
+**Decided (14 October 2026):** draw original cards in the large-type high-visibility style of the cassino and piquet phone faces; reproduce no period art.
 
 **What the real pack looks like, as a guide:**
 - **Suits** run K Q C J, then 10 9 8 7 in black and 1 2 3 4 in red [08 §Headline].
-  - Real suit cards have no corner indices at all; our rank labels are a deliberate departure, and the tutor can say so [08 §Headline].
+  - Real suit cards have no corner indices at all; the rank labels here are a deliberate departure, and the tutor can say so [08 §Headline].
 - **Trumps** carry Roman numerals top-left and bottom-right, rotated, and the Sküs has none [12 item 9].
   - Only the four is written additively, IIII; nine, fourteen and nineteen are IX, XIV and XIX [12 item 9][RA].
 - **Nicknames, for the face labels:**
@@ -614,7 +614,7 @@ Excluded under the kindness rule, though attested [03 §4][04][05 §Kindness][05
 
 - **No playable digital Strohmandeln was found** in the searches of notes 07 and 12. RG notes that Austrian Tarock apps by publishers, generic tarot engines and Piatnik's own digital products were not searched, so this is "none found", not "none exists" [07 §3.1][12 item 8][RG].
   - The nearest is `smatkovi/harbour-tarock` (GitHub, created September 2026, GPL-3.0-or-later). It has a long German specification of the game, a "hints for the computer opponent" chapter and a straw-man row component, but plans to make Strohmandeln playable only "after 1.0" [07 §3.1][12 item 8].
-  - We cite it and copy nothing. Its 21 rule interpretations are listed in note 12 for comparison [12 item 8].
+  - It is cited and nothing is copied. Its 21 rule interpretations are listed in note 12 for comparison [12 item 8].
 - **Officers' Skat**, with the same pile mechanism, exists in KDE LSkat and on iOS [07 §3.2].
 - **AI.**
   - The relevant literature is Gams & Luštrek's Tarok program (alpha-beta search over sampled deals) and Long et al. (2010) on why sampling a complete deal and solving it works [07-S6][07-S7].
@@ -680,14 +680,14 @@ Excluded under the kindness rule, though attested [03 §4][04][05 §Kindness][05
 
 ## 14. Decided, and open questions
 
-**Decided** [REVIEW RJ: dates and attribution rewritten at the coordinator's instruction. Every maintainer decision below was made on 14 October 2026, "the maintainer's decision in the project's working session"; the notes themselves do not record the date, so it rests on the coordinator]:
-1. **Which game: the modern one.** The maintainer's decision in the project's working session, 14 October 2026. The 1829 dummy-pile game could still be a short historical curiosity mode, which is simple to add and which the period called dull; that is a suggestion, not a decision.
-2. **The rules: canonical by consensus of the legitimate sources**, with settings only for disagreements that persisted through the game's life (both players passing, game values, Pagat ultimo value). The maintainer's decision in the project's working session, 14 October 2026, recorded in note 14 [14 §Settings].
-   - The last packet card is taken into the hand and shown, with no setting (coordinator's decision after RH, 14 October 2026) [14 rule 10].
-   - Valat stays at 12, with no setting (coordinator, 14 October 2026) [14 §Decisions].
-3. **The session: design A of note 13**, the period "Abend": 3 or 6 Touren of two deals, a running slate, settling up at 2 kreuzer a Point, a draw doubling the next deal. The maintainer's decision in the project's working session, 14 October 2026; the details were settled with RI (§4) [14 §Decisions]. A race to a target score (design B) is not canonical.
-4. **The cards:** we draw our own large-type cards, with Roman-numeral tarocks, the nicknames on the faces and a plain back (§10). The maintainer's decision in the project's working session, 14 October 2026.
-5. **The jack label: "J".** The coordinator chose "J" over "V" (Valet) on 14 October 2026, under the maintainer's instruction to use whichever label fits the audience. The period German name was *Bube* [08].
+**Decided** (all on 14 October 2026; the notes do not record the date) [REVIEW RJ]:
+1. **Which game: the modern one.** The 1829 dummy-pile game could still be a short historical curiosity mode, which is simple to add and which the period called dull; that is a suggestion, not a decision.
+2. **The rules: canonical by consensus of the legitimate sources**, with settings only for disagreements that persisted through the game's life (both players passing, game values, Pagat ultimo value). Recorded in note 14 [14 §Settings].
+   - The last packet card is taken into the hand and shown, with no setting (decided after RH, 14 October 2026) [14 rule 10].
+   - Valat stays at 12, with no setting (14 October 2026) [14 §Decisions].
+3. **The session: design A of note 13**, the period "Abend": 3 or 6 Touren of two deals, a running slate, settling up at 2 kreuzer a Point, a draw doubling the next deal. Details settled with RI (§4) [14 §Decisions]. A race to a target score (design B) is not canonical.
+4. **The cards:** original large-type cards, with Roman-numeral tarocks, the nicknames on the faces and a plain back (§10).
+5. **The jack label: "J".** Chosen "J" over "V" (Valet) on 14 October 2026, as the label that fits the audience. The period German name was *Bube* [08].
 
 **Still open:**
 - **How to share code** with the earlier games: a vendored kit with a stamp file (the review's advice) or a submodule (§12).
@@ -757,6 +757,6 @@ Excluded under the kindness rule, though attested [03 §4][04][05 §Kindness][05
 | `research/14-consensus-rules.md` | the canonical ruleset by tally of the sources; the settings; the session decision |
 | `research/review/RA.md` … `RI.md` (RG is a critique that edited nothing; RH reviews note 14; RI reviews note 13) | review logs |
 | `research/review/synthesis-v2-changes.md` | changelog of this revision |
-| `research/_FOLLOWUPS.md` | the coordinator's running list |
+| `research/_FOLLOWUPS.md` | running list of follow-ups |
 | `research/sim/` | the original-computation scripts |
 | `tools/anno.py` | the ANNO harvester |
