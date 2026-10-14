@@ -18,8 +18,8 @@ LINES = [(gid, w) for gid, _, ways in GROUPS for w in ways]
 
 
 def texts(w):
-    """The English line and its German original, if any."""
-    return [w[0]] + ([w[2]] if len(w) > 2 else [])
+    """The English line and the German line."""
+    return [w[0], w[2]]
 
 
 # Words that mean something else in the other language: "bald" is "soon" in
@@ -42,34 +42,34 @@ def words(*ws):
 # fair game; looks, intelligence, age, gender, class, religion, nationality and
 # ethnicity never are.
 BANNED = {
-    "looks": words("ugly", "fat", "bald", "handsome", "pretty", "face", "faces", "mug", "looks",
+    "looks": words("hässlich", "dick", "kahl", "Gesicht", "Visage", "Fratze", "schiach", "ugly", "fat", "bald", "handsome", "pretty", "face", "faces", "mug", "looks",
                    "Pappen", "kahl", "kahlen", "Glatze"),
     "intelligence": words("stupid", "dumb", "idiot", "fool", "fools", "foolish", "silly", "clever",
                           "smart", "brain", "brains", "dense", "dumm", "strohdumm", "blöd", "Trottel",
-                          "Depp", "Narr", "Narren", "gescheit", "bungler", "Patzer", "Mordspatzer",
+                          "Depp", "Narr", "Narren", "gescheit", "Idiot", "Esel", "Tepp", "Dummkopf", "Blödsinn", "Hornochse", "bungler", "Patzer", "Mordspatzer",
                           "Stümper", "Tschappel", "poodle"),
     "age": words("old", "older", "young", "younger", "elderly", "aged", "ancient", "senile", "grandmother",
                  "grandma", "granny", "grandfather", "boy", "boys", "kid", "kids", "child", "children",
-                 "alt", "alte", "alten", "jung", "Kind", "Kinder", "Großmutter", "Greis", "Jungfer"),
+                 "alt", "alte", "alten", "jung", "Kind", "Kinder", "Großmutter", "Greis", "Jungfer", "Opa", "Oma", "Alter", "älter", "jünger", "Bub", "Buben", "Bua", "Mäderl", "Madl"),
     "gender": words("woman", "women", "wife", "husband", "lady", "ladies", "gentleman", "gentlemen",
                     "madam", "mister", "girl", "girls", "male", "female", "man", "men", "he", "she",
                     "Frau", "Frauen", "Weib", "Weiber", "Gemahlin", "Gatte", "Damen", "Herr", "Herren",
-                    "Fräulein", "Madame", "Monsieur", "Mr", "Mrs", "Miss", "sir"),
+                    "Fräulein", "Madame", "Monsieur", "Mr", "Mrs", "Miss", "sir", "Mann", "Männer", "Weibsbild", "Dame"),
     "class": words("peasant", "servant", "coachman", "coachmen", "waiter", "farmer", "commoner", "common",
                    "vulgar", "rich", "poor", "pauper", "beggar", "noble", "nobleman", "aristocrat",
                    "gutter", "lowly", "rabble", "Bauer", "Bauern", "Kutscher", "Gemeiner", "Pöbel",
-                   "Knecht", "Magd", "Brodsitzer", "Brotsitzer", "Knotzer", "Kutschergspül"),
+                   "Knecht", "Magd", "Dienstmädchen", "Fiaker", "Bettler", "Arm", "arm", "reich", "gemein", "Proletarier", "Brodsitzer", "Brotsitzer", "Knotzer", "Kutschergspül"),
     "religion": words("god", "gods", "lord", "devil", "satan", "saint", "church", "priest", "pastor",
                       "pope", "christ", "jesus", "heaven", "heavens", "hell", "damn", "damned", "bless",
                       "blessed", "holy", "pray", "prayer", "sin", "sinner", "amen", "rabbi", "Sinai",
                       "Moses", "Gott", "Herrgott", "Teufel", "Kirche", "Pfarrer", "heilige", "Heilige",
-                      "Erlöser", "Himmel", "Hölle", "Sünde", "Segen", "Nepomuk"),
+                      "Erlöser", "Himmel", "Hölle", "Sünde", "Segen", "Nepomuk", "Jesus", "Maria", "Pfaffe", "verdammt", "Heiland", "Beten"),
     "nationality / ethnicity": words("german", "french", "italian", "austrian", "hungarian", "czech",
                                      "polish", "slovene", "russian", "turkish", "greek", "prussian",
                                      "bohemian", "portuguese", "swabian", "foreigner", "foreigners",
                                      "jew", "jews", "jewish", "gypsy", "gypsies", "semite", "race",
                                      "racial", "ethnic", "Jude", "Juden", "Jud", "Zigeuner", "Böhm",
-                                     "Ausländer", "Rasse"),
+                                     "Ausländer", "Rasse", "deutsch", "französisch", "ungarisch", "tschechisch", "polnisch", "slowenisch", "russisch", "türkisch", "griechisch", "preußisch", "Preuße", "Böhme", "Tschusch", "Ungar", "Serbe", "Itaker", "Walsche"),
 }
 
 # Lines and words the notes flag as not for game use ([REVIEW ...] and the
@@ -100,7 +100,8 @@ HIDDEN = [
         r"\bmust have\b", r"\bI know\b", r"\bI can see\b", r"\bI saw\b", r"\bI bet\b", r"\bI hold\b",
         r"\bI(?:'ve| have| had| still have| still hold) (?:the|a|an|no|your|got)\b", r"\bstill with me\b",
         r"\bhidden\b", r"\bface-?down\b", r"\bunseen\b",
-        r"\bSie (?:haben|halten)\b", r"\bich (?:habe|hab'|halte)\b(?!.*\bgemacht\b)", r"\bich weiß\b",
+        r"\bSie (?:haben|halten|müssen)\b", r"\bIhre?[nrms]? (?:Blatt|Karten|Hand|Strohm\w+|Päckchen)\b", r"\bich (?:sehe|wette|kenne)\b",
+        r"\b(?:du|ihr) (?:hast|habt)\b", r"\bverdeckt\b", r"\bich (?:habe|hab'|halte)\b(?!.*\bgemacht\b)", r"\bich weiß\b",
     )
 ]
 
@@ -141,19 +142,21 @@ class SourceKeys(unittest.TestCase):
 
     def test_only_the_table_has_no_note_id(self):
         for gid, w in LINES:
-            if w[1] == "T":
-                self.assertEqual(len(w), 2, f"{gid}: a T line has no German original: {w}")
-            else:
+            if w[1] != "T":
                 self.assertTrue(phrases.SOURCES[w[1]][1], (gid, w))
 
     def test_every_source_is_used(self):
         used = {w[1] for _, w in LINES}
         self.assertEqual(set(phrases.SOURCES) - used, set())
 
-    def test_german_originals_are_not_empty(self):
+    def test_every_wording_has_english_and_german(self):
         for gid, w in LINES:
-            if len(w) > 2:
-                self.assertTrue(w[2].strip(), (gid, w))
+            self.assertEqual(len(w) >= 3 and bool(w[0].strip()) and bool(w[2].strip()), True, (gid, w))
+        import json
+        data = json.loads(phrases.words_json())
+        self.assertEqual(len(data["texts"]), len(LINES))
+        for key, v in data["texts"].items():
+            self.assertTrue(v["en"].strip() and v["de"].strip(), key)
 
 
 class Period(unittest.TestCase):
