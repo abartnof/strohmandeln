@@ -64,9 +64,11 @@ async function main() {
   let prefs = withUrl(info.prefs, params);
   const over = urlOverrides(params);
   setLang(prefs.lang);
+  let stored = { ...info.prefs };
   const save = (patch) => {
     prefs = { ...prefs, ...patch };
-    savePrefs({ ...info.prefs, ...patch, ...(TEST ? {} : {}) });
+    stored = { ...stored, ...patch };
+    savePrefs(stored);
   };
   const calm = () => prefs.reducedMotion === "on" || (prefs.reducedMotion === "system" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
   const dirSpeed = () => {
@@ -99,13 +101,15 @@ async function main() {
   let sawRefusal = false;
   let ledgerNow = null; // the count so far, for a rebuilt HUD
   let idleTimers = [];
+  let sittingLength = 3; // the Touren the sitting was begun with (an extension adds as many)
+  let askedExtend = false; // the human was asked about this extension
   let lastTiming = null;
 
   const lit = new Set();
   const view = () => ({ chosen: sel.chosen, scroll: sel.scroll, zones: zonesNow(), left: prefs.leftHanded, reduced: calm() });
 
   function decorate(placement, d, meshes) {
-    const mine = wasm?.prompt === "you" && !over_();
+    const mine = wasm?.prompt === "you" && !sittingOver;
     for (const m of placement) {
       const own = m.zone === "your-hand" || (m.zone === "your-packets" && m.code);
       let line = "plain";
@@ -121,7 +125,6 @@ async function main() {
       d.decorate(meshes[m.id], { line, dim });
     }
   }
-  const over_ = () => sittingOver;
 
   const director = createDirector({
     stage,
@@ -271,6 +274,8 @@ async function main() {
     wasm = reply.state;
     const model = events.length || first ? fold(events) : S.model;
     const next = { model, events: log };
+    const begun = events.find((e) => e.type === "sitting_start");
+    if (begun) sittingLength = begun.touren;
     const countEvent = events.find((e) => e.type === "count");
     const lines = countEvent ? countLines(model.counted, human) : [];
     const pace = countEvent ? paceOf(game, lines) : null;
@@ -291,8 +296,13 @@ async function main() {
     pending++;
     director.at(ms, () => {
       pending--;
-      fn();
-      if (pending === 0 && !director.busy()) rested();
+      try {
+        fn();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        if (pending === 0 && !director.busy()) rested();
+      }
     });
   }
 
@@ -314,8 +324,7 @@ async function main() {
     const s = sentence(e, model);
     if (s) ui.live(s);
     talk.onEvent(e, { human, state: wasm, index });
-    if (!["card_pulled"].includes(e.type)) slate.update(wasm, [e]);
-    else slate.update(wasm, []);
+    slate.update(wasm, e.type === "card_pulled" ? [] : [e]); // the slate reads the events; the state is the reply's last
     const at = (seat) => director.handEdge(seat === human ? "you" : "them");
     const chip = (text, seat, kind = "", ms) => {
       const p = at(seat);
@@ -326,7 +335,7 @@ async function main() {
         dealNo = e.deal_number;
         hud.reset({ hands: [], live: null });
         hud.dealt(1);
-        ui.setTour(`${t("hud.tour", { n: e.tour, total: wasm.touren_total })} · ${t("hud.deal", { n: e.deal_number })}${e.multiplier > 1 ? ` · ${t("hud.double")}` : ""}`);
+        showTour();
         ui.hideBanner();
         break;
       case "bid":
@@ -348,13 +357,13 @@ async function main() {
         chip(t("chip.last-card"), e.seat, "tag", 1200);
         break;
       case "announcement":
-        chip(`${t(e.honour === "trull" ? "chip.trull" : "chip.kings")} +1`, e.seat, "announce", 1800);
+        chip(t(`chip.honour.${e.honour}`, { n: pointsNow().honour }), e.seat, "announce", 1800);
         break;
       case "honour_forfeited":
         chip(t("chip.forfeited"), e.seat, "forfeit", 1600);
         break;
       case "pagat_ultimo":
-        ui.chip(`${t("chip.ultimo")} ${e.result === "won" ? "+" : "−"}${wasm.deal ? 1 : 1}`, { x: window.innerWidth / 2, y: window.innerHeight * 0.35, kind: `ultimo ${e.result}`, ms: 2200 });
+        ui.chip(t(`chip.ultimo.${e.result}`, { n: pointsNow().ultimo }), { x: window.innerWidth / 2, y: window.innerHeight * 0.35, kind: `ultimo ${e.result}`, ms: 2200 });
         break;
       case "valat":
         chip(t("chip.valat"), e.seat, "valat", 2200);
@@ -372,10 +381,11 @@ async function main() {
         if (prefs.slateAuto) slate.open({ ms: 3000 });
         break;
       case "extension_offered":
+        askedExtend = false;
         if (prefs.slateAuto) slate.open({ ms: 3000 });
         break;
       case "extension_decided":
-        if (!e.accepted && e.seat_first_no) ui.chip(t("chip.ext-opp-no"), { x: window.innerWidth / 2, y: 200, ms: 2400 });
+        if (!e.accepted && !askedExtend) ui.chip(t("chip.ext-opp-no"), { x: window.innerWidth / 2, y: 200, ms: 2400 });
         break;
       case "sitting_end":
         endSitting(e);
@@ -385,13 +395,28 @@ async function main() {
     }
   }
 
+  // "Tour 2 of 3 · Deal 3 · ×2": from the last deal begun in the log.
+  function showTour() {
+    const d = [...log].reverse().find((e) => e.type === "deal_start");
+    if (!d || !wasm) return ui.setTour("");
+    ui.setTour(`${t("hud.tour", { n: d.tour, total: wasm.touren_total })} · ${t("hud.deal", { n: d.deal_number })}${d.multiplier > 1 ? ` · ${t("hud.double")}` : ""}`);
+  }
+
+  // What a Point is worth on the deal now: the ultimo setting times the doubling.
+  function pointsNow() {
+    const begun = log.find((e) => e.type === "sitting_start");
+    const d = [...log].reverse().find((e) => e.type === "deal_start");
+    return { ultimo: (begun?.settings?.ultimo ?? 1) * (d?.multiplier ?? 1), honour: d?.multiplier ?? 1 };
+  }
+
   function showResult(e) {
     const points = e.credits.filter((c) => c.cause === "game").reduce((s, c) => s + c.points, 0);
-    const title = e.result === "draw" ? t("banner.draw") : t(`banner.${e.result.replace("_", "-")}`, { points: t("banner.plus", { n: points * 1 }) });
+    const title = e.result === "draw" ? t("banner.draw") : t(`banner.${e.result.replace("_", "-")}`, { points: t("banner.plus", { n: points }) });
     const rows = e.credits.map((c) => [t(`slate.cause.${c.cause}`), t("banner.plus", { n: c.points })]);
     if (e.multiplier > 1) rows.push([t("banner.doubled"), ""]);
-    const tallies = e.result === "draw" ? [] : [];
-    ui.showBanner({ title, rows: rows.concat(tallies), foot: e.result === "draw" ? t("banner.doubling-next") : null });
+    const count = [...log].reverse().find((x) => x.type === "count");
+    const tally = count ? t("banner.tally", { a: thirds(count.thirds[human]), b: thirds(count.thirds[1 - human]) }) : null;
+    ui.showBanner({ title, rows, foot: [tally, e.result === "draw" ? t("banner.doubling-next") : null].filter(Boolean).join(" · ") || null });
     director.at(3000, () => ui.hideBanner(), "linger");
   }
 
@@ -417,10 +442,10 @@ async function main() {
     armIdle();
     if (wasm.prompt === "opponent" && !sittingOver && !stepping) {
       stepping = true;
-      director.at(Math.round(350), () => {
+      director.at(350, () => {
         stepping = false;
         step();
-      });
+      }, "linger");
     }
   }
   let stepping = false;
@@ -439,7 +464,7 @@ async function main() {
     idleTimers.forEach(clearTimeout);
     idleTimers = [];
     if (wasm?.prompt !== "you" || wasm.phase !== "play") return;
-    IDLE.forEach((ms, n) => idleTimers.push(setTimeout(() => !director.busy() && !document.hidden && talk.onEvent({ type: "slow", n: n + 1 }, { human }), ms)));
+    IDLE.forEach((ms, n) => idleTimers.push(setTimeout(() => wasm?.prompt === "you" && !director.busy() && !document.hidden && talk.onEvent({ type: "slow", n: n + 1 }, { human }), ms)));
   }
 
   // ---- what the person can do -----------------------------------------------------------
@@ -482,15 +507,15 @@ async function main() {
     ui.setBar(groups, { left: prefs.leftHanded });
     // The extension prompt.
     if (mine && !busy && wasm.phase === "extend" && !ui.dialogOpen("extend")) {
+      askedExtend = true;
       const yes = { label: t("ui.ext.yes"), act: "yes", primary: true, focus: true };
       const no = { label: t("ui.ext.no"), act: "no" };
-      ui.dialog({ id: "extend", title: t("ui.ext.title"), body: tn("ui.ext.adds", wasm.touren_total === 6 ? 3 : 3), buttons: prefs.leftHanded ? [no, yes] : [yes, no] });
+      ui.dialog({ id: "extend", title: t("ui.ext.title"), body: tn("ui.ext.adds", sittingLength), buttons: prefs.leftHanded ? [no, yes] : [yes, no] });
     }
     if (wasm.phase !== "extend") ui.closeDialog("extend");
-    if (!busy) director.redecorate();
-    else director.redecorate();
+    director.redecorate();
   }
-  const legalNarrowed = () => lit.size < (wasm.deal?.own_hand?.length ?? 0) + 3;
+  const legalNarrowed = () => lit.size < (wasm.deal?.own_hand?.length ?? 0) + (wasm.deal?.covers?.[wasm.human] ?? []).filter(Boolean).length;
 
   // A tap or a click on the table.
   function tapped(slot) {
@@ -629,6 +654,9 @@ async function main() {
   // ---- a sitting ----------------------------------------------------------------------------
   function resetTable() {
     director.cancelTimed();
+    stepping = false;
+    idleTimers.forEach(clearTimeout);
+    idleTimers = [];
     pending = 0;
     ui.hush();
     ui.clearChips();
@@ -679,7 +707,7 @@ async function main() {
   }
 
   // ---- keeping the sitting -----------------------------------------------------------------------
-  const extras = () => ({ lang: getLang(), slate: slate.snapshot(), talk: talk.snapshot(), human });
+  const extras = () => ({ lang: getLang(), slate: slate.snapshot(), talk: talk.snapshot(), human, touren: sittingLength });
   let warned = false;
   function persist(reply) {
     if (TEST && !params.has("keep")) return;
@@ -696,8 +724,6 @@ async function main() {
     else askNew();
   }
   function restore(exported, ex = {}) {
-    const snapshot = { prefs: null };
-    void snapshot;
     const r = engine.import(exported);
     if (!r?.ok) {
       ui.dialog({ id: "error", title: t("error.bad-record"), body: "", buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
@@ -710,14 +736,25 @@ async function main() {
     const model = fromState(r.state);
     if (check(model, r.state).length) console.error("the restored model differs from the state", check(model, r.state));
     S = { model, events: log };
-    if (ex.lang) setLang(ex.lang);
+    if (ex.lang && ex.lang !== getLang()) changed("lang", ex.lang);
+    if (ex.touren) sittingLength = ex.touren;
+    else sittingLength = log.find((e) => e.type === "sitting_start")?.touren ?? r.state.touren_total;
     if (ex.slate) slate.restore(ex.slate);
     if (ex.talk) talk.restore(ex.talk);
     settings.setSitting(true);
     director.restart(S, { dealt: false });
     restModel = model;
-    ui.setTour(`${t("hud.tour", { n: Math.ceil((r.state.deals_counted + 1) / 2), total: r.state.touren_total })}`);
+    showTour();
     hud.reset({ hands: [], live: null });
+    ui.root.classList.toggle("left", prefs.leftHanded);
+    if (r.state.over) {
+      const end = [...log].reverse().find((e) => e.type === "sitting_end");
+      if (end) endSitting(end);
+      else {
+        sittingOver = true;
+        askNew();
+      }
+    }
     refresh();
     rested();
     return true;
@@ -791,7 +828,9 @@ async function main() {
     hud.reset({ hands: [ledger], live: null });
     if (wasm) {
       refresh();
-      ui.setTour(`${t("hud.tour", { n: Math.ceil(((wasm.deals_counted ?? 0) + 1) / 2), total: wasm.touren_total })}`);
+      showTour();
+      ui.closeDialog("extend"); // asked again, in the new language, by refresh
+      ui.closeDialog("announce");
     }
     stage.render();
   });
@@ -840,7 +879,10 @@ async function main() {
     const list = focusList(row);
     if (!list.length) return;
     let index = focus?.row === row ? focus.index : -1;
-    if (index < 0) index = Math.max(0, list.findIndex((c) => lit.has(c)));
+    if (index < 0) {
+      index = list.findIndex((c) => lit.has(c));
+      if (index < 0) return; // nothing is lit: the focus does not land on a dimmed card
+    }
     else index = absolute !== null ? absolute : Math.max(0, Math.min(list.length - 1, index + by));
     focus = { row, index };
     describeFocus();
@@ -863,19 +905,19 @@ async function main() {
     if (e.target instanceof Element && e.target.closest("input, select, textarea, .settings, .slate")) return;
     const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
     if (key === "?") {
-      ui.dialog({ id: "keys", title: t("keys.title"), body: ui.el("ul", { class: "keys" }, ...["play", "arrows", "packets", "announce", "take", "weiter", "slate", "hint", "mute", "where", "help", "esc"].map((k) => ui.el("li", {}, t(`keys.${k}`)))), buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
+      ui.dialog({ id: "keys", title: t("keys.title"), body: ui.el("ul", { class: "keys" }, ...["play", "arrows", "packets", "announce", "take", "weiter", "slate", "where", "help", "esc"].map((k) => ui.el("li", {}, t(`keys.${k}`)))), buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
       return;
     }
     if (ui.dialogOpen()) return;
     if (!wasm) return;
     if (key === "s") return toggleSlate();
     if (key === "i") return ui.live(where(wasm));
-    if (key === "t" && wasm.legal.some((a) => a.action === "take")) return send({ action: "take" });
-    if (key === "w" && wasm.legal.some((a) => a.action === "pass")) return send({ action: "pass" });
-    if (key === "a" && wasm.phase === "play") {
+    const calm_ = director.busy() || pending > 0;
+    if (key === "t" && !calm_ && wasm.legal.some((a) => a.action === "take")) return send({ action: "take" });
+    if (key === "w" && !calm_ && wasm.legal.some((a) => a.action === "pass")) return send({ action: "pass" });
+    if (key === "a" && !calm_ && wasm.phase === "play" && wasm.prompt === "you") {
       const first = [...heldHonours()][0];
       if (first) onAct("announce", { honour: first });
-      else onAct("announce", { honour: "trull" });
       return;
     }
     if (director.busy() || wasm.phase !== "play") return;
@@ -937,7 +979,7 @@ async function main() {
   } else askNew();
 
   // ---- for the browser test --------------------------------------------------------------------------------------
-  window.strohmandeln3d = {
+  if (TEST || params.has("hook")) window.strohmandeln3d = {
     engine,
     state: () => wasm,
     model: () => S?.model,
@@ -977,5 +1019,5 @@ async function main() {
 main().catch((error) => {
   console.error(error);
   const loading = document.getElementById("loading");
-  if (loading) loading.textContent = "The table could not be set.";
+  if (loading) loading.textContent = t("error.bad-config");
 });

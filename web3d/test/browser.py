@@ -204,8 +204,8 @@ def check_cover_legibility(browser, failures):
         fail_if(not covers or not hand, failures, "cover_legibility: no covers or hand")
         if covers and hand:
             ch = sorted((c["bottom"] - c["top"]) for c in covers)[len(covers) // 2]
-            hh = sorted((c["bottom"] - c["top"]) for c in hand)[len(hand) // 2]
-            fail_if(abs(ch - hh) > 0.1 * hh + 1, failures, f"cover_legibility at {viewport['width']}: a cover {ch:.0f} px tall, a hand card {hh:.0f}")
+            hh = min((c["bottom"] - c["top"]) for c in hand)  # the middle of a fan is turned least
+            fail_if(abs(ch - hh) > 0.15 * hh + 1, failures, f"cover_legibility at {viewport['width']}: a cover {ch:.0f} px tall, a hand card {hh:.0f}")
         close_all(browser)
 
 

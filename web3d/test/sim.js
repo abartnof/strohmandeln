@@ -24,7 +24,7 @@ export async function engineInNode() {
 }
 
 // The action a play is sent as: the card alone (PROTOCOL.md).
-export const wire = (a) => (a.action === "play" ? { action: "play", card: a.card } : a);
+export const wire = (a) => (a.action === "play" ? { action: "play", card: a.card, ...(a.announce ? { announce: a.announce } : {}) } : a);
 
 // A sitting played to its end (or `limit` replies) by `policy(state, rng)`,
 // which returns one of state.legal. The opponent is stepped. Returns every
@@ -67,6 +67,16 @@ export const random = (seed) => {
 export const passer = (seed) => {
   const r = random(seed);
   return (s) => s.legal.find((a) => a.action === "pass") ?? r(s);
+};
+// Announces whatever honour it holds, as a play's `announce`.
+export const announcer = (seed) => {
+  const r = random(seed);
+  return (s) => {
+    const honour = s.legal.find((a) => a.action === "announce");
+    const play = s.legal.find((a) => a.action === "play");
+    if (honour && play) return { ...play, announce: [honour.honour] };
+    return s.legal.find((a) => a.action === "take") ?? r(s);
+  };
 };
 export const taker = (seed) => {
   const r = random(seed);

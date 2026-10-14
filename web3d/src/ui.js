@@ -211,7 +211,7 @@ export function createUi(root, { t, onAct }) {
     // For the screen reader: one sentence at a time.
     live(text) {
       live.textContent = "";
-      live.textContent = text;
+      setTimeout(() => (live.textContent = text), 50);
     },
     lived: () => live.textContent,
     setSlateOpen(open) {

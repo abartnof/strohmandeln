@@ -33,12 +33,3 @@ export const thirdsOf = (code) => 3 * valueOf(code) - 2;
 // The honours the human may be asked about (RULES 11): the Trull's cards, the kings.
 export const TRULL = Object.freeze(["SK", "T21", "T1"]);
 export const KINGS = Object.freeze(["Kh", "Kd", "Kc", "Ks"]);
-export const isTarock = (code) => parseCode(code).kind !== "suit";
-export const suitOf = (code) => {
-  const c = parseCode(code);
-  return c.kind === "suit" ? c.suit : null;
-};
-export const rankOf = (code) => {
-  const c = parseCode(code);
-  return c.kind === "suit" ? c.rank : c.kind === "tarock" ? `T${c.n}` : "SK";
-};

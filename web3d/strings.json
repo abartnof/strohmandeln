@@ -352,10 +352,7 @@
   "hud.dealer.short": {"en": "D", "de": "G"},
   "chip.simple": {"en": "Simple game", "de": "Stille Partie"},
   "chip.last-card": {"en": "Last card", "de": "Letzte Karte"},
-  "chip.trull": {"en": "Trull", "de": "Troule"},
-  "chip.kings": {"en": "Four kings", "de": "Vier Könige"},
   "chip.forfeited": {"en": "Forfeited", "de": "Verwirkt"},
-  "chip.ultimo": {"en": "Pagat ultimo", "de": "Pagat ultimo"},
   "chip.valat": {"en": "Valat", "de": "Valat"},
   "chip.lapses": {"en": "Lapses", "de": "Verfällt"},
   "chip.not-36": {"en": "{a} is not 36", "de": "{a} ist nicht 36"},
@@ -364,5 +361,9 @@
   "hud.subtotal": {"en": "subtotal", "de": "Zwischensumme"},
   "hud.total": {"en": "Total", "de": "Summe"},
   "hud.show": {"en": "Show the count by deal", "de": "Zählung je Partie zeigen"},
-  "hud.hide": {"en": "Hide the count by deal", "de": "Zählung je Partie verbergen"}
+  "hud.hide": {"en": "Hide the count by deal", "de": "Zählung je Partie verbergen"},
+  "chip.honour.trull": {"en": "Trull +{n}", "de": "Troule +{n}"},
+  "chip.honour.kings": {"en": "Four kings +{n}", "de": "Vier Könige +{n}"},
+  "chip.ultimo.won": {"en": "Pagat ultimo +{n}", "de": "Pagat ultimo +{n}"},
+  "chip.ultimo.lost": {"en": "Pagat ultimo −{n}", "de": "Pagat ultimo −{n}"}
 }

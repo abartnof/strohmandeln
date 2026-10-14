@@ -95,8 +95,7 @@ export function reduce(model, e) {
       m.dealer = e.first_dealer;
       break;
     case "deal_start":
-      Object.assign(m, emptyModel(m.human), { dealer: e.dealer, forehand: e.forehand, multiplier: e.multiplier });
-      break;
+      return { ...emptyModel(m.human), dealer: e.dealer, forehand: e.forehand, multiplier: e.multiplier };
     case "dealt":
       if (e.seat === m.human) m.hand = sortCodes(e.cards).map((code) => ({ code, public: false }));
       m.opp = Array.from({ length: 15 }, () => ({ code: null, public: false }));
@@ -108,9 +107,6 @@ export function reduce(model, e) {
       break;
     case "bid":
       m.declarer = e.seat;
-      break;
-    case "both_pass":
-      m.bothPass = e.mode;
       break;
     case "thrown_in":
       return { ...emptyModel(m.human), dealer: m.dealer, forehand: m.forehand, multiplier: m.multiplier, thrown: true };
@@ -191,7 +187,7 @@ export function check(model, state) {
   for (const seat of [0, 1]) {
     for (let i = 0; i < 3; i++) {
       const p = model.packets[seat][i];
-      if (p.cover !== d.covers[seat][i] && !(model.thrown && p.cover === null)) bad.push(`cover ${seat}/${i} ${p.cover} vs ${d.covers[seat][i]}`);
+      if (p.cover !== d.covers[seat][i]) bad.push(`cover ${seat}/${i} ${p.cover} vs ${d.covers[seat][i]}`);
       if (p.hidden !== d.hidden[seat][i]) bad.push(`hidden ${seat}/${i} ${p.hidden} vs ${d.hidden[seat][i]}`);
     }
   }

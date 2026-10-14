@@ -48,7 +48,7 @@ export function countGame(words) {
     segments: SEGMENTS,
     scale: 3,
     total: 210,
-    lit: (units) => Math.min(SEGMENTS, Math.floor((units + 1) / 3)),
+    lit: (units) => (units >= TARGET ? SEGMENTS : Math.floor(units / 3)),
     format: (units) => thirds(units),
     goal: words.goal,
     names: words.names,

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { check, emptyModel, fromState, reduce } from "../src/model.js";
-import { passer, playSitting, random, taker } from "./sim.js";
+import { announcer, passer, playSitting, random, taker } from "./sim.js";
 
 // The model by events, kept across a whole sitting, must equal the state's
 // own account of the deal at every reply, and the model made from the state
@@ -18,7 +18,7 @@ async function walk(config, policy, extend = false) {
     if (r.state.deal) {
       assert.deepEqual(check(m, r.state), [], `after ${r.events.map((e) => e.type)}`);
       const f = fromState(r.state);
-      for (const k of ["hand", "opp", "packets", "held", "trick", "won", "counted", "pack"]) assert.deepEqual(f[k], m[k], k);
+      for (const k of ["hand", "opp", "packets", "held", "trick", "won", "counted", "pack", "announced", "dealer", "declarer", "multiplier", "forehand"]) assert.deepEqual(f[k], m[k], k);
     }
   }
   assert.ok(m.over, "the sitting ended");
@@ -31,11 +31,12 @@ test("events and states agree through whole sittings, taking and passing", async
     [7, taker(7), false],
     [11, passer(11), true],
     [3, random(3), false],
+    [1, announcer(1), false],
   ]) {
     const { seen } = await walk({ seed, touren: 3, human: seed % 2, level: 1 }, policy, extend);
     for (const k of seen) kinds.add(k);
   }
-  for (const k of ["dealt", "card_pulled", "cover_set", "packet_empty", "card_played", "trick_won", "count", "sitting_end"]) assert.ok(kinds.has(k), k);
+  for (const k of ["dealt", "card_pulled", "cover_set", "packet_empty", "card_played", "trick_won", "count", "sitting_end", "announcement"]) assert.ok(kinds.has(k), k);
 });
 
 test("a throw-in puts every card back in the pack", async () => {

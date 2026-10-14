@@ -255,7 +255,7 @@ def check_last_trick_ultimo(browser, failures):
         fail_if(not ok, failures, f"last_trick_ultimo: seed {seed} has no ultimo {result}")
         if ok:
             text = wait_chip(page, "ultimo", timeout=30_000)
-            fail_if(STRINGS["chip.ultimo"]["en"] not in text, failures, f"last_trick_ultimo: the chip says {text!r}")
+            fail_if(STRINGS["chip.ultimo.won"]["en"].split(" +")[0] not in text, failures, f"last_trick_ultimo: the chip says {text!r}")
             fail_if(result not in page.locator(".chip.ultimo").first.get_attribute("class"), failures, f"last_trick_ultimo: the chip is not marked {result}")
         close_all(browser)
 
@@ -576,7 +576,7 @@ def check_length_choice(browser, failures):
         fail_if(f"of {length}" not in page.locator(".tour-line").inner_text(), failures, f"length_choice: the HUD says {page.locator('.tour-line').inner_text()!r}")
         close_all(browser)
     # The screen itself: a page with no sitting asks, and Deal with 6 chosen deals six Touren.
-    page = open_page(browser, "human=1", wait=False)
+    page = open_page(browser, "human=1&hook=1", wait=False)
     page.wait_for_selector("[data-length='6']", timeout=180_000)
     page.locator("[data-length='6']").click()
     page.locator("[data-dialog-act=deal]").click()

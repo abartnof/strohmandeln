@@ -1,7 +1,7 @@
 // What the screen reader is told (docs/TABLE3D.md 3.10.2): one sentence an
 // event, in the current language, from the `sr.<event>[.you|.opp]` keys of
 // strings.json. Nothing here is a rule.
-import { cardName, t, thirds } from "./strings.js";
+import { cardName, kreuzer, t, thirds } from "./strings.js";
 
 const side = (seat, human) => (seat === human ? "you" : "opp");
 
@@ -66,7 +66,7 @@ export function sentence(e, model) {
     case "extension_decided":
       return t("sr.extension_decided", { answer: t(`sr.extension_decided.${e.accepted ? "yes" : "no"}`) });
     case "sitting_end":
-      return t("sr.sitting_end", { settlement: e.payer === null ? t("slate.square") : t(`slate.payer.${s(e.payer)}`) + " " + e.kreuzer + " kr." });
+      return t("sr.sitting_end", { settlement: e.payer === null ? t("slate.square") : `${t(`slate.payer.${s(e.payer)}`)} ${t("slate.owed", { kr: kreuzer(e.kreuzer) })}` });
     default:
       return null;
   }
