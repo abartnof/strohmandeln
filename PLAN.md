@@ -49,6 +49,8 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 
 ## Open
 
+- Phrase bank (review RK): Wander proverbs repeat across groups (one appears in 7), and the most frequent groups (pull-*, nothing-*, trick-*) need more wordings; the talk system needs cross-group repeat control, not only the per-group bag.
+
 - Card faces: the 2, 3 and 4 pip layouts sit off-centre beside the index column; rebalance.
 
 - The currency on the slate (gulden and kreuzer, or krone). Note 13's dates for the krone are unsourced.
