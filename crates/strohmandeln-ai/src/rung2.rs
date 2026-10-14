@@ -274,7 +274,7 @@ pub(crate) fn common(k: &Knowledge, c: Card, t: &mut Tally, choice: bool, wt: &W
 /// 25 points (60 to 75 thirds) and 6 or 7 tarocks [07 1.1]; that is a strong
 /// hand, one in twenty (`research/07` 5.4), so the strict book rule almost
 /// never bids and the threshold here is lower, set by measurement
-/// (`measurements/README.md`).
+/// (`docs/OPPONENT.md`).
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BidRule {
     pub sure_thirds: u32,

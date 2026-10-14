@@ -179,6 +179,23 @@ mod tests {
     }
 
     #[test]
+    fn the_opponent_decides_from_its_view_alone_at_every_level() {
+        // Twin deals that differ only in the cards the seat cannot see (the
+        // other hand, every face-down packet card) give it the same view; the
+        // answer must be the same at every level, slips and bids included.
+        let mut config = Config::default();
+        config.budget.nodes = 2_000;
+        config.budget.worlds = 3;
+        config.budget.bid_worlds = 4;
+        let mut twins = 0;
+        for halves in 2..=8 {
+            let o = Opponent::new(Level::from_halves(halves), 5).with_config(config);
+            twins += crate::testutil::blind_check(&|v| o.decide(v), 6);
+        }
+        assert!(twins > 300, "{twins}");
+    }
+
+    #[test]
     fn a_decision_is_a_function_of_the_seed_and_the_view() {
         for halves in 2..=6 {
             for seed in 0..4 {

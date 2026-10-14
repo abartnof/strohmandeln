@@ -1,5 +1,5 @@
 //! How much search costs: nodes and milliseconds for the double-dummy solver
-//! at each stage of a deal, to set the budgets (`measurements/README.md`).
+//! at each stage of a deal, to set the budgets (`docs/OPPONENT.md`).
 //!
 //! ```text
 //! bench [--deals N] [--cap NODES] [--bits B]

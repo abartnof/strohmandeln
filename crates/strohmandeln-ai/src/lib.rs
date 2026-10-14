@@ -1,7 +1,7 @@
 //! The computer opponent for Strohmandeln.
 //!
 //! A ladder of four rungs, each measured against the one below
-//! (`measurements/README.md`). Every decision is a pure function of a seed and
+//! (`docs/OPPONENT.md`). Every decision is a pure function of a seed and
 //! the player's own view, so a record replays.
 
 pub mod cardset;

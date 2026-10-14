@@ -160,6 +160,28 @@ mod tests {
     }
 
     #[test]
+    fn a_hint_is_a_function_of_the_view_alone() {
+        // Twin deals that differ only in the cards the seat cannot see give
+        // the same hint, move and reason, at every whole level.
+        let mut config = Config::default();
+        config.budget.nodes = 2_000;
+        config.budget.worlds = 3;
+        config.budget.bid_worlds = 4;
+        let mut twins = 0;
+        for halves in [2u8, 4, 6, 8] {
+            let level = Level::from_halves(halves);
+            twins += crate::testutil::blind_check_values(
+                &|v| {
+                    let h = hint(v, 9, level, config);
+                    (h.action, h.key)
+                },
+                6,
+            );
+        }
+        assert!(twins > 150, "{twins}");
+    }
+
+    #[test]
     fn docs_messages_md_gives_every_hint_key_in_english_and_german() {
         let doc = include_str!("../../../docs/MESSAGES.md");
         let section = doc.split("\n## Hint reasons").nth(1).expect("section");
