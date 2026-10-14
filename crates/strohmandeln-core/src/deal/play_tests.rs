@@ -389,3 +389,85 @@ fn rules_6_4_a_card_pulled_by_replacement_may_be_played_next_trick() {
     play(&mut deal, Seat::A, "T3").unwrap();
     assert!(deal.hand(Seat::A).iter().all(|h| h.card != c("T3")));
 }
+
+#[test]
+fn legal_plays_are_empty_for_a_seat_that_is_not_to_move() {
+    let deal = arranged(&["T5", "7c"], &["T6", "8c"], [EMPTY; 3], [EMPTY; 3]);
+    assert!(!deal.legal_plays(Seat::A).is_empty());
+    assert!(deal.legal_plays(Seat::B).is_empty(), "B waits for the lead");
+    // and during the bidding no card may be played
+    let bidding = Deal::new(
+        &Card::all().collect::<Vec<_>>(),
+        Seat::B,
+        1,
+        Settings::default(),
+    );
+    assert!(bidding.legal_plays(Seat::A).is_empty());
+    assert!(bidding.legal_plays(Seat::B).is_empty());
+}
+
+/// The Pagat is the last card of a packet, pulled when trick 26's cover is
+/// replaced, and played in trick 27 (RULES 4.7, 6.1, 12.2).
+fn pagat_from_a_packet(b_last: &str) -> (Deal, Vec<Event>) {
+    let mut deal = arranged(
+        &[],
+        &["2h", b_last],
+        [(Some("Jh"), &["T1"]), EMPTY, EMPTY],
+        [EMPTY; 3],
+    );
+    deal.trick = 26;
+    deal.log = (0..25)
+        .map(|_| TrickRecord {
+            leader: Seat::A,
+            cards: [c("4h"), c("4d")],
+            sources: [Source::Hand; 2],
+            winner: Seat::A,
+        })
+        .collect();
+    let mut all = Vec::new();
+    all.extend(play(&mut deal, Seat::A, "Jh").unwrap());
+    all.extend(play(&mut deal, Seat::B, "2h").unwrap());
+    // the Pagat is a pulled, public hand card, not a cover
+    assert_eq!(deal.cover(Seat::A, 1), None);
+    assert!(deal
+        .hand(Seat::A)
+        .iter()
+        .any(|h| h.card == c("T1") && h.public));
+    assert_eq!(plays(&deal, Seat::A), sorted(&["T1"]));
+    all.extend(play(&mut deal, Seat::A, "T1").unwrap());
+    all.extend(play(&mut deal, Seat::B, b_last).unwrap());
+    (deal, all)
+}
+
+#[test]
+fn rules_12_2_a_pagat_pulled_from_a_packet_wins_the_ultimo() {
+    let (deal, ev) = pagat_from_a_packet("4d");
+    assert!(ev.contains(&Event::PagatUltimo {
+        seat: Seat::A,
+        result: UltimoResult::Won
+    }));
+    let Some(DealEnd::Played(sc)) = deal.end() else {
+        panic!("deal over")
+    };
+    assert!(sc
+        .credits
+        .iter()
+        .any(|cr| cr.seat == Seat::A && cr.cause == Cause::UltimoWon && cr.points == 1));
+}
+
+#[test]
+fn rules_12_2_a_pagat_pulled_from_a_packet_and_beaten_loses_the_ultimo() {
+    let (deal, ev) = pagat_from_a_packet("T2");
+    assert!(ev.contains(&Event::PagatUltimo {
+        seat: Seat::A,
+        result: UltimoResult::Lost
+    }));
+    let Some(DealEnd::Played(sc)) = deal.end() else {
+        panic!("deal over")
+    };
+    // the loser pays: B is credited
+    assert!(sc
+        .credits
+        .iter()
+        .any(|cr| cr.seat == Seat::B && cr.cause == Cause::UltimoLost && cr.points == 1));
+}

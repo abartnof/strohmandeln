@@ -351,13 +351,13 @@ impl Deal {
     /// Every card a seat may play to the current trick, with its source
     /// (RULES 5.2 to 5.7).
     pub fn legal_plays(&self, seat: Seat) -> Vec<(Card, Source)> {
+        if self.phase != Phase::Playing || self.to_move() != Some(seat) {
+            return Vec::new();
+        }
         let set = self.playable(seat);
         let Some((_, led_card, _)) = self.led else {
             return set;
         };
-        if self.to_move() != Some(seat) {
-            return Vec::new();
-        }
         let led = Led::of(led_card);
         let following: Vec<_> = set
             .iter()
