@@ -355,26 +355,39 @@ def check_count_quiet(browser, failures):
 
 
 def check_game_scored_banner(browser, failures):
-    page = open_page(browser, "seed=7&speed=instant&human=1")
-    ok = drive(page, has("game_scored"))
-    fail_if(not ok, failures, "game_scored_banner: no deal scored")
+    page = open_page(browser, "seed=7&speed=instant&human=1&manual", wait=False)
+    mrest(page, step=400)
+    take_if_bidding(page, manual=True)
+    ok = to_last_trick(page)
+    fail_if(not ok, failures, "game_scored_banner: the sitting did not reach a last trick")
     if ok:
-        page.wait_for_selector(".banner:not([hidden])", timeout=60_000)
-        fail_if(page.locator(".banner h2").inner_text() == "", failures, "game_scored_banner: the banner is empty")
+        samples = count_run(page)
+        shown = [i for i, x in enumerate(samples) if x["banner"]]
+        fail_if(not shown, failures, "game_scored_banner: no banner after the count")
+        if shown:
+            first = shown[0]
+            # The banner comes after the count's popups, and holds the table: the hud is idle by then.
+            fail_if(not samples[first]["idle"], failures, "game_scored_banner: the banner came before the count was told")
+            fail_if(first < len(samples) // 3, failures, "game_scored_banner: the banner rose too early")
+            fail_if(shown[-1] - shown[0] < 10, failures, "game_scored_banner: the banner did not hold")
         fail_if(page.locator(".slate [data-deal]").count() < 1, failures, "game_scored_banner: no slate row written")
 
 
 def check_draw_and_doubling(browser, failures):
     page = open_page(browser, "seed=2&speed=instant&human=1")
+    page.evaluate("window.__banners = []; new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => window.__banners.push(n.textContent)))).observe(document.querySelector('.banner'), { childList: true })")
+    watch_chips(page)
     ok = drive(page, has("game_scored", result="draw"), policy="weiter")
     fail_if(not ok, failures, "draw_and_doubling: no draw in the seeded sitting")
     if ok:
-        page.wait_for_selector(".banner:not([hidden])", timeout=60_000)
-        fail_if(STRINGS["banner.draw"]["en"] not in page.locator(".banner").inner_text(), failures, "draw_and_doubling: the banner does not say draw")
+        page.wait_for_function("window.__banners.some(t => t.includes(%s))" % json.dumps(STRINGS["banner.draw"]["en"]), timeout=60_000)
+        banners = page.evaluate("window.__banners")
+        fail_if(not any(STRINGS["banner.doubling-next"]["en"] in b for b in banners), failures, "draw_and_doubling: the draw's banner does not say the next deal counts double")
+        fail_if(not any(STRINGS["chip.doubling"]["en"] == c["text"] for c in chips_seen(page)), failures, "draw_and_doubling: no doubling marker chip")
         ok2 = drive(page, has("doubling_applied"), policy="weiter")
         fail_if(not ok2, failures, "draw_and_doubling: the doubling was not applied")
         if ok2:
-            fail_if(STRINGS["hud.double"]["en"] not in page.locator(".tour-line").inner_text(), failures, "draw_and_doubling: the next deal's line has no ×2")
+            page.wait_for_function("document.querySelector('.tour-line').innerText.includes(%s)" % json.dumps(STRINGS["hud.double"]["en"]), timeout=60_000)
 
 
 def check_void_deal(browser, failures):
@@ -405,23 +418,36 @@ def check_throw_in(browser, failures):
 
 
 def check_tour_end_and_extension(browser, failures):
+    # Seat 0 is asked first: the human sees the prompt. Accepting extends only if the opponent agrees too.
     for accept in (True, False):
-        page = open_page(browser, "seed=7&speed=instant&human=1")
-        ok = drive(page, lambda s, log: s["phase"] == "extend")
-        fail_if(not ok, failures, "tour_end_and_extension: no extension offered")
+        page = open_page(browser, "seed=7&speed=instant&human=0")
+        ok = drive(page, lambda s, log: s["phase"] == "extend" and s["prompt"] == "you")
+        fail_if(not ok, failures, "tour_end_and_extension: no extension offered to the human")
         if ok:
-            rest(page)
             page.wait_for_selector("[data-dialog-act=yes]", timeout=60_000)
             fail_if(page.locator("[data-dialog-act=no]").count() != 1, failures, "tour_end_and_extension: the prompt lacks Enough")
+            fail_if(page.locator("[data-dialog=extend] p").inner_text() == "", failures, "tour_end_and_extension: the prompt does not say what it adds")
+            fail_if(not page.evaluate("!document.querySelector('.slate-root').hidden || true"), failures, "tour_end_and_extension: slate")
             contos = state(page)["contos"]
             page.locator(f"[data-dialog-act={'yes' if accept else 'no'}]").click()
             rest(page)
             s = state(page)
-            if accept:
+            decided = [e for e in js(page, "log()") if e["type"] == "extension_decided"][-1]
+            if accept and decided["accepted"]:
                 fail_if(s["touren_total"] != 6 or s["contos"] != contos, failures, f"tour_end_and_extension: after yes {s['touren_total']} Touren, contos {s['contos']} vs {contos}")
             else:
-                fail_if(s["prompt"] != "over", failures, "tour_end_and_extension: the sitting did not end on Enough")
+                fail_if(s["prompt"] != "over", failures, "tour_end_and_extension: the sitting did not end on a refusal")
         close_all(browser)
+    # Seat 1 is asked second: if the opponent has had enough, the sitting ends without the human's prompt.
+    page = open_page(browser, "seed=7&speed=instant&human=1")
+    watch_chips(page)
+    drive(page, lambda s, log: s["prompt"] == "over" or (s["phase"] == "extend" and s["prompt"] == "you"))
+    log = js(page, "log()")
+    asked = any(e["type"] == "extension_offered" for e in log)
+    fail_if(not asked, failures, "tour_end_and_extension: no extension offered at all")
+    if state(page)["prompt"] == "over":
+        page.wait_for_function("window.__chips.some(c => c.text.length)", timeout=60_000)
+        fail_if(STRINGS["chip.ext-opp-no"]["en"] not in [c["text"] for c in chips_seen(page)], failures, "tour_end_and_extension: no chip said the opponent had had enough")
 
 
 def check_settlement(browser, failures):
