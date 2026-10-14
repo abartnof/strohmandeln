@@ -137,3 +137,14 @@ test("the ledger's list: all its hands where there is room, and no taller than t
   assert.equal(handHeight(defineGame(counting)), 2 * 22 + 38, "a block is as tall as the game's categories");
   assert.equal(listHeight(3, 1000, handHeight(defineGame(counting))), 3 * 82);
 });
+
+test("a game says how many segments a score lights: 107 thirds (35 2/3) reaches the finish of 36", () => {
+  const g = defineGame({ categories: [["count", "Won cards"]], target: 107, segments: 36, scale: 3, line: () => ({ side: "you", cat: "count", pts: 0 }), lit: (u) => Math.min(36, Math.floor((u + 1) / 3)) });
+  assert.equal(g.lit(107), 36);
+  assert.equal(g.lit(106), 35, "106 thirds (35 1/3) stops one short");
+  assert.equal(segmentState(36, 107, g.segments, g.scale, g.lit), "cursor");
+  assert.equal(segmentState(35, 106, g.segments, g.scale, g.lit), "cursor");
+  assert.equal(segmentState(36, 106, g.segments, g.scale, g.lit), "unreached");
+  const plain = defineGame({ categories: [["a", "A"]], target: 21, line: () => ({ side: "you", cat: "a", pts: 0 }) });
+  assert.equal(plain.lit(7), 7, "without `lit`, whole points");
+});
