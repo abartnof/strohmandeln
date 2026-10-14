@@ -21,14 +21,10 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 - 14 Oct 2026: shared code is a vendored `kit/` copied from Cassino with a
   `kit/STAMP` file naming the source commit, not a submodule
   (`research/review/RC.md`). It becomes a package once a second game uses it.
-- 14 Oct 2026: the score HUD and the count's per-card scoring popups move from
-  Cassino into the kit, since several games in the series score by counting cards.
-
 - 14 Oct 2026: the game ships in English (default) and German, with an
   in-game switch. The engine emits message keys with parameters, never prose;
   every phrase, interface string and tutorial page has both languages; card
   faces swap court labels (K Q C J / K D C B) with the language.
-
 - 14 Oct 2026: the score HUD and the count's per-card popups are in the kit
   (`kit/js/scoring.js`, `hud.js`, `count.js`, `kit/css/hud.css`), generic and
   parameterised by a game definition, because several games in the series score
