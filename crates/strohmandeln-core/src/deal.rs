@@ -4,7 +4,7 @@
 //! player may see is made from it by `view`. It is driven by `apply`, which
 //! checks the action, changes the state and appends the events.
 
-use crate::cards::Card;
+use crate::cards::{Card, Honour};
 use crate::types::*;
 use std::collections::VecDeque;
 
@@ -34,7 +34,41 @@ enum Phase {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DealEnd {
     ThrownIn,
+    Played(DealScore),
 }
+
+/// The outcome of a played deal (RULES 8 to 12, 14.2): the takes in thirds,
+/// the result, and every payment, already doubled if a doubling applied.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DealScore {
+    pub result: GameResult,
+    pub thirds: [u32; 2],
+    pub credits: Vec<Credit>,
+    pub valat: Option<Seat>,
+    pub ultimo: Option<(Seat, UltimoResult)>,
+    pub multiplier: u32,
+}
+
+/// What became of one seat's claim to one honour (RULES 11.3, 11.5).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum HonourState {
+    Open,
+    Announced,
+    Forfeited,
+}
+
+/// Valat is worth 12 Points (RULES 10.1); the threshold is 107 thirds (8.2).
+pub const VALAT_POINTS: u32 = 12;
+pub const THRESHOLD_THIRDS: u32 = 107;
+
+fn honour_index(h: Honour) -> usize {
+    match h {
+        Honour::Trull => 0,
+        Honour::Kings => 1,
+    }
+}
+
+const HONOURS: [Honour; 2] = [Honour::Trull, Honour::Kings];
 
 #[derive(Clone, Debug)]
 pub struct Deal {
@@ -56,6 +90,8 @@ pub struct Deal {
     takes: [Vec<Card>; 2],
     /// Completed tricks, in order.
     log: Vec<TrickRecord>,
+    /// Announcement state, by seat then honour (Trull, Kings).
+    honours: [[HonourState; 2]; 2],
 }
 
 /// A completed trick: leader's play first.
@@ -123,6 +159,7 @@ impl Deal {
             led: None,
             takes: [Vec::new(), Vec::new()],
             log: Vec::new(),
+            honours: [[HonourState::Open; 2]; 2],
         }
     }
 
@@ -246,6 +283,67 @@ impl Deal {
         self.led
     }
 
+    /// The state of a seat's claim to an honour.
+    pub fn honour_state(&self, seat: Seat, honour: Honour) -> HonourState {
+        self.honours[seat.index()][honour_index(honour)]
+    }
+
+    /// Whether every card of the honour is among the seat's hand cards now
+    /// (RULES 11.2).
+    fn holds(&self, seat: Seat, honour: Honour) -> bool {
+        let hand = &self.hands[seat.index()];
+        honour
+            .cards()
+            .iter()
+            .all(|c| hand.iter().any(|h| h.card == *c))
+    }
+
+    /// The honours a seat may announce now (RULES 11.4).
+    pub fn legal_announcements(&self, seat: Seat) -> Vec<Honour> {
+        if self.phase != Phase::Playing || self.to_move() != Some(seat) {
+            return Vec::new();
+        }
+        HONOURS
+            .into_iter()
+            .filter(|&h| self.honour_state(seat, h) == HonourState::Open && self.holds(seat, h))
+            .collect()
+    }
+
+    fn announce_refusal(&self, seat: Seat, honour: Honour) -> Option<Refusal> {
+        match self.honour_state(seat, honour) {
+            HonourState::Announced => {
+                return Some(Refusal::of(RefusalKind::AlreadyAnnounced).with_honour(honour))
+            }
+            HonourState::Forfeited => {
+                return Some(Refusal::of(RefusalKind::HonourForfeited).with_honour(honour))
+            }
+            HonourState::Open => {}
+        }
+        if !self.holds(seat, honour) {
+            let hand = &self.hands[seat.index()];
+            let missing: Vec<Card> = honour
+                .cards()
+                .into_iter()
+                .filter(|c| !hand.iter().any(|h| h.card == *c))
+                .collect();
+            return Some(
+                Refusal::of(RefusalKind::NotHeld)
+                    .with_honour(honour)
+                    .with_missing(missing),
+            );
+        }
+        None
+    }
+
+    fn announce(&mut self, seat: Seat, honour: Honour, events: &mut Vec<Event>) {
+        self.honours[seat.index()][honour_index(honour)] = HonourState::Announced;
+        events.push(Event::Announcement {
+            seat,
+            honour,
+            cards: honour.cards(),
+        });
+    }
+
     pub fn take(&self, seat: Seat) -> &[Card] {
         &self.takes[seat.index()]
     }
@@ -297,10 +395,17 @@ impl Deal {
             Phase::Bidding(_) => vec![Action::Take, Action::Pass],
             Phase::Playing => {
                 let seat = self.to_move().expect("someone is to play");
-                self.legal_plays(seat)
+                let mut v: Vec<Action> = self
+                    .legal_announcements(seat)
                     .into_iter()
-                    .map(|(card, _)| Action::play(card))
-                    .collect()
+                    .map(|honour| Action::Announce { honour })
+                    .collect();
+                v.extend(
+                    self.legal_plays(seat)
+                        .into_iter()
+                        .map(|(card, _)| Action::play(card)),
+                );
+                v
             }
             Phase::Done => Vec::new(),
         }
@@ -315,49 +420,66 @@ impl Deal {
         events: &mut Vec<Event>,
     ) -> Result<(), Refusal> {
         if self.phase == Phase::Done {
-            return Err(Refusal::new(RefusalKind::Finished, "This deal is over."));
+            return Err(Refusal::of(RefusalKind::Finished));
         }
         match action {
             Action::Take | Action::Pass => self.bid(seat, action, events),
-            Action::Extend { .. } => Err(Refusal::new(
-                RefusalKind::WrongPhase,
-                "There is no extension to answer during a deal.",
-            )),
-            Action::Announce { .. } => Err(Refusal::new(
-                RefusalKind::WrongPhase,
-                "There is nothing to announce yet.",
-            )),
-            Action::Play { card, .. } => self.play(seat, card, events),
+            Action::Extend { .. } => Err(Refusal::of(RefusalKind::WrongPhase)),
+            Action::Announce { honour } => {
+                self.check_turn(seat)?;
+                if let Some(r) = self.announce_refusal(seat, honour) {
+                    return Err(r);
+                }
+                self.announce(seat, honour, events);
+                Ok(())
+            }
+            Action::Play { card, announce } => self.play(seat, card, &announce, events),
         }
     }
 
-    fn play(&mut self, seat: Seat, card: Card, events: &mut Vec<Event>) -> Result<(), Refusal> {
+    fn check_turn(&self, seat: Seat) -> Result<(), Refusal> {
         if matches!(self.phase, Phase::Bidding(_)) {
-            return Err(Refusal::new(
-                RefusalKind::WrongPhase,
-                "Cards are not played until the bidding is settled.",
-            ));
+            return Err(Refusal::of(RefusalKind::WrongPhase));
         }
-        if self.to_move() != Some(seat) {
-            return Err(Refusal::new(
-                RefusalKind::NotYourTurn,
-                "It is not your turn to play.",
-            ));
+        match self.to_move() {
+            Some(s) if s == seat => Ok(()),
+            Some(s) => Err(Refusal::of(RefusalKind::NotYourTurn).with_speaker(s)),
+            None => Err(Refusal::of(RefusalKind::Finished)),
+        }
+    }
+
+    fn play(
+        &mut self,
+        seat: Seat,
+        card: Card,
+        announce: &[Honour],
+        events: &mut Vec<Event>,
+    ) -> Result<(), Refusal> {
+        self.check_turn(seat)?;
+        for (i, &h) in announce.iter().enumerate() {
+            if announce[..i].contains(&h) {
+                return Err(Refusal::of(RefusalKind::DuplicateAnnouncement).with_honour(h));
+            }
+            if let Some(r) = self.announce_refusal(seat, h) {
+                return Err(r);
+            }
         }
         let Some(&(_, source)) = self.playable(seat).iter().find(|(c, _)| *c == card) else {
-            return Err(Refusal::new(
-                RefusalKind::NotPlayable,
-                format!(
-                    "{} is not among your hand cards or your uncovered packet cards.",
-                    card.code()
-                ),
-            ));
+            return Err(Refusal::of(RefusalKind::NotPlayable).with_card(card));
         };
         let legal = self.legal_plays(seat);
         if !legal.iter().any(|(c, _)| *c == card) {
             return Err(self.follow_refusal(&legal, card));
         }
-        // The card is played.
+        // The announcements come first, then the card (RULES 11.3).
+        for &h in announce {
+            self.announce(seat, h, events);
+        }
+        let forfeits: Vec<Honour> = card
+            .honours()
+            .into_iter()
+            .filter(|&h| self.honour_state(seat, h) == HonourState::Open && self.holds(seat, h))
+            .collect();
         match source {
             Source::Hand => {
                 let hand = &mut self.hands[seat.index()];
@@ -374,6 +496,10 @@ impl Deal {
             source,
             trick: self.trick,
         });
+        for honour in forfeits {
+            self.honours[seat.index()][honour_index(honour)] = HonourState::Forfeited;
+            events.push(Event::HonourForfeited { seat, honour });
+        }
         match self.led {
             None => self.led = Some((seat, card, source)),
             Some((leader, led_card, led_source)) => {
@@ -386,23 +512,21 @@ impl Deal {
 
     fn follow_refusal(&self, legal: &[(Card, Source)], tried: Card) -> Refusal {
         let (_, led_card, _) = self.led.expect("a refusal needs a led card");
-        let list: Vec<String> = legal.iter().map(|(c, _)| c.code()).collect();
-        let list = list.join(", ");
-        let tried = tried.code();
-        if legal.iter().all(|(c, _)| Led::of(led_card).matches(*c)) {
-            let what = match Led::of(led_card) {
-                Led::Trump => "tarock".to_string(),
-                Led::Suit(s) => format!("{s:?}").to_lowercase(),
+        let allowed: Vec<Card> = legal.iter().map(|(c, _)| *c).collect();
+        let led = Led::of(led_card);
+        if allowed.iter().all(|c| led.matches(*c)) {
+            let name = match led {
+                Led::Trump => "trump".to_string(),
+                Led::Suit(s) => s.letter().to_string(),
             };
-            Refusal::new(
-                RefusalKind::MustFollowSuit,
-                format!("You must follow suit ({what} was led), so {tried} is not allowed; play one of: {list}."),
-            )
+            Refusal::of(RefusalKind::MustFollowSuit)
+                .with_card(tried)
+                .with_led(&name)
+                .with_allowed(allowed)
         } else {
-            Refusal::new(
-                RefusalKind::MustTrump,
-                format!("You hold nothing of the suit led, so you must play a tarock; {tried} is not allowed; play one of: {list}."),
-            )
+            Refusal::of(RefusalKind::MustTrump)
+                .with_card(tried)
+                .with_allowed(allowed)
         }
     }
 
@@ -440,27 +564,147 @@ impl Deal {
         self.trick += 1;
         self.leader = winner;
         if self.trick > 27 {
-            self.phase = Phase::Done;
+            self.finish_deal(events);
+        }
+    }
+
+    /// After trick 27: the ultimo, the Valat, the count and the score.
+    fn finish_deal(&mut self, events: &mut Vec<Event>) {
+        let score = self.score();
+        if let Some((seat, result)) = score.ultimo {
+            events.push(Event::PagatUltimo { seat, result });
+        }
+        if let Some(seat) = score.valat {
+            events.push(Event::Valat { seat });
+        }
+        events.push(Event::Count {
+            thirds: score.thirds,
+            declarer: self.declarer,
+            threshold: THRESHOLD_THIRDS,
+        });
+        self.phase = Phase::Done;
+        self.end = Some(DealEnd::Played(score));
+    }
+
+    /// Counts the takes and works out every payment of the deal from the
+    /// tricks played and the announcements made (RULES 8 to 12, 14.2).
+    pub(crate) fn score(&self) -> DealScore {
+        let thirds: [u32; 2] =
+            std::array::from_fn(|i| self.takes[i].iter().map(|c| c.thirds()).sum());
+        let tricks_won = |seat: Seat| self.log.iter().filter(|t| t.winner == seat).count();
+        let valat = Seat::BOTH
+            .into_iter()
+            .find(|&s| tricks_won(s) == self.log.len() && self.log.len() == 27);
+        let (simple, wins, loses) = self.settings.values.triple();
+        let mut credits = Vec::new();
+        let result = match (self.declarer, valat) {
+            (Some(d), Some(v)) => {
+                if d == v {
+                    GameResult::DeclarerWin
+                } else {
+                    GameResult::DeclarerLoss
+                }
+            }
+            (None, Some(_)) => GameResult::SimpleWin,
+            (Some(d), None) => {
+                if thirds[d.index()] >= THRESHOLD_THIRDS {
+                    credits.push(Credit {
+                        seat: d,
+                        cause: Cause::Game,
+                        points: wins,
+                    });
+                    GameResult::DeclarerWin
+                } else {
+                    credits.push(Credit {
+                        seat: d.other(),
+                        cause: Cause::Game,
+                        points: loses,
+                    });
+                    GameResult::DeclarerLoss
+                }
+            }
+            (None, None) => match Seat::BOTH
+                .into_iter()
+                .find(|s| thirds[s.index()] >= THRESHOLD_THIRDS)
+            {
+                Some(w) => {
+                    credits.push(Credit {
+                        seat: w,
+                        cause: Cause::Game,
+                        points: simple,
+                    });
+                    GameResult::SimpleWin
+                }
+                None => GameResult::Draw,
+            },
+        };
+        if let Some(v) = valat {
+            credits.push(Credit {
+                seat: v,
+                cause: Cause::Valat,
+                points: VALAT_POINTS,
+            });
+        }
+        for honour in HONOURS {
+            for seat in Seat::BOTH {
+                if self.honour_state(seat, honour) == HonourState::Announced {
+                    credits.push(Credit {
+                        seat,
+                        cause: match honour {
+                            Honour::Trull => Cause::Trull,
+                            Honour::Kings => Cause::Kings,
+                        },
+                        points: 1,
+                    });
+                }
+            }
+        }
+        let ultimo = self.log.last().and_then(|t| {
+            let player = if t.cards[0] == Card::PAGAT {
+                t.leader
+            } else if t.cards[1] == Card::PAGAT {
+                t.leader.other()
+            } else {
+                return None;
+            };
+            Some(if t.winner == player {
+                (player, UltimoResult::Won)
+            } else {
+                (player, UltimoResult::Lost)
+            })
+        });
+        match ultimo {
+            Some((p, UltimoResult::Won)) => credits.push(Credit {
+                seat: p,
+                cause: Cause::UltimoWon,
+                points: self.settings.ultimo,
+            }),
+            Some((p, UltimoResult::Lost)) => credits.push(Credit {
+                seat: p.other(),
+                cause: Cause::UltimoLost,
+                points: self.settings.ultimo,
+            }),
+            None => {}
+        }
+        for credit in &mut credits {
+            credit.points *= self.multiplier;
+        }
+        DealScore {
+            result,
+            thirds,
+            credits,
+            valat,
+            ultimo,
+            multiplier: self.multiplier,
         }
     }
 
     fn bid(&mut self, seat: Seat, action: Action, events: &mut Vec<Event>) -> Result<(), Refusal> {
         let Phase::Bidding(speaker) = self.phase else {
-            return Err(Refusal::new(
-                RefusalKind::WrongPhase,
-                "The bidding is over.",
-            ));
+            return Err(Refusal::of(RefusalKind::WrongPhase));
         };
         if seat != speaker {
-            let who = if speaker == self.forehand() {
-                "forehand"
-            } else {
-                "the dealer"
-            };
-            return Err(Refusal::new(
-                RefusalKind::NotYourTurn,
-                format!("It is not your turn to speak; {who} speaks now."),
-            ));
+            return Err(Refusal::of(RefusalKind::NotYourTurn).with_speaker(speaker));
         }
         match action {
             Action::Take => {
@@ -545,6 +789,9 @@ fn trick_won_by_leader(led: Card, followed: Card) -> bool {
 
 #[cfg(test)]
 mod play_tests;
+
+#[cfg(test)]
+mod score_tests;
 
 #[cfg(test)]
 mod tests {
@@ -652,7 +899,7 @@ mod tests {
         assert_eq!(deal.to_move(), Some(Seat::A));
         let err = deal.apply(Seat::B, Action::Take, &mut ev).unwrap_err();
         assert_eq!(err.kind, RefusalKind::NotYourTurn);
-        assert!(err.reason.contains("forehand") || err.reason.contains("turn"));
+        assert_eq!(err.speaker, Some(Seat::A));
         assert!(ev.is_empty());
         assert_eq!(deal.legal_actions(), vec![Action::Take, Action::Pass]);
     }

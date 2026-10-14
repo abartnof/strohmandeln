@@ -160,15 +160,36 @@ impl Action {
     }
 }
 
-/// Why an action was refused: a kind for programs and a sentence for people.
+/// Why an action was refused: a stable message key and structured
+/// parameters, never a sentence. The table translates the key (see
+/// `docs/MESSAGES.md`); `Display` gives an English rendering for tests and the
+/// terminal client.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Refusal {
+    #[serde(rename = "key")]
     pub kind: RefusalKind,
-    pub reason: String,
+    /// The card the player tried to play.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub card: Option<Card>,
+    /// The suit letter led (`h d c s`) or `trump`, for the follow rules.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub led: Option<String>,
+    /// The cards that would have been allowed.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub allowed: Vec<Card>,
+    /// The honour cards missing from the hand, for a false announcement.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub missing: Vec<Card>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub honour: Option<Honour>,
+    /// Whose turn it is, for out-of-turn refusals.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub speaker: Option<Seat>,
 }
 
+/// The message keys of refusals (kebab-case on the wire).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "kebab-case")]
 pub enum RefusalKind {
     NotYourTurn,
     WrongPhase,
@@ -177,21 +198,99 @@ pub enum RefusalKind {
     MustTrump,
     NotHeld,
     AlreadyAnnounced,
+    HonourForfeited,
+    DuplicateAnnouncement,
     Finished,
 }
 
 impl Refusal {
-    pub fn new(kind: RefusalKind, reason: impl Into<String>) -> Refusal {
+    pub fn of(kind: RefusalKind) -> Refusal {
         Refusal {
             kind,
-            reason: reason.into(),
+            card: None,
+            led: None,
+            allowed: Vec::new(),
+            missing: Vec::new(),
+            honour: None,
+            speaker: None,
         }
+    }
+    pub fn with_card(mut self, card: Card) -> Refusal {
+        self.card = Some(card);
+        self
+    }
+    pub fn with_honour(mut self, honour: Honour) -> Refusal {
+        self.honour = Some(honour);
+        self
+    }
+    pub fn with_speaker(mut self, seat: Seat) -> Refusal {
+        self.speaker = Some(seat);
+        self
+    }
+    pub fn with_led(mut self, led: &str) -> Refusal {
+        self.led = Some(led.to_string());
+        self
+    }
+    pub fn with_allowed(mut self, cards: Vec<Card>) -> Refusal {
+        self.allowed = cards;
+        self
+    }
+    pub fn with_missing(mut self, cards: Vec<Card>) -> Refusal {
+        self.missing = cards;
+        self
     }
 }
 
+fn codes(cards: &[Card]) -> String {
+    cards
+        .iter()
+        .map(|c| c.code())
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
 impl std::fmt::Display for Refusal {
+    /// An English rendering, for tests and the terminal client only.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.reason)
+        let card = self.card.map(|c| c.code()).unwrap_or_default();
+        let honour = match self.honour {
+            Some(Honour::Trull) => "the Troule",
+            Some(Honour::Kings) => "the four kings",
+            None => "the honour",
+        };
+        match self.kind {
+            RefusalKind::NotYourTurn => write!(f, "It is not your turn."),
+            RefusalKind::WrongPhase => write!(f, "That cannot be done now."),
+            RefusalKind::NotPlayable => write!(
+                f,
+                "{card} is not among your hand cards or uncovered packet cards."
+            ),
+            RefusalKind::MustFollowSuit => write!(
+                f,
+                "You must follow suit ({} was led); {card} is not allowed; play one of: {}.",
+                self.led.as_deref().unwrap_or("?"),
+                codes(&self.allowed)
+            ),
+            RefusalKind::MustTrump => write!(
+                f,
+                "You hold nothing of the suit led, so you must play a tarock; {card} is not allowed; play one of: {}.",
+                codes(&self.allowed)
+            ),
+            RefusalKind::NotHeld => write!(
+                f,
+                "You cannot announce {honour}: you do not hold {} in your hand now.",
+                codes(&self.missing)
+            ),
+            RefusalKind::AlreadyAnnounced => write!(f, "You have already announced {honour}."),
+            RefusalKind::HonourForfeited => write!(
+                f,
+                "You played a card of {honour} without announcing it, so it is lost for this deal."
+            ),
+            RefusalKind::DuplicateAnnouncement => {
+                write!(f, "You listed {honour} twice.")
+            }
+            RefusalKind::Finished => write!(f, "This deal is over."),
+        }
     }
 }
 
@@ -371,6 +470,23 @@ mod tests {
         );
         let back: Event = serde_json::from_str(&json).unwrap();
         assert_eq!(back, e);
+    }
+
+    #[test]
+    fn refusals_are_message_keys_with_parameters_not_sentences() {
+        let r = Refusal::of(RefusalKind::MustFollowSuit)
+            .with_card(Card::PAGAT)
+            .with_led("h")
+            .with_allowed(vec![Card::SKUS]);
+        assert_eq!(
+            serde_json::to_string(&r).unwrap(),
+            r#"{"key":"must-follow-suit","card":"T1","led":"h","allowed":["SK"]}"#
+        );
+        let r = Refusal::of(RefusalKind::NotYourTurn).with_speaker(Seat::A);
+        assert_eq!(
+            serde_json::to_string(&r).unwrap(),
+            r#"{"key":"not-your-turn","speaker":0}"#
+        );
     }
 
     #[test]

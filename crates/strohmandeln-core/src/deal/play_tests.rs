@@ -77,7 +77,7 @@ fn rules_5_2_covers_are_playable_and_face_down_cards_are_not() {
     assert_eq!(plays(&deal, Seat::A), sorted(&["7c", "Jh"]));
     let err = play(&mut deal, Seat::A, "T3").unwrap_err();
     assert_eq!(err.kind, RefusalKind::NotPlayable);
-    assert!(!err.reason.is_empty());
+    assert_eq!(err.card, Some(c("T3")));
     // the opponent's cards are not playable either
     let err = play(&mut deal, Seat::A, "8c").unwrap_err();
     assert_eq!(err.kind, RefusalKind::NotPlayable);
@@ -130,8 +130,8 @@ fn rules_5_4_1_must_follow_suit_from_hand_or_cover_freely() {
     // B holds Qc: must play it; tarock and hearts are refused
     let err = play(&mut deal, Seat::B, "T5").unwrap_err();
     assert_eq!(err.kind, RefusalKind::MustFollowSuit);
-    assert!(err.reason.contains("follow"), "{}", err.reason);
-    assert!(err.reason.contains("Qc"), "{}", err.reason);
+    assert_eq!(err.led.as_deref(), Some("c"));
+    assert_eq!(err.allowed, vec![c("Qc")]);
     let err = play(&mut deal, Seat::B, "4h").unwrap_err();
     assert_eq!(err.kind, RefusalKind::MustFollowSuit);
     assert_eq!(plays(&deal, Seat::B), sorted(&["Qc"]));
@@ -169,7 +169,7 @@ fn rules_5_4_2_void_in_the_suit_must_trump_from_hand_or_cover() {
     assert_eq!(plays(&deal, Seat::B), sorted(&["T5", "T4"]));
     let err = play(&mut deal, Seat::B, "Kh").unwrap_err();
     assert_eq!(err.kind, RefusalKind::MustTrump);
-    assert!(err.reason.contains("tarock"), "{}", err.reason);
+    assert_eq!(err.allowed.len(), 2);
 }
 
 #[test]
