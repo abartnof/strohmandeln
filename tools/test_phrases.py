@@ -84,11 +84,11 @@ FLAGGED = [
     "Wie haaßt Herz", "Herrgott", "Gstüsmarterer", "Berg Sinai",
 ]
 
-# 20th-century terms: the opponent's voice is set around 1891 (research/05,
-# headline 6: "Uhu" first appears in 1902; Spatz, Gstieß and Nullrunde are
-# later too).
+# Terms the opponent never uses: the bird names and the bonuses named after
+# them (not in the canonical rules, research/14 rule 22), Rostopschin, and
+# modern terms (Nullrunde 2007). The period runs to 1938.
 LATE = words("Uhu", "Kakadu", "Quapil", "Marabu", "Pelikan", "Kanari", "Lämmergeier", "Wildsau", "Dodo",
-             "Vogerl", "Vögel", "birds", "Spatz", "sparrow", "Gstieß", "Gstüs", "Rostopschin", "Topschin",
+             "Vogerl", "Vögel", "birds", "Rostopschin", "Topschin",
              "Nullrunde", "Bummerl", "Sküsfang", "Königstrull")
 
 # A line may not claim to know a hidden card: the other player's hand cards or a
@@ -157,10 +157,10 @@ class SourceKeys(unittest.TestCase):
 
 
 class Period(unittest.TestCase):
-    def test_no_source_after_1900(self):
+    def test_no_source_after_1938(self):
         for key, (year, *_rest) in phrases.SOURCES.items():
             if key != "T":
-                self.assertLessEqual(year, 1900, key)
+                self.assertLessEqual(year, 1938, key)
 
     def test_no_twentieth_century_terms(self):
         for gid, w in LINES:

@@ -1,7 +1,7 @@
 # What the table says
 
 The opponent's phrase bank, by game moment (events: `docs/RULES.md` section 16). The voice is
-set around 1891; no source after 1900 is used. German is the period wording where a source
+set around 1891; sources run from 1756 to 1938, none later. German is the period wording where a source
 gives one. "T" marks the table's own lines. Generated from `tools/phrases.py`; edit the bank,
 not this file.
 
@@ -40,6 +40,17 @@ Sources:
 - **Ga** [09-S14]: Die Gartenlaube (1869): "das Fallen der Karten, das Rasseln der Sechser, die Seufzer der Verlierenden"
 - **Jö** [05c LIT-S27]: Jörgel Briefe, 24 Mar 1883, p. 9 (OCR snippet): "Ohne Tarok is kein Spiel"
 - **Hn** [05b LEX-S9]: Henrici (1727), in Grimm's Wörterbuch, s.v. Stich: "denn manchmahl bleibt ein blat in händen, das macht den allerletzten stich"
+- **Lö** [05c LIT-S9]: Löwy, "Der Giftnik'l", Illustrirtes Wiener Extrablatt, 23 Aug 1903, p. 7: "Jetzt waß i net, san zwölf oder fufzehn Tarock draußen!"
+- **Ra** [05c LIT-S8]: Ranzenhofer, "Königrufen", Pilsner Tagblatt, 30 Sep 1917: "'Guter Mond, du gehst so stille' summt der Bankdirektor und sticht mit dem Sküs den gegnerischen Mond ab"; "Ein guter Misch ist das halbe Spiel"; "Alles hat seine Reizes!"; "Nur mit gezogenen Plätzen spiele ich"; "Wieder lauter Skatindeln ... Den ganzen Abend hab' ich noch kein Tarock gesehen!"; "Na, so einen Dusel"; "Aha, jetzt kommt der Spatz unters Messer!"; "Nur noch eine Runde"; "Alles spielt gegen mich und trischakt mich mit Tarock?"
+- **Mw** [05c LIT-S10]: (Neuigkeits) Welt Blatt, 23 Jan 1924, p. 7: "Eine Karte oder ein Scheit Holz"; "Tun wir doch gleich lieber Schach spielen"
+- **Kg** [05c LIT-S16][03 §4 REVIEW RD]: Kärntner Zeitung, 16 May 1908, p. 4: "Just wie beim Tarock, beim Strohmandl: 35 und 2 Blatt; das ist eigentlich der stolzeste Sieg" (page image reads 35)
+- **Lv** [05c LIT-S58]: Linzer Volksblatt, 20 Dec 1891, p. 1 (OCR snippet): "der unwiderstehliche, alles niederrennende Sküs, der gute, sanfte Mond, und der kokette, fröhliche Pagat! Ein würdiges Trifolium!"
+- **Fh** [05c LIT-S60]: Der Floh, 1900, Nr. 34, p. 3 (verse, OCR snippet): the Sküs "der den Mond kann stechen"
+- **Kz** [05c LIT-S57]: Kärntner Zeitung, 3 Dec 1911, p. 9 (OCR snippet): "Heute regieren Sküs, Mond und Spatz oft an drei Tischen zugleich"
+- **Mu** [05c LIT-S36]: Die Muskete, 14 Aug 1913, p. 6 (verse, OCR snippet): "Verloren ist die Seelenruh', Der Pagat ultimo dazu."
+- **Wb** [05c LIT-S44]: (Neuigkeits) Welt Blatt, 1 Jun 1904, p. 7 (OCR snippet): "Das 'Kiebitz'-Reglement hat auch nur einen Paragraphen ... Schweigende Kiebitze werden geduldet"
+- **Mk** [05c LIT-S42]: Die Muskete, 1 Aug 1923, p. 6 (OCR snippet): "als Kiebitz darf ich höchstens ein Nachtmahl zahlen, aber nichts dreinreden"
+- **Bt** [05c LIT-S62]: Bettauers Wochenschrift, 3 Jan 1927, p. 7 (OCR snippet): "Den ganzen Nachmittag haben wir Tarock gespielt! ... Strohmandl!"
 
 ### `greet`
 
@@ -87,6 +98,7 @@ sitting_start: drawing for the first deal
 | Let us cut for the deal. |  | T |
 | Who deals? Who leads? Cut and see. | wer spielt aus, ... wer hat Karten geb'n? | Mo [05-S11] |
 | Draw a card; the Touren begin with the dealer. | Die Touren beginnen stets bei jenem Spieler, der zuerst die Karten ausgab | Be [13-S3] |
+| Seats by lot only, I say. | Nur mit gezogenen Plätzen spiele ich | Ra [05c LIT-S8] |
 
 ### `deal-mine`
 
@@ -99,6 +111,7 @@ deal_start: the opponent deals
 | Dealt one way, played another. | Die Karten werden anders gegeben, anders gespielet. | Wa, Karte 7 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Well shuffled, well dealt. | Hastus wol gemischt, so karts wol. | Wa, Mischen 2 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | I deal. Then the straw men. |  | T |
+| A good shuffle is half the game. | Ein guter Misch ist das halbe Spiel | Ra [05c LIT-S8] |
 
 ### `deal-yours`
 
@@ -111,6 +124,7 @@ deal_start: the player deals
 | Shuffle well, deal well. | Hastus wol gemischt, so karts wol. | Wa, Mischen 2 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Dealt one way, played another. Go on. | Die Karten werden anders gegeben, anders gespielet. | Wa, Karte 7 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Your deal, and a fair one. |  | T |
+| A good shuffle is half the game. | Ein guter Misch ist das halbe Spiel | Ra [05c LIT-S8] |
 
 ### `void-deal`
 
@@ -206,6 +220,7 @@ thrown_in: both_pass = throw_in, nothing played
 | Thrown in. The deal passes. | Vorhand hat die nächste Donne | Ul [03-S14][13-S1] |
 | Nothing played; on to the next. |  | T |
 | Both pass, so we start afresh. |  | T |
+| Thrown in: the straw stays shut. |  | T |
 
 ### `reveal-begin`
 
@@ -216,6 +231,8 @@ reveal_start: a player turns the straw men
 | Now the straw men, one by one. |  | T |
 | Turn them over, left to right. |  | T |
 | Let us see what the straw says. |  | T |
+| Everything has its charms. | Alles hat seine Reizes! | Ra [05c LIT-S8] |
+| Look at the straw men, then. |  | T |
 
 ### `pull-king-mine`
 
@@ -276,6 +293,7 @@ card_pulled: the Sküs pulled (either side)
 | The Sküs has come home. |  | T |
 | The highest trump, out of the straw. |  | T |
 | A Sküs: the one card nothing beats. |  | T |
+| The irresistible Sküs! | der unwiderstehliche, alles niederrennende Sküs | Lv [05c LIT-S58] |
 
 ### `pull-mond`
 
@@ -286,6 +304,8 @@ card_pulled: the Mond (XXI) pulled
 | The Mond! Watch the Sküs. |  | T |
 | Mond out of the straw. |  | T |
 | The Mond is turned. |  | T |
+| The good, gentle Mond. | der gute, sanfte Mond | Lv [05c LIT-S58] |
+| Good moon, you come so quietly. | Guter Mond, du gehst so stille | Ra [05c LIT-S8] |
 
 ### `pull-pagat`
 
@@ -296,6 +316,8 @@ card_pulled: the Pagat (I) pulled
 | The Pagat! A little trump, a great hope. |  | T |
 | Pagat out of the straw. |  | T |
 | Der Pagat ist da. |  | T |
+| The Pagat: coquettish and cheerful. | der kokette, fröhliche Pagat | Lv [05c LIT-S58] |
+| Sküs, Mond and the little sparrow. | Sküs, Mond und Spatz | Kz [05c LIT-S57] |
 
 ### `run-mine`
 
@@ -332,6 +354,7 @@ packet_turned, no pull: the opponent's packets give nothing
 | The game hates me today. | Das Spiel hasst mich. | Wa, Spiel 274, Zusätze [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Not a trump, not a king. |  | T |
 | A good hand comes back. | Ein gut Spiel kommt wieder. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Not a single tarock all evening! | Den ganzen Abend hab' ich noch kein Tarock gesehen! | Ra [05c LIT-S8] |
 
 ### `nothing-yours`
 
@@ -360,6 +383,8 @@ the player is slow to play
 | No hurry. The cards are patient. |  | T |
 | Thinking it over? |  | T |
 | Not a trump will walk by itself. |  | T |
+| A card or a log of wood, either will do. | Eine Karte oder ein Scheit Holz | Mw [05c LIT-S10] |
+| This pace? We might have played chess. | Tun wir doch gleich lieber Schach spielen | Mw [05c LIT-S10] |
 
 ### `trick-good-mine`
 
@@ -432,6 +457,7 @@ trick_won: the opponent's Sküs catches the player's Mond
 | Struck by the proud Sküs. | Vom stolzen Skis getroffen | Zi [05-S14] |
 | A Mondfang: a special catastrophe. | Mondfang ... eine Special-Katastrophe | NF [05c LIT-S56] |
 | The Sküs caught the Mond. Sorry. |  | T |
+| Good moon, you go so quietly. | Guter Mond, du gehst so stille | Ra [05c LIT-S8] |
 
 ### `mond-caught-yours`
 
@@ -444,6 +470,7 @@ trick_won: the player's Sküs catches the opponent's Mond
 | Unnütze Mühe: the Sküs takes the Mond. | Unnütze Mühe, der Scüs sticht ja den Mond. | Ro [05d POLY-S4] |
 | Well caught: the Sküs wins the Mond. |  | T |
 | A Mondfang: a special catastrophe. | Mondfang ... eine Special-Katastrophe | NF [05c LIT-S56] |
+| Only the Sküs can trump the Mond. | der den Mond kann stechen | Fh [05c LIT-S60] |
 
 ### `ultimo-won-mine`
 
@@ -480,6 +507,7 @@ pagat_ultimo lost by the opponent
 | Ultimo and game both gone. | 'Ultimo' samt Spiel sind verloren | Nw [03 §4] |
 | Caught. I should have counted. |  | T |
 | The Pagat falls; so it goes. |  | T |
+| Lost my calm, and my Pagat with it. | Verloren ist die Seelenruh', Der Pagat ultimo dazu. | Mu [05c LIT-S36] |
 
 ### `ultimo-lost-yours`
 
@@ -492,6 +520,7 @@ pagat_ultimo lost by the player
 | Ultimo and game both gone. | 'Ultimo' samt Spiel sind verloren | Nw [03 §4] |
 | Caught! The Pagat will try again. |  | T |
 | A pity: the Pagat was so near. |  | T |
+| Now the little sparrow goes under the knife! | jetzt kommt der Spatz unters Messer! | Ra [05c LIT-S8] |
 
 ### `trull-mine`
 
@@ -550,6 +579,7 @@ honour_forfeited: announced too late
 | Not said in time: no honour. | spätestens in dem Augenblicke ... angesagt | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | Too late to announce; it is forfeit. |  | T |
 | An honour must be said before it is played. | angesagt | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| The honour is lost by silence. | angesagt | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 
 ### `valat-mine`
 
@@ -561,6 +591,7 @@ valat by the opponent (every trick)
 | Valat! The whole table is mine. | Valat | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
 | Pagat, ultimo, valat: all of it. | Pagat Ultimo Volat | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
 | Not a trick for you. Quite matsch. | Matsch | Ne3 [05-S7] |
+| Valat: every trick of the twenty-seven. |  | T |
 
 ### `valat-yours`
 
@@ -572,6 +603,7 @@ valat by the player (every trick)
 | Not one trick for me. Matsch! | ich bin Matsch worden | Ne3 [05-S7] |
 | Pagat, ultimo, valat — and I am matsch. | Pagat Ultimo Volat! ... Ich bin matsch! | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
 | Every trick yours. Well played. |  | T |
+| Everyone beating me with trumps tonight! | Alles spielt gegen mich und trischakt mich mit Tarock? | Ra [05c LIT-S8] |
 
 ### `count-start`
 
@@ -583,6 +615,7 @@ count: the tricks are counted
 | Counted, and then argued about. | werd'n Stich zählt und dabei erst kritisirt | Mo [05-S11] |
 | To the thirds, if you please. | ein Blatt | Pr [03 §4] |
 | The count, honestly kept. |  | T |
+| Let us count it out to the thirds. |  | T |
 
 ### `count-close`
 
@@ -595,6 +628,7 @@ count: a very close count, 35 and two thirds
 | Not won while a card lies out. | Das Spiel ist noch nicht gewonnen, die Kart liegt noch vffm Tisch. | Wa, Spiel 42 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Es gilt ja Einem wie dem Andern. | Es gilt ja Einem wie dem Andern | Ha [05d POLY-S5] |
 | By a single third of a Point! |  | T |
+| Thirty-five and two cards: the proudest win. | 35 und 2 Blatt; das ist eigentlich der stolzeste Sieg | Kg [05c LIT-S16][03 §4 REVIEW RD] |
 
 ### `result-won-mine`
 
@@ -664,6 +698,7 @@ doubling_lapsed: a pending doubling ends with the sitting
 |---|---|---|
 | The doubling lapses with the evening. |  | T |
 | No more deals, so no doubling. |  | T |
+| A doubling does not outlast the evening. |  | T |
 
 ### `tour-end`
 
@@ -700,6 +735,7 @@ extension_offered: one more Tour?
 | Shall we add a Tour? |  | T |
 | Only if we both agree: one more? | Nur mit allseitiger Zustimmung | Be [13-S3] |
 | Noch eine Tour, what do you say? | erstreckt | Be [13-S3] |
+| Just one more round? | Nur noch eine Runde | Ra [05c LIT-S8] |
 
 ### `extend-yes`
 
@@ -711,6 +747,8 @@ extension_decided, accepted
 | Agreed: the Touren are extended. | allseitiger Zustimmung | Be [13-S3] |
 | One more, then. Deal. |  | T |
 | Good. The evening is not over. |  | T |
+| One more round, then. | Nur noch eine Runde | Ra [05c LIT-S8] |
+| Agreed. The cards are still warm. |  | T |
 
 ### `extend-no`
 
@@ -722,6 +760,7 @@ extension_decided, declined
 | Enough for tonight. The reckoning. |  | T |
 | No more Touren. To the slate. |  | T |
 | Schluß für heute. | Schluß-Touren | Be [13-S3] |
+| Enough: the cards may rest. |  | T |
 
 ### `settle-opp-pays`
 
@@ -733,6 +772,7 @@ sitting_end: the opponent pays
 | Two kreuzer a Point: cheap at the price. | bei zwei bis drei Kreuzer der Point | St [13-S13] |
 | The rattle of the coins, and my sighs. | das Rasseln der Sechser, die Seufzer der Verlierenden | Ga [09-S14] |
 | Paid is paid. Well played. |  | T |
+| The rest of the coins are yours. |  | T |
 
 ### `settle-player-pays`
 
@@ -744,6 +784,7 @@ sitting_end: the player pays
 | The rattle of the coins: mine, this time. | das Rasseln der Sechser | Ga [09-S14] |
 | I stop while ahead, like Charlemagne. | Er spielt wie Karl der Grosse (Er hört auf, wenn er gewonnen hat). | Wa, Spielen 109 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The slate is settled. My thanks. |  | T |
+| A small price for a good evening. |  | T |
 
 ### `settle-even`
 
@@ -754,6 +795,7 @@ sitting_end: quits, nobody owes
 | Quits. Nobody owes anything. |  | T |
 | An even evening. The luck was fair. |  | T |
 | Not a kreuzer either way. |  | T |
+| Quits, and the evening was the gain. |  | T |
 
 ### `farewell`
 
@@ -767,6 +809,7 @@ after sitting_end: the farewell
 | Gut' Nacht, and good cards. |  | T |
 | A little play is allowed, and this was a little. | Ein wenig Spielen bleibt erlaubt | Ba [05-S12][05d POLY-S1] |
 | Schluß for tonight. Do come again. |  | T |
+| All afternoon at Tarock; again tomorrow? | Den ganzen Nachmittag haben wir Tarock gespielt! | Bt [05c LIT-S62] |
 
 ### `blunder-own`
 
@@ -780,6 +823,7 @@ the opponent's own blunder
 | That one was a slip. |  | T |
 | I wasn't looking. My own fault. |  | T |
 | Unnütze Mühe, that play. | Unnütze Mühe | Ro [05d POLY-S4] |
+| Twelve out, or fifteen? I lost count. | Jetzt waß i net, san zwölf oder fufzehn Tarock draußen! | Lö [05c LIT-S9] |
 
 ### `slip-yours`
 
@@ -790,6 +834,7 @@ the player's slip (a card played in error)
 | Versehen ist verspielt. Play on. | Versehen ist verspielt, ... spielt ruhig weiter | Ve [05c LIT-S39][05c LIT-S38] |
 | A slip is a play, that is all. | Versehen ist verspielt. | Ve [05c LIT-S39][05c LIT-S38] |
 | It happens. Go on. |  | T |
+| Versehen ist verspielt, but I forgive it. | Versehen ist verspielt | Ve [05c LIT-S39][05c LIT-S38] |
 
 ### `luck-yours`
 
@@ -802,6 +847,7 @@ luck talk: the player is lucky
 | Luck at cards is April weather. | Glück im Spiel ist Wetter im April. | Wa, Glück [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The luck is on your side tonight. |  | T |
 | Good cards get used to you. | An einen geschickten Spieler gewöhnen sich gute Karten. | Wa, Spieler 3 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Such a fluke! | Na, so einen Dusel | Ra [05c LIT-S8] |
 
 ### `luck-mine`
 
@@ -814,6 +860,7 @@ luck talk: the opponent is lucky
 | Luck beats good play, today. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Lucky today; tomorrow, who knows? |  | T |
 | Luck at cards is April weather. | Glück im Spiel ist Wetter im April. | Wa, Glück [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Such a fluke! I admit it. | Na, so einen Dusel | Ra [05c LIT-S8] |
 
 ### `luck-bad-mine`
 
@@ -839,6 +886,7 @@ the kibitzer (the tutor, § 13) speaks or is asked
 | This game loves no audience. | Spiel liebt keine Zuschauer. | Wa, Spiel [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Advice from the gallery? I beg your pardon. | da muß ich bitten | Ne4 [05-S8][05c LIT-S2] |
 | Let the cards be seen and you lose. | Wer sich in die Karten sehen lässt, verliert das Spiel. | Wa, Karte 36 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| A kibitzer may pay for supper, not advise. | als Kiebitz darf ich höchstens ein Nachtmahl zahlen, aber nichts dreinreden | Mk [05c LIT-S42] |
 
 ### `kibitz-mute`
 
@@ -849,3 +897,4 @@ the kibitzer is muted
 | Paragraph thirteen it is. | § 13 | Ki [05c LIT-S11][05c headline 1 REVIEW RD] |
 | Silence, then. The table is ours. |  | T |
 | Kiebitz, halt's Maul: quite so. | Kiebitz, halt's Maul! | Ki [05c LIT-S11][05c headline 1 REVIEW RD] |
+| Silent kibitzers are tolerated. | Schweigende Kiebitze werden geduldet | Wb [05c LIT-S44] |

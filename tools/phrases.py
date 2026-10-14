@@ -14,7 +14,8 @@ the events); each wording in it is a tuple
 `source_key` resolves in SOURCES to a research-note id and the period wording.
 "T" marks the table's own lines. `german_original` is the period wording,
 verbatim from the note, and only where a source gives one. The voice is set
-around 1891; no source after 1900 is used (tools/test_phrases.py enforces it,
+around 1891 and its sources run to 1938, the end of the game's documented life in
+print; later sources are out (tools/test_phrases.py enforces it,
 with the kindness rule, the bird names, hidden cards and "Mondfang").
 
 Structure after Cassino's web3d/tools/phrases.py. The page picks among a
@@ -147,6 +148,42 @@ SOURCES = {
     "Hn": (1727, "[05b LEX-S9]",
            "Henrici (1727), in Grimm's Wörterbuch, s.v. Stich: \"denn manchmahl bleibt ein blat in händen, "
            "das macht den allerletzten stich\"", False),
+    "Lö": (1903, "[05c LIT-S9]",
+           "Löwy, \"Der Giftnik'l\", Illustrirtes Wiener Extrablatt, 23 Aug 1903, p. 7: \"Jetzt waß i net, "
+           "san zwölf oder fufzehn Tarock draußen!\"", False),
+    "Ra": (1917, "[05c LIT-S8]",
+           "Ranzenhofer, \"Königrufen\", Pilsner Tagblatt, 30 Sep 1917: \"'Guter Mond, du gehst so stille' "
+           "summt der Bankdirektor und sticht mit dem Sküs den gegnerischen Mond ab\"; \"Ein guter Misch ist "
+           "das halbe Spiel\"; \"Alles hat seine Reizes!\"; \"Nur mit gezogenen Plätzen spiele ich\"; "
+           "\"Wieder lauter Skatindeln ... Den ganzen Abend hab' ich noch kein Tarock gesehen!\"; \"Na, so "
+           "einen Dusel\"; \"Aha, jetzt kommt der Spatz unters Messer!\"; \"Nur noch eine Runde\"; "
+           "\"Alles spielt gegen mich und trischakt mich mit Tarock?\"", False),
+    "Mw": (1924, "[05c LIT-S10]",
+           "(Neuigkeits) Welt Blatt, 23 Jan 1924, p. 7: \"Eine Karte oder ein Scheit Holz\"; \"Tun wir doch "
+           "gleich lieber Schach spielen\"", False),
+    "Kg": (1908, "[05c LIT-S16][03 §4 REVIEW RD]",
+           "Kärntner Zeitung, 16 May 1908, p. 4: \"Just wie beim Tarock, beim Strohmandl: 35 und 2 Blatt; das "
+           "ist eigentlich der stolzeste Sieg\" (page image reads 35)", False),
+    "Lv": (1891, "[05c LIT-S58]",
+           "Linzer Volksblatt, 20 Dec 1891, p. 1 (OCR snippet): \"der unwiderstehliche, alles niederrennende "
+           "Sküs, der gute, sanfte Mond, und der kokette, fröhliche Pagat! Ein würdiges Trifolium!\"", False),
+    "Fh": (1900, "[05c LIT-S60]",
+           "Der Floh, 1900, Nr. 34, p. 3 (verse, OCR snippet): the Sküs \"der den Mond kann stechen\"", False),
+    "Kz": (1911, "[05c LIT-S57]",
+           "Kärntner Zeitung, 3 Dec 1911, p. 9 (OCR snippet): \"Heute regieren Sküs, Mond und Spatz oft an "
+           "drei Tischen zugleich\"", False),
+    "Mu": (1913, "[05c LIT-S36]",
+           "Die Muskete, 14 Aug 1913, p. 6 (verse, OCR snippet): \"Verloren ist die Seelenruh', Der Pagat "
+           "ultimo dazu.\"", False),
+    "Wb": (1904, "[05c LIT-S44]",
+           "(Neuigkeits) Welt Blatt, 1 Jun 1904, p. 7 (OCR snippet): \"Das 'Kiebitz'-Reglement hat auch nur "
+           "einen Paragraphen ... Schweigende Kiebitze werden geduldet\"", False),
+    "Mk": (1923, "[05c LIT-S42]",
+           "Die Muskete, 1 Aug 1923, p. 6 (OCR snippet): \"als Kiebitz darf ich höchstens ein Nachtmahl "
+           "zahlen, aber nichts dreinreden\"", False),
+    "Bt": (1927, "[05c LIT-S62]",
+           "Bettauers Wochenschrift, 3 Jan 1927, p. 7 (OCR snippet): \"Den ganzen Nachmittag haben wir "
+           "Tarock gespielt! ... Strohmandl!\"", False),
 }
 
 MONDFANG_SOURCES = {k for k, v in SOURCES.items() if v[3]}
@@ -573,6 +610,48 @@ def phrase_groups():
         ("Paragraph thirteen it is.", "Ki", "§ 13"),
         ("Silence, then. The table is ours.", "T"),
         ("Kiebitz, halt's Maul: quite so.", "Ki", "Kiebitz, halt's Maul!"))
+
+    # Sources of 1901-1938, added when the cut-off moved from 1900 to 1938.
+    more = {
+        "slow": [("A card or a log of wood, either will do.", "Mw", "Eine Karte oder ein Scheit Holz"),
+                 ("This pace? We might have played chess.", "Mw", "Tun wir doch gleich lieber Schach spielen")],
+        "deal-mine": [("A good shuffle is half the game.", "Ra", "Ein guter Misch ist das halbe Spiel")],
+        "deal-yours": [("A good shuffle is half the game.", "Ra", "Ein guter Misch ist das halbe Spiel")],
+        "cut": [("Seats by lot only, I say.", "Ra", "Nur mit gezogenen Plätzen spiele ich")],
+        "reveal-begin": [("Everything has its charms.", "Ra", "Alles hat seine Reizes!"),
+                         ("Look at the straw men, then.", "T")],
+        "pull-sku": [("The irresistible Sküs!", "Lv", "der unwiderstehliche, alles niederrennende Sküs")],
+        "pull-mond": [("The good, gentle Mond.", "Lv", "der gute, sanfte Mond"),
+                      ("Good moon, you come so quietly.", "Ra", "Guter Mond, du gehst so stille")],
+        "pull-pagat": [("The Pagat: coquettish and cheerful.", "Lv", "der kokette, fröhliche Pagat"),
+                       ("Sküs, Mond and the little sparrow.", "Kz", "Sküs, Mond und Spatz")],
+        "nothing-mine": [("Not a single tarock all evening!", "Ra", "Den ganzen Abend hab' ich noch kein Tarock gesehen!")],
+        "mond-caught-mine": [("Good moon, you go so quietly.", "Ra", "Guter Mond, du gehst so stille")],
+        "mond-caught-yours": [("Only the Sküs can trump the Mond.", "Fh", "der den Mond kann stechen")],
+        "ultimo-lost-mine": [("Lost my calm, and my Pagat with it.", "Mu", "Verloren ist die Seelenruh', Der Pagat ultimo dazu.")],
+        "ultimo-lost-yours": [("Now the little sparrow goes under the knife!", "Ra", "jetzt kommt der Spatz unters Messer!")],
+        "valat-mine": [("Valat: every trick of the twenty-seven.", "T")],
+        "valat-yours": [("Everyone beating me with trumps tonight!", "Ra", "Alles spielt gegen mich und trischakt mich mit Tarock?")],
+        "count-start": [("Let us count it out to the thirds.", "T")],
+        "count-close": [("Thirty-five and two cards: the proudest win.", "Kg", "35 und 2 Blatt; das ist eigentlich der stolzeste Sieg")],
+        "luck-yours": [("Such a fluke!", "Ra", "Na, so einen Dusel")],
+        "luck-mine": [("Such a fluke! I admit it.", "Ra", "Na, so einen Dusel")],
+        "extend-ask": [("Just one more round?", "Ra", "Nur noch eine Runde")],
+        "extend-yes": [("One more round, then.", "Ra", "Nur noch eine Runde"), ("Agreed. The cards are still warm.", "T")],
+        "extend-no": [("Enough: the cards may rest.", "T")],
+        "settle-opp-pays": [("The rest of the coins are yours.", "T")],
+        "settle-player-pays": [("A small price for a good evening.", "T")],
+        "settle-even": [("Quits, and the evening was the gain.", "T")],
+        "thrown-in": [("Thrown in: the straw stays shut.", "T")],
+        "honour-forfeited": [("The honour is lost by silence.", "Wn", "angesagt")],
+        "doubling-lapsed": [("A doubling does not outlast the evening.", "T")],
+        "slip-yours": [("Versehen ist verspielt, but I forgive it.", "Ve", "Versehen ist verspielt")],
+        "kibitz": [("A kibitzer may pay for supper, not advise.", "Mk", "als Kiebitz darf ich höchstens ein Nachtmahl zahlen, aber nichts dreinreden")],
+        "kibitz-mute": [("Silent kibitzers are tolerated.", "Wb", "Schweigende Kiebitze werden geduldet")],
+        "farewell": [("All afternoon at Tarock; again tomorrow?", "Bt", "Den ganzen Nachmittag haben wir Tarock gespielt!")],
+        "blunder-own": [("Twelve out, or fifteen? I lost count.", "Lö", "Jetzt waß i net, san zwölf oder fufzehn Tarock draußen!")],
+    }
+    out = [(g, m, w + more.get(g, [])) for g, m, w in out]
     return out
 
 
@@ -603,7 +682,7 @@ def document():
         "# What the table says",
         "",
         "The opponent's phrase bank, by game moment (events: `docs/RULES.md` section 16). The voice is",
-        "set around 1891; no source after 1900 is used. German is the period wording where a source",
+        "set around 1891; sources run from 1756 to 1938, none later. German is the period wording where a source",
         "gives one. \"T\" marks the table's own lines. Generated from `tools/phrases.py`; edit the bank,",
         "not this file.",
         "",
