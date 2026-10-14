@@ -201,6 +201,10 @@ impl Deal {
         self.dealer.other()
     }
 
+    pub fn settings(&self) -> Settings {
+        self.settings
+    }
+
     pub fn multiplier(&self) -> u32 {
         self.multiplier
     }

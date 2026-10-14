@@ -24,7 +24,7 @@ use crate::sampler::sample;
 use crate::solver::Solver;
 use strohmandeln_core::cards::Card;
 use strohmandeln_core::rng::Rng;
-use strohmandeln_core::types::Action;
+use strohmandeln_core::types::{Action, BothPass};
 use strohmandeln_core::view::View;
 
 /// What a decision may spend.
@@ -134,11 +134,17 @@ pub fn bid_advantage(k: &Knowledge, rng: &mut Rng, worlds: usize) -> f64 {
         }
     }
     let (p, q) = (win / n, lose / n);
-    // Take up: 3 if I reach 107 thirds, 4 paid if not. Simple game: 2 each
-    // way, nothing for a draw.
-    let take = 3.0 * p - 4.0 * (1.0 - p);
-    let simple = 2.0 * p - 2.0 * q;
-    take - simple
+    // Take up: the win value if I reach 107 thirds, the loss value paid if
+    // not. Simple game (both pass): the simple value each way, nothing for a
+    // draw; under throw-in nothing at all (RULES 3.4, 9.1). All doubled by
+    // the deal's multiplier (RULES 14).
+    let (simple_v, win_v, lose_v) = k.values.triple();
+    let take = f64::from(win_v) * p - f64::from(lose_v) * (1.0 - p);
+    let simple = match k.both_pass {
+        BothPass::Play => f64::from(simple_v) * (p - q),
+        BothPass::ThrowIn => 0.0,
+    };
+    f64::from(k.multiplier) * (take - simple)
 }
 
 /// A decision at rung 4.

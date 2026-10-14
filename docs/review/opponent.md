@@ -45,3 +45,26 @@ Reviewer did not write the code.
 | A | Rung 4's `bid_advantage` hard-codes the default values 2/3/4 and ignores the `values` and `both_pass` settings and the multiplier (a pending doubling); the view does not carry them. Under 1/2/3 or 1/2/4, or after a drawn game, the bid threshold is slightly off. Minor; fix by putting the settings in `DealView` if the maintainer wants the opponent to follow them |
 | B | The hint's German "the 4" in the English column ("take up the 4") is unexplained to a player who does not know the 4 is the declared game; consider "declare" wording in a later strings pass |
 | C | A hint whose move is a play not in the human's legal list becomes `null` in wasm `hint`; cannot happen while the hint and `legal` share a view, but no test pins it |
+
+## Review: settings in the view, rung 4 bid estimate (3f57328, 4c868d7)
+
+Checked against RULES 3.4, 8.3, 8.4, 9.1, 13, 14.
+
+- **Arithmetic.** Take up: win value at p (107 thirds or more), loss value
+  otherwise, so a 104-106 draw is a loss (8.3). Simple game: simple value times
+  (p - q), draw nothing (8.4, 9.2). Throw-in: the alternative is 0 (3.4), and a
+  declared game cannot be drawn (14.6). The multiplier scales the whole
+  difference (14.2). Correct.
+- **Leak.** `values`, `both_pass` and the multiplier are sitting settings and
+  the pending doubling, public per 13.1 (now listed there). No hidden card is
+  added to the view.
+- **Golden.** Only the reply hashes changed (new fields in the reply); event
+  counts, Contos and balances are identical.
+- **PROTOCOL.md.** Accurate (field names, string forms checked by the view test).
+- **Hint test.** Covers every level, two seeds; adequate and closes Open C.
+- Open A is closed by these commits.
+
+Note: `bid_margin` is a fixed Points slack; with the advantage now scaled by
+the multiplier it is relatively halved in a doubled deal. Left as is (the
+expectation, not the margin, is what a doubling changes). Fixed: RULES 13.1 now
+lists the settings among the public items.

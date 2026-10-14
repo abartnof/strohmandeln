@@ -11,7 +11,7 @@ a record replays.
 | 1 | Legal | A random legal move. |
 | 2 | Rules of thumb | The maxims of `research/07` s1 as a one-trick scoring of the legal cards (finesse, packets played off, exposed figures, split suits, Pagat held for the last trick, king cashing, drawing trumps); a bid from sure winners and tarocks. No memory of earlier tricks. |
 | 3 | Counter | Remembers every card seen and the voids shown; draws worlds for the unseen cards (own unturned packet cards included) and scores a lead by the sampled trick; keeps rung 2's maxims. |
-| 4 | Searcher | Perfect-information Monte Carlo: samples worlds (rung 3's sampler), solves each double-dummy, plays the best average margin; bids by the sampled expectation. Budget: 10 worlds, 30 000 nodes per decision, 40 worlds for a bid (`Budget::default`). |
+| 4 | Searcher | Perfect-information Monte Carlo: samples worlds (rung 3's sampler), solves each double-dummy, plays the best average margin; bids by the sampled expectation, priced with the sitting's `values`, `both_pass` and the deal's doubling multiplier (all carried by the view; throw-in values the simple game at nothing). Budget: 10 worlds, 30 000 nodes per decision, 40 worlds for a bid (`Budget::default`). |
 
 ## Level dial
 

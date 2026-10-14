@@ -385,7 +385,8 @@ addition to the game payment and the honours [03-S12].
 ## 13. Information
 
 13.1 **Public**, known to both players, the table and the talk, at every moment:
-- dealer and forehand, the bids, the announcements;
+- dealer and forehand, the bids, the announcements, the sitting's settings
+  (`values`, `both_pass`) and the deal's doubling (14);
 - every card turned from a packet, whether pulled or left as a cover;
 - the covers of all six packets, and the number of face-down cards in each;
 - every card played, in order, and each trick's winner;

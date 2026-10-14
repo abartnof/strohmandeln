@@ -2,7 +2,7 @@ use super::*;
 use crate::rung2::BID_RULE;
 use crate::sim::Sim;
 use crate::testutil::{blind_check, c, know, walk, Scene};
-use strohmandeln_core::types::Seat;
+use strohmandeln_core::types::{BothPass, Seat, Settings, Values};
 use strohmandeln_core::view::view;
 
 const SMALL: Budget = Budget {
@@ -132,4 +132,47 @@ fn the_sampled_bid_takes_a_dream_hand_and_passes_a_poor_one() {
     ]);
     assert!(bid_advantage(&poor, &mut Rng::seeded(1), 40) < 0.0);
     let _ = c("T1");
+}
+
+#[test]
+fn the_bid_estimate_follows_the_sitting_values_and_the_doubling() {
+    let hand = [
+        "SK", "T21", "T1", "T20", "T19", "T18", "T17", "T16", "Kh", "Kd", "Kc", "Ks", "Qh", "Qd",
+        "Qc",
+    ];
+    let poor = [
+        "T2", "T3", "T4", "T5", "T6", "Jh", "Jd", "7c", "8c", "9c", "10c", "7s", "8s", "9s", "10s",
+    ];
+    let adv_of = |hand: &[&str], values: Values, both_pass: BothPass, multiplier: u32| {
+        let mut k = bidding(hand);
+        k.values = values;
+        k.both_pass = both_pass;
+        k.multiplier = multiplier;
+        bid_advantage(&k, &mut Rng::seeded(3), 40)
+    };
+    let adv = |values, both_pass, multiplier| adv_of(&hand, values, both_pass, multiplier);
+    // (At the extremes some triples agree: 3-2 and 2-1 are both 1.)
+    assert_ne!(
+        adv_of(&poor, Values::V234, BothPass::Play, 1),
+        adv_of(&poor, Values::V124, BothPass::Play, 1)
+    );
+    let base = adv(Values::V234, BothPass::Play, 1);
+    assert_ne!(base, adv(Values::V234, BothPass::ThrowIn, 1));
+    assert!((adv(Values::V234, BothPass::Play, 2) - 2.0 * base).abs() < 1e-9);
+}
+
+#[test]
+fn the_knowledge_carries_the_settings_and_multiplier_of_the_view() {
+    let settings = Settings {
+        values: Values::V124,
+        both_pass: BothPass::ThrowIn,
+        ..Settings::default()
+    };
+    let s = strohmandeln_core::session::Sitting::new(1, settings, 3).unwrap();
+    let seat = s.to_move().unwrap();
+    let k = Knowledge::from_view(&view(&s, seat)).unwrap();
+    assert_eq!(
+        (k.values, k.both_pass, k.multiplier),
+        (Values::V124, BothPass::ThrowIn, 1)
+    );
 }

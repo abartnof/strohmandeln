@@ -140,7 +140,8 @@ parts are shown in the next section):
 
 ```json
 {
-  "dealer": 0, "forehand": 1, "multiplier": 1, "declarer": 1, "playing": true,
+  "dealer": 0, "forehand": 1, "multiplier": 1, "values": "2/3/4", "both_pass": "play",
+  "declarer": 1, "playing": true,
   "trick_number": 3,
   "own_hand": [{"card": "T5", "public": false}, {"card": "1d", "public": true}],
   "opponent_hand_size": 15,
@@ -158,6 +159,7 @@ parts are shown in the next section):
 | Field | Meaning |
 |---|---|
 | `dealer`, `forehand`, `multiplier`, `declarer` | as in RULES 2, 3, 14; `declarer` is `null` before a bid is taken or if nobody took the game |
+| `values`, `both_pass` | the sitting's settings (RULES 9.1, 3.4): `"2/3/4"`, `"1/2/3"` or `"1/2/4"`; `"play"` or `"throw_in"`. Public; they price a bid |
 | `playing` | the bidding is over |
 | `trick_number` | the current trick, 1 to 27 |
 | `own_hand` | the human's hand cards in dealt order, each with `public`: pulled packet cards and announced honour cards the opponent knows (13.4) |
