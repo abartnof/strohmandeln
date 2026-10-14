@@ -1,0 +1,55 @@
+# Coordinator follow-ups for the review pass
+
+- 02: Torberg, *Tante Jolesch* p. 217 (Rostopschin, Café Central) read only as quoted by Wikipedia; fetch the book itself.
+- 02: Sedlaczek's claim that Torberg misapplied "Rostopschin" to the whole game: likewise second-hand.
+- 02: the straw man's 4th card, face-up until played (Werner) vs taken into hand at once (Beck, Babsch, M&S); and whether it is shown (Wikipedia "without being revealed" vs Dummett "exposed"). Check Dummett's OCR and Werner's page images.
+- 02: Rostopschin "VII and VIII" (en.wikipedia) vs XVII/XVIII (Furr, Torberg) vs "XVII and XVI" (Königrufen article).
+- 02: Beck 1972, Löw 1956, Bamberger 2011, Dummett & McLeod vol. 2 not reached.
+- 10: the CC0 French deck has no trumps; strand 08 to settle the trump-art route before choosing.
+- 09: banter lines ("Zieh endlich deine Fäustlinge aus!", "Wenn meine Großmutter vier Radln hätt'…", "Spiel! I muss morgen um 8 im Büro sein", "Staudenhocker") come from a REVIEW of Mayr & Sedlaczek's Kulturgeschichte, not the book; find the book or a second source.
+- 09: Freud quotes via a Wiener Zeitung 2006 archive copy; trace to the Freud–Ferenczi correspondence itself.
+- 09: Rostopschin trumps XVII+XVIII (Torberg) vs XVII+XVI (de.wikipedia): a third report of the conflict. Torberg is borrow-only on archive.org.
+- 09: 1839 "noble game of Piquet" sneer still only via Wikipedia (strand 03 should have the original).
+- 09 + others: ANNO full text is JavaScript-only; Google Books quota-blocked. Find an ANNO back-end endpoint for the review pass.
+- 09: sources/09/ holds redirect stubs and 401 pages from the aborted run; prune before commit.
+- 08: real packs print IIII not IV; check how 9, 14, 19 are printed (VIIII? XIIII? XVIIII?) on the Volkskundemuseum scan (ÖMV/87529, CC PDM) before fixing our numeral style.
+- 08: real packs have no corner indices on suit cards; our faces add rank labels by the user's choice (not a period claim; say so in CREDITS/DESIGN).
+- 08: "Pagatl" and "Valet" unsourced so far (05 may source them); no nicknames found for XVIII/XX.
+- 08: trump II shows an eagle yet is called Uhu (owl): verify on the scan; good tutor joke if true.
+- 08: Wien Museum CC0 claim unverified (only matters as reference).
+- 01: en.wikipedia's "Skartindels" is not in the 1829 source (it says "leere Blätter"); the Piquet sneer is already in 1829 (and 1834), not first in 1839.
+- 01: Ulmann's Wiener Tarokbuch, 2nd ed., "Strohmann-Tarok (en deux)" pp. 69-73, and a "Neunzehnerrufen mit Strohmann" in the 1st-edition preface: lead for 03 or the review.
+- 01: Ulmann 1890 Buch der Familienspiele pp. 244-245 and the 1839 edition not yet read; Google Books and HathiTrust blocked from this host.
+- 01: M&S win condition "35 Punkte und 2 Blatt" (Wiener Zeitung 2007): reconcile with 36/70.
+- 05: Uhu/Kakadu/Quapil are 20th-century names: banter in a 19th-century voice must not use them; the card nicknames on faces are fine as a learning aid, but say so.
+- 05: Werner, Das moderne Tarokspiel 2nd ed.: year unknown (1st ed. 1883 per Meyers). Pin it down.
+- 05: Wander (zeno.org was down) and Sedlaczek's Wörterbuch des Wienerischen not checked.
+- 05: kindness flags recorded (Hügel "auf'n Juden", Czech "žid" for the kitty, Nestroy wife joke): never in the game.
+- 07: harbour-tarock (smatkovi, GitHub, Sept 2026) has a 186 kB German Strohmandeln spec: read it for rule ambiguities and AI heuristics (check its licence before borrowing anything).
+- 07: the AI must sample its own unseen straw cards (they are hidden from their owner too).
+- 07: the take-up threshold in M&S ("20-25 sure points + 6-7 tarocks") is met by only ~3-7% of hands: test in simulation whether a looser rule plays better.
+- ANNO: harvest done, 305 issues in research/sources/anno/strohmandl.jsonl; classify game vs scarecrow vs front-man senses.
+- 05c (orphan helper of 05, literary/feuilleton banter, ~100 lines, LIT-S1..78) saved from scratch; needs a review pass. Torberg 'Am Kartentisch' still unread.
+- 05d (orphan helper of 05: Czech/Hungarian/Slovene/Polish terms and calls, POLY-S1..38) saved from scratch; needs review; share with strand 11 to avoid overlap.
+- 05d: Alvensleben 1853 reprints Karl Haas's Vienna Strohmandeln text ("Schmiert … der Strohmann … dem Spieler viel Könige"): a period rules source for 03.
+- 05d: Breslau 1821 card almanac describes two-hand "Tarok en deux" with 25 cards laid aside (cf. Mößler 1800/1805, de Gébelin 1781).
+- 05d: Rosenau's farce "Scüs, Mond und Pagat" (Vienna 1821) has a text (S4), unlike 05c's claim that only playbills survive: reconcile.
+- 05d: Dummett p. 453-459: "Kontra" answer to "Ich nehme auf" (Löw) — a rules-menu option.
+- RC: the git-submodule kit is weak (esbuild can't resolve `three` from kit/ — reproduced; worktrees don't populate submodules; cassino keeps evolving). Safer first step: a vendored kit/ dir with a stamp file recording its cassino commit. Decide with the user.
+- RC: Werner's last-card rule is conditional ("wenn es sich nicht zur Aufnahme eignet"); the "main rules fork" may be smaller than notes 02/06 said. RA asked to re-check 02.
+- RC: "Strohmandeln" in Haas 1824 (p. 109) is a bare name in a list, no rules.
+- RC: the 1887 Brno "(en deux)" may be Neunzehnerrufen, not the pile game.
+- COORD: saved 'spolrad_*.txt' (06/11) are 403 error bodies, not texts; the 1932 Štromandl section (p. 370) is unread. Fixed 06 page refs per RE.
+- RB: Werner 2nd ed. "by 1891" (04, from an 1891 Sport-Zeitung review) vs Dummett's guess repeated in 06/07: settle after strand 12 item 6, then fix 06/07 and the synthesis.
+- RB: Nestroy quotes follow the 1890/91 Bonz edition; the modern Reclam text differs ("Pagat Ultimo Volat!" and "'s Glück in Pacht" absent). Cite the edition with every Nestroy line.
+- RB: harbour-tarock licence is NOASSERTION on GitHub (GPL per README only): borrow nothing, cite only.
+- RB: "35 + 2 Blatt" = 36 = the one threshold, phrased three ways (not three rules).
+- RB: kindness flags added (05 rows 22, 41, 52; 04 nos. 8, 15): exclude from PHRASES.
+- 12 RESOLVED: Werner 2nd ed. = 1891 (by 7 Jun 1891); 1st ed. Oct 1883. Fix 06/07 "Dummett guess" mentions in the synthesis.
+- 12 RESOLVED: "jejune" is Dummett's own word (p. 457); en.wikipedia's Ulmann pp. 244-245 footnote is a misattribution; Dummett dates Familienspiele c.1895, before 1901.
+- 12 RESOLVED: Tepl congress 15 Jan 1893 (NWB 24 Jan 1893 p. 9): no Strohmandl rules; "rules" were about kibitzers, card money, a "Kuckuck" fine box; 22 Valat and 54 Pagat ultimo "in one hour" = a joke.
+- 12 RESOLVED: Alvensleben 1853 pp. 576-577 transcribed; reprints Haas with "Erfindung" for "Mißgeburt".
+- 12 RESOLVED: ÖMV/87529 numerals: IIII but IX, XIV, XIX; numerals top-left and bottom-right; Sküs unnumbered; trump II = crowned eagle on a stone "INDUSTRIE UND GLÜCK".
+- 12 RESOLVED: harbour-tarock is GPL-3.0-or-later: cite, never copy.
+- 12 OPEN: Torberg p. 217 (lending-restricted; M&S 2002 web page gives XVII/XVIII and cites Torberg); Freud–Ferenczi letter (not in Briefwechsel III/2); Haas 1839 p. 121 (exists, HathiTrust 100572337, unopened).
+- 12 needs a light review (its claims were not reviewed by RA–RE).
