@@ -948,6 +948,44 @@ mod tests {
         }
     }
 
+    /// The hint never falls outside `state.legal` (a card the search chose
+    /// that `legal` does not offer would come back `null`): over seeded
+    /// positions at every opponent level, the hint is always one of `legal`.
+    #[test]
+    fn the_hint_is_never_outside_the_legal_actions() {
+        let mut hinted = 0;
+        for level in ["1", "1.5", "2", "2.5", "3", "3.5", "4"] {
+            for seed in [3, 11] {
+                let mut h = host(&format!(r#"{{"seed":{seed},"touren":3,"level":{level}}}"#));
+                for _ in 0..30 {
+                    h.render();
+                    let s = out(&h)["state"].clone();
+                    if s["prompt"] == "over" {
+                        break;
+                    }
+                    if s["prompt"] == "opponent" {
+                        h.step();
+                        continue;
+                    }
+                    h.show(|t| t.hint());
+                    let r = out(&h);
+                    assert!(
+                        s["legal"].as_array().unwrap().contains(&r["hint"]),
+                        "level {level} seed {seed}: {r}"
+                    );
+                    hinted += 1;
+                    let a = if r["hint"]["action"] == "play" {
+                        json!({"action":"play","card":r["hint"]["card"]})
+                    } else {
+                        r["hint"].clone()
+                    };
+                    assert_eq!(h.send(&a.to_string()), 1);
+                }
+            }
+        }
+        assert!(hinted > 150, "only {hinted} hints");
+    }
+
     #[test]
     fn the_hint_does_not_move_the_game() {
         let mut h = host(CONFIG);
