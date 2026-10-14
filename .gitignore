@@ -1,0 +1,22 @@
+# Downloaded sources (page images, OCR, PDFs, about 0.5 GB): kept locally so the
+# research notes' quotes can be re-checked; every note lists each source's URL.
+research/sources/
+
+# Rust build output
+target/
+
+# Node modules for the table, restored by `npm ci`
+node_modules/
+
+# Python caches
+__pycache__/
+*.py[cod]
+.venv/
+
+# Editor and OS clutter
+*.swp
+*~
+.DS_Store
+
+# Claude Code local state and worktrees
+.claude/
