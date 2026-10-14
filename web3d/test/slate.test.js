@@ -244,3 +244,39 @@ test("snapshot and restore carry the ledger across a reload", () => {
   b.slate.restore(snap);
   assert.equal(b.root.textContent, a.root.textContent);
 });
+
+test("events replayed after a reload do not duplicate a row or an extension", () => {
+  const l = createLedger();
+  const events = [...tour1, { type: "extension_decided", accepted: true, touren_added: 3 }];
+  l.ingest(events);
+  const before = l.snapshot();
+  // The state's events hold the deal in progress; a client may feed them again.
+  l.ingest(events.slice(3));
+  assert.deepEqual(l.snapshot(), before);
+});
+
+test("a damaged saved ledger is refused, not drawn", () => {
+  const l = createLedger();
+  l.ingest(tour1);
+  const good = l.snapshot();
+  for (const bad of [{ ...good, rows: "x" }, { ...good, contos: [1] }, { ...good, tourEnds: null }, { ...good, extensions: {} }, { ...good, rows: [{}] }]) {
+    const copy = createLedger(bad);
+    assert.deepEqual(slateModel(copy.snapshot(), 1).blocks, []);
+    copy.load(bad);
+    assert.deepEqual(slateModel(copy.snapshot(), 1).blocks, []);
+  }
+  const a = made();
+  a.slate.restore({ ledger: { ...good, rows: "x" }, human: 1 });
+  assert.match(a.root.textContent, /Nothing is written/);
+});
+
+test("Dealer 1 marks the column of the player who dealt first", () => {
+  const a = made();
+  a.slate.update(stateOf(), tour1); // seat 0 dealt first, the human is seat 1
+  const cols = a.root.findAll((e) => /slate-col-opp/.test(e.className));
+  assert.match(cols[0].textContent, /Dealer 1/);
+  const b = made();
+  b.slate.update(stateOf({ human: 0 }), tour1);
+  const you = b.root.findAll((e) => /slate-col-you/.test(e.className));
+  assert.match(you[0].textContent, /Dealer 1/);
+});

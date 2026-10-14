@@ -17,9 +17,23 @@ const KREUZER_PER_POINT = 2; // docs/RULES.md 15.8
 
 // ---- the record ------------------------------------------------------------
 
+// A saved record is from storage or a file: trusted only if its shape is.
+const isNum = (x) => Number.isInteger(x);
+const isPair = (x) => Array.isArray(x) && x.length === 2 && x.every(isNum);
+const validRow = (r) =>
+  Boolean(r) && isNum(r.number) && isNum(r.tour) && (r.dealer === 0 || r.dealer === 1) && isNum(r.multiplier) && typeof r.status === "string" && Array.isArray(r.credits) && r.credits.every((c) => c && (c.seat === 0 || c.seat === 1) && isNum(c.points) && typeof c.cause === "string") && isPair(r.contos);
+function validRecord(rec) {
+  return (
+    Boolean(rec) && rec.v === VERSION && isNum(rec.touren) && isNum(rec.lastTour) && isPair(rec.contos) && Array.isArray(rec.rows) && rec.rows.every(validRow) &&
+    Boolean(rec.tourEnds) && typeof rec.tourEnds === "object" && Object.values(rec.tourEnds).every((e) => e && isPair(e.contos)) &&
+    Array.isArray(rec.extensions) && rec.extensions.every(isNum) &&
+    (rec.settlement === null || (Boolean(rec.settlement) && isPair(rec.settlement.contos) && isNum(rec.settlement.balance) && isNum(rec.settlement.kreuzer)))
+  );
+}
+
 export function createLedger(saved) {
   const blank = () => ({ v: VERSION, touren: 0, settings: null, firstDealer: null, rows: [], tourEnds: {}, extensions: [], contos: [0, 0], lastTour: 0, settlement: null });
-  let rec = saved && saved.v === VERSION ? JSON.parse(JSON.stringify(saved)) : blank();
+  let rec = validRecord(saved) ? JSON.parse(JSON.stringify(saved)) : blank();
 
   const live = () => {
     const last = rec.rows[rec.rows.length - 1];
@@ -35,8 +49,9 @@ export function createLedger(saved) {
         rec.firstDealer = e.first_dealer;
         break;
       case "deal_start": {
-        // A deal begun again after a void deal replaces the live row.
-        if (live()) rec.rows.pop();
+        // A deal begun again after a void deal replaces the live row; the same
+        // deal fed twice (a reload replays the deal in progress) is one row.
+        if (live() || rec.rows[rec.rows.length - 1]?.number === e.deal_number) rec.rows.pop();
         rec.rows.push({ number: e.deal_number, tour: e.tour, dealer: e.dealer, multiplier: e.multiplier, status: "live", result: null, credits: [], contos: [...rec.contos] });
         break;
       }
@@ -60,7 +75,7 @@ export function createLedger(saved) {
         rec.lastTour = e.tour;
         break;
       case "extension_decided":
-        if (e.accepted) {
+        if (e.accepted && !rec.extensions.includes(rec.lastTour)) {
           rec.touren += e.touren_added;
           rec.extensions.push(rec.lastTour);
         }
@@ -74,9 +89,9 @@ export function createLedger(saved) {
   }
 
   return {
-    // Replace the record by a saved one (a snapshot), if it is of this version.
+    // Replace the record by a saved one (a snapshot), if it is whole.
     load(snapshot) {
-      if (snapshot && snapshot.v === VERSION) rec = JSON.parse(JSON.stringify(snapshot));
+      if (validRecord(snapshot)) rec = JSON.parse(JSON.stringify(snapshot));
     },
     ingest(events) {
       for (const e of events ?? []) apply(e);
@@ -210,9 +225,9 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
           h(doc, "button", { class: "slate-close", type: "button", "aria-label": t("slate.close"), onclick: () => close() }, "×")),
         m.header.touren ? h(doc, "div", { class: "slate-rules" }, t("slate.header", { touren: plural("slate.touren", m.header.touren), rules })) : null,
         h(doc, "div", { class: "slate-cols" },
-          h(doc, "span", { class: "slate-col-margin" }, m.header.youDealtFirst ? t("slate.dealer1") : ""),
-          h(doc, "span", { class: "slate-col slate-col-you" }, t("slate.you")),
-          h(doc, "span", { class: "slate-col slate-col-opp" }, t("slate.opp"))),
+          h(doc, "span", { class: "slate-col-margin" }),
+          h(doc, "span", { class: "slate-col slate-col-you" }, t("slate.you"), m.header.youDealtFirst ? h(doc, "small", { class: "slate-first" }, ` ${t("slate.dealer1")}`) : null),
+          h(doc, "span", { class: "slate-col slate-col-opp" }, t("slate.opp"), m.header.touren && !m.header.youDealtFirst ? h(doc, "small", { class: "slate-first" }, ` ${t("slate.dealer1")}`) : null)),
         m.blocks.length ? h(doc, "div", { class: "slate-rows" }, m.blocks.map(block)) : h(doc, "div", { class: "slate-empty" }, t("slate.empty")),
         h(doc, "div", { class: "slate-foot" },
           h(doc, "span", { class: "slate-balance" }, t("slate.balance", { n: signed(foot.balance), kr: kreuzer(foot.kreuzer) })),
