@@ -21,8 +21,8 @@ export async function loadWasm(bytes, prefix, { imports = {}, instantiate = (b, 
   const { instance } = await instantiate(bytes, imports);
   const ex = instance.exports;
   const names = [`${prefix}_alloc`, `${prefix}_out`, `${prefix}_out_len`];
-  if (names.some((n) => typeof ex[n] !== "function")) {
-    throw new Error(`the module lacks its ABI exports: ${names.join(", ")}`);
+  if (names.some((n) => typeof ex[n] !== "function") || !ex.memory?.buffer) {
+    throw new Error(`the module lacks its ABI exports: ${names.join(", ")}, memory`);
   }
   const enc = new TextEncoder();
   const dec = new TextDecoder();
