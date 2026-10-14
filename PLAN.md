@@ -24,6 +24,11 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 - 14 Oct 2026: the score HUD and the count's per-card scoring popups move from
   Cassino into the kit, since several games in the series score by counting cards.
 
+- 14 Oct 2026: the game ships in English (default) and German, with an
+  in-game switch. The engine emits message keys with parameters, never prose;
+  every phrase, interface string and tutorial page has both languages; card
+  faces swap court labels (K Q C J / K D C B) with the language.
+
 ## Work packages
 
 | # | Package | Depends on | State |
@@ -38,6 +43,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 8 | The table: layout, choreography, play, slate, settings, phone. The count and score use the kit's score HUD and scoring popups (moved from Cassino), configured for counting won cards in threes against 36 | 2, 5, 7 | todo |
 | 9 | Tutor: tutorial pages, the kibitzer's hints and explanations, end-of-deal review | 5, 8 | todo |
 | 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | todo |
+| 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | todo |
 
 ## Open
 
