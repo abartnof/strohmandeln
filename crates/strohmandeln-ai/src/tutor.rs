@@ -35,28 +35,37 @@ use strohmandeln_core::view::{bare_view, View};
 /// The version of what [`evidence`] computes. Bump it whenever a classifier,
 /// a constant or the advisor changes, so that a stored summary made before is
 /// recomputed from its record (`docs/TUTOR.md` 3).
-pub const EVIDENCE_VERSION: u32 = 1;
+pub const EVIDENCE_VERSION: u32 = 2;
 
-/// The advisor's noise in thirds: a class must beat the next by more than
-/// this to be a clear chance, and a spread card is met within it.
-/// Provisional; M1 (advisor noise under independent seeds) sets it.
+/// The least gap in thirds that can be a clear chance: a class must beat the
+/// next by more than this and by more than twice the standard error of the
+/// per-world difference ([`Advice::std_error`]), and a spread card is met
+/// unless it is worse than the best by as much. Provisional; M1 (advisor
+/// noise under independent seeds) sets it, and says whether the standard
+/// error rule alone would do.
 pub const MARGIN: f64 = 6.0;
 
-/// The same in an exact position (no face-down packet card left, so the
-/// search has no sampling noise): the least loss that counts. Provisional;
-/// M1 sets it.
+/// The same where the search solved the position (nothing face down and the
+/// search reached the last trick, [`search_complete`]): the least loss that
+/// counts. Provisional; M1 sets it.
 pub const EXACT_MARGIN: f64 = 1.0;
 
-/// The margin of the bid in Points, times the deal's doubling. Provisional;
-/// M1 sets it (the bid's expectation is over `Budget::bid_worlds` worlds).
+/// The least expectation in Points, per unit of doubling, that can make a bid
+/// a clear chance, besides twice its standard error over the sampled worlds
+/// (`rung4::bid_samples`). Provisional; M1 sets it.
 pub const BID_MARGIN: f64 = 0.5;
 
 /// Thirds in a Point, to price a bid or an announcement in the unit of the
-/// rest. Provisional; M2 (final margin in thirds against net Points) sets it.
+/// rest. **Borrowed**: it is the solver's weight of the ultimo inside the final
+/// margin (`sim::ULTIMO_THIRDS`), not derived from the payment; the true rate
+/// is probably higher. Provisional; M2 (final margin in thirds against net
+/// Points of the deal) sets it.
 pub const THIRDS_PER_POINT: f64 = ULTIMO_THIRDS as f64;
 
-/// A suit is split when my share of its unplayed value points lies in this
-/// range. Provisional, as rung 2's 30% to 70%; M8 sets it.
+/// A suit is split when my share (my value points over mine and everything
+/// unseen, of the suit) lies in this range. Rung 2 uses 30% to 70% of the
+/// suit's whole 18 points, a different quantity, so the range is a first
+/// guess here. Provisional; M8 sets it for this definition.
 pub const SPLIT_SHARE: (f64, f64) = (0.3, 0.7);
 
 /// Unplayed value points a suit needs to be worth contesting. Provisional;
@@ -425,7 +434,9 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
         }
     }
 
-    // run: which tarock to lead
+    // run: which tarock to lead. Deliberately silent when a suit card was led
+    // where a tarock lead is best: only *which* tarock is a skill here
+    // (`research/16`, 2).
     if k.lead.is_none() && card.is_tarock() {
         let top = best(scores, |_| true).expect("a card");
         let tarock = |c: Card| c.is_tarock();

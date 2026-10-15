@@ -526,6 +526,49 @@ fn an_assisted_announcement_covers_the_play_it_belongs_to() {
     assert!(play_only.chances.len() > only_first.chances.len());
 }
 
+/// A scene in which forehand (seat A, who bids first) holds `hand`.
+fn bidding_with(hand: [&str; 15]) -> crate::testutil::Scene {
+    let mine: Vec<Card> = hand.iter().map(|x| c(x)).collect();
+    let slots = [0, 1, 2, 3, 4, 10, 11, 12, 13, 14, 20, 21, 22, 23, 24];
+    let mut rest = Card::all().filter(|x| !mine.contains(x));
+    let deck: Vec<Card> = (0..54)
+        .map(|i| match slots.iter().position(|&s| s == i) {
+            Some(j) => mine[j],
+            None => rest.next().unwrap(),
+        })
+        .collect();
+    crate::testutil::Scene::new(&deck)
+}
+
+#[test]
+fn a_bid_is_judged_end_to_end_both_ways() {
+    // A hand worth taking up (`rung4_tests`: the estimate is positive): taking
+    // up is the met chance and passing the missed one; a poor hand the other
+    // way round. The default budget's 40 worlds.
+    let strong = bidding_with([
+        "SK", "T21", "T1", "T20", "T19", "T18", "T17", "T16", "Kh", "Kd", "Kc", "Ks", "Qh", "Qd",
+        "Qc",
+    ]);
+    let weak = bidding_with([
+        "T2", "T3", "T4", "T5", "T6", "Jh", "Jd", "7c", "8c", "9c", "10c", "7s", "8s", "9s", "10s",
+    ]);
+    let bid = |scene: &crate::testutil::Scene, action: &Action| {
+        decision_verdicts(&scene.view(Seat::A), action, small())
+            .into_iter()
+            .find(|v| v.skill == Skill::Bid)
+    };
+    let took = bid(&strong, &Action::Take).expect("a clear chance");
+    assert!(took.met);
+    let passed = bid(&strong, &Action::Pass).expect("a clear chance");
+    assert!(!passed.met);
+    assert_eq!(passed.direction, Some(Direction::Passed));
+    assert!(passed.cost > 0.0);
+    assert!(bid(&weak, &Action::Pass).expect("a clear chance").met);
+    let took = bid(&weak, &Action::Take).expect("a clear chance");
+    assert!(!took.met);
+    assert_eq!(took.direction, Some(Direction::Took));
+}
+
 #[test]
 fn the_evidence_is_a_function_of_the_record() {
     let rec = &students().whole[1];
@@ -547,8 +590,10 @@ fn a_record_that_does_not_replay_is_an_error_not_evidence() {
 #[test]
 fn the_evidence_never_reads_a_hidden_card() {
     // Twin deals that differ only in what the seat cannot see give it the
-    // same view; the verdicts on the first and the last legal action must
-    // be the same in both.
+    // same view; the verdicts on every legal action (the fields the `Miss`
+    // copies, better card, direction, tarocks, sure winners, among them) must
+    // be the same in both. `evidence` adds to these only the view's own trick
+    // and card led, and the public tricks of the finished deal.
     let tiny = Budget {
         worlds: 2,
         nodes: 1_500,
@@ -556,12 +601,10 @@ fn the_evidence_never_reads_a_hidden_card() {
     };
     let twins = blind_check_values(
         &|v: &View| {
-            let first = v.legal_actions[0].clone();
-            let last = v.legal_actions[v.legal_actions.len() - 1].clone();
-            (
-                decision_verdicts(v, &first, tiny),
-                decision_verdicts(v, &last, tiny),
-            )
+            v.legal_actions
+                .iter()
+                .map(|a| decision_verdicts(v, a, tiny))
+                .collect::<Vec<_>>()
         },
         6,
     );

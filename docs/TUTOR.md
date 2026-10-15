@@ -129,18 +129,33 @@ every card, deterministic from the view as the hint is, `docs/OPPONENT.md`). For
 each skill whose question applies it works out the best value of each class.
 
 - **Margin.** A chance needs the best class to beat the next by more than
-  `MARGIN`, the advisor's noise. In an exact position the advisor is exact and
-  the margin is the least loss the review counts. Near-ties are no evidence
-  either way. `MARGIN` is measured (M1), not set here.
+  `MARGIN`, the advisor's noise, **and** by more than twice the standard error
+  of the difference over the sampled worlds (the per-world values of the two
+  classes' best cards, paired, as `hint.rs` `odds_for`): a one-sided trigger on a
+  noisy gap would otherwise pick the positive noise (rung 4 met 58% of its `off`
+  chances before the rule, 91% after). The margin is `EXACT_MARGIN` (the least
+  loss the review counts) only where the search is **complete**: nothing is face
+  down and it reached the last trick (`depth >= 28 - trick`); a known position
+  searched only a few tricks deep is not exact. A decision whose search finished
+  no trick (a budget too small) is skipped. Near-ties are no evidence either way.
+  `MARGIN` is measured (M1), not set here.
+- **Cost** is thirds of the count, the same unit for every skill, and is **not**
+  scaled by the doubling (the skill is the play, not the stakes). `bid` and
+  `announce` are converted with `THIRDS_PER_POINT`, borrowed from the solver's
+  ultimo weight and named for M2.
 - **Action skills** (`off`, and `worth` toward winning) count only where the
   skill's class is right. Where the other class is right, nothing is shown, as in
   Cassino. `worth` and `pagat` and `bid` have two right classes and count both.
 - **Spread skills** (`cheap`, `run`, `endgame`): the best card against the worst
-  of the same kind; met if the card played is within `MARGIN` of the best.
-- **Deterministic skills.** `announce` needs no advisor; `bid` takes the
-  expectation of `bid_advantage` over its own sampled worlds (40, `Budget`) and
-  scales its margin by the deal's multiplier (the opponent's own fixed margin
-  does not, `docs/review/opponent.md`).
+  of the same kind; met unless the card played is clearly (as above) worse than
+  the best. `run` judges which tarock only, not whether to lead one.
+- **`pagat`** counts only when following. Leading the Pagat is almost always
+  worse than a tarock by the margin, so keeping it is trivial: over nine
+  sittings a random player met 83 of 91 leads against rung 4's 107 of 107, but
+  following 15 of 29 against 32 of 34 (`print_pagat_variants`).
+- **Deterministic skills.** `announce` needs no advisor; `bid` takes the mean of
+  `rung4::bid_samples` over its own sampled worlds (40, `Budget`), per unit of
+  doubling, and needs it beyond `BID_MARGIN` and twice its standard error.
 - **A skill's rule applies** to a missed chance only when the chance lies in the
   rule's trigger; otherwise the plain fact is told (section 8). Example: the
   `pagat` rule ("seven or fewer", "twelve or more") applies at the tarock counts
@@ -441,11 +456,12 @@ sitting, so a mirrored pair is about 7 s and 50 pairs about 6 minutes a
 comparison; ten knockouts about an hour. The level-4 hint is about 4.6 ms median
 native and 8 ms in wasm (`docs/OPPONENT.md`, "Hint evidence"), so M1 (600
 positions x 8 seeds, about 5000 searches) is about a minute. Measured
-(`evidence_latency`, ignored test, `tutor_tests.rs`; release, native, 18 deals
-played by rung 4, default `Budget`, VM load about 3): the evidence of a deal is
-42 to 56 ms median and 71 to 81 ms p95 over two runs, 0.17 s median and 0.29 s
-p95 while other tests ran beside it; at the hint's wasm-to-native ratio (1.7) about
-0.1 s median in wasm. Total about 1 hour 10 minutes on the 2-core VM, to be
+(`evidence_latency`, ignored test, `tutor_tests.rs`; release, native, 24 deals
+played by rung 4, default `Budget`, VM load about 3, after the noise rule and the
+larger search for known positions): the evidence of a deal is 32 ms median and
+67 ms p95 (42 to 56 ms and 71 to 81 ms before; 0.17 s and 0.29 s while other
+tests ran beside it); at the hint's wasm-to-native ratio (1.7) about 0.06 s
+median and 0.12 s p95 in wasm. Total about 1 hour 10 minutes on the 2-core VM, to be
 confirmed by timing one pair before the first batch.
 
 ## 12. Tests
