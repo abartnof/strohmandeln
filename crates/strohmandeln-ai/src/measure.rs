@@ -380,6 +380,72 @@ pub fn by_skill(reads: &[Vec<SkillRead>]) -> Vec<Vec<&SkillRead>> {
     out
 }
 
+// ---- M2: thirds per Point ----------------------------------------------------
+
+/// A least-squares line with a cluster-robust standard error of its slope.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Ols {
+    pub n: usize,
+    pub slope: f64,
+    pub intercept: f64,
+    pub se_slope: f64,
+    pub correlation: f64,
+}
+
+/// `y` on `x` with an intercept; the slope's standard error is the
+/// cluster-robust one (the sum over clusters of the squared sum of
+/// `(x - mean x) * residual`, over the squared `Sxx`, times G / (G - 1)).
+pub fn ols_clustered(x: &[f64], y: &[f64], cluster: &[usize]) -> Ols {
+    let n = x.len();
+    assert!(n == y.len() && n == cluster.len() && n >= 3, "paired data");
+    let (mx, my) = (mean(x), mean(y));
+    let sxx: f64 = x.iter().map(|v| (v - mx).powi(2)).sum();
+    let syy: f64 = y.iter().map(|v| (v - my).powi(2)).sum();
+    let sxy: f64 = x.iter().zip(y).map(|(a, b)| (a - mx) * (b - my)).sum();
+    let slope = sxy / sxx;
+    let intercept = my - slope * mx;
+    let mut sums: std::collections::BTreeMap<usize, f64> = Default::default();
+    for i in 0..n {
+        let e = y[i] - intercept - slope * x[i];
+        *sums.entry(cluster[i]).or_default() += (x[i] - mx) * e;
+    }
+    let g = sums.len() as f64;
+    let var = sums.values().map(|v| v * v).sum::<f64>() / (sxx * sxx) * g / (g - 1.0).max(1.0);
+    Ols {
+        n,
+        slope,
+        intercept,
+        se_slope: var.sqrt(),
+        correlation: sxy / (sxx * syy).sqrt(),
+    }
+}
+
+/// A played deal's observation for seat A: the count margin in thirds (A's
+/// less B's, the ultimo excluded) and A's net Points per unit of doubling.
+/// `None` for a deal thrown in.
+pub fn deal_margin_points(record: &DealRecord) -> Option<(f64, f64)> {
+    use strohmandeln_core::deal::DealEnd;
+    use strohmandeln_core::types::Seat;
+    let deal = record.replay_to_end(|_, _, _, _| {}).ok()?;
+    let DealEnd::Played(score) = deal.end()? else {
+        return None;
+    };
+    let x = f64::from(score.thirds[Seat::A.index()]) - f64::from(score.thirds[Seat::B.index()]);
+    let net: f64 = score
+        .credits
+        .iter()
+        .map(|c| {
+            let p = f64::from(c.points);
+            if c.seat == Seat::A {
+                p
+            } else {
+                -p
+            }
+        })
+        .sum();
+    Some((x, net / f64::from(score.multiplier)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -543,5 +609,41 @@ mod tests {
             let r = read_bid(&k, &b.view, Budget::default(), 3).unwrap();
             assert_eq!(r.len(), 3);
         }
+    }
+
+    #[test]
+    fn a_line_is_recovered_and_its_cluster_error_is_zero_when_it_is_exact() {
+        let x: Vec<f64> = (0..12).map(f64::from).collect();
+        let y: Vec<f64> = x.iter().map(|v| 0.5 * v + 2.0).collect();
+        let cl: Vec<usize> = (0..12).map(|i| i / 3).collect();
+        let o = ols_clustered(&x, &y, &cl);
+        assert!((o.slope - 0.5).abs() < 1e-12 && (o.intercept - 2.0).abs() < 1e-12);
+        assert!(o.se_slope < 1e-12 && (o.correlation - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn the_cluster_error_has_its_hand_computed_value() {
+        // slope 0.5, intercept 0; the residual sums by cluster give 0.1,
+        // and by single point 0.26726 (computed by hand)
+        let x = [0.0, 1.0, 2.0, 3.0, 0.0, 1.0, 2.0, 3.0];
+        let y = [1.0, 1.0, 2.0, 2.0, -1.0, 0.0, 0.0, 1.0];
+        let together = ols_clustered(&x, &y, &[0, 0, 0, 0, 1, 1, 1, 1]);
+        let apart = ols_clustered(&x, &y, &[0, 1, 2, 3, 4, 5, 6, 7]);
+        assert!((together.slope - 0.5).abs() < 1e-12 && together.intercept.abs() < 1e-12);
+        assert!((together.se_slope - 0.1).abs() < 1e-12, "{together:?}");
+        assert!((apart.se_slope - 0.267_261_241_9).abs() < 1e-9, "{apart:?}");
+    }
+
+    #[test]
+    fn a_played_deal_gives_its_margin_and_net_points() {
+        let recs = rung4_deals(20_000_000, tiny());
+        let mut seen = 0;
+        for r in &recs {
+            if let Some((x, y)) = deal_margin_points(r) {
+                seen += 1;
+                assert!(x.abs() <= 214.0 && y.abs() <= 30.0, "{x} {y}");
+            }
+        }
+        assert!(seen >= 3);
     }
 }

@@ -40,6 +40,7 @@ fn main() {
     let args = Args { rest: argv };
     match which.as_str() {
         "m1" => m1(&args),
+        "m2" => m2(&args),
         other => panic!("unknown measurement {other}"),
     }
 }
@@ -200,4 +201,64 @@ fn m1(args: &Args) {
         measure::bid_margin_rule(&bid_reads)
     );
     println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}
+
+fn m2(args: &Args) {
+    let first = args.num("--seed", 20_000_000);
+    let sittings = args.num("--sittings", 300);
+    let started = Instant::now();
+    let (mut x, mut y, mut cluster) = (Vec::new(), Vec::new(), Vec::new());
+    let mut thrown_in = 0;
+    for i in 0..sittings {
+        for rec in measure::rung4_deals(first + i, Config::default()) {
+            match measure::deal_margin_points(&rec) {
+                Some((a, b)) => {
+                    x.push(a);
+                    y.push(b);
+                    cluster.push(i as usize);
+                }
+                None => thrown_in += 1,
+            }
+        }
+    }
+    println!(
+        "M2: {} played deals ({} thrown in) from {sittings} sittings of rung 4 against rung 4 (seeds {first}..{}), {:.0}s",
+        x.len(),
+        thrown_in,
+        first + sittings - 1,
+        started.elapsed().as_secs_f64()
+    );
+    let o = measure::ols_clustered(&x, &y, &cluster);
+    let (lo, hi) = (o.slope - 1.96 * o.se_slope, o.slope + 1.96 * o.se_slope);
+    println!(
+        "net Points per third: slope {:.5} +- {:.5} (cluster), intercept {:.3}, correlation {:.3}",
+        o.slope, o.se_slope, o.intercept, o.correlation
+    );
+    println!(
+        "thirds per Point = 1/slope = {:.2} (95% interval {:.2} to {:.2}); rounded {}",
+        1.0 / o.slope,
+        1.0 / hi,
+        1.0 / lo,
+        (1.0 / o.slope).round()
+    );
+    let rev = measure::ols_clustered(&y, &x, &cluster);
+    println!(
+        "reverse regression (thirds on Points): {:.2} thirds per Point",
+        rev.slope
+    );
+    println!("\nmean net Points by decile of the margin (thirds):");
+    let mut order: Vec<usize> = (0..x.len()).collect();
+    order.sort_by(|&a, &b| x[a].total_cmp(&x[b]));
+    for d in 0..10 {
+        let part = &order[d * order.len() / 10..(d + 1) * order.len() / 10];
+        let xs: Vec<f64> = part.iter().map(|&i| x[i]).collect();
+        let ys: Vec<f64> = part.iter().map(|&i| y[i]).collect();
+        println!(
+            "  margin {:>6.1} to {:>6.1}: mean {:>6.1}, points {:>6.2}",
+            xs[0],
+            xs[xs.len() - 1],
+            measure::mean(&xs),
+            measure::mean(&ys)
+        );
+    }
 }
