@@ -37,7 +37,7 @@ margin (1 Point = 12 thirds, `sim::ULTIMO_THIRDS`).
 | Focus: largest gain among skills with cleared prerequisites | Kept; exact ties go to the earlier stage | The prerequisites carry the order; the stage only breaks ties. |
 | Long prose review replaced by the brief | The brief from the start | Cassino wrote the prose first and replaced it: "what people read" is a few bullets (12.4). |
 | `hint` and `nudged` are commands that mark the decision | The table keeps the list of assisted decisions and passes it in (section 3) | `strohmandeln_hint` is a pure query (`docs/PROTOCOL.md`). |
-| Heavy calls on the main thread, then a Worker | **Main thread first; a Worker for the history recompute and slow devices** | The evidence is tens of milliseconds a deal native, about a tenth of a second in wasm (section 11, M7), so one deal's evidence does not need a Worker; recomputing many stale summaries at once does. |
+| Heavy calls on the main thread, then a Worker | **Main thread first; a Worker for the history recompute and slow devices** | The evidence is tens of milliseconds a deal native, about a tenth of a second in wasm (section 11, M7), so one deal's evidence does not need a Worker; the recompute of stale summaries runs one deal per idle step at rest, so none is built (15 Oct 2026). |
 | Rules measured: precision lower bound 0.80, confirmed on fresh seeds | Kept | Section 11, M5. |
 | Constants set from the strongest rung's games and lesioned students | Kept; none invented here | Section 11. |
 
@@ -528,8 +528,9 @@ What the runs found against the specification: `void` and `behind` have no
 worth in Points against rung 4 (praise-only, section 2); only 2 of 10
 prerequisite edges were shown; two rules of fourteen passed the gate; the learner
 names `worth` and `off` within six deals but the rare skills not within a
-window (M6 acceptance not met); the evidence is 59 ms a deal in the module and
-the 60-deal recompute goes to a Worker (M7).
+window (M6 acceptance not met); the evidence is 59 ms a deal in the module (M7).
+The 60-deal recompute (about 3.5 s in all) runs one deal per idle step at rest
+(`refreshStale`, 250 ms apart), so it never blocks the page; no Worker is built.
 
 | # | Measurement | Gives |
 |---|---|---|
