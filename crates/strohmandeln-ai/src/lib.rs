@@ -4,6 +4,7 @@
 //! (`docs/OPPONENT.md`). Every decision is a pure function of a seed and
 //! the player's own view, so a record replays.
 
+pub mod brief;
 pub mod cardset;
 pub mod explain;
 pub mod hint;

@@ -24,7 +24,7 @@ use crate::rung2::Weights;
 use crate::rung4::{self, Budget};
 use crate::seed::view_seed;
 use crate::sim::ULTIMO_THIRDS;
-use kit_learner::{Chance, Ladder, SkillSpec, Summary};
+use kit_learner::{learn, Chance, Ladder, Learner, Params, SkillSpec, Summary};
 use strohmandeln_core::cards::{Card, Honour, Suit};
 use strohmandeln_core::deal::{Deal, DealEnd, HonourState, TrickRecord};
 use strohmandeln_core::dealrec::{DealRecord, ReplayError};
@@ -694,6 +694,27 @@ pub const LADDER: Ladder = Ladder {
         spec("announce", &[], 1.0, 0.0, 2.0),
     ],
 };
+
+/// The learner's constants (`docs/TUTOR.md` 5). **Provisional**: Cassino's
+/// ratios (discount 0.8, mastery at 85% of what the strongest rung meets,
+/// the quantiles 0.2 and 0.9, a loss of mastery 0.2 below it) with the
+/// gains in thirds a deal; M3 (what rung 4 meets and loses), M4 (what a
+/// skill is worth) and M6 (the lesioned students) set them.
+pub const PARAMS: Params = Params {
+    discount: 0.8,
+    min_gain: 2.0,
+    costly_gain: 8.0,
+    costly_chances: 8.0,
+    lower: 0.2,
+    upper: 0.9,
+    master_of_top: 0.85,
+    lose_below: 0.2,
+};
+
+/// The learner over stored summaries, oldest first (stale ones skipped).
+pub fn learner(history: &[Summary]) -> Learner {
+    learn(&LADDER, &PARAMS, history)
+}
 
 const fn spec(
     slug: &'static str,

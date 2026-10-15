@@ -188,6 +188,7 @@ at the focus (`strohmandeln_nudge`).
 | `tutor.lead.well` | none | Went well: | Gut gelaufen: | TUTOR 6 |
 | `tutor.lead.next` | `skill` | Next: {skill}. | Als Nächstes: {skill}. | TUTOR 6 |
 | `tutor.lead.deal` | none | This deal: | In dieser Partie: | TUTOR 6 |
+| `tutor.lead.deal-n` | `deal` (the deal's number in the sitting) | Deal {deal}: | Partie {deal}: | TUTOR 6; the sitting's example |
 | `tutor.lead.try` | none | To try: | Zum Versuchen: | TUTOR 6 |
 | `tutor.lead.rule` | none | If I may: | Wenn ich mir erlauben darf: | TABLE3D 6.5; shown before every `tutor.rule.*` text, not counted in its words |
 | `tutor.well.mastered` | `skill` | Mastered: {skill}. | Gemeistert: {skill}. | TUTOR 5, 6 |
@@ -245,7 +246,7 @@ at the focus (`strohmandeln_nudge`).
 | `tutor.fact.run` | none | Tarocks in an unbroken run win tricks one after another. | Tarock in geschlossener Reihe machen Stich um Stich. | U 73-74 |
 | `tutor.fact.pagat` | none | The Pagat is the lowest tarock; played last, it wins or loses a Point. | Der Pagat ist das niedrigste Tarock; im letzten Stich gewinnt oder verliert er einen Point. | RULES 1.4, 5.3, 12.2 |
 | `tutor.fact.void` | none | Out of the suit led, a player must play a tarock if able. | Fehlt die ausgespielte Farbe, muss ein Tarock gespielt werden, wenn eines da ist. | RULES 5.4 |
-| `tutor.fact.behind` | none | Whoever opens a suit the hands share evenly often ends worse in it. | Wer eine gleichmäßig geteilte Farbe eröffnet, steht darin oft am Ende schlechter. | W 134-135; MS; against: Be 150-151 |
+| `tutor.fact.behind` | none | Whoever opens a suit the hands share evenly often ends worse in it. | Wer eine gleichmäßig geteilte Farbe eröffnet, steht darin am Ende oft ungünstiger da. | W 134-135; MS; against: Be 150-151 |
 | `tutor.fact.endgame` | none | When every packet is turned, your opponent's cards can be worked out. | Sind alle Pakete aufgedeckt, lassen sich die Karten Ihres Gegners ausrechnen. | RULES 13.6 |
 | `tutor.fact.bid` | none | Sure winners: the Sküs, the Mond, kings, guarded queens. | Sichere Stecher: Sküs, Mond, Könige, besetzte Damen. | W 131; MS |
 | `tutor.fact.announce` | none | An honour you hold but never announce is not paid. | Ein Honneur, den Sie halten, aber nicht ansagen, wird nicht bezahlt. | RULES 11.1, 11.5 |
@@ -298,7 +299,7 @@ at the focus (`strohmandeln_nudge`).
 | `tutor.miss.worth.rich` | `trick`, `led`, `better` (cards), `thirds` | Trick {trick}: {led} led, with {thirds} points up for grabs; {better} would have taken them. | Im {trick}. Stich lagen mit {led} {thirds} Augen aus; {better} hätte sie geholt. | TUTOR 2 (`worth`, timid) |
 | `tutor.miss.cheap` | `trick`, `played`, `better` (cards) | Trick {trick}: {better} would have done the same job as {played} and left you better off. | Im {trick}. Stich hätte {better} dasselbe geleistet wie {played} und Sie besser gestellt. | TUTOR 2 (`cheap`) |
 | `tutor.miss.off.pip` | `trick`, `better` (card) | Trick {trick}: playing {better} from its packet would have shown you what lies beneath. | Im {trick}. Stich hätte {better} vom Paket gezeigt, was darunter liegt. | TUTOR 2 (`off`, pip) |
-| `tutor.miss.off.figure` | `card`, `king` (cards), `late` (trick) | This deal your {card} fell under his {king} in trick {late}; play it at once next time. | In dieser Partie fiel {card} im {late}. Stich unter {king}; spielen Sie die Figur das nächste Mal gleich. | TUTOR 2 (`off`, figure); only where the log shows the figure lost to a higher card of its suit |
+| `tutor.miss.off.figure` | `card`, `king` (cards), `late` (trick) | Your {card} fell under his {king} in trick {late}; play it at once next time. | {card} fiel im {late}. Stich unter {king}; spielen Sie die Figur das nächste Mal gleich. | TUTOR 2 (`off`, figure); only where the log shows the figure lost to a higher card of its suit |
 | `tutor.miss.off.figure-plain` | `trick`, `better` (card) | Trick {trick}: your {better}, lying on a packet, could have gone at once. | Im {trick}. Stich hätte {better} vom Paket gleich gehen können. | TUTOR 2 (`off`, figure) |
 | `tutor.miss.run` | `trick`, `played`, `better` (cards) | Trick {trick}: you led {played}; {better} was the better tarock to lead. | Im {trick}. Stich spielten Sie {played} an; {better} war das bessere Tarock. | TUTOR 2 (`run`) |
 | `tutor.miss.pagat.cash` | `trick`, `n` (tarocks held) | Trick {trick}: with {n} tarocks the Pagat should have gone at once. | Im {trick}. Stich hätte der Pagat mit {n} Tarock gleich gehen sollen. | TUTOR 2 (`pagat`, cash) |
@@ -306,6 +307,6 @@ at the focus (`strohmandeln_nudge`).
 | `tutor.miss.void` | `trick`, `played` (card), `suit` | Trick {trick}: you led {played}, though your opponent had already failed to follow {suit}. | Im {trick}. Stich spielten Sie {played} an, obwohl Ihr Gegner {suit} schon nicht bedient hatte. | TUTOR 2 (`void`) |
 | `tutor.miss.behind` | `trick`, `suit`, `better` (card) | Trick {trick}: you opened {suit}, which the hands share evenly; {better} was the better lead. | Im {trick}. Stich eröffneten Sie {suit}, das sich gleichmäßig verteilt; {better} war die bessere Eröffnung. | TUTOR 2 (`behind`) |
 | `tutor.miss.endgame` | `trick`, `played`, `better` (cards) | Trick {trick}: with the position known, {better} was the card, not {played}. | Im {trick}. Stich war bei bekannter Lage {better} die Karte, nicht {played}. | TUTOR 2 (`endgame`) |
-| `tutor.miss.bid.pass` | `sure` (thirds), `n` (tarocks held) | You passed with {sure} points of sure winners and {n} tarocks; across sampled deals, taking up paid. | Sie passten mit {sure} Augen sicherer Stecher und {n} Tarock; über durchgespielte Austeilungen gerechnet lohnte sich das Aufnehmen. | TUTOR 2 (`bid`, passed) |
-| `tutor.miss.bid.take` | `sure` (thirds), `n` (tarocks held) | You took up with {sure} points of sure winners and {n} tarocks; across sampled deals, passing paid. | Sie nahmen auf mit {sure} Augen sicherer Stecher und {n} Tarock; über durchgespielte Austeilungen gerechnet lohnte sich das Passen. | TUTOR 2 (`bid`, took) |
+| `tutor.miss.bid.pass` | `sure` (thirds), `n` (tarocks held) | You passed with {sure} points of sure winners and {n} tarocks; on average, taking up paid. | Sie passten mit {sure} Augen sicherer Stecher und {n} Tarock; im Schnitt lohnte sich das Aufnehmen. | TUTOR 2 (`bid`, passed) |
+| `tutor.miss.bid.take` | `sure` (thirds), `n` (tarocks held) | You took up with {sure} points of sure winners and {n} tarocks; on average, passing paid. | Sie nahmen auf mit {sure} Augen sicherer Stecher und {n} Tarock; im Schnitt lohnte sich das Passen. | TUTOR 2 (`bid`, took) |
 | `tutor.miss.announce` | `card`, `honour` | You played {card} without announcing {honour}: a Point lost. | Sie spielten {card}, ohne {honour} anzusagen: ein Point ging verloren. | RULES 11.5 |
