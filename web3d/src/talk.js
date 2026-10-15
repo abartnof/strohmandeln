@@ -19,6 +19,9 @@
 //       { type: "slow", n }      the human is idle (n = 1 at 25 s, 2 at 60 s)
 //       { type: "refused" }      a card was refused (slip-yours)
 //       { type: "opponent_error" } the opponent's own error (blunder-own)
+//       { type: "kibitz" }       the tutor is first opened: a line of `kibitz`, `who: "kibitz"`
+//       { type: "kibitz_mute" }  the tutor is muted: a line of `kibitz-mute`, `who: "kibitz"`
+//                                (both whatever the mode: the Kibitzer is not table talk)
 //   setMode("all" | "calls" | "none")
 //   snapshot() / restore(s): the sitting-wide record of sayings heard, to save with the sitting.
 
@@ -110,6 +113,18 @@ export function createTalk({ words, getLang, rng = Math.random, say }) {
     const t = words.texts[key];
     spoken.set(t.sig ?? key, [deal, ++seq]);
     say({ key, text: t[getLang()] ?? t.en, who: "them", group, call: CALLS.has(group) });
+    return true;
+  }
+
+  // The Kibitzer's line (docs/TABLE3D.md 5.1, 6.5): his own voice, said whatever
+  // the table-talk mode and the quiet of the count, as `who: "kibitz"`. The
+  // table shows it in his tab, never in the opponent's box.
+  function kibitz(group) {
+    const keys = words.groups[group];
+    if (!keys || !keys.length) return false;
+    const key = pick(group, keys);
+    const t = words.texts[key];
+    say({ key, text: t[getLang()] ?? t.en, who: "kibitz" });
     return true;
   }
 
@@ -279,6 +294,12 @@ export function createTalk({ words, getLang, rng = Math.random, say }) {
         break;
       case "opponent_error":
         speak("blunder-own");
+        break;
+      case "kibitz":
+        kibitz("kibitz");
+        break;
+      case "kibitz_mute":
+        kibitz("kibitz-mute");
         break;
       default:
         break;

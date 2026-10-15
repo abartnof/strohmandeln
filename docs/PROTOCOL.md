@@ -40,6 +40,9 @@ Text goes in and out through linear memory, as in Cassino. `kit/js/engine.js`
 | `strohmandeln_export()` | | | the saved sitting |
 | `strohmandeln_import(len)` | saved JSON in the buffer | 1 restored, 0 not (old sitting stays) | opening reply, or an error |
 | `strohmandeln_hint()` | | | `{protocol, hint, reason, params}`: the tutor's move (one of `legal`, same shape) and why; on the opponent's turn or after the end `hint` is `null` and `reason` `"not-your-turn"`. Does not move the game. See below |
+| `strohmandeln_review()` | | | `{protocol, review}`: the review of the last scored deal, or `review: null` before one is scored. Does not move the game. See "The review" |
+| `strohmandeln_review_sitting()` | | | the same shape, over every deal scored so far |
+| `strohmandeln_explain()` | | | `{protocol, explain}`: what the last trick showed, one bullet, or `explain: null` before a trick is won. See "The review" |
 | `strohmandeln_audit()` | | | `{hidden: [codes]}`: test aid, see below |
 
 To call: `at = alloc(n); copy the UTF-8 bytes to memory[at..at+n]; send(n)`,
@@ -338,3 +341,34 @@ play). `reason` is a message key from the hint table in `docs/MESSAGES.md`;
 `params` is an object reserved for the key's parameters (none of the keys has
 any yet). The opponent's `step` and the hint share their rules: a hint is what
 the level-4 opponent would play.
+
+## The review
+
+`strohmandeln_review` and `strohmandeln_review_sitting` answer for the end-of-deal
+dialog (`docs/TABLE3D.md` 6.4). The module reads the human's filtered events
+(the public log of `docs/RULES.md` 13.6 and the human's own `dealt`), so a
+review holds nothing the human's view does not; after the last trick every card,
+the opponent's included, is in that log. Asking changes nothing.
+
+```json
+{"protocol": 1, "review": {"deal": 3, "bullets": [
+  {"lead": "count", "key": "count", "params": {"mine": 120, "theirs": 90}},
+  {"lead": "decided", "key": "trick-lost-rich", "params": {"mine": "Qs", "theirs": "Ks", "thirds": 23, "trick": 4}},
+  {"lead": "try", "key": "try-announce", "params": {"honour": "trull"}}]}}
+```
+
+`review` is `null` when no deal has been scored (a void deal and a throw-in are
+not scored). `deal` is the deal's number, `0` for the sitting. A bullet's `lead`
+is `count`, `decided` or `try`; `key` and `params` are those of the "Review
+keys" table of `docs/MESSAGES.md`, which gives each key's English and German
+text and the rule it rests on. Thirds are integers (107 is 35⅔); cards are
+codes. The sitting's review has three bullets: `sitting-tally`, the `decided`
+bullet of the deal that went worst (else best), with its `deal`, and the most
+frequent `try`. The review is a function of the events (`strohmandeln_ai::review`).
+
+`strohmandeln_explain` answers the line under the prompt after a trick (the
+setting "Explanations", `docs/TABLE3D.md` 6.3.3): one bullet
+`{"lead": "explain", "key": "explain-trump-opp", "params": {"suit": "h"}}` from the
+"Explanation keys" table of `docs/MESSAGES.md`. It deduces from the rule of
+following only what the rule gives (a trump on a suit led: none of that suit in
+hand or showing), from the human's filtered events.

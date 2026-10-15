@@ -8,7 +8,9 @@ Clauses (docs/RULES.md): packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.3
 9.2 11.7 14.1-14.4; touren-slate 15.2 15.3 15.5 15.8 15.9 (reconstruction: 15
 intro, TABLE3D 4.6); extension 15.6. Period terms: 03-S12 (Werner), 03-S14
 (Ulmann), 05c headline 1 (Kiebitz). The voice is TABLE3D 6.5.
-Text before the first heading is ignored by the parser.
+Text before the first heading is ignored by the parser. Blocks marked
+with an if-line on a setting are kept for that setting only (tutor.js,
+tutorialPages): bidding and draw have one for each both_pass value (RULES 3.4, 14.6).
 -->
 
 # The packets
@@ -31,7 +33,12 @@ Text before the first heading is ignored by the parser.
 - **Pass** (*Weiter*) means you let it go.
 - A declarer needs 36 of the 70 Points. Missing it loses.
 - In the standard values the declarer wins 3 Points, or loses 4.
+<!-- if both_pass=play -->
 - If both pass, a plain game is played. The winner gets 2 Points.
+<!-- end -->
+<!-- if both_pass=throw_in -->
+- If both pass, the deal is thrown in: nothing is scored and no packet is turned.
+<!-- end -->
 - If I may: once you have spoken, it stands. Nobody can raise.
 
 # The turning
@@ -101,10 +108,17 @@ Text before the first heading is ignored by the parser.
 
 ## When nobody reaches 36
 
+<!-- if both_pass=play -->
 - In a plain game, if neither of you reaches 35⅔, the game is undecided. Nobody wins it.
+<!-- end -->
+<!-- if both_pass=throw_in -->
+- With a throw-in, only a declared game is played, and a declared game always has a winner. Draws do not arise.
+<!-- end -->
 - Honours and the Pagat are still paid.
+<!-- if both_pass=play -->
 - The next deal played counts double, with everything in it. A deal thrown in does not use it up.
 - The table shows **×2** when it applies.
+<!-- end -->
 
 # Touren and the slate
 

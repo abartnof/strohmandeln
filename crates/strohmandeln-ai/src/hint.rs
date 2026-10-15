@@ -185,6 +185,7 @@ mod tests {
     fn docs_messages_md_gives_every_hint_key_in_english_and_german() {
         let doc = include_str!("../../../docs/MESSAGES.md");
         let section = doc.split("\n## Hint reasons").nth(1).expect("section");
+        let section = section.split("\n## Review keys").next().expect("section");
         let rows: Vec<Vec<&str>> = section
             .lines()
             .filter(|l| l.starts_with("| `"))
