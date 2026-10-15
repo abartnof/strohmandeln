@@ -737,6 +737,199 @@ pub fn rule_tallies(
     out
 }
 
+// ---- M6: diagnosis ---------------------------------------------------------------
+
+use crate::students::{Lesion, Student};
+use kit_learner::{learn, Params, Summary};
+
+/// The per-deal evidence summaries of one window of a student's play: `sittings`
+/// sittings of 3 Touren against rung 3, from `first_seed` (the same seeds for
+/// every student), the student in seat A in the even sittings and in seat B in
+/// the odd ones; no decision is assisted.
+pub fn student_window(
+    lesions: &[Lesion],
+    first_seed: u64,
+    sittings: u64,
+    config: Config,
+) -> Vec<Summary> {
+    use strohmandeln_core::types::Seat;
+    let mut out = Vec::new();
+    for i in 0..sittings {
+        let seed = first_seed + i;
+        let mut student = Student::knocked_out(lesions, seed ^ 0x57, config);
+        let mut three = Opponent::new(Level::from_halves(6), seed ^ 0xB).with_config(config);
+        let a = i % 2 == 0;
+        let records = if a {
+            record_sitting(
+                seed,
+                Settings::default(),
+                3,
+                &mut [&mut student, &mut three],
+            )
+        } else {
+            record_sitting(
+                seed,
+                Settings::default(),
+                3,
+                &mut [&mut three, &mut student],
+            )
+        };
+        let seat = if a { Seat::A } else { Seat::B };
+        for rec in &records {
+            let e = crate::tutor::evidence(rec, seat, &[], config.budget).expect("a played deal");
+            out.push(e.summary);
+        }
+    }
+    out
+}
+
+/// The focus after each deal of a window (after the first deal, the first two,
+/// and so on).
+pub fn focus_trace(params: &Params, summaries: &[Summary]) -> Vec<Option<usize>> {
+    (1..=summaries.len())
+        .map(|k| learn(&crate::tutor::LADDER, params, &summaries[..k]).focus)
+        .collect()
+}
+
+/// The skills mastered after all the deals of a window.
+pub fn mastered_at_end(params: &Params, summaries: &[Summary]) -> usize {
+    let l = learn(&crate::tutor::LADDER, params, summaries);
+    (0..l.skills.len()).filter(|&i| l.mastered(i)).count()
+}
+
+/// Whether `target` was the focus at some deal up to and including `by`
+/// (counted from 1).
+pub fn named_by(trace: &[Option<usize>], target: usize, by: usize) -> bool {
+    trace.iter().take(by).any(|f| *f == Some(target))
+}
+
+/// The windows of one student: the target skill (none: rung 4 whole), the
+/// number of deals within which it must be named, and the windows' summaries.
+#[derive(Clone, Debug)]
+pub struct Group {
+    pub name: String,
+    pub target: Option<usize>,
+    pub by: usize,
+    pub windows: Vec<Vec<Summary>>,
+}
+
+/// How a set of constants does over the groups.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Score {
+    /// Mean over the lesioned groups of the share of windows in which the
+    /// target was the focus within its `by` deals.
+    pub sensitivity: f64,
+    pub per_group: Vec<(String, f64)>,
+    /// For rung 4 whole: the share of (window, deal from the second) at which
+    /// any focus was named.
+    pub false_focus: f64,
+    /// For rung 4 whole: mean skills mastered after the last deal.
+    pub whole_mastered: f64,
+}
+
+pub fn score(params: &Params, groups: &[Group]) -> Score {
+    let (mut per_group, mut false_n, mut false_d, mut mastered) =
+        (Vec::new(), 0.0, 0.0, Vec::new());
+    for g in groups {
+        match g.target {
+            Some(t) => {
+                let hits = g
+                    .windows
+                    .iter()
+                    .filter(|w| named_by(&focus_trace(params, w), t, g.by))
+                    .count();
+                per_group.push((g.name.clone(), hits as f64 / g.windows.len() as f64));
+            }
+            None => {
+                for w in &g.windows {
+                    let trace = focus_trace(params, w);
+                    false_n += trace.iter().skip(1).filter(|f| f.is_some()).count() as f64;
+                    false_d += trace.len().saturating_sub(1) as f64;
+                    mastered.push(mastered_at_end(params, w) as f64);
+                }
+            }
+        }
+    }
+    let sens: Vec<f64> = per_group.iter().map(|x| x.1).collect();
+    Score {
+        sensitivity: mean(&sens),
+        per_group,
+        false_focus: if false_d > 0.0 {
+            false_n / false_d
+        } else {
+            0.0
+        },
+        whole_mastered: mean(&mastered),
+    }
+}
+
+/// The grid of M6: the discount, the quantiles for mastery and for "surely
+/// short", mastery as a fraction of what rung 4 meets, and the drop that
+/// loses it; the gains and chances of `base` are kept.
+pub fn m6_grid(base: &Params) -> Vec<Params> {
+    let mut out = Vec::new();
+    for &discount in &[0.75, 0.80, 0.83, 0.88, 0.92] {
+        for &lower in &[0.1, 0.2, 0.3] {
+            for &upper in &[0.8, 0.9, 0.95] {
+                for &master_of_top in &[0.75, 0.80, 0.85, 0.90] {
+                    for &lose_below in &[0.1, 0.2, 0.3] {
+                        let p = Params {
+                            discount,
+                            lower,
+                            upper,
+                            master_of_top,
+                            lose_below,
+                            ..*base
+                        };
+                        if p.check().is_ok() {
+                            out.push(p);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    out
+}
+
+/// M6's choice: among the sets with a false-focus rate of at most 0.10 and at
+/// least 3 skills mastered by rung 4 whole, the highest sensitivity; ties go
+/// to the lower false-focus rate, then to the set nearest `base` (the sum of
+/// the absolute differences of the five tuned constants). If none qualifies,
+/// the highest sensitivity less the false-focus rate.
+pub fn m6_choice(base: &Params, scored: &[(Params, Score)]) -> Option<(Params, Score)> {
+    let near = |p: &Params| {
+        (p.discount - base.discount).abs()
+            + (p.lower - base.lower).abs()
+            + (p.upper - base.upper).abs()
+            + (p.master_of_top - base.master_of_top).abs()
+            + (p.lose_below - base.lose_below).abs()
+    };
+    let qualifies = |s: &Score| s.false_focus <= 0.10 && s.whole_mastered >= 3.0;
+    let pool: Vec<&(Params, Score)> = if scored.iter().any(|x| qualifies(&x.1)) {
+        scored.iter().filter(|x| qualifies(&x.1)).collect()
+    } else {
+        scored.iter().collect()
+    };
+    let key = |x: &&(Params, Score)| {
+        let fallback = !scored.iter().any(|y| qualifies(&y.1));
+        let value = if fallback {
+            x.1.sensitivity - x.1.false_focus
+        } else {
+            x.1.sensitivity
+        };
+        (value, -x.1.false_focus, -near(&x.0))
+    };
+    pool.into_iter()
+        .max_by(|a, b| {
+            let (ka, kb) = (key(a), key(b));
+            ka.0.total_cmp(&kb.0)
+                .then(ka.1.total_cmp(&kb.1))
+                .then(ka.2.total_cmp(&kb.2))
+        })
+        .cloned()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1118,5 +1311,102 @@ mod tests {
         let all = precision(&[3.0, 4.0], &[3.0, 4.0]);
         assert_eq!(all.n_eff, 7.0);
         assert!((all.lower - wilson_lower(1.0, 7.0)).abs() < 1e-12);
+    }
+
+    #[test]
+    fn a_trace_says_when_a_skill_was_named() {
+        let t = [None, Some(2), Some(2), Some(5), None];
+        assert!(named_by(&t, 2, 2));
+        assert!(!named_by(&t, 2, 1));
+        assert!(!named_by(&t, 5, 3));
+        assert!(named_by(&t, 5, 5));
+        assert!(!named_by(&t, 7, 5));
+    }
+
+    #[test]
+    fn a_window_gives_a_summary_per_deal_and_a_trace_per_prefix() {
+        use crate::tutor::PARAMS;
+        let w = student_window(&[Lesion::Off], 60_000_000, 1, tiny());
+        assert_eq!(w.len(), 6);
+        assert!(w.iter().all(|s| s.is_current(&crate::tutor::LADDER)));
+        assert_eq!(focus_trace(&PARAMS, &w).len(), 6);
+        assert!(mastered_at_end(&PARAMS, &w) <= SKILLS);
+    }
+
+    fn summary_with(skill: usize, chances: u32, met: u32, missed: f64) -> Summary {
+        let mut s = Summary::new(&crate::tutor::LADDER);
+        s.tallies[skill] = kit_learner::Tally {
+            chances,
+            met,
+            missed,
+        };
+        s
+    }
+
+    #[test]
+    fn a_student_who_misses_a_skill_is_named_and_one_who_does_not_is_not() {
+        use crate::tutor::PARAMS;
+        // `worth` (0): 4 chances a deal, none met, 30 thirds a deal
+        let bad: Vec<Summary> = (0..6).map(|_| summary_with(0, 4, 0, 30.0)).collect();
+        let good: Vec<Summary> = (0..6).map(|_| summary_with(0, 4, 4, 0.0)).collect();
+        let groups = [
+            Group {
+                name: "Worth".into(),
+                target: Some(0),
+                by: 3,
+                windows: vec![bad.clone(), bad],
+            },
+            Group {
+                name: "whole".into(),
+                target: None,
+                by: 0,
+                windows: vec![good.clone(), good],
+            },
+        ];
+        let s = score(&PARAMS, &groups);
+        assert_eq!(s.per_group, vec![("Worth".to_string(), 1.0)]);
+        assert_eq!(s.sensitivity, 1.0);
+        assert_eq!(s.false_focus, 0.0);
+        assert!(s.whole_mastered >= 1.0, "{s:?}");
+    }
+
+    #[test]
+    fn the_grid_is_valid_and_the_choice_prefers_sensitivity_within_the_limits() {
+        use crate::tutor::PARAMS;
+        let grid = m6_grid(&PARAMS);
+        assert_eq!(grid.len(), 5 * 3 * 3 * 4 * 3);
+        assert!(grid.iter().all(|p| p.check().is_ok()));
+        let mk = |sens, fals, mast| Score {
+            sensitivity: sens,
+            per_group: Vec::new(),
+            false_focus: fals,
+            whole_mastered: mast,
+        };
+        let a = Params {
+            discount: 0.75,
+            ..PARAMS
+        };
+        let b = Params {
+            discount: 0.88,
+            ..PARAMS
+        };
+        let c = Params {
+            discount: 0.92,
+            ..PARAMS
+        };
+        // c is the most sensitive but names a focus too often; b beats a
+        let scored = vec![
+            (a, mk(0.6, 0.02, 4.0)),
+            (b, mk(0.8, 0.08, 3.5)),
+            (c, mk(0.95, 0.30, 5.0)),
+        ];
+        assert_eq!(m6_choice(&PARAMS, &scored).unwrap().0, b);
+        // a tie in sensitivity: the lower false-focus rate
+        let tie = vec![(a, mk(0.8, 0.05, 4.0)), (b, mk(0.8, 0.02, 4.0))];
+        assert_eq!(m6_choice(&PARAMS, &tie).unwrap().0, b);
+        // nobody qualifies: sensitivity less false focus
+        let none = vec![(a, mk(0.9, 0.5, 4.0)), (b, mk(0.7, 0.2, 4.0))];
+        assert_eq!(m6_choice(&PARAMS, &none).unwrap().0, b);
+        assert!(m6_choice(&PARAMS, &[]).is_none());
     }
 }

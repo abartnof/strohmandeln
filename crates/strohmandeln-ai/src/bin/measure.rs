@@ -5,6 +5,7 @@
 //! measure m1 [--seed S] [--plays N] [--bids N] [--streams K]
 //! ```
 
+use kit_learner::Summary;
 use std::time::Instant;
 use strohmandeln_ai::know::Knowledge;
 use strohmandeln_ai::measure::{self, Position};
@@ -47,6 +48,7 @@ fn main() {
         "m3" => m3(&args),
         "m4" => m4(&args),
         "m5" => m5(&args),
+        "m6" => m6(&args),
         "m8" => m8(&args),
         other => panic!("unknown measurement {other}"),
     }
@@ -673,8 +675,17 @@ fn m4(args: &Args) {
     }
     if only.as_deref() != Some("singles") {
         // the bid knock-out with the larger effect stands for `bid`
+        let bid_arg = args
+            .rest
+            .iter()
+            .position(|a| a == "--bid")
+            .and_then(|i| args.rest.get(i + 1).cloned());
         let bid = if only.as_deref() == Some("pairs") {
-            Lesion::AlwaysPass
+            // the larger single effect, from the singles run
+            match bid_arg.as_deref() {
+                Some("coin") => Lesion::Bid,
+                _ => Lesion::AlwaysPass,
+            }
         } else {
             let eff = |l: Lesion| single_effect[&lesion_name(l)].mean;
             if eff(Lesion::Bid) <= eff(Lesion::AlwaysPass) {
@@ -790,6 +801,183 @@ fn m5(args: &Args) {
     println!("\nthe candidate with the best lower bound at or above 0.80, by rule:");
     for (family, (lower, id)) in &best {
         println!("  {family:14} {id:15} {lower:.3}");
+    }
+    println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}
+
+/// The students of M6 with the skill each lacks, the deals within which it
+/// must be named, and a short name.
+fn m6_students() -> Vec<(&'static str, Vec<Lesion>, Option<Skill>, usize)> {
+    vec![
+        ("whole", vec![], None, 0),
+        ("Worth", vec![Lesion::Worth], Some(Skill::Worth), 6),
+        ("Cheap", vec![Lesion::Cheap], Some(Skill::Cheap), 6),
+        ("Off", vec![Lesion::Off], Some(Skill::Off), 6),
+        ("Run", vec![Lesion::Run], Some(Skill::Run), 6),
+        ("Pagat", vec![Lesion::Pagat], Some(Skill::Pagat), 12),
+        ("Void", vec![Lesion::Void], Some(Skill::Void), 6),
+        ("Behind", vec![Lesion::Behind], Some(Skill::Behind), 6),
+        ("Endgame", vec![Lesion::Endgame], Some(Skill::Endgame), 6),
+        ("Bid", vec![Lesion::Bid], Some(Skill::Bid), 12),
+        ("AlwaysPass", vec![Lesion::AlwaysPass], Some(Skill::Bid), 12),
+        (
+            "Announce",
+            vec![Lesion::Announce],
+            Some(Skill::Announce),
+            18,
+        ),
+    ]
+}
+
+/// The windows of every student from `first` (cached in `cache` if given:
+/// each summary's text under a header line).
+fn m6_groups(first: u64, windows: u64, sittings: u64, cache: Option<&str>) -> Vec<measure::Group> {
+    use strohmandeln_ai::tutor::LADDER;
+    let students = m6_students();
+    if let Some(path) = cache {
+        if let Ok(text) = std::fs::read_to_string(path) {
+            let mut groups: Vec<measure::Group> = students
+                .iter()
+                .map(|(name, _, target, by)| measure::Group {
+                    name: (*name).to_string(),
+                    target: target.map(Skill::index),
+                    by: *by,
+                    windows: Vec::new(),
+                })
+                .collect();
+            for block in text.split("@@ ").skip(1) {
+                let (head, body) = block.split_once('\n').expect("a header");
+                let (g, _w) = head.split_once(' ').expect("group window");
+                let g: usize = g.parse().expect("a group");
+                let w: Vec<Summary> = body
+                    .split("%%\n")
+                    .filter(|t| !t.trim().is_empty())
+                    .map(|t| Summary::parse(&LADDER, t).expect("a cached summary"))
+                    .collect();
+                groups[g].windows.push(w);
+            }
+            return groups;
+        }
+    }
+    let mut groups = Vec::new();
+    let mut cached = String::new();
+    for (gi, (name, lesions, target, by)) in students.iter().enumerate() {
+        let mut ws = Vec::new();
+        for w in 0..windows {
+            let sums =
+                measure::student_window(lesions, first + w * sittings, sittings, Config::default());
+            cached.push_str(&format!("@@ {gi} {w}\n"));
+            for s in &sums {
+                cached.push_str(&s.to_text(&LADDER));
+                cached.push_str("%%\n");
+            }
+            ws.push(sums);
+        }
+        println!("  {name}: {windows} windows");
+        groups.push(measure::Group {
+            name: (*name).to_string(),
+            target: target.map(Skill::index),
+            by: *by,
+            windows: ws,
+        });
+    }
+    if let Some(path) = cache {
+        std::fs::write(path, cached).expect("write the cache");
+    }
+    groups
+}
+
+fn m6(args: &Args) {
+    use strohmandeln_ai::tutor::PARAMS;
+    let started = Instant::now();
+    let windows = args.num("--windows", 8);
+    let sittings = args.num("--sittings", 3);
+    let tune_seed = args.num("--seed", 60_000_000);
+    let fresh_seed = args.num("--fresh-seed", 65_000_000);
+    let word = |name: &str| -> Option<String> {
+        args.rest
+            .iter()
+            .position(|a| a == name)
+            .and_then(|i| args.rest.get(i + 1).cloned())
+    };
+    let (tune_cache, fresh_cache) = (word("--tune-cache"), word("--fresh-cache"));
+    println!(
+        "M6: {} students, {windows} windows of {sittings} sittings (6 deals each) from {tune_seed} (tuning) and {fresh_seed} (fresh)",
+        m6_students().len()
+    );
+    let tune = m6_groups(tune_seed, windows, sittings, tune_cache.as_deref());
+    println!(
+        "tuning windows ready, {:.0}s",
+        started.elapsed().as_secs_f64()
+    );
+    let fresh = m6_groups(fresh_seed, windows, sittings, fresh_cache.as_deref());
+    println!(
+        "fresh windows ready, {:.0}s",
+        started.elapsed().as_secs_f64()
+    );
+
+    let report = |label: &str, p: &kit_learner::Params, groups: &[measure::Group]| {
+        let s = measure::score(p, groups);
+        println!(
+            "{label}: sensitivity {:.3}, false focus {:.3}, whole mastered {:.2}",
+            s.sensitivity, s.false_focus, s.whole_mastered
+        );
+        for (n, v) in &s.per_group {
+            print!(" {n} {v:.2};");
+        }
+        println!();
+        s
+    };
+    println!(
+        "\nthe provisional constants (discount {}):",
+        PARAMS.discount
+    );
+    report("tuning", &PARAMS, &tune);
+    report("fresh", &PARAMS, &fresh);
+
+    let grid = measure::m6_grid(&PARAMS);
+    let scored: Vec<(kit_learner::Params, measure::Score)> = grid
+        .iter()
+        .map(|p| (*p, measure::score(p, &tune)))
+        .collect();
+    println!(
+        "\ngrid: {} sets scored on the tuning windows, {:.0}s",
+        scored.len(),
+        started.elapsed().as_secs_f64()
+    );
+    let Some((best, _)) = measure::m6_choice(&PARAMS, &scored) else {
+        println!("no sets");
+        return;
+    };
+    println!(
+        "chosen: discount {} lower {} upper {} master_of_top {} lose_below {}",
+        best.discount, best.lower, best.upper, best.master_of_top, best.lose_below
+    );
+    println!("tuning:");
+    report("  chosen", &best, &tune);
+    println!("fresh:");
+    let f = report("  chosen", &best, &fresh);
+    let ok = f.sensitivity >= 0.7 && f.false_focus <= 0.15 && f.whole_mastered >= 3.0;
+    println!(
+        "acceptance on the fresh windows (sensitivity >= 0.7, false focus <= 0.15, whole mastered >= 3): {}",
+        if ok { "met" } else { "NOT met" }
+    );
+    // how much the choice depends on the tuned windows: the best five
+    let mut top: Vec<&(kit_learner::Params, measure::Score)> = scored.iter().collect();
+    top.sort_by(|a, b| b.1.sensitivity.total_cmp(&a.1.sensitivity));
+    println!("\nthe five most sensitive sets with false focus <= 0.10:");
+    for (p, s) in top.iter().filter(|x| x.1.false_focus <= 0.10).take(5) {
+        println!(
+            "  d {} lo {} up {} m {} l {}: sens {:.3} false {:.3} mastered {:.2}",
+            p.discount,
+            p.lower,
+            p.upper,
+            p.master_of_top,
+            p.lose_below,
+            s.sensitivity,
+            s.false_focus,
+            s.whole_mastered
+        );
     }
     println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
 }
