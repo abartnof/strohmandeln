@@ -12,11 +12,10 @@
 //! they are tested on hand-built positions; [`decision_verdicts`] adds the
 //! search, and [`evidence`] replays a deal record and tallies.
 //!
-//! **Provisional constants.** The values of [`MARGIN`], [`EXACT_MARGIN`],
-//! [`BID_MARGIN`], [`THIRDS_PER_POINT`] and the split-suit share are
-//! placeholders; each names the measurement (M1 to M8, `docs/TUTOR.md` 11)
-//! that sets it. Changing any of them, or the advisor, bumps
-//! [`EVIDENCE_VERSION`].
+//! **Measured constants.** The values of [`MARGIN`], [`EXACT_MARGIN`],
+//! [`BID_MARGIN`], [`THIRDS_PER_POINT`], the split-suit share, [`LADDER`] and
+//! [`PARAMS`] are set by the measurements M1 to M8 (`docs/MEASUREMENTS.md`).
+//! Changing any of them, or the advisor, bumps [`EVIDENCE_VERSION`].
 
 use crate::cardset::{leader_wins, Kind};
 use crate::know::Knowledge;
@@ -34,7 +33,7 @@ use strohmandeln_core::view::{bare_view, View};
 /// The version of what [`evidence`] computes. Bump it whenever a classifier,
 /// a constant or the advisor changes, so that a stored summary made before is
 /// recomputed from its record (`docs/TUTOR.md` 3).
-pub const EVIDENCE_VERSION: u32 = 3;
+pub const EVIDENCE_VERSION: u32 = 4;
 
 /// The resolution of the evidence: a player who loses less than this on a
 /// decision is perfect in it, and a miss costs at least this (so `top_cost` is
@@ -1248,7 +1247,7 @@ mod tests {
     #[test]
     fn the_test_values_fit_the_margin() {
         // near ties are written as gaps of 4 or less, clear chances as 10 or more
-        assert!(4.0 * OPEN < MARGIN && MARGIN < 10.0 * OPEN, "{MARGIN}");
+        const { assert!(4.0 * OPEN < MARGIN && MARGIN < 10.0 * OPEN) };
     }
 
     // ---- the probe (M1) ----------------------------------------------------

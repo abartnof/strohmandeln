@@ -264,7 +264,7 @@ fn bid_take(k: &Knowledge, a: &Action, sure: (u32, u32), tarocks: (usize, usize)
     }
     let (s, t) = sure_thirds(k.hand);
     ((sure.0..=sure.1).contains(&s) && (tarocks.0..=tarocks.1).contains(&t))
-        .then(|| matches!(a, Action::Take))
+        .then_some(matches!(a, Action::Take))
 }
 
 fn announce_made(k: &Knowledge, a: &Action) -> Option<bool> {

@@ -507,18 +507,42 @@ is plainly too small, reporting the interval at the last look (`CLAUDE.md`;
 `strohmandeln-ai/src/stats.rs`, `tournament.rs`). A computed number a document
 relies on has a test or a check that reproduces it.
 
+**Done (15 Oct 2026): M1 to M8 are in `docs/MEASUREMENTS.md`**, each with its
+plan (committed before its first batch), its result and its command; the table
+below is the specification they were run from. The constants they set:
+
+| Constant | Was | Now | From |
+|---|---|---|---|
+| `MARGIN` | 6 thirds | 10 | M1 |
+| `EXACT_MARGIN` | 1 | 1 | M1 |
+| `BID_MARGIN` | 0.5 Point | 0.45 | M1 |
+| `THIRDS_PER_POINT` | 12 | 23 | M2 |
+| `SPLIT_SHARE`, `SPLIT_MIN_POINTS` | (0.3, 0.7), 6 | (0.1, 0.6), 6 | M8 |
+| `LADDER`: `top_rate`, `top_cost`, `min_chances` | fitted to 54 deals | rung 4 against rung 3, 1,200 deals | M3 |
+| `PARAMS.min_gain`, `costly_gain` | 2.0, 8.0 | 1.1, 4.4 thirds a deal | M4 |
+| `PARAMS.discount`, `upper`, `master_of_top` | 0.8, 0.9, 0.85 | 0.88, 0.8, 0.80 | M6 (`lower` 0.2, `lose_below` 0.2 kept) |
+| Rule gates | all provisional | `worth.rich` and `announce` passed, the rest failed | M5 |
+| `EVIDENCE_VERSION` | 3 | 4 | the above change the evidence |
+
+What the runs found against the specification: `void` and `behind` have no
+worth in Points against rung 4 (praise-only, section 2); only 2 of 10
+prerequisite edges were shown; two rules of fourteen passed the gate; the learner
+names `worth` and `off` within six deals but the rare skills not within a
+window (M6 acceptance not met); the evidence is 59 ms a deal in the module and
+the 60-deal recompute goes to a Worker (M7).
+
 | # | Measurement | Gives |
 |---|---|---|
 | M1 | **Advisor noise.** Positions from rung 4's own sittings; each skill's gap re-evaluated under independent seeds; the standard deviation across seeds by skill. Descriptive, a fixed count. | `MARGIN`; the exact margin |
 | M2 | **Thirds per Point.** From rung 4's own deals, the final margin in thirds against the net Points of the deal. The engine's 12 thirds a Point has no basis in the repo. | The exchange rate for costs and for `bid` |
-| M3 | **What the strongest rung meets.** Rung 4 against rung 3, both seats, 30 deals a rule set: chances a deal, met rate and points lost, by skill. | `top_rate`, `top_cost`, `MIN_CHANCES`, the window |
+| M3 | **What the strongest rung meets.** Rung 4 against rung 3, both seats, 1,200 deals at the default settings and 240 at each other: chances a deal, met rate and points lost, by skill. | `top_rate`, `top_cost`, `MIN_CHANCES`, the window |
 | M4 | **What a skill is worth.** Rung 4 with one skill knocked out against itself whole. Action skills are knocked out by withholding the class (never a cover; the Pagat played at random); restraint skills by choosing as if blind to them (`void`, `behind`); `bid` by always passing and by random; `announce` by never; `endgame` by playing rung 2 from the first exact position. Pairs of knockouts check the prerequisites. | `MIN_GAIN`, `COSTLY_GAIN`; the prerequisites |
 | M5 | **Rule precision.** For each rule, the trigger and the prescription as tests of the view and the card; how often rung 4's choice matches when the trigger fires, clustered by deal, the Wilson lower bound from the effective sample; shipped only at 0.80 and confirmed on fresh seeds; each shipped rule re-confirmed under each other setting. Rules that must be measured before shipping: the `off` figure rule with its exception; `run`; `pagat` at seven or fewer and at twelve or more; `bid` at 20-25 points. | The rules (a rule that fails is told as its fact) |
 | M6 | **Diagnosis.** Lesioned students (the M4 knockouts) must be pointed at their skill within a few deals; whole rung 4 at none. In `cargo test`, deterministic. Constants are tuned on one set of windows and checked on fresh seeds. | `DISCOUNT`, `LOWER`, `UPPER`, `MASTER_OF_TOP`, `LOSE_BELOW` |
 | M7 | **Latency.** `hint_latency` (ignored test, `hint.rs`) and the evidence over a deal, native and in the wasm module. Native done (below); wasm still to measure. | Whether the main thread is enough; the cap on advisor worlds |
 | M8 | **The split suit.** The share of a suit's points at which rung 4 starts to prefer another lead. | The `behind` trigger |
 
-**The knock-outs built** (`strohmandeln-ai/src/students.rs`; EVIDENCE_VERSION 3):
+**The knock-outs built** (`strohmandeln-ai/src/students.rs`; the table is from EVIDENCE_VERSION 3, with the margin of 6 thirds, before the constants of `docs/MEASUREMENTS.md`):
 rung 4 with one thing made not to happen, total unless noted. `worth` lets
 every trick go it can; `cheap` plays the dearest card of the outcome chosen;
 `off` never plays a cover while a hand card is legal; `run` leads a random

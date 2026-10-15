@@ -774,8 +774,8 @@ fn m5(args: &Args) {
     );
     let tallies = measure::rule_tallies(&refs, &rules);
     println!(
-        "{:15} {:>6} {:>6} {:>7} {:>7} {:>7}  {}",
-        "id", "fired", "ok", "p", "n_eff", "lower", "rule"
+        "{:15} {:>6} {:>6} {:>7} {:>7} {:>7}  rule",
+        "id", "fired", "ok", "p", "n_eff", "lower"
     );
     let mut best: std::collections::BTreeMap<&str, (f64, &str)> = Default::default();
     for (r, t) in rules.iter().zip(&tallies) {

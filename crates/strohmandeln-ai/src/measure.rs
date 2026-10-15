@@ -1053,7 +1053,13 @@ mod tests {
         ];
         let m = bid_margin_rule(&reads);
         let expect =
-            (2.0 * median(&[0.707_106_781, 2.121_320_343, 1.414_213_562]) / 0.05).round() * 0.05;
+            (2.0 * median(&[
+                std::f64::consts::FRAC_1_SQRT_2,
+                3.0 * std::f64::consts::FRAC_1_SQRT_2,
+                std::f64::consts::SQRT_2,
+            ]) / 0.05)
+                .round()
+                * 0.05;
         assert!((m - expect).abs() < 1e-9, "{m} {expect}");
     }
 
@@ -1170,8 +1176,8 @@ mod tests {
         assert_eq!(g.opened, 1.0);
         // ten bins: 0.4 to 0.7 prefer another lead (bins 4, 5, 6)
         let mut bins = vec![g; 10];
-        for i in 4..7 {
-            bins[i] = b;
+        for bin in &mut bins[4..7] {
+            *bin = b;
         }
         bins[5].mean = -20.0;
         let (lo, hi) = split_band(&bins, 0.0).unwrap();
