@@ -32,6 +32,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
   36 of 70 (`kit/README.md`, "The score HUD").
 - 14 Oct 2026: "Mit einem guten Herzen gewinnt man kein Spiel" (Wander, Herz 239) stays in `trick-bad-yours`: a proverb about play, within the kindness rule (open question in docs/review/talk-and-phrases.md, closed).
 - 15 Oct 2026: the phone layout is on hold until the maintainer has looked at the game on a phone (the table may hold too many cards for one). New features are built for desktop and only must not break on a narrow screen.
+- 15 Oct 2026: the tutor (docs/TUTOR.md 15): a rule is shipped for a skill only if it passes the 0.80 precision gate (M5), else its fact; the brief keeps one example from the deal; the count is the dialog's header; the learner's game-independent parts go to `kit/learner` now, with an equivalence test against Cassino's; a hint "is not counted as evidence" (TABLE3D 6.3.2).
 
 ## Work packages
 
@@ -50,7 +51,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | done (built across 3, 8, 9; language_switch passes) |
 | 12 | Play-through fixes (15 Oct 2026): tutorial pacing and wording; high-visibility faces as in Cassino, numerals that clip in the fan, the stripes on the backs; play by a second click, the HUD's `{n}`, the Kibitzer and § 13 labels, tarocks sorted high to low; hints that give their reasons | 9, 8, 7, 5 | done 15 Oct 2026; also: the phone's hand in two rows, the page chrome in Cassino's Material 3 colours, the gate builds the wasm before the Node tests (reviews: docs/review/faces-fan, colours, tutorial-pacing, tutorial-wording, table-interaction, portrait-hand, hint-reasons-engine, hint-reasons-table) |
 | 13 | Play-through notes (15 Oct 2026): scoring explained (fuller `thirds` and `scoring` pages, an optional "Scoring in full" page from Help and the pages); a page on the pack today (the tarocks are trumps, not fortune-telling cards; the Cavall), from a cited note `research/15-the-pack-today.md`; a card tracker shown with hints (cards played, unseen, voids, masters); larger samples behind the hints' "in x of n" lines, sized by measured cost | 9, 12 | in progress |
-| 14 | The tutor across deals, as Cassino's (DESIGN 12.8): a ladder of skills from the sources (`research/16-skill-ladder.md`), a learner that finds the next skill the player is ready for (prerequisites cleared, surely short of mastery), a gentle brief after each deal with one rule and one or two suggestions (`docs/TUTOR.md`); the game-independent learner moved into the kit | 9, 6 | spec in progress |
+| 14 | The tutor across deals, as Cassino's (DESIGN 12.8): a ladder of skills from the sources (`research/16-skill-ladder.md`), a learner that finds the next skill the player is ready for (prerequisites cleared, surely short of mastery), a gentle brief after each deal with one rule and one or two suggestions (`docs/TUTOR.md`); the game-independent learner moved into the kit | 9, 6 | spec done (15 Oct 2026); building `kit/learner` and the evidence (`tutor.rs`) |
 
 ## Open
 
