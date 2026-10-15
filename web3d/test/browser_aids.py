@@ -4,6 +4,7 @@ the tutor's own. Imported by browser.py."""
 
 import json
 import re
+import tempfile
 from pathlib import Path
 
 from browser import NO_DRAW, PAGE, ROOT, WORDS, STRINGS, check_offline, close_all, fail_if, intersects, js, rest, state, still
@@ -626,7 +627,8 @@ def check_export_import_file(browser, failures):
     saved = json.loads(text)
     fail_if(saved.get("v") != 1 or "export" not in saved or "extras" not in saved, failures, "export_import_file: the file lacks v, export or extras")
     # A bad file is refused and changes nothing.
-    bad = Path("/tmp/sb/bad-sitting.json")
+    files = Path(tempfile.mkdtemp(prefix="sitting-"))
+    bad = files / "bad-sitting.json"
     bad.write_text("{ not json")
     with page.expect_file_chooser() as chooser:
         page.locator("[data-action=load]").click()
@@ -635,7 +637,7 @@ def check_export_import_file(browser, failures):
     fail_if(t("error.load-bad") != page.locator(".refusal").inner_text(), failures, f"export_import_file: a bad file gave {page.locator('.refusal').inner_text()!r}")
     fail_if(state(page)["deal"]["own_hand"] != before["deal"]["own_hand"], failures, "export_import_file: a bad file changed the sitting")
     # The good file loads in a fresh page.
-    good = Path("/tmp/sb/good-sitting.json")
+    good = files / "good-sitting.json"
     good.write_text(text)
     close_all(browser)
     page = open_page(browser, "seed=3&speed=instant&human=1")
@@ -654,11 +656,20 @@ def check_tutor_pages(browser, failures):
     page.wait_for_selector("[data-dialog=page]", timeout=180_000)
     fail_if(js(page, "busy()"), failures, "tutor_pages: the first page opened while the cards moved")
     title = page.locator("[data-dialog=page] h2").inner_text()
-    fail_if(title != t("tutor.page.packets"), failures, f"tutor_pages: the first page is {title!r}, not the packets")
-    page.locator("[data-dialog-act=notnow]").click()
+    fail_if(title != t("tutor.page.the-cards"), failures, f"tutor_pages: the first page is {title!r}, not 'The cards'")
+    # Pages due at one rest follow one at a time, in the table's order (TABLE3D 6.2.2): the cards, the packets, bidding.
+    titles = [title]
+    for _ in range(6):
+        fail_if(page.locator("[data-dialog=page]").count() != 1, failures, "tutor_pages: not one page at a time")
+        page.locator("[data-dialog-act=notnow]").click()
+        page.wait_for_timeout(300)
+        if not page.locator("[data-dialog=page]").count():
+            break
+        titles.append(page.locator("[data-dialog=page] h2").inner_text())
     fail_if(page.locator("[data-dialog=page]").count(), failures, "tutor_pages: Not now did not close the page")
+    fail_if(titles != [t("tutor.page.the-cards"), t("tutor.page.packets"), t("tutor.page.bidding")], failures, f"tutor_pages: the pages came as {titles}, not the cards, the packets, bidding")
     seen = js(page, "prefs()")["seen"]
-    fail_if("packets" not in seen, failures, f"tutor_pages: Not now did not mark the page seen ({seen})")
+    fail_if(not {"the-cards", "packets", "bidding"} <= set(seen), failures, f"tutor_pages: Not now did not mark the pages seen ({seen})")
     rest(page)
     page.keyboard.press("m")
     fail_if(not js(page, "prefs()")["muted"], failures, "tutor_pages: M did not mute the Kibitzer")

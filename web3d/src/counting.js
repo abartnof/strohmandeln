@@ -47,6 +47,17 @@ export function runningTally(events, human) {
   return tally;
 }
 
+// Whether the HUD is showing a deal's live tally: a trick has been won in the deal under way
+// and it is not yet counted. Before the first trick of a new deal, and once counted, the HUD
+// shows the last count (a language switch then keeps its numbers, 7.5.2).
+export function liveTally(events) {
+  for (let i = events.length - 1; i >= 0; i--) {
+    if (events[i].type === "trick_won") return true;
+    if (events[i].type === "count" || events[i].type === "deal_start") return false;
+  }
+  return false;
+}
+
 // The edge of the count (2.5.3, 2.5.4): once a side has 107 thirds the target
 // is joined by a tick on both lines; a side on 106 (35 1/3) is one short.
 export const edgeOf = (totals) => ({

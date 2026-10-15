@@ -25,7 +25,7 @@ import { choreograph, initialPlacement, LAST_TRICK, opening } from "./choreograp
 import { dragKind, sameSpot, shake } from "./gesture.js";
 import { handRange } from "./layout.js";
 import { TRULL, KINGS } from "./cardinfo.js";
-import { bonusLines, countGame, countLines, edgeOf, runningTally } from "./counting.js";
+import { bonusLines, countGame, countLines, edgeOf, liveTally, runningTally } from "./counting.js";
 import { loadEngine } from "./engine.js";
 import { createMirror } from "./mirror.js";
 import { createNewSitting } from "./newsitting.js";
@@ -1310,12 +1310,11 @@ async function main() {
     ui.hudSlot.replaceChildren();
     game = countGame(hudWords());
     hud = createHud(ui.hudSlot, game, { later: (ms, fn) => director.at(ms, fn), reduced: () => calm() });
-    if (log.some((e) => e.type === "deal_start") && !countBegun()) showTally(); // a deal under way keeps its live ledger
-    else {
-      const ledger = countLedger(game, []);
-      ledger.count = { you: totals.you, opp: totals.opp };
-      hud.reset({ hands: [ledger], live: null });
-    }
+    // The numbers are kept as shown: a deal being played keeps its live ledger, otherwise the HUD shows the last count.
+    const ledger = countLedger(game, []);
+    ledger.count = { you: totals.you, opp: totals.opp };
+    if (liveTally(log)) hud.reset({ hands: [], live: ledger });
+    else hud.reset({ hands: [ledger], live: null });
     hud.node.classList.toggle("edge", edgeOf(totals).tick); // the tick (2.5.4) is on the old HUD's node
     if (wasm) {
       refresh();

@@ -1283,6 +1283,7 @@ motion are saved to `web3d/test/out/`.
 - `cover_legibility`: a cover's screen size is within a tenth of a hand card's.
 - `no_face_leak`: at every rest of a whole sitting by clicking, no mesh shows a face
   the view does not give; `strohmandeln_audit` agrees (0.2).
+- `small_landscape_tabs`: at 800×450 and 667×375 the Kibitzer's tabs stack (tutor.css) and lie clear of the 21-card hand after the pull.
 - `phone_row`: portrait hand of 15 is two overlapped rows, every card inside the window, none under the Kibitzer's tabs.
 - `window_resize`: a resize mid-deal re-lays the table without losing a card.
 
@@ -1371,7 +1372,7 @@ motion are saved to `web3d/test/out/`.
 - `opponent_unnamed`: no string or DOM text names the opponent other than "your
   opponent" / "Ihr Gegner".
 - `tutor_pages`: in a seeded sitting each page opens at its first occurrence, once
-  (`the-cards` and `packets` at the deal, `the-pull` at the reveal, ... `extension`); not when
+  (`the-cards`, `packets` and `bidding` at the deal, one at a time, in that order, each Not now bringing the next; `the-pull` at the reveal, ... `extension`); not when
   muted or the tutor is off; each page is in the current language.
 - `tutor_mute`: "§ 13" mutes (one line, then silence); no page, hint or review chip;
   unmute restores them.
