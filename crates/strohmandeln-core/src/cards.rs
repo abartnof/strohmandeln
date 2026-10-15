@@ -366,6 +366,28 @@ mod tests {
         assert_eq!(Card::all().map(|c| c.value()).sum::<u32>(), 106);
     }
 
+    /// The table's value of every card (web3d/test/fixtures/card-values.json,
+    /// which the tutorial pages' value table and web3d/src/cardinfo.js are held
+    /// to in the Node tests) is the engine's, for all 54 codes.
+    #[test]
+    fn rules_1_7_every_card_value_is_the_tables() {
+        let table: std::collections::BTreeMap<String, u32> = serde_json::from_str(include_str!(
+            "../../../web3d/test/fixtures/card-values.json"
+        ))
+        .unwrap();
+        assert_eq!(table.len(), 54);
+        for card in Card::all() {
+            assert_eq!(
+                table.get(&card.code()),
+                Some(&card.value()),
+                "{}",
+                card.code()
+            );
+            assert_eq!(card.thirds(), 3 * card.value() - 2);
+        }
+        assert_eq!(table.values().sum::<u32>(), 106);
+    }
+
     #[test]
     fn rules_8_1_a_card_counts_three_times_value_less_two_thirds() {
         assert_eq!(c("Kh").thirds(), 13);
