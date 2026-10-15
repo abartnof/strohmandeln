@@ -7,10 +7,11 @@
 //! its measurement (`docs/TUTOR.md` 11, M5: how often the strongest rung's
 //! choice matches when the rule's trigger fires, a lower bound of 0.80
 //! confirmed on fresh seeds). That has not been run, so every rule is
-//! [`Gate::Provisional`] and told as the old books' advice. M5 sets each
-//! rule's gate to [`Gate::Passed`] or [`Gate::Failed`] (a failed rule is
-//! never told; its skill's fact is told in its place) and the settings it
-//! was confirmed under ([`Rule::under`]).
+//! [`Gate::Provisional`] and **not told**: the skill's fact is, in its place
+//! ([`TOLD`]; decision of 15 Oct 2026, `docs/TUTOR.md` 6). M5 sets each
+//! rule's gate to [`Gate::Passed`] (told) or [`Gate::Failed`] (never told)
+//! and the settings it was confirmed under ([`Rule::under`]); until then the
+//! `bid` and `pagat` rules are bounded to the default settings.
 
 use crate::tutor::{Direction, Skill, SKILLS};
 use strohmandeln_core::types::Settings;
@@ -111,6 +112,24 @@ const fn rule(key: &'static str, applies: fn(&Context) -> bool) -> Rule {
     }
 }
 
+/// A rule the sources state for the standard game only (`bid`, `pagat`): not
+/// told under another setting until M5 has checked it there.
+const fn standard_rule(key: &'static str, applies: fn(&Context) -> bool) -> Rule {
+    Rule {
+        under: standard,
+        ..rule(key, applies)
+    }
+}
+
+fn standard(s: &Settings) -> bool {
+    *s == Settings::default()
+}
+
+/// The gates a rule may have to be told. A rule that has not been measured
+/// is not told: its skill's fact is (`docs/TUTOR.md` 6: "where no rule has
+/// passed its gate, one plain fact in its place"). M5 sets the gates.
+pub const TOLD: &[Gate] = &[Gate::Passed];
+
 /// The ten lessons, in ladder order.
 pub const LESSONS: [Lesson; SKILLS] = [
     Lesson {
@@ -155,8 +174,8 @@ pub const LESSONS: [Lesson; SKILLS] = [
         skill: Skill::Pagat,
         name: "tutor.name.pagat",
         rules: &[
-            rule("tutor.rule.pagat.cash", few_tarocks),
-            rule("tutor.rule.pagat.keep", many_tarocks),
+            standard_rule("tutor.rule.pagat.cash", few_tarocks),
+            standard_rule("tutor.rule.pagat.keep", many_tarocks),
         ],
         fact: "tutor.fact.pagat",
         tries: ["tutor.try.pagat.1", "tutor.try.pagat.2"],
@@ -191,7 +210,7 @@ pub const LESSONS: [Lesson; SKILLS] = [
     Lesson {
         skill: Skill::Bid,
         name: "tutor.name.bid",
-        rules: &[rule("tutor.rule.bid", passed)],
+        rules: &[standard_rule("tutor.rule.bid", passed)],
         fact: "tutor.fact.bid",
         tries: ["tutor.try.bid.1", "tutor.try.bid.2"],
         nudge: "tutor.nudge.bid",
@@ -210,18 +229,30 @@ pub fn lesson(skill: Skill) -> &'static Lesson {
     &LESSONS[skill.index()]
 }
 
-/// The first of `rules` that has not failed, applies to `ctx` and was
-/// confirmed under `settings`.
-pub fn pick<'a>(rules: &'a [Rule], ctx: &Context, settings: &Settings) -> Option<&'a Rule> {
-    rules
-        .iter()
-        .find(|r| r.gate != Gate::Failed && (r.applies)(ctx) && (r.under)(settings))
+/// The first of `rules` whose gate is among `told`, that applies to `ctx` and
+/// was confirmed under `settings`. A failed rule is never told, whatever
+/// `told` says.
+pub fn pick<'a>(
+    rules: &'a [Rule],
+    ctx: &Context,
+    settings: &Settings,
+    told: &[Gate],
+) -> Option<&'a Rule> {
+    rules.iter().find(|r| {
+        r.gate != Gate::Failed && told.contains(&r.gate) && (r.applies)(ctx) && (r.under)(settings)
+    })
 }
 
 /// The rule told for `skill` at a miss like `ctx` under `settings`, if one
-/// applies; otherwise the skill's fact is told (`Lesson::fact`).
-pub fn taught(skill: Skill, ctx: &Context, settings: &Settings) -> Option<&'static Rule> {
-    pick(lesson(skill).rules, ctx, settings)
+/// applies; otherwise the skill's fact is told (`Lesson::fact`). `told` is
+/// [`TOLD`] outside the tests.
+pub fn taught(
+    skill: Skill,
+    ctx: &Context,
+    settings: &Settings,
+    told: &[Gate],
+) -> Option<&'static Rule> {
+    pick(lesson(skill).rules, ctx, settings, told)
 }
 
 /// Every key the lessons carry, in document order: names, rules, facts,
@@ -243,8 +274,10 @@ mod tests {
     fn ctx(direction: Option<Direction>, tarocks: u32) -> Context {
         Context { direction, tarocks }
     }
+    /// What would be told were the provisional rules admitted.
+    const ADMIT: &[Gate] = &[Gate::Provisional, Gate::Passed];
     fn told(skill: Skill, c: &Context) -> Option<&'static str> {
-        taught(skill, c, &Settings::default()).map(|r| r.key)
+        taught(skill, c, &Settings::default(), ADMIT).map(|r| r.key)
     }
 
     #[test]
@@ -277,16 +310,70 @@ mod tests {
     }
 
     #[test]
-    fn a_rule_that_failed_its_measurement_is_never_told() {
+    fn until_a_rule_passes_its_measurement_its_fact_is_told() {
+        // docs/TUTOR.md 6 and 9: only a rule that passed its gate is told.
+        assert_eq!(TOLD, &[Gate::Passed]);
+        let s = Settings::default();
+        for l in &LESSONS {
+            for direction in [
+                None,
+                Some(Direction::Greedy),
+                Some(Direction::Timid),
+                Some(Direction::Figure),
+                Some(Direction::Pip),
+                Some(Direction::Cash),
+                Some(Direction::Keep),
+                Some(Direction::Passed),
+            ] {
+                for tarocks in [3, 9, 14] {
+                    let c = ctx(direction, tarocks);
+                    assert!(
+                        taught(l.skill, &c, &s, TOLD).is_none(),
+                        "{}",
+                        l.skill.slug()
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn a_rule_is_told_only_if_it_passed_and_never_if_it_failed() {
         let mut rules = [rule("a", any), rule("b", any)];
         let s = Settings::default();
-        assert_eq!(pick(&rules, &ctx(None, 0), &s).unwrap().key, "a");
+        let c = ctx(None, 0);
+        assert!(
+            pick(&rules, &c, &s, TOLD).is_none(),
+            "provisional is not told"
+        );
+        assert_eq!(pick(&rules, &c, &s, ADMIT).unwrap().key, "a");
         rules[0].gate = Gate::Failed;
-        assert_eq!(pick(&rules, &ctx(None, 0), &s).unwrap().key, "b");
+        assert_eq!(pick(&rules, &c, &s, ADMIT).unwrap().key, "b");
         rules[1].gate = Gate::Failed;
-        assert!(pick(&rules, &ctx(None, 0), &s).is_none());
+        assert!(pick(&rules, &c, &s, ADMIT).is_none());
         rules[1].gate = Gate::Passed;
-        assert_eq!(pick(&rules, &ctx(None, 0), &s).unwrap().key, "b");
+        assert_eq!(pick(&rules, &c, &s, TOLD).unwrap().key, "b");
+        rules[1].gate = Gate::Failed;
+        let all = [Gate::Provisional, Gate::Passed, Gate::Failed];
+        assert!(pick(&rules, &c, &s, &all).is_none(), "failed is never told");
+    }
+
+    #[test]
+    fn the_bid_and_pagat_rules_are_told_only_under_the_default_settings() {
+        // The sources state them for the standard game; no other setting has
+        // been checked (M5).
+        let two = Settings {
+            ultimo: 2,
+            ..Settings::default()
+        };
+        let cash = ctx(Some(Direction::Cash), 5);
+        let bid = ctx(Some(Direction::Passed), 6);
+        assert!(taught(Skill::Pagat, &cash, &Settings::default(), ADMIT).is_some());
+        assert!(taught(Skill::Pagat, &cash, &two, ADMIT).is_none());
+        assert!(taught(Skill::Bid, &bid, &Settings::default(), ADMIT).is_some());
+        assert!(taught(Skill::Bid, &bid, &two, ADMIT).is_none());
+        // the rest do not depend on them
+        assert!(taught(Skill::Cheap, &ctx(None, 0), &two, ADMIT).is_some());
     }
 
     #[test]
@@ -302,8 +389,8 @@ mod tests {
             ultimo: 2,
             ..Settings::default()
         };
-        assert!(pick(&r, &ctx(None, 0), &Settings::default()).is_some());
-        assert!(pick(&r, &ctx(None, 0), &two).is_none());
+        assert!(pick(&r, &ctx(None, 0), &Settings::default(), ADMIT).is_some());
+        assert!(pick(&r, &ctx(None, 0), &two, ADMIT).is_none());
     }
 
     #[test]

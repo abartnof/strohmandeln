@@ -25,6 +25,7 @@ use strohmandeln_core::session::{Record, Sitting};
 use strohmandeln_core::types::{Action, Event, Seat, Settings, SetupError, Source};
 use strohmandeln_core::view::{filter_events, view, View};
 
+mod detail;
 pub mod tutor;
 
 /// Bumped whenever the wire format changes in a way a client would notice.

@@ -2,7 +2,7 @@
 //! summaries for the shape, played deals for the whole.
 
 use super::*;
-use crate::lessons;
+use crate::lessons::{self, Gate};
 use crate::opponent::{Config, Level, Opponent};
 use crate::tutor::{Consequence, Direction, Facts, Miss, Skill, LADDER, PARAMS, SKILLS};
 use kit_learner::{learn, Learner, Param, SkillState, Summary, Tally};
@@ -62,8 +62,13 @@ fn deal_of(
         misses,
         settings: Settings::default(),
         variety: 0,
+        // the tests admit the provisional rules; `until_a_rule_passes...` the real
+        told: ADMIT,
     }
 }
+
+/// What the tests admit: the provisional rules too.
+const ADMIT: &[Gate] = &[Gate::Provisional, Gate::Passed];
 
 fn made(history: &[Summary], played: &Played, up: bool) -> Brief {
     let before = learn(&LADDER, &PARAMS, history);
@@ -866,27 +871,24 @@ fn a_brief_after_a_history_counts_the_history_and_leaves_it_alone() {
 }
 
 #[test]
-fn a_sitting_brief_sums_its_deals_as_one_game() {
+fn a_sitting_brief_is_made_of_what_was_kept_and_sums_its_deals() {
     let recs = deals_of(7, 3);
     let budget = Budget::default();
-    let deals: Vec<SittingDeal> = recs
+    let details: Vec<Detail> = recs
+        .iter()
+        .map(|r| detail_of(r, Seat::A, &[], budget).unwrap())
+        .collect();
+    let deals: Vec<SittingDeal> = details
         .iter()
         .enumerate()
-        .map(|(i, r)| SittingDeal {
-            record: r,
-            assisted: &[],
+        .map(|(i, d)| SittingDeal {
             number: i as u32 + 1,
+            detail: d,
         })
         .collect();
-    let b = brief_of_sitting(&deals, Seat::A, &[], 3.0, budget).unwrap();
-    let singles: Vec<Summary> = recs
-        .iter()
-        .map(|r| {
-            crate::tutor::evidence(r, Seat::A, &[], budget)
-                .unwrap()
-                .summary
-        })
-        .collect();
+    let b = brief_of_sitting(&deals, &[], 3.0).unwrap();
+    assert!(b.detail.is_none());
+    let singles: Vec<Summary> = details.iter().map(|d| d.summary.clone()).collect();
     for i in 0..SKILLS {
         let sum = singles.iter().fold(Tally::default(), |t, s| Tally {
             chances: t.chances + s.of(i).chances,
@@ -905,6 +907,61 @@ fn a_sitting_brief_sums_its_deals_as_one_game() {
         }
         assert_ne!(x.lead, "tutor.lead.deal", "a sitting names the deal");
     }
+}
+
+#[test]
+fn a_mastery_is_announced_in_the_brief_of_its_deal_not_again_in_the_sitting() {
+    let d = |s: Summary| Detail {
+        summary: s,
+        decisions: 20,
+        facts: Facts::default(),
+        misses: Default::default(),
+        settings: Settings::default(),
+        variety: 0,
+    };
+    let early = vec![
+        summary(&[(Skill::Worth, 1, 1, 0.0)]),
+        summary(&[(Skill::Worth, 1, 1, 0.0)]),
+    ];
+    let clears = d(summary(&[(Skill::Worth, 12, 12, 0.0)]));
+    // told as a deal it is announced ...
+    let b = brief_from(&[(0, &clears)], &early, 3.0, false);
+    assert_eq!(b.bullets[0].key, "tutor.well.mastered", "{b:?}");
+    // ... and not again as part of the sitting
+    let deals = [SittingDeal {
+        number: 3,
+        detail: &clears,
+    }];
+    let s = brief_of_sitting(&deals, &early, 3.0).unwrap();
+    assert!(
+        s.bullets
+            .iter()
+            .all(|x| !x.key.starts_with("tutor.well.mastered")),
+        "{s:?}"
+    );
+    assert_eq!(brief_of_sitting(&[], &early, 3.0), None);
+}
+
+#[test]
+fn until_a_rule_passes_every_focus_is_told_as_its_fact() {
+    let history = bad_at_worth(4);
+    let mut m = nothing();
+    m[0] = Some((miss(Skill::Worth, Some(Direction::Greedy)), 0));
+    let played = Played {
+        told: lessons::TOLD,
+        ..deal_of(
+            summary(&[(Skill::Worth, 6, 2, 60.0)]),
+            12,
+            m,
+            Facts::default(),
+        )
+    };
+    let b = made(&history, &played, true);
+    assert_eq!(b.bullets[0].key, "tutor.fact.worth", "{b:?}");
+    assert_eq!(
+        b.bullets[1].key, "tutor.miss.worth.poor",
+        "the example is told"
+    );
 }
 
 #[test]

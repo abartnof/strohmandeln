@@ -6,7 +6,7 @@
 //! part of it: the strengths, the rule chosen by the direction of the
 //! costliest miss, the example from the miss and the sitting's sum.
 
-use crate::lessons::{self, Context};
+use crate::lessons::{self, Context, Gate};
 use crate::rung4::Budget;
 use crate::tutor::{
     self, evidence, Consequence, Direction, Facts, Miss, Skill, LADDER, PARAMS, SKILLS,
@@ -92,6 +92,9 @@ pub struct Played {
     pub settings: Settings,
     /// Chooses between a skill's two tries, a pure function of the deal.
     pub variety: usize,
+    /// The gates a rule may have to be told: [`lessons::TOLD`] (tests admit
+    /// more).
+    pub told: &'static [Gate],
 }
 
 /// The brief and what it was worked out from.
@@ -103,6 +106,9 @@ pub struct Brief {
     pub method: &'static str,
     /// The deal's (or sitting's) evidence, which the table stores.
     pub summary: Summary,
+    /// What the table keeps of a deal for the sitting's brief (a single
+    /// deal's brief only).
+    pub detail: Option<Detail>,
     /// The skill to work on, after this deal.
     pub focus: Option<Skill>,
 }
@@ -306,7 +312,8 @@ fn focus_bullets(skill: usize, played: &Played) -> Vec<Bullet> {
         direction: found.and_then(|(m, _)| m.direction),
         tarocks: found.map_or(0, |(m, _)| m.tarocks),
     };
-    let said = lessons::taught(skill_, &ctx, &played.settings).map_or(lesson.fact, |r| r.key);
+    let said =
+        lessons::taught(skill_, &ctx, &played.settings, played.told).map_or(lesson.fact, |r| r.key);
     let next = Bullet::new("tutor.lead.next", said).with("skill", Param::Skill(skill));
     let second = match found.and_then(|(m, n)| example(m).map(|e| (e, *n))) {
         Some(((key, params), n)) => {
@@ -338,24 +345,97 @@ pub fn compose(before: &Learner, after: &Learner, played: &Played, next_opponent
         bullets,
         method: METHOD,
         summary: played.summary.clone(),
+        detail: None,
         focus: after.focus.map(|i| Skill::ALL[i]),
     }
-}
-
-fn learners(history: &[Summary], this: &Summary) -> (Learner, Learner) {
-    let before = learn(&LADDER, &PARAMS, history);
-    let mut all = history.to_vec();
-    all.push(this.clone());
-    (before, learn(&LADDER, &PARAMS, &all))
 }
 
 fn higher_than_top(level: f64) -> bool {
     level < TOP_LEVEL - 1e-9
 }
 
+/// What a scored deal leaves for the briefs, worked out once from its record
+/// when it is scored and kept with it: the sitting's brief is made from these
+/// and does not run the advisor again (`docs/TUTOR.md` 8, review finding 4).
+#[derive(Clone, Debug, PartialEq)]
+pub struct Detail {
+    pub summary: Summary,
+    /// The unassisted decisions with a choice.
+    pub decisions: u32,
+    pub facts: Facts,
+    /// The costliest miss at each skill.
+    pub misses: [Option<Miss>; SKILLS],
+    /// The deal's settings, for the rule to be told under.
+    pub settings: Settings,
+    /// Chooses between a skill's two tries.
+    pub variety: usize,
+}
+
+/// The evidence of a record, as a [`Detail`].
+pub fn detail_of(
+    record: &DealRecord,
+    human: Seat,
+    assisted: &[usize],
+    budget: Budget,
+) -> Result<Detail, ReplayError> {
+    let e = evidence(record, human, assisted, budget)?;
+    Ok(Detail {
+        summary: e.summary,
+        decisions: e.decisions,
+        facts: e.facts,
+        misses: e.costliest,
+        settings: record.settings,
+        variety: record.deck.first().map_or(0, |c| c.index()),
+    })
+}
+
+/// The brief of the deals `parts` (a deal's number in the sitting, 0 for a
+/// single deal, and its detail), told against `history`, the summaries before
+/// them. A sitting is its deals summed as one game for the counts and the
+/// example, and learned deal by deal: a mastery earned in it is announced in
+/// the brief of the deal that earned it, not again in the sitting's.
+fn brief_from(parts: &[(u32, &Detail)], history: &[Summary], level: f64, sitting: bool) -> Brief {
+    let first = parts.first().map(|(_, d)| *d).expect("a deal");
+    let mut played = Played {
+        summary: Summary::new(&LADDER),
+        decisions: 0,
+        facts: Vec::new(),
+        misses: Default::default(),
+        settings: first.settings,
+        variety: first.variety,
+        told: lessons::TOLD,
+    };
+    let mut all = history.to_vec();
+    for (number, d) in parts {
+        for (sum, t) in played.summary.tallies.iter_mut().zip(&d.summary.tallies) {
+            sum.chances += t.chances;
+            sum.met += t.met;
+            sum.missed += t.missed;
+        }
+        played.decisions += d.decisions;
+        played.facts.push(d.facts.clone());
+        for (slot, m) in played.misses.iter_mut().zip(&d.misses) {
+            if let Some(m) = m {
+                if slot.as_ref().is_none_or(|(w, _)| m.cost > w.cost) {
+                    *slot = Some((m.clone(), *number));
+                }
+            }
+        }
+        all.push(d.summary.clone());
+    }
+    let after = learn(&LADDER, &PARAMS, &all);
+    let before = if sitting {
+        after.clone()
+    } else {
+        learn(&LADDER, &PARAMS, history)
+    };
+    compose(&before, &after, &played, higher_than_top(level))
+}
+
 /// The brief of one scored deal: its evidence is worked out here, once, and
-/// is the brief's `summary`. `history` holds the earlier deals' summaries,
-/// oldest first (stale ones are skipped); `level` is the opponent's.
+/// is the brief's `summary` and `detail`. `history` holds the earlier deals'
+/// summaries, oldest first (stale ones are skipped); `level` is the
+/// opponent's.
 pub fn brief_of_deal(
     record: &DealRecord,
     human: Seat,
@@ -364,72 +444,26 @@ pub fn brief_of_deal(
     level: f64,
     budget: Budget,
 ) -> Result<Brief, ReplayError> {
-    let e = evidence(record, human, assisted, budget)?;
-    let mut misses: [Option<(Miss, u32)>; SKILLS] = Default::default();
-    for (slot, m) in misses.iter_mut().zip(&e.costliest) {
-        *slot = m.clone().map(|m| (m, 0));
-    }
-    let played = Played {
-        summary: e.summary,
-        decisions: e.decisions,
-        facts: vec![e.facts],
-        misses,
-        settings: record.settings,
-        variety: record.deck.first().map_or(0, |c| c.index()),
-    };
-    let (before, after) = learners(history, &played.summary);
-    Ok(compose(&before, &after, &played, higher_than_top(level)))
+    let detail = detail_of(record, human, assisted, budget)?;
+    let mut brief = brief_from(&[(0, &detail)], history, level, false);
+    brief.detail = Some(detail);
+    Ok(brief)
 }
 
-/// One deal of a sitting: its record, the actions a hint or nudge was shown
-/// for, and the number the table shows for it.
+/// One deal of a sitting: the number the table shows for it, and what was
+/// kept when it was scored.
 #[derive(Copy, Clone, Debug)]
 pub struct SittingDeal<'a> {
-    pub record: &'a DealRecord,
-    pub assisted: &'a [usize],
     pub number: u32,
+    pub detail: &'a Detail,
 }
 
-/// The brief of a sitting: the same function over its deals as one game
-/// (`docs/TUTOR.md` 6). `history` holds the summaries of the deals before the
-/// sitting. An empty sitting is an error.
-pub fn brief_of_sitting(
-    deals: &[SittingDeal],
-    human: Seat,
-    history: &[Summary],
-    level: f64,
-    budget: Budget,
-) -> Result<Brief, ReplayError> {
-    let first = deals.first().ok_or(ReplayError::Unfinished)?;
-    let mut summary = Summary::new(&LADDER);
-    let mut played = Played {
-        summary: Summary::new(&LADDER),
-        decisions: 0,
-        facts: Vec::new(),
-        misses: Default::default(),
-        settings: first.record.settings,
-        variety: first.record.deck.first().map_or(0, |c| c.index()),
-    };
-    for d in deals {
-        let e = evidence(d.record, human, d.assisted, budget)?;
-        for (sum, t) in summary.tallies.iter_mut().zip(&e.summary.tallies) {
-            sum.chances += t.chances;
-            sum.met += t.met;
-            sum.missed += t.missed;
-        }
-        played.decisions += e.decisions;
-        played.facts.push(e.facts);
-        for (slot, m) in played.misses.iter_mut().zip(e.costliest) {
-            if let Some(m) = m {
-                if slot.as_ref().is_none_or(|(w, _)| m.cost > w.cost) {
-                    *slot = Some((m, d.number));
-                }
-            }
-        }
-    }
-    played.summary = summary;
-    let (before, after) = learners(history, &played.summary);
-    Ok(compose(&before, &after, &played, higher_than_top(level)))
+/// The brief of a sitting (`docs/TUTOR.md` 6) from the deals' kept details;
+/// the advisor does not run. `history` holds the summaries of the deals
+/// before the sitting. `None` for an empty sitting.
+pub fn brief_of_sitting(deals: &[SittingDeal], history: &[Summary], level: f64) -> Option<Brief> {
+    let parts: Vec<(u32, &Detail)> = deals.iter().map(|d| (d.number, d.detail)).collect();
+    (!parts.is_empty()).then(|| brief_from(&parts, history, level, true))
 }
 
 /// The learner over stored summaries, oldest first.
