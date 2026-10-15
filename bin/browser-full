@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# The whole browser suite (docs/TABLE3D.md section 10), serially: one check per
+# browser process, each under its own timeout, one summary line at the end.
+#
+#   bin/browser-full                      every check
+#   bin/browser-full a,b,c                only those (names as in browser.py --only)
+#   CHECK_TIMEOUT=900 bin/browser-full    per-check timeout in seconds (default 600)
+#
+# Exits non-zero if any check failed or timed out. Logs go to $TMPDIR (or /tmp)
+# as browser-full-<check>.log. Run one at a time: the software GPU is slow and
+# parallel browsers distort the timings.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+timeout_s="${CHECK_TIMEOUT:-600}"
+logs="${TMPDIR:-/tmp}"
+py=""
+for candidate in "$HOME/piquet/.venv/bin/python" python3; do
+  if "$candidate" -c "import playwright, PIL" >/dev/null 2>&1; then py="$candidate"; break; fi
+done
+[ -n "$py" ] || { echo "browser-full: no Playwright" >&2; exit 2; }
+python3 kit/build.py --check >/dev/null 2>&1 || { echo "browser-full: the built page is stale (python3 kit/build.py)" >&2; exit 2; }
+if [ $# -gt 0 ]; then
+  names="$1"
+else
+  names=$(cd web3d/test && "$py" -I -c "
+import sys; sys.path.insert(0, '.')
+import browser, browser_scenarios as s, browser_aids as a
+print(','.join(c.__name__[6:] for c in browser.CHECKS_101 + s.CHECKS_102 + s.CHECKS_103 + a.CHECKS_104))")
+fi
+start=$SECONDS
+pass=0
+failed=()
+IFS=',' read -ra list <<< "$names"
+for c in "${list[@]}"; do
+  t0=$SECONDS
+  timeout "$timeout_s" "$py" web3d/test/browser.py --only="$c" >"$logs/browser-full-$c.log" 2>&1
+  rc=$?
+  dt=$((SECONDS - t0))
+  if [ $rc -eq 0 ]; then
+    pass=$((pass + 1))
+    echo "ok   $c (${dt}s)"
+  else
+    why=fail
+    [ $rc -eq 124 ] && why=timeout
+    failed+=("$c:$why")
+    echo "FAIL $c (${dt}s, $why)"
+    grep -E "^(FAIL|  )" "$logs/browser-full-$c.log" | head -5
+  fi
+done
+total=$((SECONDS - start))
+if [ ${#failed[@]} -eq 0 ]; then
+  echo "browser-full: ok ($pass checks, ${total}s)"
+  exit 0
+fi
+echo "browser-full: ${#failed[@]} failed of $((pass + ${#failed[@]})) (${failed[*]}), ${total}s"
+exit 1

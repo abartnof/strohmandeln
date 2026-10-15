@@ -15,7 +15,7 @@
 html, body { margin: 0; height: 100%; overflow: hidden; background: #edeef0; color: #1d2433; }
 #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 #overlay { position: fixed; inset: 0; pointer-events: none; }
-#overlay > * { pointer-events: none; }
+:where(#overlay > *) { pointer-events: none; } /* zero specificity: the classes below turn it back on */
 .loading { position: fixed; inset: 0; display: grid; place-items: center; margin: 0; color: #444; }
 button { font: inherit; }
 

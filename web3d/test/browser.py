@@ -47,10 +47,18 @@ def close_all(browser):
         context.close()
 
 
-def open_page(browser, query="seed=7&speed=instant", viewport=None, reduced=False, wait=True):
+# The software GPU spends about a second on each frame; a flow that reads no pixels
+# (a whole sitting played by the engine's actions) turns the draw calls into no-ops.
+NO_DRAW = """for (const C of [window.WebGLRenderingContext, window.WebGL2RenderingContext]) { if (!C) continue;
+  for (const n of ['drawElements', 'drawArrays', 'drawElementsInstanced', 'drawArraysInstanced', 'drawRangeElements']) if (C.prototype[n]) C.prototype[n] = function () {}; }"""
+
+
+def open_page(browser, query="seed=7&speed=instant", viewport=None, reduced=False, wait=True, nodraw=False):
     """A fresh context, offline, recording every request and console error."""
     context = browser.new_context(viewport=viewport or LANDSCAPE, reduced_motion="reduce" if reduced else "no-preference")
     context.set_offline(True)
+    if nodraw:
+        context.add_init_script(NO_DRAW)
     page = context.new_page()
     page.requests = []
     page.errors = []
@@ -210,7 +218,7 @@ def check_cover_legibility(browser, failures):
 
 
 def check_no_face_leak(browser, failures):
-    page = open_page(browser, "seed=7&speed=instant&human=1", {"width": 800, "height": 450})
+    page = open_page(browser, "seed=7&speed=instant&human=1", {"width": 800, "height": 450}, nodraw=True)  # reads meshes, not pixels
     made = 0
     while True:
         bad = secret(page)
@@ -286,11 +294,12 @@ def run(checks, failures):
 
 
 def main() -> int:
+    import browser_aids as aids
     import browser_scenarios as scenarios
 
     failures = []
     names = next((a.split("=", 1)[1].split(",") for a in sys.argv[1:] if a.startswith("--only=")), None)
-    every = {c.__name__: c for c in CHECKS_101 + scenarios.CHECKS_102 + scenarios.CHECKS_103}
+    every = {c.__name__: c for c in CHECKS_101 + scenarios.CHECKS_102 + scenarios.CHECKS_103 + aids.CHECKS_104}
     if names:
         checks = [every[n if n.startswith("check_") else f"check_{n}"] for n in names]
     elif "--quick" in sys.argv:
