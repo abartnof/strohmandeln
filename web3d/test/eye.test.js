@@ -73,7 +73,7 @@ const heightOf = (slot, at) => {
   return Math.max(...ys) - Math.min(...ys);
 };
 
-test("a cover is drawn as large as a hand card, to within a seventh, in every arrangement and window", async () => {
+test("a cover is drawn as large as a hand card, to within a tenth, in every arrangement and window", async () => {
   const all = await models();
   const m = all.find((x) => x.packets[1].some((p) => p.cover) && x.hand.length >= 15 && !x.held);
   assert.ok(m, "a model with covers");
@@ -90,7 +90,7 @@ test("a cover is drawn as large as a hand card, to within a seventh, in every ar
       const covers = slots.filter((s) => s.cover).map((s) => heightOf(s, at)).sort((a, b) => a - b);
       const hm = hand[0];
       const cm = covers[covers.length >> 1];
-      assert.ok(Math.abs(cm - hm) <= 0.15 * hm, `${name} ${w}x${h}: a cover ${cm.toFixed(0)} px, a hand card ${hm.toFixed(0)} px`);
+      assert.ok(Math.abs(cm - hm) <= 0.10 * hm, `${name} ${w}x${h}: a cover ${cm.toFixed(0)} px, a hand card ${hm.toFixed(0)} px`);
     }
   }
 });
