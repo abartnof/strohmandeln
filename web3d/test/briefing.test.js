@@ -1,0 +1,126 @@
+// The brief as the page gets it (web3d/src/briefing.js): the deal's record
+// taken when it is scored, its evidence worked out once, stored, and the
+// focus read from what is kept. Run against the real module (bin/gate builds
+// it), with an injected store, so the real key is never written.
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createBriefing } from "../src/briefing.js";
+import { KEY, loadDeals, validSummary } from "../src/tutorstore.js";
+import { playSitting, random } from "./sim.js";
+
+const memory = () => {
+  const m = new Map();
+  return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, v), removeItem: (k) => m.delete(k), m };
+};
+
+// A sitting played by random legal actions; `onScored(engine, n)` after each scored deal.
+async function sittingWith(seed, onScored, { limit = 4000 } = {}) {
+  let scored = 0;
+  await playSitting({ seed, touren: 3, human: 0 }, {
+    policy: random(seed),
+    limit,
+    onReply: (reply, engine) => {
+      if (reply.events?.some((e) => e.type === "game_scored")) onScored(engine, ++scored);
+    },
+  });
+  return scored;
+}
+
+test("a scored deal is kept with its record, then briefed once, and its summary is stored", async () => {
+  const store = memory();
+  let briefing;
+  const briefs = [];
+  const scored = await sittingWith(11, (engine, n) => {
+    briefing ??= createBriefing({ store, engine, level: () => 3, now: () => 1_760_000_000 + n });
+    const entry = briefing.recordDeal({ assisted: [], n, sit: "11" });
+    assert.equal(JSON.parse(entry.record).v, 1);
+    const b = briefing.briefOf(entry);
+    briefs.push(b);
+    assert.ok(b.bullets.length >= 1 && b.bullets.length <= 3, JSON.stringify(b));
+    assert.equal(briefing.briefOf(entry), b, "worked out once");
+  }, { limit: 1500 });
+  assert.ok(scored >= 2, `${scored} deals`);
+  const kept = loadDeals(store);
+  assert.equal(kept.length, scored);
+  for (const d of kept) {
+    assert.ok(validSummary(d.summary), "the engine's own text passes the page's check");
+    assert.equal(d.sit, "11");
+  }
+  assert.equal(JSON.parse(store.getItem(KEY)).v, 1);
+  // the stored summary is the brief's
+  assert.equal(kept.at(-1).summary, briefs.at(-1).summary);
+});
+
+test("the focus is read from what is kept; with no storage the brief rests on the deal alone", async () => {
+  const store = memory();
+  let briefing;
+  let bare;
+  await sittingWith(12, (engine, n) => {
+    briefing ??= createBriefing({ store, engine, level: () => 3 });
+    bare ??= createBriefing({ store: null, engine, level: () => 3 });
+    briefing.briefOf(briefing.recordDeal({ assisted: [], n, sit: "12" }));
+    const e2 = bare.recordDeal({ assisted: [], n, sit: "12" });
+    const b = bare.briefOf(e2);
+    assert.ok(b.bullets.length >= 1, "no storage still briefs");
+    assert.ok([null, ...["worth", "cheap", "off", "run", "pagat", "void", "behind", "endgame", "bid", "announce"]].includes(briefing.focus()));
+  }, { limit: 1500 });
+  assert.deepEqual(loadDeals(null), []);
+});
+
+test("the sitting's brief covers the deals of its sitting only", async () => {
+  const store = memory();
+  let briefing;
+  let engineSeen;
+  await sittingWith(13, (engine, n) => {
+    engineSeen = engine;
+    briefing ??= createBriefing({ store, engine, level: () => 3 });
+    briefing.briefOf(briefing.recordDeal({ assisted: [], n, sit: "13" }));
+  }, { limit: 1500 });
+  const other = createBriefing({ store, engine: engineSeen, level: () => 3 });
+  assert.equal(other.sittingBrief("nobody"), null);
+  const b = briefing.sittingBrief("13");
+  assert.ok(b.bullets.length >= 1 && b.bullets.length <= 3);
+  assert.ok(validSummary(b.summary));
+  for (const x of b.bullets) assert.ok(x.key.startsWith("tutor."));
+});
+
+test("an assisted decision is not counted: the numbers go with the record", async () => {
+  const store = memory();
+  let seen = null;
+  await sittingWith(14, (engine, n) => {
+    if (n > 1) return;
+    const briefing = createBriefing({ store, engine, level: () => 3 });
+    const all = Array.from({ length: 60 }, (_, i) => i);
+    const entry = briefing.recordDeal({ assisted: all, n, sit: "14" });
+    seen = briefing.briefOf(entry);
+  }, { limit: 1500 });
+  const tallies = seen.summary.split("\n").slice(1).map((l) => Number(l.split(" ")[1]));
+  assert.ok(tallies.every((c) => c === 0), seen.summary);
+  assert.equal(seen.bullets[0].key, "tutor.short", "nothing counted: a short deal");
+});
+
+test("the nudge follows the focus the page sets", async () => {
+  const store = memory();
+  let asked = 0;
+  let shown = 0;
+  await playSitting({ seed: 15, touren: 3, human: 0 }, {
+    policy: random(15),
+    limit: 300,
+    onReply: (reply, engine) => {
+      const briefing = createBriefing({ store, engine, level: () => 3 });
+      briefing.setFocus("worth");
+      if (reply.state.prompt === "you" && reply.state.phase === "play") {
+        asked++;
+        const n = briefing.nudge();
+        if (n) {
+          shown++;
+          assert.equal(n.skill, "worth");
+          assert.equal(n.key, "tutor.nudge.worth");
+          assert.equal(n.deal_action, reply.state.deal_actions);
+        }
+      }
+    },
+  });
+  assert.ok(asked > 5);
+  assert.ok(shown > 0);
+});
