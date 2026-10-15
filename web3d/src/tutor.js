@@ -11,7 +11,7 @@ import { parseTutorial } from "../../kit/js/tutorial.js";
 // The page keys, in the order they are due when more than one could be
 // (the table of TABLE3D 6.2.2; web3d/test/tutorial.test.js holds them to it).
 // The last, `scoring-full`, is never due: it is read from Help or from a link.
-export const PAGE_KEYS = ["packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension", "scoring-full"];
+export const PAGE_KEYS = ["the-cards", "packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension", "scoring-full"];
 
 // The pages of a tutorial file for the sitting's rule settings. A block of
 // lines between `<!-- if name=value -->` and `<!-- end -->` is kept when the
@@ -43,7 +43,10 @@ const SCORING_FROM = 21;
 export function pagesDue({ events = [], state = null, human = 0, slate = false }) {
   const due = new Set();
   const mine = state?.prompt === "you";
-  if (has(events, "dealt")) due.add("packets");
+  if (has(events, "dealt")) {
+    due.add("the-cards");
+    due.add("packets");
+  }
   if (has(events, "bid") || (mine && state.phase === "bid")) due.add("bidding");
   if (has(events, "reveal_start")) due.add("the-pull");
   const legal = state?.legal ?? [];

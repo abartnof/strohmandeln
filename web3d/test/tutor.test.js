@@ -17,7 +17,7 @@ test("the page keys are those of the table in TABLE3D 6.2.2, in order", () => {
 
 test("each page is due at its own first moment", () => {
   const due = (events, s = state(), more = {}) => pagesDue({ events, state: s, human: 1, ...more });
-  assert.deepEqual(due([ev("dealt", { seat: 1 })]), ["packets"]);
+  assert.deepEqual(due([ev("dealt", { seat: 1 })]), ["the-cards", "packets"], "the cards first, then the packets");
   assert.deepEqual(due([ev("bid", { seat: 0 })]), ["bidding"]);
   assert.deepEqual(due([], state({ prompt: "you", phase: "bid" })), ["bidding"]);
   assert.deepEqual(due([ev("reveal_start", { seat: 1 })]), ["the-pull"]);
@@ -41,7 +41,7 @@ test("each page is due at its own first moment", () => {
 
 test("pages due together come in the order of the table", () => {
   const got = pagesDue({ events: [ev("extension_offered"), ev("dealt", { seat: 0 }), ev("count")], state: state(), human: 0 });
-  assert.deepEqual(got, ["packets", "thirds", "scoring", "extension"]);
+  assert.deepEqual(got, ["the-cards", "packets", "thirds", "scoring", "extension"]);
 });
 
 // A tutor over a plain object of preferences.
@@ -60,10 +60,11 @@ function make(start = {}) {
 
 test("a page opens at rest, once, and the intro line is said with the first", () => {
   const { tutor, opened, said } = make();
-  assert.equal(tutor.rest(state(), [ev("dealt", { seat: 1 })], { human: 1 }), "packets");
-  assert.deepEqual(opened, [["packets", false]]);
+  assert.equal(tutor.rest(state(), [ev("dealt", { seat: 1 })], { human: 1 }), "the-cards");
+  assert.deepEqual(opened, [["the-cards", false]]);
   assert.deepEqual(said, ["kibitz"]);
-  tutor.close("packets");
+  tutor.close("the-cards");
+  tutor.close(tutor.rest(state(), [], { human: 1 }));
   assert.equal(tutor.rest(state(), [], { human: 1 }), null, "nothing owed");
   tutor.rest(state(), [ev("reveal_start", { seat: 1 })], { human: 1 });
   assert.deepEqual(said, ["kibitz"], "the intro once");
@@ -72,8 +73,10 @@ test("a page opens at rest, once, and the intro line is said with the first", ()
 test("one page at a time: the next waits until the first is closed", () => {
   const { tutor, opened } = make();
   tutor.rest(state(), [ev("dealt", { seat: 1 }), ev("reveal_start", { seat: 1 })], { human: 1 });
-  assert.deepEqual(opened.map((o) => o[0]), ["packets"]);
+  assert.deepEqual(opened.map((o) => o[0]), ["the-cards"]);
   assert.equal(tutor.rest(state(), [], { human: 1 }), null, "still open");
+  tutor.close("the-cards");
+  assert.equal(tutor.rest(state(), [], { human: 1 }), "packets", "the pages at one rest follow in the table's order");
   tutor.close("packets");
   assert.equal(tutor.rest(state(), [], { human: 1 }), "the-pull", "owed, now shown");
 });
@@ -81,24 +84,26 @@ test("one page at a time: the next waits until the first is closed", () => {
 test("a page is not opened while a dialog is up, nor lost", () => {
   const { tutor } = make();
   assert.equal(tutor.rest(state(), [ev("dealt", { seat: 1 })], { human: 1, blocked: true }), null);
-  assert.equal(tutor.rest(state(), [], { human: 1 }), "packets");
+  assert.equal(tutor.rest(state(), [], { human: 1 }), "the-cards");
 });
 
 test("'Not now' marks a page seen; 'Remind me' leaves it for the next deal", () => {
   const { tutor, prefs } = make();
   tutor.rest(state(), [ev("dealt", { seat: 1 })], { human: 1 });
-  tutor.close("packets", false);
-  assert.deepEqual(prefs.seen, ["packets"]);
+  tutor.close("the-cards", false);
+  assert.deepEqual(prefs.seen, ["the-cards"]);
   const again = make();
   again.tutor.rest(state(), [ev("dealt", { seat: 1 })], { human: 1 });
-  again.tutor.close("packets", true);
+  again.tutor.close("the-cards", true);
   assert.deepEqual(again.prefs.seen, []);
+  assert.equal(again.tutor.rest(state(), [ev("dealt", { seat: 1 })], { human: 1 }), "packets", "the next page owed, not the same twice in one deal");
+  again.tutor.close("packets", true);
   assert.equal(again.tutor.rest(state(), [ev("dealt", { seat: 1 })], { human: 1 }), null, "not twice in one deal");
-  assert.equal(again.tutor.rest(state(), [ev("deal_start", { deal_number: 2 }), ev("dealt", { seat: 1 })], { human: 1 }), "packets", "at the next occurrence");
+  assert.equal(again.tutor.rest(state(), [ev("deal_start", { deal_number: 2 }), ev("dealt", { seat: 1 })], { human: 1 }), "the-cards", "at the next occurrence");
 });
 
 test("a seen page does not open again", () => {
-  const { tutor } = make({ seen: ["packets"] });
+  const { tutor } = make({ seen: ["the-cards", "packets"] });
   assert.equal(tutor.rest(state(), [ev("dealt", { seat: 1 })], { human: 1 }), null);
 });
 
@@ -179,7 +184,7 @@ test("the intro line is said when the tab is first opened, once a sitting", () =
 // The pacing (docs/review/tutorial-pacing.md): each page is due no later than
 // the first decision it explains is asked, with the events and state of that moment.
 const ASKED = [
-  ["bidding", ["packets", "bidding"], [ev("dealt", { seat: 1 })], state({ prompt: "you", phase: "bid", legal: [{ action: "take" }, { action: "pass" }] })],
+  ["bidding", ["the-cards", "packets", "bidding"], [ev("dealt", { seat: 1 })], state({ prompt: "you", phase: "bid", legal: [{ action: "take" }, { action: "pass" }] })],
   ["playing", ["playing"], [], state({ prompt: "you", legal: [{ action: "play", card: "T5", source: "hand" }], deal: { lead: null, trick_number: 1, own_hand: [] } })],
   ["following", ["playing", "following"], [], state({ prompt: "you", legal: [{ action: "play", card: "T5", source: "hand" }], deal: { lead: "Kh", trick_number: 1, own_hand: [] } })],
   ["from-a-packet", ["playing", "from-a-packet"], [], state({ prompt: "you", legal: [{ action: "play", card: "Qs", source: "packet 2" }], deal: { lead: null, trick_number: 1, own_hand: [] } })],
@@ -204,9 +209,21 @@ test("pacing: the count and the scoring are explained before the first count", (
 
 test("pacing: the pages of one moment come in the order they are needed", () => {
   const i = (k) => PAGE_KEYS.indexOf(k);
-  const order = ["packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension", "scoring-full"];
+  const order = ["the-cards", "packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension", "scoring-full"];
   assert.deepEqual(PAGE_KEYS, order);
   assert.ok(i("bidding") < i("playing"));
+});
+
+test("pacing: the cards are the first page of the first deal, ahead of the packets (TABLE3D 6.2.2)", () => {
+  assert.equal(PAGE_KEYS[0], "the-cards");
+  const { tutor, opened } = make();
+  tutor.rest(state(), [ev("deal_start", { deal_number: 1 }), ev("dealt", { seat: 1 })], { human: 1 });
+  for (let n = 0; tutor.current() && n < 5; n++) {
+    tutor.close(tutor.current());
+    tutor.rest(state(), [], { human: 1 });
+  }
+  assert.deepEqual(opened.map((o) => o[0]), ["the-cards", "packets"]);
+  assert.deepEqual(pagesDue({ events: [ev("bid", { seat: 0 })], state: state(), human: 1 }), ["bidding"], "only at the deal");
 });
 
 test("pacing: the extension prompt waits for every due page, then is asked", () => {

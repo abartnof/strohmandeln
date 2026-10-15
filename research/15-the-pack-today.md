@@ -128,20 +128,22 @@ courts and no index on its suit cards.
 
 ## For the tutor
 
-Each line is at most 25 words, English then German, with its citation. Voice: the kibitzer's, dry and kindly (`docs/TABLE3D.md` 6.5).
+The page `the-cards` (`web3d/tutorial.en.md`, `tutorial.md`) says these lines, at most 25 words each, English then German. Voice: the kibitzer's, dry and kindly (`docs/TABLE3D.md` 6.5).
 
-1. **Made to play.** These cards were made to play with, in Italy, by 1442. Fortune-telling found them only in 1781, in France. [15-S1, ch. 4 and p. 100][15-S6]
-   - Diese Karten wurden zum Spielen gemacht, in Italien, spätestens 1442. Das Wahrsagen kam erst 1781 dazu, aus Frankreich.
-2. **Still played.** Nothing here tells your fortune. If I may: Austrians still play Tarock, and Piatnik of Vienna still prints this pack. [15-S10][15-S11]
-   - Hier wird kein Schicksal gedeutet. Wenn ich mir erlauben darf: In Österreich spielt man Tarock noch immer, und Piatnik in Wien druckt dieses Blatt weiter.
-3. **The tarocks.** The tarocks are simply trumps: I to XXI, and the Sküs above them all. The word "trump" comes from their old name, trionfi. [15-S10][15-S9][15-S2]
-   - Die Tarocke sind schlicht Trümpfe: I bis XXI, und der Sküs über allen. Das Wort „Trumpf“ stammt von ihrem alten Namen, trionfi.
-4. **Tarock, tarot.** In German the game is Tarock and the fortune-teller's deck is Tarot. English uses one word for both, hence the confusion. [15-S7][15-S8]
-   - Im Deutschen heißt das Spiel Tarock und das Blatt der Wahrsagerin Tarot. Das Englische hat für beides ein Wort, daher die Verwechslung.
-5. **The C.** The C is the Cavall, a knight on horseback, worth 3. Tarock packs kept him; the 52-card pack dropped him. [15-S12][15-S1, p. 6][15-S14]
-   - Das C ist der Cavall, ein Reiter zu Pferd, 3 Points wert. Das Tarockblatt hat ihn behalten, das Blatt zu 52 hat ihn verloren.
-6. **Our faces.** On a real pack the courts carry pictures, not letters, and suit cards no index. These big letters are for a quick look. [08-S9][08-S10][15-S1, p. 6]
-   - Auf einem echten Blatt tragen die Bilder keine Buchstaben und die Farbkarten keinen Index. Unsere großen Buchstaben sind für den raschen Blick.
+1. **The tarocks.** The tarocks are trumps: I to XXI, and the Sküs above them all. [15-S10][15-S9]
+   - Die Tarocke sind schlicht Trümpfe: I bis XXI, und der Sküs über allen.
+2. **Made to play.** Tarot cards were made to play with, in Italy, by 1442. Fortune-telling is first heard of in 1781, in France. [15-S1, ch. 4 and p. 100][15-S6] Dummett's 1781 is the earliest mention found, not a proved first use.
+   - Tarockkarten wurden zum Spielen gemacht, in Italien, spätestens 1442. Vom Wahrsagen mit ihnen ist erst ab 1781 die Rede, in Frankreich.
+3. **Still played.** Nothing here tells your fortune. Austrians still play Tarock, and Piatnik still sells Tarock packs. [15-S10][15-S11] The Piatnik page names neither Vienna nor the pattern; "Piatnik of Vienna" and "this pack" are inferences and are not said.
+   - Hier wird kein Schicksal gedeutet. In Österreich spielt man noch immer Tarock, und Piatnik verkauft heute noch Tarockblätter.
+4. **Tarock, tarot.** German keeps two words: Tarock for the game, Tarot for the fortune-telling deck. English uses one for both, hence the mix-ups. [15-S7][15-S8]
+   - Im Deutschen heißt das Spiel Tarock und das Blatt zum Wahrsagen Tarot. Das Englische hat für beides ein Wort, daher die Verwechslung.
+5. **The C.** The C is the Cavall, a knight on horseback, worth 3 points. Tarock packs kept him; the 52-card pack dropped him. [15-S12][15-S1, p. 6][15-S14]
+   - Das C ist der Cavall, ein Reiter zu Pferd, 3 Augen wert. Tarockblätter haben ihn, das Französische Blatt zu 52 Karten nicht.
+6. **Our faces.** On a real pack the courts carry pictures, not letters. These big letters and corner numbers are for a quick look. [08-S9][08-S10][15-S1, p. 6]
+   - Auf einem echten Blatt tragen die Hofkarten Bilder statt Buchstaben. Unsere großen Buchstaben und Eckzahlen sind für den raschen Blick.
+
+Dropped for length: the origin of "trump" in *trionfi* [15-S2][15-S7]. "Points" is for payments only; a card's value is "points" (en) and "Augen" (de).
 
 ## Sources
 

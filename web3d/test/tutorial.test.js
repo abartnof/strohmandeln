@@ -19,11 +19,12 @@ const LINE_WORDS = 25;
 const OVER_WORDS = { "scoring-full": 1500 };
 const OVER_LINE = { "scoring-full": 45 };
 
-test("the spec lists fourteen page keys: thirteen that fall due, and the long scoring page that does not", () => {
-  assert.equal(KEYS.length, 14);
-  assert.equal(KEYS[0], "packets");
-  assert.equal(KEYS[12], "extension");
-  assert.equal(KEYS[13], "scoring-full");
+test("the spec lists fifteen page keys: fourteen that fall due, and the long scoring page that does not", () => {
+  assert.equal(KEYS.length, 15);
+  assert.equal(KEYS[0], "the-cards");
+  assert.equal(KEYS[1], "packets");
+  assert.equal(KEYS[13], "extension");
+  assert.equal(KEYS[14], "scoring-full");
 });
 
 for (const lang of ["en", "de"]) {
@@ -140,4 +141,54 @@ test("a block may name several settings, and is kept only when all of them hold"
   assert.deepEqual(items({ values: "2/3/4", both_pass: "play" }), ["both", "values only", "last"]);
   assert.deepEqual(items({ values: "2/3/4", both_pass: "throw_in" }), ["values only", "last"]);
   assert.deepEqual(items({ values: "1/2/3", both_pass: "play" }), ["last"]);
+});
+
+// The cards page (research/15 "For the tutor"): the tarocks, the Cavall, what the faces leave out.
+test("the cards page says what the tarocks and the C are, with the dates, in both languages", () => {
+  const en = text("en", "the-cards");
+  assert.match(en, /trumps: I to XXI, and the Sküs/);
+  assert.match(en, /Tarot cards were made to play with, in Italy, by 1442/);
+  assert.match(en, /Fortune-telling is first heard of in 1781, in France/);
+  assert.match(en, /1442/);
+  assert.match(en, /1781/);
+  assert.match(en, /Nothing here tells your fortune/);
+  assert.match(en, /Austrians still play Tarock, and Piatnik still sells Tarock packs/);
+  assert.doesNotMatch(en, /Vienna|this pack|If I may/, "what research/15-S11 shows and no more");
+  assert.match(en, /hence the mix-ups/);
+  assert.match(en, /Tarock for the game, Tarot for/);
+  assert.match(en, /C is the Cavall, a knight[^\n]*worth 3 points/);
+  assert.match(en, /52-card pack dropped him/);
+  assert.match(en, /big letters and corner numbers are for a quick look/);
+  const de = text("de", "the-cards");
+  assert.match(de, /Trümpfe: I bis XXI, und der Sküs/);
+  assert.match(de, /1442/);
+  assert.match(de, /1781/);
+  assert.match(de, /kein Schicksal/);
+  assert.match(de, /Piatnik verkauft heute noch Tarockblätter/);
+  assert.doesNotMatch(de, /Wien|dieses Blatt|erlauben/);
+  assert.match(de, /Tarockkarten wurden zum Spielen gemacht, in Italien, spätestens 1442/);
+  assert.match(de, /ab 1781 die Rede, in Frankreich/);
+  assert.match(de, /Tarock[^\n]*Tarot/);
+  assert.match(de, /C ist der Cavall[^\n]*Reiter[^\n]*3 Augen wert/);
+  assert.match(de, /Französische Blatt zu 52 Karten nicht/);
+  assert.match(de, /Buchstaben und Eckzahlen sind für den raschen Blick/);
+  assert.doesNotMatch(de, /Points/, "a card's value is in Augen; a Point is a payment");
+  assert.doesNotMatch(en, /\bPoints?\b/);
+});
+
+test("the cards page is a few lines under the ordinary pop-up limits, with no exemption", () => {
+  for (const lang of ["en", "de"]) {
+    const p = page(lang, "the-cards");
+    const ls = lines(p);
+    assert.ok(ls.length >= 6 && ls.length <= 9, `${lang}: ${ls.length} lines`);
+    assert.ok(words(p.title) + ls.reduce((n, l) => n + words(l), 0) <= PAGE_WORDS);
+    assert.ok(!("the-cards" in OVER_WORDS) && !("the-cards" in OVER_LINE));
+  }
+});
+
+test("the cards page's sources are in the header of both tutorial files", () => {
+  for (const f of ["../tutorial.en.md", "../tutorial.md"]) {
+    const head = read(f).split("-->")[0];
+    for (const id of ["15-S1", "15-S6", "15-S7", "15-S10", "15-S11", "15-S12", "15-S14"]) assert.ok(head.includes(id), `${f}: ${id}`);
+  }
 });

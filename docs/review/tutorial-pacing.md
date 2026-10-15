@@ -60,3 +60,7 @@ Fixed:
 - The "source check" that grepped `main.js` for call order and a regexp is replaced by a behavioural test: the gate is the exported `extendPromptDue` (tutor.js), used by `refresh`, and the test walks a rest with several due pages through closing each and asserts the prompt is held, then asked; tutor off never holds it.
 
 Open: none. Note: `tutorial.test.js` word-limit test failed once while another reviewer was editing `web3d/tutorial*.md` in the same worktree; it passes on the committed wording.
+
+## 2026-10-15: the cards page
+
+New row 0, before the audit's row 1: the cards are the first thing a newcomer sees, so `the-cards` ("The cards" / "Die Karten") is due at the first `dealt`, ahead of `packets`; it asks nothing and is read before the deal's first decision. Pages due at one rest still follow in the table's order (`web3d/test/tutor.test.js`, "pacing: the cards are the first page"). Content and sources: `research/15-the-pack-today.md`. The 14 audited decisions and their pins are unchanged.
