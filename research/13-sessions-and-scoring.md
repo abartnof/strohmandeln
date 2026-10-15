@@ -140,8 +140,8 @@ For a single player vs the computer, with period-correct display.
 
 ## Sources
 
-- **13-S1** Sigmund Ulmann, *Illustrirtes Wiener Tarockbuch*, 2nd ed., Vienna 1899 (ÖNB ABO +Z327250908), OCR `research/sources/03/abo/ulmann1899/ocr.txt`; excerpts `sources/13/extracts/ulmann_*.txt`. Pages used: p. 19-20 [scan 31] Beendigung des Spieles; p. 38 Stamm/Jude; p. 39-41 Block-Tarok; p. 43-47 Abrechnung/Brunnen; p. 70-71 [scan 81-82] Strohmann-Tarok; p. 78 [scan 90] points. [OCR]
-- **13-S2** K. Werner, *Das Tarokspiel. Eine Anleitung...*, 2nd ed., Vienna/Pest/Leipzig (A. Hartleben) 1891 (Wienbibliothek PDF 3724659), `sources/03/wb/3724659.txt`; excerpt `extracts/werner_markiren.txt`; pp. 8-12, 60-62 (Das Markiren), 129-135 (Das Strohmann-Tarok). [OCR]
+- **13-S1** Sigmund Ulmann, *Illustrirtes Wiener Tarokbuch*, 2nd ed., Vienna 1899 (ÖNB ABO +Z327250908), OCR `research/sources/03/abo/ulmann1899/ocr.txt`; excerpts `sources/13/extracts/ulmann_*.txt`. Pages used: p. 19-20 [scan 31] Beendigung des Spieles; p. 38 Stamm/Jude; p. 39-41 Block-Tarok; p. 43-47 Abrechnung/Brunnen; p. 70-71 [scan 81-82] Strohmann-Tarok; p. 78 [scan 90] points. [OCR]
+- **13-S2** K. Werner, *Das moderne Tarokspiel. Eine Anleitung...*, 2nd ed., Vienna/Pest/Leipzig (A. Hartleben) 1891 (Wienbibliothek PDF 3724659), `sources/03/wb/3724659.txt`; excerpt `extracts/werner_markiren.txt`; pp. 8-12, 60-62 (Das Markiren), 129-135 (Das Strohmann-Tarok). [OCR]
 - **13-S3** Bermann (title in `sources/03/abo/bermann1894/meta.json`), Vienna 1894, ÖNB ABO; pp. 11-12, 23-24, 43-44 (scan 57-58: "Die Schluss-Touren"), 46-47, 52-53; excerpt `extracts/bermann_schlusstouren.txt`. [OCR]
 - **13-S4** Mayr/Sedlaczek, Tarockspiele.com Strohmann-Tarock rules: `sources/07d/ms_web_2002.html.txt` (lines 158, 276, 327). 
 - **13-S5** Markus Mair, "Strohmandeln (zu zweit)", tarock.tirol, Jänner 2025, `sources/07/tirol_strohmandln.txt`.
