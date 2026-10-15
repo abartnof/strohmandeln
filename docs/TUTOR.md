@@ -34,7 +34,7 @@ margin (1 Point = 12 thirds, `sim::ULTIMO_THIRDS`).
 | Focus: largest gain among skills with cleared prerequisites | Kept; exact ties go to the earlier stage | The prerequisites carry the order; the stage only breaks ties. |
 | Long prose review replaced by the brief | The brief from the start | Cassino wrote the prose first and replaced it: "what people read" is a few bullets (12.4). |
 | `hint` and `nudged` are commands that mark the decision | The table keeps the list of assisted decisions and passes it in (section 3) | `strohmandeln_hint` is a pure query (`docs/PROTOCOL.md`). |
-| Heavy calls on the main thread, then a Worker | **A Worker from the start** | The evidence is seconds a deal, not milliseconds (section 11, M7). |
+| Heavy calls on the main thread, then a Worker | **Main thread first; a Worker for the history recompute and slow devices** | The evidence is tens of milliseconds a deal native, about a tenth of a second in wasm (section 11, M7), so one deal's evidence does not need a Worker; recomputing many stale summaries at once does. |
 | Rules measured: precision lower bound 0.80, confirmed on fresh seeds | Kept | Section 11, M5. |
 | Constants set from the strongest rung's games and lesioned students | Kept; none invented here | Section 11. |
 
@@ -94,8 +94,13 @@ keep per deal and replays only from its start.
 **Assisted.** A decision is *assisted* when a hint was shown for it
 (`strohmandeln_hint`) or the tutor's nudge was (section 7). Assisted decisions
 are not evidence: teaching would otherwise spoil the measuring. The table keeps
-the list for the deal as the numbers of the human's actions (action *n* of the
-deal) and stores it with the record; the engine takes it as an input. Asking for
+the list for the deal as action numbers, counted from 0 over **both seats'**
+actions of the deal (bids and announcements included), and stores it with the
+record; the engine takes it as an input. The number is the engine's, not the
+table's count: `state.deal_actions` and the hint's `action`
+(`docs/PROTOCOL.md`). An assisted `Announce` also covers the actions of the same
+turn up to the card played (a hint is for the position, and the human may
+announce before the card it was about). Asking for
 a hint stays free and changes nothing in the game; `docs/TABLE3D.md` 6.3.2 says
 asking "is never counted" and is amended to "is not counted as evidence".
 
@@ -124,18 +129,33 @@ every card, deterministic from the view as the hint is, `docs/OPPONENT.md`). For
 each skill whose question applies it works out the best value of each class.
 
 - **Margin.** A chance needs the best class to beat the next by more than
-  `MARGIN`, the advisor's noise. In an exact position the advisor is exact and
-  the margin is the least loss the review counts. Near-ties are no evidence
-  either way. `MARGIN` is measured (M1), not set here.
+  `MARGIN`, the advisor's noise, **and** by more than twice the standard error
+  of the difference over the sampled worlds (the per-world values of the two
+  classes' best cards, paired, as `hint.rs` `odds_for`): a one-sided trigger on a
+  noisy gap would otherwise pick the positive noise (rung 4 met 58% of its `off`
+  chances before the rule, 91% after). The margin is `EXACT_MARGIN` (the least
+  loss the review counts) only where the search is **complete**: nothing is face
+  down and it reached the last trick (`depth >= 28 - trick`); a known position
+  searched only a few tricks deep is not exact. A decision whose search finished
+  no trick (a budget too small) is skipped. Near-ties are no evidence either way.
+  `MARGIN` is measured (M1), not set here.
+- **Cost** is thirds of the count, the same unit for every skill, and is **not**
+  scaled by the doubling (the skill is the play, not the stakes). `bid` and
+  `announce` are converted with `THIRDS_PER_POINT`, borrowed from the solver's
+  ultimo weight and named for M2.
 - **Action skills** (`off`, and `worth` toward winning) count only where the
   skill's class is right. Where the other class is right, nothing is shown, as in
   Cassino. `worth` and `pagat` and `bid` have two right classes and count both.
 - **Spread skills** (`cheap`, `run`, `endgame`): the best card against the worst
-  of the same kind; met if the card played is within `MARGIN` of the best.
-- **Deterministic skills.** `announce` needs no advisor; `bid` takes the
-  expectation of `bid_advantage` over its own sampled worlds (40, `Budget`) and
-  scales its margin by the deal's multiplier (the opponent's own fixed margin
-  does not, `docs/review/opponent.md`).
+  of the same kind; met unless the card played is clearly (as above) worse than
+  the best. `run` judges which tarock only, not whether to lead one.
+- **`pagat`** counts only when following. Leading the Pagat is almost always
+  worse than a tarock by the margin, so keeping it is trivial: over nine
+  sittings a random player met 83 of 91 leads against rung 4's 107 of 107, but
+  following 15 of 29 against 32 of 34 (`print_pagat_variants`).
+- **Deterministic skills.** `announce` needs no advisor; `bid` takes the mean of
+  `rung4::bid_samples` over its own sampled worlds (40, `Budget`), per unit of
+  doubling, and needs it beyond `BID_MARGIN` and twice its standard error.
 - **A skill's rule applies** to a missed chance only when the chance lies in the
   rule's trigger; otherwise the plain fact is told (section 8). Example: the
   `pagat` rule ("seven or fewer", "twelve or more") applies at the tarock counts
@@ -404,8 +424,9 @@ stateless (`_of`) so a Worker with an instance of its own can run them.
 | `strohmandeln_nudge()` | | `{skill, key}` or `null`: whether this decision is a clear chance at the focus (one advisor run, asked once per position, keyed like the hint). |
 
 The hint (`strohmandeln_hint`) is unchanged. The page asks for `evidence` and the
-brief once the deal's ending has settled, off the table's thread (`docs/TABLE3D.md`
-6.4.3, now required), and sends nothing to the engine for a hint shown: it adds
+brief once the deal's ending has settled, in a Worker where there is one
+(`docs/TABLE3D.md` 6.4.3; section 11, M7: one deal's evidence is short enough for
+the main thread as the fallback, the history recompute is not), and sends nothing to the engine for a hint shown: it adds
 the action number to its assisted list.
 
 ## 11. Measurements, each planned before its first batch
@@ -426,17 +447,22 @@ relies on has a test or a check that reproduces it.
 | M4 | **What a skill is worth.** Rung 4 with one skill knocked out against itself whole. Action skills are knocked out by withholding the class (never a cover; the Pagat played at random); restraint skills by choosing as if blind to them (`void`, `behind`); `bid` by always passing and by random; `announce` by never; `endgame` by playing rung 2 from the first exact position. Pairs of knockouts check the prerequisites. | `MIN_GAIN`, `COSTLY_GAIN`; the prerequisites |
 | M5 | **Rule precision.** For each rule, the trigger and the prescription as tests of the view and the card; how often rung 4's choice matches when the trigger fires, clustered by deal, the Wilson lower bound from the effective sample; shipped only at 0.80 and confirmed on fresh seeds; each shipped rule re-confirmed under each other setting. Rules that must be measured before shipping: the `off` figure rule with its exception; `run`; `pagat` at seven or fewer and at twelve or more; `bid` at 20-25 points. | The rules (a rule that fails is told as its fact) |
 | M6 | **Diagnosis.** Lesioned students (the M4 knockouts) must be pointed at their skill within a few deals; whole rung 4 at none. In `cargo test`, deterministic. Constants are tuned on one set of windows and checked on fresh seeds. | `DISCOUNT`, `LOWER`, `UPPER`, `MASTER_OF_TOP`, `LOSE_BELOW` |
-| M7 | **Latency.** `hint_latency` (ignored test, `hint.rs`) and the evidence over a deal, native and in the wasm module. | Whether the Worker is enough; the cap on advisor worlds |
+| M7 | **Latency.** `hint_latency` (ignored test, `hint.rs`) and the evidence over a deal, native and in the wasm module. Native done (below); wasm still to measure. | Whether the main thread is enough; the cap on advisor worlds |
 | M8 | **The split suit.** The share of a suit's points at which rung 4 starts to prefer another lead. | The `behind` trigger |
 
 **Compute estimate**, for the maintainer before any run (`CLAUDE.md`): rung 4's
 median is 7 ms a decision in wasm (`docs/OPPONENT.md`), about 3.5 s a 3-Touren
 sitting, so a mirrored pair is about 7 s and 50 pairs about 6 minutes a
-comparison; ten knockouts about an hour. The hint is about 125 ms native
-(`PLAN.md`); a deal has about 14 decisions with a choice, so M1 (600 positions x 8
-seeds) is about 10 minutes and the evidence of a deal about 2 s native. Total
-about 2 hours on the 2-core VM, to be confirmed by timing one pair before the
-first batch.
+comparison; ten knockouts about an hour. The level-4 hint is about 4.6 ms median
+native and 8 ms in wasm (`docs/OPPONENT.md`, "Hint evidence"), so M1 (600
+positions x 8 seeds, about 5000 searches) is about a minute. Measured
+(`evidence_latency`, ignored test, `tutor_tests.rs`; release, native, 24 deals
+played by rung 4, default `Budget`, VM load about 3, after the noise rule and the
+larger search for known positions): the evidence of a deal is 32 ms median and
+67 ms p95 (42 to 56 ms and 71 to 81 ms before; 0.17 s and 0.29 s while other
+tests ran beside it); at the hint's wasm-to-native ratio (1.7) about 0.06 s
+median and 0.12 s p95 in wasm. Total about 1 hour 10 minutes on the 2-core VM, to be
+confirmed by timing one pair before the first batch.
 
 ## 12. Tests
 

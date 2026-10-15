@@ -176,3 +176,25 @@ fn the_knowledge_carries_the_settings_and_multiplier_of_the_view() {
         (Values::V124, BothPass::ThrowIn, 1)
     );
 }
+
+#[test]
+fn the_bid_samples_are_the_per_world_payoffs_of_the_bid_estimate() {
+    // The estimate is the doubling times the mean of the per-world payoffs,
+    // the same worlds in the same order (the tutor takes their spread).
+    let dream = bidding(&[
+        "SK", "T21", "T1", "T20", "T19", "T18", "T17", "T16", "Kh", "Kd", "Kc", "Ks", "Qh", "Qd",
+        "Qc",
+    ]);
+    for multiplier in [1, 2] {
+        let mut k = dream.clone();
+        k.multiplier = multiplier;
+        let samples = bid_samples(&k, &mut Rng::seeded(4), 40);
+        assert_eq!(samples.len(), 40);
+        let mean = samples.iter().sum::<f64>() / 40.0;
+        let adv = bid_advantage(&k, &mut Rng::seeded(4), 40);
+        assert!(
+            (f64::from(multiplier) * mean - adv).abs() < 1e-9,
+            "{mean} {adv}"
+        );
+    }
+}

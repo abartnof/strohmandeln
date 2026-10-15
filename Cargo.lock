@@ -83,6 +83,7 @@ dependencies = [
 name = "strohmandeln-ai"
 version = "0.1.0"
 dependencies = [
+ "kit-learner",
  "strohmandeln-core",
 ]
 

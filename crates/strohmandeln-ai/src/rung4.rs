@@ -171,6 +171,32 @@ pub fn bid_advantage(k: &Knowledge, rng: &mut Rng, worlds: usize) -> f64 {
     f64::from(k.multiplier) * (take - simple)
 }
 
+/// The payoff in Points, per sampled world, of taking up against the simple
+/// game, not yet times the doubling: [`bid_advantage`] is the doubling times
+/// the mean of these, over the same worlds in the same order. The tutor takes
+/// their spread to tell a clear bid from noise (`tutor.rs`).
+pub fn bid_samples(k: &Knowledge, rng: &mut Rng, worlds: usize) -> Vec<f64> {
+    let (simple_v, win_v, lose_v) = k.values.triple();
+    (0..worlds)
+        .map(|_| {
+            let thirds = sample(k, rng).sim(k).rollout_thirds();
+            let take = if thirds >= 107 {
+                f64::from(win_v)
+            } else {
+                -f64::from(lose_v)
+            };
+            let simple = match k.both_pass {
+                BothPass::Play => {
+                    f64::from(simple_v)
+                        * (f64::from(u8::from(thirds >= 107)) - f64::from(u8::from(thirds <= 103)))
+                }
+                BothPass::ThrowIn => 0.0,
+            };
+            take - simple
+        })
+        .collect()
+}
+
 /// A decision at rung 4.
 pub fn decide(
     view: &View,
