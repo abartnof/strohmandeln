@@ -502,31 +502,86 @@ examples.
 member of the game), vendored with the STAMP convention (`kit/README.md`): `STAMP`
 lists each file with its Cassino source path and how it differs.
 
+Crate `kit-learner` (lib `kit_learner`), as built (15 Oct 2026):
+
 ```rust
+// The ladder and the constants
 pub struct SkillSpec { pub slug: &'static str, pub needs: &'static [usize],
                        pub top_rate: f64, pub top_cost: f64, pub min_chances: f64 }
-pub struct Params { pub discount: f64, pub min_chances: f64, pub min_gain: f64,
-                    pub costly_gain: f64, pub costly_chances: f64,
-                    pub lower: f64, pub upper: f64,
-                    pub master_of_top: f64, pub lose_below: f64 }
 pub struct Ladder { pub name: &'static str, pub version: u32, pub skills: &'static [SkillSpec] }
-pub struct Summary { /* version, one Tally per skill */ }   // to_text / parse, by Ladder
-pub fn learn(ladder: &Ladder, p: &Params, games: &[Summary]) -> Learner;
-pub fn stale(ladder: &Ladder, games: &[Summary]) -> Vec<usize>;
+impl Ladder { pub fn check(&self) -> Result<(), String>;      // slugs, needs, rates
+              pub fn index_of(&self, slug: &str) -> Option<usize>; }
+pub struct Params { pub discount: f64, pub min_gain: f64, pub costly_gain: f64,
+                    pub costly_chances: f64, pub lower: f64, pub upper: f64,
+                    pub master_of_top: f64, pub lose_below: f64 }
+impl Params { pub const CASSINO: Params;                       // starting values only
+              pub fn master(&self, s: &SkillSpec) -> f64;      // master_of_top * top_rate
+              pub fn lose(&self, s: &SkillSpec) -> f64; }      // master - lose_below, at least 0
+// Evidence
+pub struct Tally { pub chances: u32, pub met: u32, pub missed: f64 }
+pub struct Chance { pub skill: usize, pub met: bool, pub gap: f64 }
+pub struct Summary { pub version: u32, pub tallies: Vec<Tally> }   // one per skill, ladder order
+impl Summary { pub fn new(l: &Ladder) -> Summary;
+               pub fn from_chances(l: &Ladder, c: &[Chance]) -> Summary;
+               pub fn of(&self, skill: usize) -> Tally;
+               pub fn is_current(&self, l: &Ladder) -> bool;        // version and size fit
+               pub fn to_text(&self, l: &Ladder) -> String;         // "<name> evidence v<n>", a line a skill
+               pub fn parse(l: &Ladder, text: &str) -> Result<Summary, String>; }
+pub fn stale(l: &Ladder, games: &[Summary]) -> Vec<usize>;
+// The learner
+pub struct SkillState { pub mastered: bool, pub chances: f64, pub met: f64, pub cost: f64, pub gain: f64 }
+pub struct Learner { pub games: usize, pub skills: Vec<SkillState>,
+                     pub just_mastered: Vec<usize>, pub focus: Option<usize> }
+impl Learner { pub fn state(&self, skill: usize) -> SkillState;
+               pub fn mastered(&self, skill: usize) -> bool; }
+pub fn learn(l: &Ladder, p: &Params, games: &[Summary]) -> Learner;
+// The brief's shape
+pub const MAX_BULLETS: usize = 3;
+pub enum Param { Int(i64), Num(f64), Text(String), Skill(usize) }
 pub struct Bullet { pub lead: String, pub key: String, pub params: Vec<(String, Param)> }
+pub struct Strength { pub bullet: Bullet, pub praises: Vec<usize> }
+pub struct Keys { pub short: &'static str, pub well_lead: &'static str, pub well_mastered: &'static str,
+                  pub none_early: &'static str, pub none_clean: &'static str, pub none_up: &'static str }
+pub struct BriefCfg { pub few: u32, pub min_history: usize, pub enough_skills: usize, pub keys: Keys }
+pub struct Deal<'a> { pub decisions: u32, pub before: &'a Learner, pub after: &'a Learner,
+                      pub strengths: &'a [Strength], pub next_opponent: bool }
+pub fn brief(l: &Ladder, cfg: &BriefCfg, deal: &Deal, focus: impl FnOnce(usize) -> Vec<Bullet>) -> Vec<Bullet>;
+pub mod beta { pub fn ln_gamma(x: f64) -> f64; pub fn beta_cdf(x: f64, a: f64, b: f64) -> f64;
+               pub fn beta_quantile(p: f64, a: f64, b: f64) -> f64; }
 ```
 
 Skills are indexes, so the crate needs no generic parameter on a skill enum; a
-game keeps its enum and maps it. Cassino's brief carries prose in a `Bullet`; the
-generic bullet carries a key, because Strohmandeln's (and the series') words are
-keys; Cassino would map its prose to keys when it adopts the crate.
+game keeps its enum and maps it. Where the build departs from the sketch of
+15 Oct:
 
-**Test of equivalence**: the crate, given Cassino's ladder and constants, must
-reproduce Cassino's learner on a fixture of Cassino summaries (generated once by
-Cassino's code at sync time and stored as text); Cassino's own learner tests
-(known beta values, mastered and lost, the state depends on the state before, the
-focus is the costliest cleared skill, a few misses among few chances name no
-focus) are ported as the crate's tests.
+- `min_chances` is per skill (a `SkillSpec` field) and not in `Params`, as section 5
+  has it; `costly_chances` stays in `Params`.
+- A `Bullet`'s `lead` and `key` are both message keys (`lead` empty for none).
+  Cassino's brief carries prose; Strohmandeln's (and the series') words are keys,
+  so Cassino would map its prose to keys when it adopts the crate.
+- `brief` decides which bullets there are and in what order; the game supplies the
+  words: its strengths (best first, each with the skills it praises), a closure
+  from the focus to its bullets (rule, this deal's example; the crate keeps as many
+  as fit in three), and the six keys of `Keys`. A mastery is announced for the
+  first skill of the ladder that became mastered, after `min_history` earlier
+  deals. A focus that yields no bullets is treated as no focus.
+- Exact ties in gain go to the earlier skill in the ladder (section 1);
+  Cassino's `max_by` took the later.
+- A summary of another version or size than the ladder's is stale: `learn` skips
+  it and `stale` lists it.
+
+**Test of equivalence** (`kit/learner/tests/equivalence.rs`): with Cassino's
+ladder and constants written out as a `Ladder` and `Params`, the crate gives the
+same mastery, state, focus and `just_mastered` as Cassino's `learn`, and the same
+summary text, on a fixture of 121 cases (the scenarios of Cassino's learner tests
+and 100 seeded random sequences). The fixture is generated by Cassino's own code
+(`tests/fixtures/cassino_learner_gen.rs` says how) and regenerated at each
+re-sync. Cases with an exact tie in gain are left out of it. Cassino's generic
+learner tests (known beta values, mastered and lost, the state depends on the
+state before, the focus is the costliest cleared skill, a few misses among few
+chances name no focus, older games count for less, a stale summary is not counted)
+are ported as `tests/learn.rs` and `tests/summary.rs`; `tests/brief.rs` holds the
+brief's shape.
 
 **JS candidates** (named in `kit/README.md` as "generic in shape"; promoted when
 this game's copy has settled): `progress.js` (versioned store, try/catch, newer
