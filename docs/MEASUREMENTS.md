@@ -97,3 +97,73 @@ the same world, so the expected spread is zero.
 - `EVIDENCE_VERSION` is bumped once, at the end of the runs, if any constant of the evidence changed.
 
 **Stopping.** A descriptive count, no looks.
+
+### Result (2026-10-15)
+
+596 plays (4 of the 600 finished no trick under some stream and are skipped) and
+200 bids, from 37 sittings (seeds 10,000,000 to 10,000,036), 8 streams. 22
+seconds. Descriptive, a fixed count.
+
+Across-stream standard deviation of the gap, thirds (positions not exact);
+`cal` is the ratio of the medians of the fixed pair's spread and the reported
+error (about 1: the error is honest for a fixed pair), `cal rms` the same by
+root mean square over positions with a finite error, `select` the mean excess
+of a stream's own best pair over the same pair in the other streams:
+
+| Skill | Positions | Exact | Median | 90th | 95th | cal | cal rms | select |
+|---|---|---|---|---|---|---|---|---|
+| worth | 59 | 8 | 5.15 | 9.24 | 10.36 | 0.97 | 0.90 | 1.19 |
+| cheap | 173 | 13 | 3.09 | 7.13 | 8.43 | 0.97 | 1.08 | 2.16 |
+| off | 290 | 0 | 5.43 | 10.61 | 12.48 | 1.03 | 1.02 | 2.69 |
+| run | 35 | 2 | 2.01 | 5.17 | 6.45 | 1.19 | 0.98 | 0.53 |
+| pagat | 30 | 5 | 4.60 | 8.07 | 9.07 | 1.02 | 0.99 | 0.41 |
+| void | 131 | 13 | 3.77 | 7.91 | 10.20 | 1.05 | 1.10 | 2.14 |
+| behind | 177 | 0 | 6.76 | 11.48 | 14.06 | 0.99 | 1.01 | 2.59 |
+| endgame | 0 | 27 | | | | | | |
+
+Exact positions (68 reads of position and skill, all with nothing face down and
+the search to the last trick): the spread across streams is 0 in every one.
+Bids: spread of the mean across streams, median 0.217 Point (90th 0.313, 95th
+0.342) per unit of doubling; the reported error has median 0.237 (ratio 0.92).
+The calibration RMS for a skill leaves out the positions in which a stream
+finished one world of many and reports no error (infinite: 2 for `off`, 1 for
+`void`, 2 for `behind`); the first run of this program included them and gave 0.
+The medians, which decide, were the same in both.
+
+Replication of the clear cases at 2 standard errors beyond 10 thirds (the
+case's pair, re-read in the other 7 streams, has the same sign in the mean; and
+the share of other streams in which it is clear again with the same sign):
+
+| Skill | Clear cases | Same sign | Share | Clear again |
+|---|---|---|---|---|
+| worth | 213 | 209 | 0.981 | 0.887 |
+| cheap | 427 | 425 | 0.995 | 0.786 |
+| off | 532 | 523 | 0.983 | 0.657 |
+| run | 165 | 165 | 1.000 | 0.947 |
+| pagat | 112 | 112 | 1.000 | 0.824 |
+| void | 218 | 211 | 0.968 | 0.740 |
+| behind | 371 | 362 | 0.976 | 0.548 |
+
+At 2.5 and 3 standard errors the sign shares are 0.978 to 1.000 and 0.988 to
+1.000. The command below reproduces the numbers in about 25 seconds.
+
+**Reading.** Every skill with at least 30 clear cases meets the sign criterion
+(0.968 or more) and the calibration criterion (0.97 to 1.19, inside [0.8,
+1.25]) at `k` = 2: the two-standard-error rule is honest, and the argmax of
+each class, which the error leaves out, shifts the gap by 0.4 to 2.7 thirds,
+well inside the margin. `behind` and `off` are clear again under another
+stream in only 0.55 and 0.66 of the cases: the rule wrongly calls few cases
+clear, but it also misses many real ones, which is power, not error (more
+chances need more deals).
+
+**Constants set.**
+
+| Constant | Was | Now | Rule |
+|---|---|---|---|
+| `MARGIN` | 6 thirds | **10** | 2 x pooled median spread (5.0 -> 10) |
+| `EXACT_MARGIN` | 1 | **1** | no exact position has a spread |
+| `BID_MARGIN` | 0.5 Point | **0.45** | 2 x 0.217, to 0.05 |
+| standard-error multiple | 2 | **2** (kept) | sign >= 0.95 and calibration in [0.8, 1.25] |
+
+**Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m1`
+(defaults: `--seed 10000000 --plays 600 --bids 200 --streams 8`).
