@@ -46,6 +46,7 @@ fn main() {
         "m2" => m2(&args),
         "m3" => m3(&args),
         "m4" => m4(&args),
+        "m5" => m5(&args),
         "m8" => m8(&args),
         other => panic!("unknown measurement {other}"),
     }
@@ -699,6 +700,96 @@ fn m4(args: &Args) {
             let label = format!("{} with {} out", lesion_name(skill), lesion_name(need));
             compare(&label, &[need, skill], &[need], plan(pair_looks), first);
         }
+    }
+    println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}
+
+fn setting_named(name: &str) -> Settings {
+    match name {
+        "default" => Settings::default(),
+        "v123" => Settings {
+            values: Values::V123,
+            ..Settings::default()
+        },
+        "v124" => Settings {
+            values: Values::V124,
+            ..Settings::default()
+        },
+        "throwin" => Settings {
+            both_pass: BothPass::ThrowIn,
+            ..Settings::default()
+        },
+        "ult2" => Settings {
+            ultimo: 2,
+            ..Settings::default()
+        },
+        other => panic!("unknown setting {other}"),
+    }
+}
+
+fn m5(args: &Args) {
+    use strohmandeln_ai::rules::CANDIDATES;
+    let started = Instant::now();
+    let first = args.num("--seed", 50_000_000);
+    let sittings = args.num("--sittings", 400);
+    let word = |name: &str, default: &str| -> String {
+        args.rest
+            .iter()
+            .position(|a| a == name)
+            .and_then(|i| args.rest.get(i + 1).cloned())
+            .unwrap_or_else(|| default.to_string())
+    };
+    let setting = word("--setting", "default");
+    let only = word("--only", "");
+    let rules: Vec<_> = CANDIDATES
+        .iter()
+        .copied()
+        .filter(|r| only.is_empty() || only.split(',').any(|id| id == r.id))
+        .collect();
+    let settings = setting_named(&setting);
+    let mut records = Vec::new();
+    for i in 0..sittings {
+        let (seat, recs) =
+            measure::player_sitting(first + i, settings, i % 2 == 0, Config::default());
+        records.extend(recs.into_iter().map(|r| (seat, r)));
+    }
+    let refs: Vec<_> = records.iter().map(|(s, r)| (*s, r)).collect();
+    println!(
+        "M5: {} candidates, {} deals ({sittings} sittings, seeds {first}..{}), setting {setting}, rung 4 against rung 3, {:.0}s",
+        rules.len(),
+        records.len(),
+        first + sittings - 1,
+        started.elapsed().as_secs_f64()
+    );
+    let tallies = measure::rule_tallies(&refs, &rules);
+    println!(
+        "{:15} {:>6} {:>6} {:>7} {:>7} {:>7}  {}",
+        "id", "fired", "ok", "p", "n_eff", "lower", "rule"
+    );
+    let mut best: std::collections::BTreeMap<&str, (f64, &str)> = Default::default();
+    for (r, t) in rules.iter().zip(&tallies) {
+        let fired: Vec<f64> = t.iter().map(|x| x.0).collect();
+        let ok: Vec<f64> = t.iter().map(|x| x.1).collect();
+        let p = measure::precision(&ok, &fired);
+        let pass = p.lower >= 0.80;
+        println!(
+            "{:15} {:>6} {:>6} {:>7.3} {:>7.1} {:>7.3}{} {}",
+            r.id,
+            p.fired,
+            p.satisfied,
+            p.p,
+            p.n_eff,
+            p.lower,
+            if pass { "*" } else { " " },
+            r.text
+        );
+        if pass && r.eligible() && best.get(r.family()).is_none_or(|b| p.lower > b.0) {
+            best.insert(r.family(), (p.lower, r.id));
+        }
+    }
+    println!("\nthe candidate with the best lower bound at or above 0.80, by rule:");
+    for (family, (lower, id)) in &best {
+        println!("  {family:14} {id:15} {lower:.3}");
     }
     println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
 }

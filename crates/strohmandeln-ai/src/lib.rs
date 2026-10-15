@@ -11,6 +11,7 @@ pub mod know;
 pub mod measure;
 pub mod opponent;
 pub mod review;
+pub mod rules;
 pub mod rung1;
 pub mod rung2;
 pub mod rung3;

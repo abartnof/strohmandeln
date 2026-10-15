@@ -652,6 +652,91 @@ pub fn player_sitting(
     (if player_a { Seat::A } else { Seat::B }, records)
 }
 
+// ---- M5: rule precision --------------------------------------------------------
+
+/// The lower end of the Wilson interval (z = 1.96) for a proportion `p`
+/// seen in `n` independent trials.
+pub fn wilson_lower(p: f64, n: f64) -> f64 {
+    if n <= 0.0 {
+        return 0.0;
+    }
+    let z = 1.96_f64;
+    let centre = p + z * z / (2.0 * n);
+    let spread = z * (p * (1.0 - p) / n + z * z / (4.0 * n * n)).sqrt();
+    ((centre - spread) / (1.0 + z * z / n)).max(0.0)
+}
+
+/// A rule's precision over its firings.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Precision {
+    pub fired: u32,
+    pub satisfied: u32,
+    pub p: f64,
+    /// The effective sample: p (1 - p) over the variance of the ratio
+    /// estimator clustered by deal, at most the firings.
+    pub n_eff: f64,
+    pub lower: f64,
+}
+
+/// Precision from the per-deal tallies of firings and satisfactions.
+pub fn precision(satisfied: &[f64], fired: &[f64]) -> Precision {
+    let (s, f): (f64, f64) = (satisfied.iter().sum(), fired.iter().sum());
+    if f == 0.0 {
+        return Precision {
+            fired: 0,
+            satisfied: 0,
+            p: f64::NAN,
+            n_eff: 0.0,
+            lower: 0.0,
+        };
+    }
+    let (p, se) = ratio_estimate(satisfied, fired);
+    let n_eff = if se > 0.0 && p > 0.0 && p < 1.0 {
+        (p * (1.0 - p) / (se * se)).min(f)
+    } else {
+        f
+    };
+    Precision {
+        fired: f as u32,
+        satisfied: s as u32,
+        p,
+        n_eff,
+        lower: wilson_lower(p, n_eff),
+    }
+}
+
+/// For each of `rules`, per deal of `records` and for the decisions of
+/// `player`, the (fired, satisfied) counts.
+pub fn rule_tallies(
+    records: &[(strohmandeln_core::types::Seat, &DealRecord)],
+    rules: &[crate::rules::Rule],
+) -> Vec<Vec<(f64, f64)>> {
+    let mut out = vec![Vec::new(); rules.len()];
+    for (player, rec) in records {
+        let mut per = vec![(0.0, 0.0); rules.len()];
+        rec.replay(|_, deal, seat, action| {
+            if seat != *player {
+                return;
+            }
+            let view = bare_view(deal, seat);
+            let Some(k) = Knowledge::from_view(&view) else {
+                return;
+            };
+            for (i, r) in rules.iter().enumerate() {
+                if let Some(ok) = (r.check)(&k, action) {
+                    per[i].0 += 1.0;
+                    per[i].1 += f64::from(u8::from(ok));
+                }
+            }
+        })
+        .expect("a played deal replays");
+        for (i, x) in per.into_iter().enumerate() {
+            out[i].push(x);
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1000,5 +1085,38 @@ mod tests {
         assert_eq!((seat, recs.len()), (Seat::B, 6));
         let (seat, _) = player_sitting(30_000_000, Settings::default(), true, tiny());
         assert_eq!(seat, Seat::A);
+    }
+
+    #[test]
+    fn the_wilson_lower_bound_has_known_values() {
+        // 80 of 100: lower bound 0.7111...
+        assert!((wilson_lower(0.8, 100.0) - 0.711_2).abs() < 1e-3);
+        // all of 20: lower bound 0.8389
+        assert!((wilson_lower(1.0, 20.0) - 0.838_9).abs() < 1e-3);
+        assert_eq!(wilson_lower(0.5, 0.0), 0.0);
+        assert!(wilson_lower(0.0, 10.0) >= 0.0);
+    }
+
+    #[test]
+    fn precision_shrinks_the_sample_when_deals_move_together() {
+        // two deals fired 50 times each, one always satisfied, one never:
+        // the firings are 100 but the deals are alike inside, so n_eff is tiny
+        let p = precision(&[50.0, 0.0], &[50.0, 50.0]);
+        assert_eq!((p.fired, p.satisfied), (100, 50));
+        assert!((p.p - 0.5).abs() < 1e-12);
+        assert!(p.n_eff < 5.0, "{p:?}");
+        // independent deals each at 0.5: n_eff close to the firings
+        let even: Vec<f64> = (0..40)
+            .map(|i| if i % 2 == 0 { 3.0 } else { 2.0 })
+            .collect();
+        let fired = vec![5.0; 40];
+        let q = precision(&even, &fired);
+        assert!(q.n_eff > 100.0, "{q:?}");
+        // never fired
+        assert_eq!(precision(&[0.0], &[0.0]).fired, 0);
+        // always satisfied: n_eff is the firings
+        let all = precision(&[3.0, 4.0], &[3.0, 4.0]);
+        assert_eq!(all.n_eff, 7.0);
+        assert!((all.lower - wilson_lower(1.0, 7.0)).abs() < 1e-12);
     }
 }
