@@ -10,7 +10,7 @@ import { parseTutorial } from "../../kit/js/tutorial.js";
 
 // The page keys, in the order they are due when more than one could be
 // (the table of TABLE3D 6.2.2; web3d/test/tutorial.test.js holds them to it).
-export const PAGE_KEYS = ["packets", "bidding", "the-pull", "following", "from-a-packet", "honours", "pagat-ultimo", "thirds", "draw", "touren-slate", "extension"];
+export const PAGE_KEYS = ["packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension"];
 
 // The pages of a tutorial file for the sitting's rule settings. A block of
 // lines between `<!-- if name=value -->` and `<!-- end -->` is kept when the
@@ -32,6 +32,8 @@ const has = (events, type, ok = () => true) => events.some((e) => e.type === typ
 
 // The last tricks of the deal, in which the Pagat may be saved for the last (6.2.2).
 const LAST_TRICKS_FROM = 23;
+// From here the deal is close to its count: the scoring is explained before it (6.2.2).
+const SCORING_FROM = 21;
 
 // The pages whose moment is now, in order, from the events not yet reckoned
 // with and the module's state. `human` is the human's seat; `slate` is
@@ -42,14 +44,17 @@ export function pagesDue({ events = [], state = null, human = 0, slate = false }
   if (has(events, "dealt")) due.add("packets");
   if (has(events, "bid") || (mine && state.phase === "bid")) due.add("bidding");
   if (has(events, "reveal_start")) due.add("the-pull");
+  const legal = state?.legal ?? [];
+  if (mine && state.phase === "play") due.add("playing");
   if (mine && state.phase === "play" && state.deal?.lead) due.add("following");
-  if (has(events, "card_played", (e) => e.seat === human && String(e.source).startsWith("packet"))) due.add("from-a-packet");
-  if (has(events, "announcement") || (mine && (state.legal ?? []).some((a) => a.action === "announce"))) due.add("honours");
+  if (has(events, "card_played", (e) => e.seat === human && String(e.source).startsWith("packet")) || (mine && legal.some((a) => a.action === "play" && String(a.source).startsWith("packet")))) due.add("from-a-packet");
+  if (has(events, "announcement") || (mine && legal.some((a) => a.action === "announce"))) due.add("honours");
   if (has(events, "pagat_ultimo") || (state?.deal?.trick_number >= LAST_TRICKS_FROM && (state.deal.own_hand ?? []).some((c) => c.card === "T1"))) due.add("pagat-ultimo");
-  if (has(events, "count")) due.add("thirds");
+  if (has(events, "trick_won") || has(events, "count")) due.add("thirds");
+  if (has(events, "count") || has(events, "game_scored") || state?.deal?.trick_number >= SCORING_FROM) due.add("scoring");
   if (has(events, "game_scored", (e) => e.result === "draw")) due.add("draw");
   if (has(events, "tour_end") || slate) due.add("touren-slate");
-  if (has(events, "extension_offered")) due.add("extension");
+  if (has(events, "extension_offered") || (mine && state.phase === "extend")) due.add("extension");
   return PAGE_KEYS.filter((k) => due.has(k));
 }
 

@@ -792,19 +792,28 @@ not muted. The page opens when the cards are at rest, never in motion. A
 "Remind me"; otherwise it is marked seen. Pages are reachable any time from the
 menu ("Help").
 
+**Pacing.** A page is due no later than the first decision it explains is
+asked, and says only what that decision needs; detail needed later goes on the
+later page (`web3d/test/tutor.test.js` pins each decision to its page; the
+audit is `docs/review/tutorial-pacing.md`). Pages due at one rest follow in the
+table's order, each after the last is closed; the page opens before the action
+bar and the prompts are drawn, so it is on screen when the question is asked.
+
 | Page key | Opens at | Says |
 |---|---|---|
 | `packets` | the first `dealt` | what the three packets are, the face-up card on top, the count of hidden cards beneath, that you and your opponent each have three, that a cover is yours to play |
-| `bidding` | the first `bid` turn (the human's, or the first `bid` event seen) | "Ich nehme auf" or "Weiter"; the declarer; what is won (3 / 4 by default); both pass plays a simple game or throws in, by the setting |
-| `the-pull` | the first `reveal_start` | the cards are turned in turn; a tarock or a king goes to the hand; the turning continues; a low card stays; the last card of a packet always goes |
-| `following` | the first human play where a cover and a hand card are both legal, or at the first follow | the follower must follow suit, else trump, else any; covers count as hand cards for this; no obligation to win |
-| `from-a-packet` | the first human play of a cover | the cover is played like a hand card; afterwards the card beneath is turned and may be pulled; the opponent plays before seeing it |
-| `honours` | the first time the human holds the Trull or four kings, or the first `announcement` | announce the Trull (Sküs, Mond, Pagat) or four kings before the first card of it is played; 1 Point; paid even if lost; staying silent is allowed, unpaid; the prompt (3.3) |
+| `bidding` | the first `bid` turn (the human's, or the first `bid` event seen) | who speaks first; "Ich nehme auf" or "Weiter"; the declarer; the card values (the 70 Points) and the 36 needed; what is won (3 / 4 by default); both pass plays a simple game or throws in, by the setting |
+| `the-pull` | the first `reveal_start` (no decision is asked: the cards turn themselves) | the cards are turned in turn; a tarock or a king goes to the hand; the turning continues; a low card stays; the last card of a packet always goes |
+| `playing` | the human's first play turn | how a card is played (tap, then tap again or Play); the leader; the trick winner leads; the HUD |
+| `following` | the first human play turn with a card led | the follower must follow suit, else trump, else any; covers count as hand cards for this; no obligation to win |
+| `from-a-packet` | the first human play turn with a cover legal (or the first cover played) | afterwards the card beneath is turned and may be pulled; the opponent plays before seeing it |
+| `honours` | the first time the human may announce, or the first `announcement` | announce the Trull (Sküs, Mond, Pagat) or four kings before the first card of it is played; 1 Point; paid even if lost; staying silent is allowed, unpaid; the prompt (3.3) |
+| `thirds` | the first `trick_won` (the tally begins to run), or the first `count` | the count in thirds: each card its value less two-thirds (a group of three: the sum less 2) [RULES 8.1]; 36 of 70 is 35⅔; 35⅓ loses; the HUD shows the tally |
 | `pagat-ultimo` | the first time the human holds `T1` at the last 5 tricks, or the first `pagat_ultimo` | the Pagat in the last trick wins or loses a Point; it is quiet, never announced; the Pagat is the lowest tarock |
-| `thirds` | the first `count` | the count in thirds: cards count 5 / 4 / 3 / 2 / 1, each less two-thirds (a group of three: the sum less 2) [RULES 8.1]; 36 of 70 is 35⅔; 35⅓ loses; the HUD shows the tally |
+| `scoring` | trick 21, or the first `count` / `game_scored` | what the deal pays: the game (2 / 3 / 4), the honours, the Pagat, all paid between the two players [RULES 9.2, 9.3]; credited to the slate; the evening settled at 2 kreuzer a Point [RULES 15.5, 15.7] |
 | `draw` | the first `draw` | a simple game that ends 35 : 35 is undecided; the next deal counts double |
-| `touren-slate` | the first `tour_end`, or the first slate opening | the Touren, two deals each; the slate; the settlement at 2 kreuzer a Point; the note that this is a reconstruction (4.6), said once |
-| `extension` | the first `extension_offered` | one more Tour needs both players' consent |
+| `touren-slate` | the first `tour_end`, or the first slate opening | the Touren, two deals each; the slate; the note that this is a reconstruction (4.6), said once |
+| `extension` | the first `extension_offered`, or the human's extend prompt | one more Tour needs both players' consent |
 
 The pages are authored in English and German at the same time (11); each is a
 key in the tutorial file. The `keys` argument of `parseTutorial` is the list

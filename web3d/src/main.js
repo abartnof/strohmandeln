@@ -265,6 +265,11 @@ async function main() {
     if (!key) return;
     if (pageHelp) tutor.helpClosed(key);
     else tutor.close(key, remind);
+    // A second page of the same moment follows; then the bar and the prompts.
+    if (S && !pageHelp) {
+      tutorStep();
+      refresh();
+    }
   }
   function openHelp() {
     tutor.intro();
@@ -594,9 +599,9 @@ async function main() {
     if (pending > 0 || director.busy() || !S) return;
     restModel = S.model;
     placeTags();
+    tutorStep(); // a due page opens before the bar and the prompts are drawn
     refresh();
     armIdle();
-    tutorStep();
     if (wasm.prompt === "opponent" && !sittingOver && !stepping) {
       stepping = true;
       director.at(350, () => {
@@ -664,7 +669,7 @@ async function main() {
     if (mine && !busy && prefs.hints && wasm.phase !== "extend") groups.push({ kind: "hint", buttons: [{ act: "hint", label: t("ui.hint"), enabled: true }] });
     ui.setBar(groups, { left: prefs.leftHanded });
     // The extension prompt.
-    if (mine && !busy && wasm.phase === "extend" && !ui.dialogOpen("extend")) {
+    if (mine && !busy && wasm.phase === "extend" && !ui.dialogOpen("extend") && !ui.dialogOpen("page")) {
       askedExtend = true;
       const yes = { label: t("ui.ext.yes"), act: "yes", primary: true, focus: true };
       const no = { label: t("ui.ext.no"), act: "no" };

@@ -21,19 +21,19 @@ test("each page is due at its own first moment", () => {
   assert.deepEqual(due([ev("bid", { seat: 0 })]), ["bidding"]);
   assert.deepEqual(due([], state({ prompt: "you", phase: "bid" })), ["bidding"]);
   assert.deepEqual(due([ev("reveal_start", { seat: 1 })]), ["the-pull"]);
-  assert.deepEqual(due([], state({ prompt: "you", deal: { lead: "Kh", trick_number: 3, own_hand: [] } })), ["following"]);
-  assert.deepEqual(due([], state({ prompt: "you", deal: { lead: null, trick_number: 3, own_hand: [] } })), [], "a lead is not a follow");
-  assert.deepEqual(due([ev("card_played", { seat: 1, card: "Qd", source: "packet 2" })]), ["from-a-packet"]);
+  assert.deepEqual(due([], state({ prompt: "you", deal: { lead: "Kh", trick_number: 3, own_hand: [] } })), ["playing", "following"]);
+  assert.deepEqual(due([], state({ prompt: "you", deal: { lead: null, trick_number: 3, own_hand: [] } })), ["playing"], "a lead is not a follow");
+  assert.deepEqual(due([ev("card_played", { seat: 1, card: "Qd", source: "packet 2" })]), ["from-a-packet"], "still due after the fact");
   assert.deepEqual(due([ev("card_played", { seat: 0, card: "Qd", source: "packet 2" })]), [], "the opponent's cover is not yours");
   assert.deepEqual(due([ev("card_played", { seat: 1, card: "Qd", source: "hand" })]), []);
   assert.deepEqual(due([ev("announcement", { seat: 0, honour: "kings" })]), ["honours"]);
-  assert.deepEqual(due([], state({ prompt: "you", legal: [{ action: "announce", honour: "trull" }] })), ["honours"]);
+  assert.deepEqual(due([], state({ prompt: "you", legal: [{ action: "announce", honour: "trull" }] })), ["playing", "honours"]);
   assert.deepEqual(due([ev("pagat_ultimo", { seat: 0, result: "won" })]), ["pagat-ultimo"]);
-  assert.deepEqual(due([], state({ deal: { lead: null, trick_number: 23, own_hand: [{ card: "T1", public: false }] } })), ["pagat-ultimo"]);
-  assert.deepEqual(due([], state({ deal: { lead: null, trick_number: 22, own_hand: [{ card: "T1", public: false }] } })), [], "the last five tricks only");
-  assert.deepEqual(due([ev("count", { thirds: [100, 110] })]), ["thirds"]);
-  assert.deepEqual(due([ev("game_scored", { result: "draw" })]), ["draw"]);
-  assert.deepEqual(due([ev("game_scored", { result: "declarer_win" })]), []);
+  assert.deepEqual(due([], state({ deal: { lead: null, trick_number: 23, own_hand: [{ card: "T1", public: false }] } })), ["pagat-ultimo", "scoring"]);
+  assert.deepEqual(due([], state({ deal: { lead: null, trick_number: 22, own_hand: [{ card: "T1", public: false }] } })), ["scoring"], "the last five tricks only");
+  assert.deepEqual(due([ev("count", { thirds: [100, 110] })]), ["thirds", "scoring"]);
+  assert.deepEqual(due([ev("game_scored", { result: "draw" })]), ["scoring", "draw"]);
+  assert.deepEqual(due([ev("game_scored", { result: "declarer_win" })]), ["scoring"]);
   assert.deepEqual(due([ev("tour_end", { tour: 1 })]), ["touren-slate"]);
   assert.deepEqual(due([], state(), { slate: true }), ["touren-slate"]);
   assert.deepEqual(due([ev("extension_offered")]), ["extension"]);
@@ -41,7 +41,7 @@ test("each page is due at its own first moment", () => {
 
 test("pages due together come in the order of the table", () => {
   const got = pagesDue({ events: [ev("extension_offered"), ev("dealt", { seat: 0 }), ev("count")], state: state(), human: 0 });
-  assert.deepEqual(got, ["packets", "thirds", "extension"]);
+  assert.deepEqual(got, ["packets", "thirds", "scoring", "extension"]);
 });
 
 // A tutor over a plain object of preferences.
@@ -143,4 +143,44 @@ test("the intro line is said when the tab is first opened, once a sitting", () =
   const off = make({ tutor: false });
   off.tutor.intro();
   assert.deepEqual(off.said, [], "off: silent");
+});
+
+// The pacing (docs/review/tutorial-pacing.md): each page is due no later than
+// the first decision it explains is asked, with the events and state of that moment.
+const ASKED = [
+  ["bidding", ["packets", "bidding"], [ev("dealt", { seat: 1 })], state({ prompt: "you", phase: "bid", legal: [{ action: "take" }, { action: "pass" }] })],
+  ["playing", ["playing"], [], state({ prompt: "you", legal: [{ action: "play", card: "T5", source: "hand" }], deal: { lead: null, trick_number: 1, own_hand: [] } })],
+  ["following", ["playing", "following"], [], state({ prompt: "you", legal: [{ action: "play", card: "T5", source: "hand" }], deal: { lead: "Kh", trick_number: 1, own_hand: [] } })],
+  ["from-a-packet", ["playing", "from-a-packet"], [], state({ prompt: "you", legal: [{ action: "play", card: "Qs", source: "packet 2" }], deal: { lead: null, trick_number: 1, own_hand: [] } })],
+  ["honours", ["playing", "honours"], [], state({ prompt: "you", legal: [{ action: "announce", honour: "kings" }, { action: "play", card: "T5", source: "hand" }], deal: { lead: null, trick_number: 1, own_hand: [] } })],
+  ["extension", ["extension"], [], state({ prompt: "you", phase: "extend", legal: [{ action: "extend", accept: true }] })],
+];
+for (const [name, want, events, s] of ASKED) {
+  test(`pacing: the ${name} page is due when its decision is asked`, () => {
+    const got = pagesDue({ events, state: s, human: 1 });
+    for (const k of want) assert.ok(got.includes(k), `${k} missing from ${got}`);
+  });
+}
+
+test("pacing: the count and the scoring are explained before the first count", () => {
+  const due = (events, s = state()) => pagesDue({ events, state: s, human: 1 });
+  assert.deepEqual(due([ev("trick_won", { winner: 0 })]), ["thirds"], "the tally starts to run");
+  assert.deepEqual(due([], state({ deal: { lead: null, trick_number: 21, own_hand: [] } })), ["scoring"], "before the last tricks");
+  assert.deepEqual(due([], state({ deal: { lead: null, trick_number: 20, own_hand: [] } })), []);
+  assert.ok(due([ev("count")]).includes("scoring"), "never later than the count");
+  assert.ok(due([ev("count")]).includes("thirds"));
+});
+
+test("pacing: the pages of one moment come in the order they are needed", () => {
+  const i = (k) => PAGE_KEYS.indexOf(k);
+  const order = ["packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension"];
+  assert.deepEqual(PAGE_KEYS, order);
+  assert.ok(i("bidding") < i("playing"));
+});
+
+test("pacing: the page opens before the bar and the extension prompt are drawn", () => {
+  const src = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
+  const rested = src.slice(src.indexOf("function rested()"), src.indexOf("let stepping"));
+  assert.ok(rested.indexOf("tutorStep()") < rested.indexOf("refresh()"), "tutorStep before refresh in rested");
+  assert.match(src, /wasm\.phase === "extend" && !ui\.dialogOpen\("extend"\) && !ui\.dialogOpen\("page"\)/);
 });
