@@ -53,7 +53,7 @@ export function createUi(root, { t, onAct }) {
         "div",
         { class: "tutor-row" },
         el("button", { class: "tutor-btn", type: "button", "data-act": "tutor" }),
-        el("button", { class: "tutor-mute", type: "button", "data-act": "mute", "aria-pressed": "false" }),
+        el("button", { class: "tutor-mute", type: "button", "data-act": "mute" }),
         el("button", { class: "tutor-review", type: "button", "data-act": "review", hidden: "" }),
       ),
     ),
@@ -96,8 +96,7 @@ export function createUi(root, { t, onAct }) {
     mute.hidden = !tutor.on;
     mute.textContent = t(tutor.muted ? "tutor.unmute.label" : "tutor.mute.label");
     mute.title = t(tutor.muted ? "tutor.unmute.title" : "tutor.mute.title");
-    mute.setAttribute("aria-label", mute.title);
-    mute.setAttribute("aria-pressed", String(tutor.muted));
+    // the name is the visible label, which flips with the state (so no aria-pressed)
     const chip = q(".tutor-review");
     chip.hidden = !(tutor.on && !tutor.muted && tutor.review);
     chip.textContent = t(tutor.review === "sitting" ? "review.chip.sitting" : "review.chip");
