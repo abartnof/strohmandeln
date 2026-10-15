@@ -9,7 +9,7 @@
 //     words:   web3d/words.json, { groups: { id: [key] }, texts: { key: { en, de, sig } } }
 //     getLang: () => "en" | "de"
 //     rng:     () => [0, 1), seeded for a repeatable sitting
-//     say:     ({ key, text, who }) -> void; `who` is "them" (every line of the bank
+//     say:     ({ key, text, who, group, call }) -> void; `call` says whether the group is a call (5.2.2); `who` is "them" (every line of the bank
 //              is the opponent's, the -yours groups being its remarks on the human's moment)
 //   onEvent(event, ctx): `event` is a protocol event, `ctx.human` the human's seat.
 //     Besides the protocol's, the table sends these moments (they are not game events):
@@ -112,7 +112,7 @@ export function createTalk({ words, getLang, rng = Math.random, say }) {
     if (!key) return false;
     const t = words.texts[key];
     spoken.set(t.sig ?? key, [deal, ++seq]);
-    say({ key, text: t[getLang()] ?? t.en, who: "them" });
+    say({ key, text: t[getLang()] ?? t.en, who: "them", group, call: CALLS.has(group) });
     return true;
   }
 

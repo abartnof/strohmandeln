@@ -50,6 +50,15 @@ test("a line is {key, text, who}, in the language asked for", () => {
   assert.equal(en.said[0].who, "them");
 });
 
+test("a line says its group and whether it is a call, for the speaker to yield by (5.2.2)", () => {
+  const t = make();
+  t.feed({ type: "bid", seat: O }, deal(1), pulled(O, "Kh"));
+  const [bid, , king] = t.said;
+  assert.deepEqual([bid.group, bid.call], ["bid-take-mine", true]);
+  assert.deepEqual([king.group, king.call], ["pull-king-mine", false]);
+  for (const l of t.said) assert.equal(l.call, CALLS.has(l.group));
+});
+
 test("the sitting begins: greeting, Touren, the cut", () => {
   const t = make();
   t.feed({ type: "sitting_start", first_dealer: 0, touren: 3 });

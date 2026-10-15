@@ -108,7 +108,10 @@ Per scoring event: `countEvents(game, lines, { at, hand })` gives the popups
 call `hud.score(e)` at the time its line is said, `hud.endHand(e.hand)` for
 the end and `hud.dealt(n)` as a hand is dealt. Points the game shows as they
 happen (a sweep) go straight to `hud.score` and are `null` in `popup`, so the
-count does not tell them again. For the cards,
+count does not tell them again.
+A category named in `apart: [...]` (Strohmandeln's bonuses, paid in Points beside the
+count in thirds) is listed and booked in the ledger and has its popup, but is in no
+total, segment or hand subtotal; `format(units, cat)` says how its value reads. For the cards,
 `countSchedule(game, lines, { start, pace })` returns `lines` (when each is
 said), `turns` (`{ line, at, side, cards }`) and `end`; the game's
 choreography moves the cards at those times (`kinematics.js`).

@@ -190,6 +190,11 @@ function suitInkHeight(ctx) {
   return Math.max(...Object.values(GLYPH).map((g) => ctx.measureText(g).actualBoundingBoxAscent + (ctx.measureText(g).actualBoundingBoxDescent ?? 0))) / 100;
 }
 
+// Faces size (7.1, 7.6): "jumbo" is the full index in the strip; "classic" draws
+// it smaller, in the same strip. drawFace sets this for the face it draws.
+export const INDEX_SCALE = Object.freeze({ jumbo: 1, classic: 0.78 });
+let indexScale = INDEX_SCALE.jumbo;
+
 const ROOM = JUMBO.strip - 2 * JUMBO.margin; // the strip's room for ink
 const AXIS = JUMBO.margin + ROOM / 2; // the strip's centre line
 const BODY_LEFT = JUMBO.strip + 0.3; // the body is right of the strip...
@@ -250,8 +255,8 @@ export function pipLayout(rank) {
 // The index in the strip: top lines, each [text, kind], from the card's top.
 function stripFits(ctx) {
   return {
-    numeral: { room: ROOM, maxSize: 2.2, minCondense: 0.62, font: rankFont },
-    nick: { room: ROOM, maxSize: 0.8, minCondense: 0.75, font: rankFont },
+    numeral: { room: ROOM, maxSize: 2.2 * indexScale, minCondense: 0.62, font: rankFont },
+    nick: { room: ROOM, maxSize: 0.8 * indexScale, minCondense: 0.75, font: rankFont },
     big: { room: BODY_W, maxSize: 4.4, minCondense: 0.62, font: rankFont },
     ctx,
   };
@@ -314,10 +319,10 @@ function suitFace(ctx, u, { rank: code, suit }, labels) {
   const colour = COLOUR[suit];
 
   // The corner: the rank's capitals from rankTop, the suit below, on the axis.
-  const r = fitText(ctx, rank, { room: ROOM, maxSize: 2.2, minCondense: 0.62, font: rankFont });
+  const r = fitText(ctx, rank, { room: ROOM, maxSize: 2.2 * indexScale, minCondense: 0.62, font: rankFont });
   const base = JUMBO.rankTop + CAP(ctx, rankFont, r.size);
   put(ctx, u, rank, { x: AXIS, y: base, size: r.size, scaleX: r.scaleX, font: rankFont, colour });
-  const s = suitSize(ctx, ROOM, 2.8);
+  const s = suitSize(ctx, ROOM, 2.8 * indexScale);
   const ink = suitInkHeight(ctx) * s;
   glyph(ctx, u, suit, { x: AXIS, y: base + dip(ctx, rank, r.size) + JUMBO.gap + ink / 2, size: s, colour });
 
@@ -339,7 +344,8 @@ function suitFace(ctx, u, { rank: code, suit }, labels) {
 // The face of `code` ("T7", "SK", "Kh", "10c", "3d") on a 2D context `width`
 // pixels wide and 1.4 times as tall. `lang` ("en", "de" or a table of K Q C J
 // letters) says how the courts are lettered.
-export function drawFace(ctx, width, code, lang = "en") {
+export function drawFace(ctx, width, code, lang = "en", size = "jumbo") {
+  indexScale = INDEX_SCALE[size] ?? INDEX_SCALE.jumbo;
   const c = parseCode(code);
   const labels = courtLabels(lang);
   const u = width / JUMBO.w;
@@ -390,11 +396,11 @@ const canvasOf = (width) => {
 // The faces as textures keyed by code, `width` pixels wide: all 54, or `codes`
 // (COURT_CODES to redo only the courts when the language changes; dispose the
 // textures they replace).
-export function faceTextures({ width, anisotropy = 1, codes = ALL_CODES, lang = "en" }) {
+export function faceTextures({ width, anisotropy = 1, codes = ALL_CODES, lang = "en", size = "jumbo" }) {
   return Object.fromEntries(
     codes.map((code) => {
       const canvas = canvasOf(width);
-      drawFace(canvas.getContext("2d"), width, code, lang);
+      drawFace(canvas.getContext("2d"), width, code, lang, size);
       return [code, cardTexture(new CanvasTexture(canvas), anisotropy)];
     }),
   );

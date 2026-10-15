@@ -8,6 +8,7 @@
 #   - node --test over kit/test and web3d/test            (those folders)
 #   - python3 -m unittest over kit/test                   (the kit's build.py tests)
 #   - the phrase bank's tests and tools/phrases.py --check (tools/)
+#   - tools/credits_check.py: CREDITS.md names every direct dependency
 #   - kit/build.py --check                                (the game's page)
 #   - the wasm module built, then crates/strohmandeln-wasm/tests/smoke.mjs (web3d/node_modules)
 # Unlike cassino's, it does not skip the Node tests when web3d/node_modules is
@@ -108,6 +109,12 @@ if [ -f tools/phrases.py ]; then
   fi
   python3 tools/phrases.py --check >/dev/null 2>&1 || fail "the phrase bank's generated files are stale (run python3 tools/phrases.py)"
   parts+=("$(echo "$ph_out" | grep -oE "^Ran [0-9]+" | awk '{print $2}') in the phrase bank")
+fi
+
+# ---- CREDITS.md names every direct dependency (npm and cargo) -----------
+if [ -f tools/credits_check.py ]; then
+  cred_out=$(python3 tools/credits_check.py 2>&1) || { echo "$cred_out" >&2; fail "CREDITS.md (tools/credits_check.py)"; }
+  parts+=("credits current")
 fi
 
 # ---- The page: it must be built from these sources (the build is deterministic)
