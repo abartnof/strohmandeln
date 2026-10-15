@@ -196,3 +196,39 @@ average), the correlation, and the reverse regression's thirds per Point.
 nearest whole third (delta-method 95% interval reported).
 
 **Stopping.** A descriptive count, no looks.
+
+### Result (2026-10-15)
+
+1,800 played deals (none thrown in), 300 sittings (seeds 20,000,000 to
+20,000,299), 116 seconds. Descriptive, a fixed count.
+
+- Slope of net Points on the count margin: **0.04259 Point a third**, cluster
+  standard error 0.00071 (by sitting), intercept -0.044, correlation 0.809.
+- Thirds per Point = 1 / slope = **23.48** (95% interval 22.73 to 24.27).
+- Reverse regression (thirds on Points): 15.38 thirds a Point (reported only).
+
+The payment is nearly a step at the threshold, so the slope is an average over
+the margins rung 4 meets. Mean net Points by decile of the margin:
+
+| Margin, thirds | Mean margin | Net Points |
+|---|---|---|
+| -180 to -68 | -91.8 | -2.88 |
+| -68 to -44 | -55.0 | -2.87 |
+| -44 to -28 | -35.6 | -2.71 |
+| -28 to -12 | -20.3 | -2.58 |
+| -12 to 2 | -5.7 | -1.78 |
+| 2 to 18 | 9.5 | 2.33 |
+| 18 to 32 | 24.8 | 2.47 |
+| 32 to 48 | 39.7 | 2.67 |
+| 48 to 70 | 58.3 | 2.72 |
+| 70 to 170 | 92.1 | 2.88 |
+
+**Constant set.** `THIRDS_PER_POINT` 12 (the solver's ultimo weight) -> **23**
+(rule: the reciprocal of the slope, rounded). A forfeited honour now costs 23
+thirds and a bid's gap is priced at 23 thirds a Point. Open: the solver's
+`ULTIMO_THIRDS` (12, the opponent's weight of the Pagat ultimo in the final
+margin) is about half of what the payment implies; it is the opponent's and was
+not changed.
+
+**Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m2`
+(defaults: `--seed 20000000 --sittings 300`).

@@ -23,7 +23,6 @@ use crate::know::Knowledge;
 use crate::rung2::Weights;
 use crate::rung4::{self, Budget};
 use crate::seed::view_seed;
-use crate::sim::ULTIMO_THIRDS;
 use kit_learner::{Chance, Ladder, SkillSpec, Summary};
 use strohmandeln_core::cards::{Card, Suit};
 use strohmandeln_core::deal::TrickRecord;
@@ -64,11 +63,13 @@ pub const EXACT_MARGIN: f64 = 1.0;
 pub const BID_MARGIN: f64 = 0.45;
 
 /// Thirds in a Point, to price a bid or an announcement in the unit of the
-/// rest. **Borrowed**: it is the solver's weight of the ultimo inside the final
-/// margin (`sim::ULTIMO_THIRDS`), not derived from the payment; the true rate
-/// is probably higher. Provisional; M2 (final margin in thirds against net
-/// Points of the deal) sets it.
-pub const THIRDS_PER_POINT: f64 = ULTIMO_THIRDS as f64;
+/// rest. **Measured, M2** (`docs/MEASUREMENTS.md`): the reciprocal of the slope
+/// of a deal's net Points (per unit of doubling) on its count margin in
+/// thirds, 1,800 deals of rung 4 against rung 4: 0.0426 Point a third, 23.5
+/// thirds a Point (95% interval 22.7 to 24.3). The solver's own weight of the
+/// ultimo (`sim::ULTIMO_THIRDS`, 12) is lower and is not changed here: it is
+/// the opponent's.
+pub const THIRDS_PER_POINT: f64 = 23.0;
 
 /// A suit is split when my share (my value points over mine and everything
 /// unseen, of the suit) lies in this range. Rung 2 uses 30% to 70% of the
@@ -1503,7 +1504,7 @@ mod tests {
         k.announceable = vec![Honour::Trull];
         let silent = classify_announce(&k, &Action::play(c("T21"))).unwrap();
         assert!(!silent.met);
-        assert_eq!(silent.cost, 12.0);
+        assert_eq!(silent.cost, THIRDS_PER_POINT);
         assert_eq!(silent.skill, Skill::Announce);
         let said = Action::Play {
             card: c("T21"),
