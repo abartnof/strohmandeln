@@ -182,7 +182,7 @@ Numbers below are at normal speed, starting values, tuned in play.
 | `honour_forfeited` | A "verwirkt" / "forfeited" chip rises over the player and fades; said only for the opponent's (the human is told through the engine's reply, 3.3) |
 | `card_played` (from hand) | The card is tugged out of the hand, arcs a little above it, and falls into the trick zone (`toss`), tilted ten degrees on its leading edge and sliding flat. The hand reflows (the gap closes by a `snap`) |
 | `card_played` (from a packet) | The cover lifts off its stack (`peelOff`), turns slightly toward the middle and falls into the trick zone like a hand card. The stack's top is bare for a moment: the hidden card beneath is *not* shown (the replacement flip follows the trick, 2.2). The badge keeps its count until the replacement. A packet playing the same trick as a hand card is distinguished by the departure point only |
-| `trick_won` | **The gather.** Both cards rest a moment (1000 ms, 600 for a trick the human has already seen coming: the leader's card, the follower forced). The cards are gathered into one block (`carryBlock`) and carried to the winner's won pile, face down, a trick at a time (squared on the pile, thickness the count). The winner is named by the pile they land on; the HUD's lines move to the running tally (2.5.3): the cards each side has won so far, in exact thirds |
+| `trick_won` | **The gather.** Both cards rest a moment (1000 ms, 600 for a trick the human has already seen coming: the leader's card, the follower forced). The cards are gathered into one block (`carryBlock`) and carried to the winner's won pile, face down, a trick at a time (squared on the pile, thickness the count). The winner is named by the pile they land on; as the cards land on the pile (`landed`, after the rest and the carry) the HUD's lines move to the running tally (2.5.3): the cards each side has won so far, in exact thirds; the sentence, the talk and the aid line keep the trick's start |
 | the replacement (after `trick_won`) | **The replacement flip** (R 6.1): for each seat that played a cover, leader first, the packet's next card is turned, held, and either pulled (the chain continues as in the opening reveal) or lowered as the new cover. The two chains run one after the other, never together. A packet with nothing left is empty and fades |
 | `pagat_ultimo` | See 2.3 |
 | `valat` | See 2.4 |
@@ -272,14 +272,15 @@ ticks up. A last group of fewer than three shows its popup the same way. One
 popup a beat (`countSchedule`, `scalePace`); a side's next popup waits for its
 last.
 
-2.5.3 **The running tally in exact thirds.** The HUD's line for each side runs to
+2.5.3 **The running tally in exact thirds.** (It runs during play as well as at
+the count: see the paragraph after this one.) The HUD's line for each side runs to
 36 (a segmented line to 107 thirds, segments by the kit); the number beside it
 shows the exact tally, `format(units)`, e.g. "11⅓", "34⅔", "35⅔". The tally
 rounds nothing [R 8.1]. The target mark at 107 is the HUD's finish (a wider
-segment), labelled "36" (7.5). When a side's tally reaches 107 the finish
+segment), labelled "36" (7.5). As soon as a side's tally reaches 107 (during play or at the count) the finish
 lights; when a side ends at 106 the line stops one short of the finish and the
 tally reads "35⅓", with the chip **"35⅓ is not 36"** (the edge shown, 5.4; tutor
-page "the count in thirds", 6.2). The other side's tally is shown the same way.
+page "Card values and the count", 6.2). The other side's tally is shown the same way.
 The two takes always sum to 210 thirds; the HUD does not display the sum.
 
 **The tally runs during play.** After each `trick_won` (at its gather) each

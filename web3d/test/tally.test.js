@@ -14,6 +14,28 @@ test("before a trick is won the tally is nothing; a trick adds its cards' thirds
   assert.deepEqual(runningTally(events, 0), { you: 14, opp: 14 }, "the human's seat says which line is 'you'");
 });
 
+// The pack as 27 tricks of two cards, won by `winnerOf(trickIndex)`.
+const PACK = [...["h", "d"].flatMap((su) => ["K", "Q", "C", "J", "1", "2", "3", "4"].map((r) => r + su)), ...["c", "s"].flatMap((su) => ["K", "Q", "C", "J", "10", "9", "8", "7"].map((r) => r + su)), ...Array.from({ length: 21 }, (_, i) => `T${i + 1}`), "SK"];
+const tricks = (winnerOf) => [{ type: "deal_start" }, ...Array.from({ length: 27 }, (_, i) => ({ type: "trick_won", winner: winnerOf(i), cards: [PACK[2 * i], PACK[2 * i + 1]] }))];
+
+test("a Valat ends 210 to nothing, and any split of the pack into tricks makes 210 between the two lines", () => {
+  assert.deepEqual(runningTally(tricks(() => 1), 1), { you: 210, opp: 0 });
+  assert.deepEqual(runningTally(tricks(() => 1), 0), { you: 0, opp: 210 });
+  // a split near even: give each trick to whoever is behind
+  let a = 0;
+  let b = 0;
+  const drawn = tricks((i) => {
+    const thirds = [PACK[2 * i], PACK[2 * i + 1]].reduce((n, c) => n + (c === "SK" || /^(K|T1$|T21$)/.test(c) ? 13 : /^Q/.test(c) ? 10 : /^C/.test(c) ? 7 : /^J/.test(c) ? 4 : 1), 0);
+    const w = a <= b ? 0 : 1;
+    if (w === 0) a += thirds;
+    else b += thirds;
+    return w;
+  });
+  const t = runningTally(drawn, 0);
+  assert.equal(t.you + t.opp, 210);
+  assert.deepEqual(t, { you: a, opp: b });
+});
+
 test("a new deal begins the tally again", () => {
   const events = [{ type: "deal_start" }, { type: "trick_won", winner: 0, cards: ["Kh", "4d"] }, { type: "deal_start" }];
   assert.deepEqual(runningTally(events, 0), { you: 0, opp: 0 });
