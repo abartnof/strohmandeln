@@ -26,6 +26,7 @@ import { handRange } from "./layout.js";
 import { TRULL, KINGS } from "./cardinfo.js";
 import { countGame, countLines, TARGET } from "./counting.js";
 import { loadEngine } from "./engine.js";
+import { createMirror } from "./mirror.js";
 import { momentsOf } from "./moments.js";
 import { check, emptyModel, fromState, reduce } from "./model.js";
 import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
@@ -150,6 +151,8 @@ async function main() {
 
   // ---- the page ---------------------------------------------------------------
   const ui = createUi(document.getElementById("overlay"), { t, onAct: (act, data) => onAct(act, data) });
+  const mirror = createMirror(document, { t, tn, cardName, onFocus: (row, index) => mirrorFocused(row, index), onMove: (row, by, abs) => moveFocus(row, by, abs), onPick: (row, index) => pickCard(focusList(row)[index]), onPacket: (n) => chooseCover(n) });
+  ui.controls.append(mirror.node);
   document.getElementById("loading").remove();
   canvas.setAttribute("aria-label", t("ui.stage"));
 
@@ -522,7 +525,20 @@ async function main() {
       ui.dialog({ id: "extend", title: t("ui.ext.title"), body: tn("ui.ext.adds", sittingLength), buttons: prefs.leftHanded ? [no, yes] : [yes, no] });
     }
     if (wasm.phase !== "extend") ui.closeDialog("extend");
+    mirror.set(mirrorState(mine && !busy));
     director.redecorate();
+  }
+  // The cards as the keyboard and the screen reader see them (3.10.1): the
+  // hand and the covers, lit as `state.legal` has them.
+  function mirrorState(live) {
+    if (!S) return { hand: [], packets: [] };
+    const ok = (code) => live && lit.has(code);
+    const packets = S.model.packets[human].map((p, i) => ({ p, i })).filter(({ p }) => p.cover);
+    return {
+      hand: S.model.hand.map((c) => ({ code: c.code, lit: ok(c.code), chosen: c.code === sel.chosen })),
+      packets: packets.map(({ p, i }) => ({ packet: i + 1, code: p.cover, hidden: p.hidden, lit: ok(p.cover), chosen: p.cover === sel.chosen })),
+      focus,
+    };
   }
   const legalNarrowed = () => lit.size < (wasm.deal?.own_hand?.length ?? 0) + (wasm.deal?.covers?.[wasm.human] ?? []).filter(Boolean).length;
 
@@ -839,6 +855,7 @@ async function main() {
     document.title = t("ui.title");
     canvas.setAttribute("aria-label", t("ui.stage"));
     ui.relabel();
+    mirror.relabel();
     const fresh = faceTextures({ width, anisotropy, codes: COURT_CODES, lang });
     const old = Object.keys(fresh).map((c) => textures.faces[c]);
     deck.setFaces(fresh);
@@ -898,11 +915,11 @@ async function main() {
   const coverCodes = () => (S ? S.model.packets[human].map((p) => p.cover).filter(Boolean) : []);
   const focusList = (row) => (row === "hand" ? handCodes() : coverCodes());
   const focusedCode = () => (focus ? focusList(focus.row)[focus.index] ?? null : null);
-  function describeFocus() {
-    const code = focusedCode();
-    if (!code) return;
-    const text = focus.row === "hand" ? t("sr.hand.item", { card: cardName(code) }) : tn("sr.packet.item", S.model.packets[human].find((p) => p.cover === code).hidden, { card: cardName(code), packet: S.model.packets[human].findIndex((p) => p.cover === code) + 1 });
-    ui.live(text + (lit.has(code) ? "" : ""));
+  // The keyboard's focus is on a card of the mirror (Tab, or an arrow).
+  function mirrorFocused(row, index) {
+    if (focus?.row === row && focus.index === index) return;
+    focus = { row, index };
+    director.redecorate();
   }
   function moveFocus(row, by, absolute = null) {
     const list = focusList(row);
@@ -911,11 +928,23 @@ async function main() {
     if (index < 0) {
       index = list.findIndex((c) => lit.has(c));
       if (index < 0) return; // nothing is lit: the focus does not land on a dimmed card
-    }
-    else index = absolute !== null ? absolute : Math.max(0, Math.min(list.length - 1, index + by));
+    } else index = absolute !== null ? Math.min(absolute, list.length - 1) : Math.max(0, Math.min(list.length - 1, index + by));
     focus = { row, index };
-    describeFocus();
+    mirror.focusItem(row, index); // the browser reads the card's label
     director.redecorate();
+  }
+  function chooseCover(n) {
+    const code = S?.model.packets[human][n - 1]?.cover;
+    if (code) moveFocus("packets", 0, coverCodes().indexOf(code));
+  }
+  // Enter, Space or a press on a card of the mirror: choose it, then play it.
+  function pickCard(code) {
+    if (!code || !wasm || wasm.phase !== "play" || director.busy() || pending > 0) return;
+    if (!lit.has(code) || wasm.prompt !== "you") return askRefusal(code);
+    if (sel.chosen === code) return commit(code);
+    sel = { ...sel, chosen: code };
+    refresh();
+    director.rearrange();
   }
 
   window.addEventListener("keydown", (e) => {
@@ -933,6 +962,7 @@ async function main() {
     }
     if (e.target instanceof Element && e.target.closest("input, select, textarea, .settings, .slate")) return;
     const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if ((key === "Enter" || key === " ") && e.target instanceof Element && e.target.closest("button")) return; // the button's own press
     if (key === "?") {
       ui.dialog({ id: "keys", title: t("keys.title"), body: ui.el("ul", { class: "keys" }, ...["play", "arrows", "packets", "announce", "take", "weiter", "slate", "hint", "where", "help", "esc"].map((k) => ui.el("li", {}, t(`keys.${k}`)))), buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
       return;
@@ -955,25 +985,12 @@ async function main() {
     else if (key === "ArrowRight") moveFocus(focus?.row ?? "hand", 1);
     else if (key === "Home") moveFocus(focus?.row ?? "hand", 0, 0);
     else if (key === "End") moveFocus(focus?.row ?? "hand", 0, 999);
-    else if (["1", "2", "3"].includes(key)) {
-      const covers = S.model.packets[human].map((p) => p.cover);
-      const code = covers[Number(key) - 1];
-      if (code) {
-        focus = { row: "packets", index: coverCodes().indexOf(code) };
-        describeFocus();
-        director.redecorate();
-      }
-    } else if (key === "Enter" || key === " ") {
+    else if (["1", "2", "3"].includes(key)) chooseCover(Number(key));
+    else if (key === "Enter" || key === " ") {
       const code = focusedCode();
       if (!code) return;
       e.preventDefault();
-      if (!lit.has(code)) return askRefusal(code);
-      if (sel.chosen === code) commit(code);
-      else {
-        sel = { ...sel, chosen: code };
-        refresh();
-        director.rearrange();
-      }
+      pickCard(code);
     }
   });
   // The table is framed between the score and the controls (kit/js/framing.js).

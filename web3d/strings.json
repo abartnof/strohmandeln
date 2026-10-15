@@ -344,6 +344,8 @@
   "sr.extension_decided.no": {"en": "no", "de": "nein"},
   "sr.sitting_end": {"en": "The sitting is over. {settlement}", "de": "Der Abend ist aus. {settlement}"},
   "sr.live": {"en": "The game", "de": "Das Spiel"},
+  "sr.hand.list": {"en": "Your hand", "de": "Ihre Hand"},
+  "sr.packets.list": {"en": "Your covers", "de": "Ihre Decken"},
   "sr.hand.item": {"en": "{card}, from your hand", "de": "{card}, aus Ihrer Hand"},
   "sr.packet.item.one": {"en": "{card}, cover of packet {packet}, {n} card beneath", "de": "{card}, Decke von Paket {packet}, {n} Karte darunter"},
   "sr.packet.item.other": {"en": "{card}, cover of packet {packet}, {n} cards beneath", "de": "{card}, Decke von Paket {packet}, {n} Karten darunter"},
