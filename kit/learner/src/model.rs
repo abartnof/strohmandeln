@@ -181,14 +181,24 @@ impl Params {
     }
 }
 
-/// One skill's tally over a deal (or, in the learner, discounted over
-/// several).
+/// One skill's counts over one deal: whole numbers. The learner's discounted
+/// counts are in [`crate::SkillState`].
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct Tally {
     pub chances: u32,
+    /// At most `chances`.
     pub met: u32,
-    /// The sum of the gaps of the chances missed, in points.
+    /// The sum of the gaps of the chances missed, in the game's score unit:
+    /// finite, at least 0.
     pub missed: f64,
+}
+
+impl Tally {
+    /// Whether the counts can be true: `met` within `chances`, `missed` a
+    /// finite loss.
+    pub fn is_valid(&self) -> bool {
+        self.met <= self.chances && self.missed.is_finite() && self.missed >= 0.0
+    }
 }
 
 /// One clear chance, as the game's evidence finds it.
@@ -197,7 +207,9 @@ pub struct Chance {
     /// The skill's index in the ladder.
     pub skill: usize,
     pub met: bool,
-    /// What a miss cost, in points; unused when met.
+    /// What a miss cost, in the game's score unit; unused when met. Meant
+    /// finite and at least 0; anything else counts as 0, so that one bad
+    /// number cannot poison a skill for ever.
     pub gap: f64,
 }
 
@@ -226,7 +238,9 @@ impl Summary {
             if c.met {
                 t.met += 1;
             } else {
-                t.missed += c.gap;
+                if c.gap.is_finite() && c.gap > 0.0 {
+                    t.missed += c.gap;
+                }
             }
         }
         s
@@ -238,9 +252,13 @@ impl Summary {
     }
 
     /// Whether this was computed by the ladder's present evidence (its
-    /// version, and a tally for each skill).
+    /// version, and a tally for each skill) and can be true (each tally
+    /// [`Tally::is_valid`]); anything else is stale and [`crate::learn`]
+    /// skips it.
     pub fn is_current(&self, ladder: &Ladder) -> bool {
-        self.version == ladder.version && self.tallies.len() == ladder.skills.len()
+        self.version == ladder.version
+            && self.tallies.len() == ladder.skills.len()
+            && self.tallies.iter().all(Tally::is_valid)
     }
 
     /// The text form: a header, then a line a skill, `<slug> <chances>
@@ -280,7 +298,7 @@ impl Summary {
                 met: w[2].parse().map_err(|_| bad())?,
                 missed: w[3].parse().map_err(|_| bad())?,
             };
-            if t.met > t.chances || !t.missed.is_finite() || t.missed < 0.0 {
+            if !t.is_valid() {
                 return Err(bad());
             }
             tallies.push(t);

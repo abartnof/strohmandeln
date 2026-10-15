@@ -77,6 +77,61 @@ fn a_stale_summary_is_listed() {
 }
 
 #[test]
+fn a_gap_that_is_not_a_finite_loss_counts_as_none() {
+    let chance = |gap| Chance {
+        skill: SUMS,
+        met: false,
+        gap,
+    };
+    let s = Summary::from_chances(
+        &LADDER,
+        &[
+            chance(f64::NAN),
+            chance(-2.0),
+            chance(f64::INFINITY),
+            chance(f64::NEG_INFINITY),
+            chance(1.5),
+        ],
+    );
+    assert_eq!(
+        s.of(SUMS),
+        Tally {
+            chances: 5,
+            met: 0,
+            missed: 1.5
+        }
+    );
+    // What it wrote it can read back, and the skill stays learnable.
+    let text = s.to_text(&LADDER);
+    assert_eq!(Summary::parse(&LADDER, &text), Ok(s.clone()));
+    let l = kit_learner::learn(&LADDER, &PARAMS, &[s]);
+    assert!(l.state(SUMS).cost.is_finite() && l.state(SUMS).cost > 0.0);
+}
+
+#[test]
+fn a_summary_that_cannot_be_true_is_not_current() {
+    let fresh = summary(&[(PAIRS, 3, 3, 0.0)]);
+    assert!(fresh.is_current(&LADDER));
+    let mut bad = fresh.clone();
+    bad.tallies[PAIRS].met = 4;
+    assert!(!bad.is_current(&LADDER), "met above chances");
+    for missed in [f64::NAN, -1.0, f64::INFINITY] {
+        let mut bad = fresh.clone();
+        bad.tallies[PAIRS].missed = missed;
+        assert!(!bad.is_current(&LADDER), "missed {missed}");
+    }
+    assert_eq!(stale(&LADDER, &[fresh, bad_met()]), [1]);
+    // ...and so is not counted by the learner.
+    assert_eq!(kit_learner::learn(&LADDER, &PARAMS, &[bad_met()]).games, 0);
+}
+
+fn bad_met() -> Summary {
+    let mut s = summary(&[(PAIRS, 3, 3, 0.0)]);
+    s.tallies[PAIRS].met = 4;
+    s
+}
+
+#[test]
 fn a_summary_of_a_newer_version_keeps_its_version_through_the_text() {
     let mut s = summary(&[(SUMS, 4, 2, 1.5)]);
     s.version = 7;
