@@ -906,7 +906,8 @@ tutor not muted (as the hint, 6.3.4), and a deal under way. A tab "Cards out" /
 "Ausgespielt" in the top row, left of the slate's, folds and unfolds it
 (`aria-expanded`); so does the panel's own "Fold" button. The fold is kept
 (`trackerFolded` in the preferences, 7.7): unset, the panel starts open when the
-window is at least 900 × 600 px and folded on a smaller one.
+window is at least 900 × 600 px and folded on a smaller one. On a phone it is not
+shown at all (6.6.6).
 
 6.6.3 **When it changes.** With the cards at rest (the director's `rested`, as 6.3.4):
 after each trick and each turned packet card, never in an animation. A language
@@ -939,18 +940,19 @@ order, each only when it has something to say:
    shown in his hand or on his covers; a packet card pulled later lifts it.
 4. Points: "Points still out: 31⅓ of 70" (the cards out, in the count's thirds).
 
-The first line is always shown while a deal is under way; the Points line is dropped
-first if there are more than four. The words are strings (8) in both languages; the
+The first and the last are always shown while a deal is under way, so there are
+two to four. The words are strings (8) in both languages; the
 Kibitzer's byline under the title is "The Kibitzer keeps count" / "Der Kiebitz zählt
 mit" (6.5).
 
-6.6.6 **Where it lies.** It must not cover the hand, the move bar, the prompt or the
-Kibitzer's tabs, and it lies under the dialogs and the slate (z-order). Landscape and
-touch: a card of 300 px at the left, under the HUD; mirrored at the right in
-left-handed mode. Portrait: a sheet across the width between the HUD and the top of
-the hand, scrolling inside if it is taller; folded, it is only its tab.
-`layout.test.js`-style checks hold the rectangles apart at 1280 × 720, 1024 × 768,
-390 × 844 and 360 × 740 (browser check `tracker_clear`, 10.4).
+6.6.6 **Where it lies.** It must not cover the hand, the move bar, the prompt, the
+HUD or the Kibitzer's tabs, and it lies under the dialogs and the slate (z-order). A
+card of 300 px at the left, under the HUD, scrolling inside if it is taller;
+mirrored at the right in left-handed mode. Held upright, or in a window under
+700 px wide, it is not shown at all: **the phone layout is deferred** until the
+maintainer has played the game on a phone and decided what the table should carry
+there. Nothing in the tracker is phone-specific. Browser checks hold the rectangles
+apart at 1280 × 720 and 1024 × 768 (`tracker_clear`, 10.4).
 
 6.6.7 **Accessibility.** The panel is a labelled region; the lines are a list; the grid
 is hidden from the screen reader and replaced by one visually hidden sentence per
@@ -1259,10 +1261,15 @@ motion are saved to `web3d/test/out/`.
   unmute restores them.
 - `hint_and_explain`: the hint chip lights a card and shows a rendered key; explanations
   off leaves the line empty.
-- `tracker_clear`: with Hints on, the cards-out panel opens at rest, shows the
-  counts of the engine's tracker in both languages, and its rectangle meets none of
-  the hand, the move bar, the prompt or the Kibitzer's tabs at the window sizes of
-  6.6.6; folded it is only its tab; off in Settings or with Hints off, it is gone.
+- `tracker_clear`: with Hints on, the cards-out panel is open at rest, of the trick at
+  rest, with two to four lines and the 54-cell grid, and its rectangle meets none of
+  the hand, the move bar, the prompt, the HUD or the Kibitzer's tabs at the window
+  sizes of 6.6.6.
+- `tracker_fold_and_settings`: the tab and Fold fold and open it and the fold is
+  kept; it follows the cards at rest; Hints off, its own setting off, or the
+  Kibitzer muted takes it away, and back on returns it.
+- `tracker_languages`: the tab, the lines and the court labels are German in
+  German; held upright it is not shown.
 - `deal_review`: after a scored deal the chip opens "How the deal went" with up to
   three bullets; none after a void deal or a throw-in.
 
