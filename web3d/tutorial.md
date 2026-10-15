@@ -144,3 +144,10 @@ einen für beide both_pass (RULES 3.4, 14.6).
 - Sind die Touren gespielt, können Sie weitere anhängen. Beide müssen zustimmen.
 - Drücken Sie **Noch eine Tour** oder **Genug**.
 - Es kommen 3 oder 6 Touren dazu, wie Sie anfangs gewählt haben. Die Rechnung läuft weiter.
+
+# Die Abrechnung im Ganzen
+
+## Die lange Seite
+
+- Platzhalter.
+- Platzhalter.

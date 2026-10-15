@@ -828,12 +828,22 @@ bar and the prompts are drawn, so it is on screen when the question is asked.
 | `draw` | the first `draw` | a simple game that ends 35 : 35 is undecided; the next deal counts double |
 | `touren-slate` | the first `tour_end`, or the first slate opening | the Touren, two deals each; the slate; the note that this is a reconstruction (4.6), said once |
 | `extension` | the first `extension_offered`, or the human's extend prompt | one more Tour needs both players' consent |
+| `scoring-full` | never by itself: Help, or the link on `bidding`, `thirds` and `scoring` | see 6.2.4 |
 
 The pages are authored in English and German at the same time (11); each is a
 key in the tutorial file. The `keys` argument of `parseTutorial` is the list
 above.
 
 6.2.3 A page can also be opened from the hint chip (6.3) and from the review.
+
+6.2.4 **Links between pages.** A page may point at another with `[text](#key)`
+(kit `parseTutorial`: a span `{ text, page }`); the view draws it as a button
+(`data-act="page"`, as the Help list's). Pressed on a page that opened by
+itself, it marks that page seen (as "Not now") and opens the linked page as a
+Help page; when that is closed the next page due opens, if there is one.
+Pressed on a Help page, it opens the linked page over it. `scoring-full`, the
+long page, is the one linked to; it never falls due (`pagesDue` does not
+return it) and is read from Help or a link.
 
 ### 6.3 Hints and explanations
 

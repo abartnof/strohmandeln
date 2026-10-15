@@ -17,10 +17,18 @@ test("a page is drawn as its headings, paragraphs and lists, with bold kept", ()
   assert.deepEqual(body.findAll((e) => e.tagName === "B").map((e) => e.textContent).slice(0, 2), ["I take it up", "Pass"]);
 });
 
+test("a link to another page is a button that reports the page it names, in the text's own place", () => {
+  const body = pageBody(doc, { key: "x", title: "X", blocks: [{ type: "p", spans: [{ text: "See " }, { text: "more", page: "scoring-full" }, { text: "." }] }, { type: "ul", items: [[{ text: "Also ", bold: true }, { text: "this", page: "thirds" }]] }] });
+  const links = body.findAll((e) => e.tagName === "BUTTON");
+  assert.deepEqual(links.map((b) => [b.textContent, b.getAttribute("data-act"), b.getAttribute("data-page"), b.getAttribute("type")]), [["more", "page", "scoring-full", "button"], ["this", "page", "thirds", "button"]]);
+  assert.ok(links.every((b) => b.classList.contains("tutor-link")));
+  assert.equal(body.findAll((e) => e.tagName === "P")[0].textContent, "See more.");
+});
+
 test("the help list has a button for each page, the seen ones marked", () => {
   const body = helpBody(doc, pages, { intro: "Pages.", seen: ["thirds"] });
   const buttons = body.findAll((e) => e.tagName === "BUTTON");
-  assert.equal(buttons.length, 13);
+  assert.equal(buttons.length, PAGE_KEYS.length);
   assert.deepEqual(buttons.map((b) => b.getAttribute("data-page")), PAGE_KEYS);
   assert.match(buttons.find((b) => b.getAttribute("data-page") === "thirds").textContent, /✓$/);
   assert.doesNotMatch(buttons[0].textContent, /✓/);

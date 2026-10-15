@@ -21,10 +21,11 @@ const words = (s) => s.split(/\s+/).filter(Boolean).length;
 const PAGE_WORDS = 150;
 const LINE_WORDS = 25;
 
-test("the spec lists thirteen page keys", () => {
-  assert.equal(KEYS.length, 13);
+test("the spec lists fourteen page keys: thirteen that fall due, and the long scoring page that does not", () => {
+  assert.equal(KEYS.length, 14);
   assert.equal(KEYS[0], "packets");
   assert.equal(KEYS[12], "extension");
+  assert.equal(KEYS[13], "scoring-full");
 });
 
 for (const lang of ["en", "de"]) {

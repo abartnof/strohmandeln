@@ -226,7 +226,8 @@ async function main() {
   });
   let tutorBuf = []; // events the tutor has not yet reckoned with
   let reviewChip = null; // null, "deal" or "sitting"
-  let pageHelp = false; // the page open now came from the Help list
+  let pageHelp = false; // the page open now came from the Help list or a link
+  let pageLinked = false; // ... and it was reached by a link from a page that was due
   let pastSittings = []; // the sittings kept before this one, for the sitting's review
   const showTutor = () => ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip });
   const tutorWords = () => ({ t, cardName: romanName, thirds, signed, suitName: (c) => (getLang() === "en" ? suitName(c).toLowerCase() : suitName(c)) });
@@ -238,16 +239,18 @@ async function main() {
     director.at(Math.max(4000, 250 + 70 * text.length), () => ui.kibitzNote(null), "linger");
   }
 
-  // The pages, for the sitting's both-pass rule (6.2.2).
+  // The pages, for the sitting's rules: both-pass, game values and ultimo (6.2.2).
   function pagesNow() {
     const begun = log.find((e) => e.type === "sitting_start");
-    const both_pass = begun?.settings?.both_pass ?? prefs.both_pass;
-    return tutorialPages(getLang() === "de" ? TUTORIAL_DE : TUTORIAL_EN, PAGE_KEYS, { both_pass });
+    const settings = begun?.settings ?? {};
+    const rule = (k) => settings[k] ?? prefs[k];
+    return tutorialPages(getLang() === "de" ? TUTORIAL_DE : TUTORIAL_EN, PAGE_KEYS, { both_pass: rule("both_pass"), values: rule("values"), ultimo: rule("ultimo") });
   }
   function openPage(key, { help }) {
     const page = pagesNow().find((p) => p.key === key);
     if (!page) return tutor.helpClosed(key);
     pageHelp = help;
+    if (!help) pageLinked = false;
     ui.dialog({
       id: "page",
       title: page.title,
@@ -266,10 +269,13 @@ async function main() {
     if (!key) return;
     if (pageHelp) tutor.helpClosed(key);
     else tutor.close(key, remind);
-    // A second page of the same moment follows (not after a Help page); then
-    // the bar and the prompts a page was holding back.
+    const linked = pageLinked;
+    pageLinked = false;
+    // A second page of the same moment follows (not after a Help page, unless
+    // a link led to it from a page that was due); then the bar and the
+    // prompts a page was holding back.
     if (S) {
-      if (!pageHelp) tutorStep();
+      if (!pageHelp || linked) tutorStep();
       refresh();
     }
   }
@@ -819,6 +825,12 @@ async function main() {
       case "review":
         return openReview();
       case "page":
+        // From the Help list, or a link on the page that is open (6.2.4).
+        if (ui.dialogOpen("page")) {
+          if (!pageHelp) pageLinked = true; // a page that was due: the next due page follows the linked one
+          return tutor.follow(data.page);
+        }
+        pageLinked = false;
         return tutor.help(data.page);
       default:
     }

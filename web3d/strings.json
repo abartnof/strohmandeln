@@ -169,6 +169,7 @@
   "tutor.page.playing": {"en": "Playing a card", "de": "Eine Karte spielen"},
   "tutor.page.scoring": {"en": "What a deal pays", "de": "Was eine Partie zahlt"},
   "tutor.page.extension": {"en": "One more Tour", "de": "Noch eine Tour"},
+  "tutor.page.scoring-full": {"en": "Scoring in full", "de": "Die Abrechnung im Ganzen"},
   "tutor.progress.title": {"en": "Your sittings", "de": "Ihre Abende"},
   "review.say.count": {"en": "You counted {mine} to your opponent's {theirs}; 35⅔ was the line.", "de": "Sie zählten {mine} gegen {theirs} Ihres Gegners; 35⅔ war die Grenze."},
   "review.say.sitting-tally": {"en": "Deals: {won} won, {lost} lost, {drawn} drawn; {net} Points in all.", "de": "Partien: {won} gewonnen, {lost} verloren, {drawn} unentschieden; {net} Points im Ganzen."},

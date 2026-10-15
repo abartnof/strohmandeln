@@ -144,3 +144,10 @@ tutorialPages): bidding and draw have one for each both_pass value (RULES 3.4, 1
 - When the Touren are played, you may add more. Both players must agree.
 - Press **One more Tour**, or **Enough**.
 - It adds 3 or 6 Touren, as you first chose. The account carries on.
+
+# Scoring in full
+
+## The long page
+
+- Placeholder.
+- Placeholder.

@@ -52,6 +52,8 @@
 .tutor-page h3 { margin: 10px 0 4px; font-size: 16px; }
 .tutor-page ul, .tutor-page ol, .tutor-review-body ul { margin: 0; padding-left: 20px; }
 .tutor-page li, .tutor-review-body li { margin: 4px 0; line-height: 1.35; }
+.tutor-link { font: inherit; padding: 0; border: 0; background: none; color: var(--md-sys-color-primary); text-decoration: underline; cursor: pointer; }
+.dialog:has(.tutor-page[data-page="scoring-full"]) { max-width: min(640px, 94vw); }
 .tutor-pages { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
 .tutor-pages .big { width: 100%; text-align: left; }
 .tutor-review-body details { margin-top: 10px; font-size: 14px; }
