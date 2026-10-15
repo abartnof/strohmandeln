@@ -12,6 +12,7 @@
 
 use serde::Deserialize;
 use serde_json::{json, Map, Value};
+use strohmandeln_ai::explain::Param as HintParam;
 use strohmandeln_ai::hint::hint as ai_hint;
 use strohmandeln_ai::opponent::{Config as AiConfig, Level, Opponent};
 use strohmandeln_ai::review::{explain_last, review_last, review_sitting, Bullet, Param, Review};
@@ -371,6 +372,8 @@ impl Table {
                 "hint": null,
                 "reason": "not-your-turn",
                 "params": {},
+                "rule": null,
+                "odds": null,
             });
         };
         let v = self.my_view();
@@ -384,7 +387,28 @@ impl Table {
                 .unwrap_or(Value::Null),
             other => serde_json::to_value(other).unwrap_or(Value::Null),
         };
-        json!({"protocol": PROTOCOL, "hint": action, "reason": h.key, "params": {}})
+        let params: serde_json::Map<String, Value> = h
+            .params
+            .iter()
+            .map(|(name, p)| {
+                let v = match p {
+                    HintParam::Card(c) => json!(c),
+                    HintParam::Int(n) => json!(n),
+                };
+                ((*name).to_string(), v)
+            })
+            .collect();
+        let odds = h.odds.as_ref().map(|o| {
+            json!({"alt": o.alt, "better": o.better, "worlds": o.worlds, "gain_thirds": o.gain_thirds})
+        });
+        json!({
+            "protocol": PROTOCOL,
+            "hint": action,
+            "reason": h.key,
+            "params": params,
+            "rule": h.rule,
+            "odds": odds,
+        })
     }
 
     /// The review of the last scored deal, or of the whole sitting so far,
@@ -660,7 +684,8 @@ pub mod ffi {
     }
 
     /// Renders the tutor's hint for the human's move
-    /// (`{"hint": <a legal action>, "reason": <key>, "params": {}}`).
+    /// (`{"hint": <a legal action>, "reason": <key>, "params": {..}, "rule":
+    /// <key or null>, "odds": <object or null>}`).
     #[no_mangle]
     pub extern "C" fn strohmandeln_hint() {
         HOST.with(|h| h.borrow_mut().show(|t| t.hint()))
@@ -1003,6 +1028,10 @@ mod tests {
                 let key = r["reason"].as_str().unwrap();
                 assert!(strohmandeln_ai::hint::KEYS.contains(&key), "{key}");
                 assert!(r["params"].is_object());
+                assert!(r["rule"].is_null() || r["rule"].is_string());
+                if r["hint"]["action"] == "play" {
+                    assert_eq!(r["params"]["card"], r["hint"]["card"], "{r}");
+                }
                 let a = if r["hint"]["action"] == "play" {
                     json!({"action":"play","card":r["hint"]["card"]})
                 } else {

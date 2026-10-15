@@ -175,6 +175,9 @@ for (let n = 0; n < 60; n++) {
     assert.ok(s.legal.some((a) => JSON.stringify(a) === JSON.stringify(h.hint)), JSON.stringify(h));
     assert.match(h.reason, /^[a-z]+(-[a-z]+)*$/);
     assert.equal(typeof h.params, "object");
+    if (h.hint.action === "play") assert.equal(h.params.card, h.hint.card, "the reason names the card");
+    assert.ok(h.rule === null || typeof h.rule === "string");
+    assert.ok(h.odds === null || (h.odds.worlds >= h.odds.better && h.odds.gain_thirds >= 1), JSON.stringify(h.odds));
     hinted++;
     assert.ok(send(wire(h.hint)), "the hint is playable");
   } else break;

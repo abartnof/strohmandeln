@@ -5,6 +5,7 @@
 //! the player's own view, so a record replays.
 
 pub mod cardset;
+pub mod explain;
 pub mod hint;
 pub mod know;
 pub mod opponent;

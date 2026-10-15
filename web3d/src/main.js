@@ -36,7 +36,8 @@ import { loadPrefsInfo, savePrefs, sittingConfig, speedScale, urlOverrides, with
 import { createSettings } from "./settings.js";
 import { createSpeaker } from "./speaker.js";
 import { createSlate } from "./slate.js";
-import { cardName, getLang, onLang, setLang, signed, suitName, t, tn, thirds } from "./strings.js";
+import { hintLines, hintSpoken } from "./hinttext.js";
+import { cardName, getLang, onLang, romanName, setLang, signed, suitName, t, tn, thirds } from "./strings.js";
 import { createTalk } from "./talk.js";
 import { ALL_CODES, backTexture, COURT_CODES, faceTextures } from "./tarockfaces.js";
 import { createUi } from "./ui.js";
@@ -228,7 +229,7 @@ async function main() {
   let pageHelp = false; // the page open now came from the Help list
   let pastSittings = []; // the sittings kept before this one, for the sitting's review
   const showTutor = () => ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip });
-  const tutorWords = () => ({ t, cardName, thirds, signed, suitName: (c) => (getLang() === "en" ? suitName(c).toLowerCase() : suitName(c)) });
+  const tutorWords = () => ({ t, cardName: romanName, thirds, signed, suitName: (c) => (getLang() === "en" ? suitName(c).toLowerCase() : suitName(c)) });
   showTutor();
 
   // The Kibitzer's note, in his tab and not in the opponent's box (6.5).
@@ -786,9 +787,9 @@ async function main() {
     const r = engine.hint();
     if (!r?.hint) return ui.setAid(t("hint.none"));
     hintCard = r.hint.action === "play" ? r.hint.card : null;
-    const text = t(`hint.reason.${r.reason}`);
-    ui.setAid(text);
-    ui.live(text);
+    const lines = hintLines(r, { t, cardName: romanName, thirds });
+    ui.setAid([lines.lead, lines.reason].filter(Boolean).join(" "), lines.more);
+    ui.live(hintSpoken(hintLines(r, { t, cardName, thirds })));
     director.redecorate();
   }
 

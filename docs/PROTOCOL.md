@@ -39,7 +39,7 @@ Text goes in and out through linear memory, as in Cassino. `kit/js/engine.js`
 | `strohmandeln_legal()` | | | `{protocol, legal}` |
 | `strohmandeln_export()` | | | the saved sitting |
 | `strohmandeln_import(len)` | saved JSON in the buffer | 1 restored, 0 not (old sitting stays) | opening reply, or an error |
-| `strohmandeln_hint()` | | | `{protocol, hint, reason, params}`: the tutor's move (one of `legal`, same shape) and why; on the opponent's turn or after the end `hint` is `null` and `reason` `"not-your-turn"`. Does not move the game. See below |
+| `strohmandeln_hint()` | | | `{protocol, hint, reason, params, rule, odds}`: the tutor's move (one of `legal`, same shape) and why; on the opponent's turn or after the end `hint` is `null` and `reason` `"not-your-turn"`. Does not move the game. See below |
 | `strohmandeln_review()` | | | `{protocol, review}`: the review of the last scored deal, or `review: null` before one is scored. Does not move the game. See "The review" |
 | `strohmandeln_review_sitting()` | | | the same shape, over every deal scored so far |
 | `strohmandeln_explain()` | | | `{protocol, explain}`: what the last trick showed, one bullet, or `explain: null` before a trick is won. See "The review" |
@@ -332,15 +332,24 @@ whole), whatever the opponent's level. It is a function of the position, so
 asking twice gives the same answer, and asking changes nothing.
 
 ```json
-{"protocol": 1, "hint": {"action": "play", "card": "T21", "source": "hand"},
- "reason": "hold-pagat", "params": {}}
+{"protocol": 1, "hint": {"action": "play", "card": "T19", "source": "hand"},
+ "reason": "win-cheapest",
+ "params": {"card": "T19", "led": "T15", "alt": "T21", "trick_thirds": 2},
+ "rule": null,
+ "odds": {"alt": "T21", "better": 7, "worlds": 10, "gain_thirds": 4}}
 ```
 
 `hint` is one of the entries of `state.legal` (send its card alone, as for any
-play). `reason` is a message key from the hint table in `docs/MESSAGES.md`;
-`params` is an object reserved for the key's parameters (none of the keys has
-any yet). The opponent's `step` and the hint share their rules: a hint is what
-the level-4 opponent would play.
+play). `reason` is a message key from the hint table in `docs/MESSAGES.md` and
+`params` its parameters, named there: a card is a code, a name ending
+`_thirds` is thirds of a point, the rest are counts. `rule` is a key of the
+rule table there, or `null`: the maxim the move follows. `odds` is how the
+search ranks the card against the best other legal card over freshly sampled
+deals, or `null` (not asked at a level below the top, a forced card, or the
+sample does not agree with the choice). The opponent's `step` and the hint
+share their rules: a hint is what the level-4 opponent would play; the
+explanation never changes the move. Without a move to make, `hint`, `rule` and
+`odds` are `null` and `reason` is `not-your-turn`.
 
 ## The review
 

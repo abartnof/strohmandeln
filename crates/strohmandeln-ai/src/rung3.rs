@@ -19,7 +19,7 @@ use crate::know::Knowledge;
 use crate::rung2::{
     common, cover_index, play_card, spend, BidRule, Choice, Tally, Weights, STRONG_TAROCKS,
 };
-use crate::sampler::{sample, World};
+use crate::sampler::sample;
 use strohmandeln_core::cards::Card;
 use strohmandeln_core::rng::Rng;
 use strohmandeln_core::types::Action;
@@ -28,14 +28,32 @@ use strohmandeln_core::view::View;
 /// Worlds drawn for a lead.
 pub const WORLDS: usize = 24;
 
-/// Scores every legal card, best first.
-pub fn score_cards(k: &Knowledge, rng: &mut Rng, worlds: usize, wt: &Weights) -> Vec<Choice> {
-    let worlds: Vec<World> = if k.lead.is_none() && k.legal.len() > 1 {
-        (0..worlds).map(|_| sample(k, rng)).collect()
+/// The worlds a lead is weighed in, as search positions (none when the card
+/// to play is forced, or when following: the trick is known).
+pub fn lead_sims(k: &Knowledge, rng: &mut Rng, worlds: usize) -> Vec<crate::sim::Sim> {
+    if k.lead.is_none() && k.legal.len() > 1 {
+        (0..worlds).map(|_| sample(k, rng).sim(k)).collect()
     } else {
         Vec::new()
-    };
-    let sims: Vec<_> = worlds.iter().map(|w| w.sim(k)).collect();
+    }
+}
+
+/// In how many of `sims` the lead of `c` wins the trick, the opponent
+/// answering as the rollout policy does.
+pub fn lead_wins(sims: &[crate::sim::Sim], c: Card) -> usize {
+    sims.iter()
+        .filter(|sim| {
+            let mut s = (*sim).clone();
+            s.play(c);
+            let reply = s.policy();
+            s.play(reply).expect("a trick").0 == 0
+        })
+        .count()
+}
+
+/// Scores every legal card, best first.
+pub fn score_cards(k: &Knowledge, rng: &mut Rng, worlds: usize, wt: &Weights) -> Vec<Choice> {
+    let sims = lead_sims(k, rng, worlds);
     let mut out: Vec<Choice> = k
         .legal
         .iter()

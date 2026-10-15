@@ -46,7 +46,29 @@ export function createStrings(table, initial = "en") {
     return /^\d/.test(m[1]) ? t("card.name.pip", { n: m[1], suit }) : t("card.name.court", { rank: t(`card.rank.${m[1]}`), suit });
   }
 
-  return { t, tn, getLang: () => lang, setLang, onLang, suitName, cardName };
+  // The name as shown in prose: a numbered tarock by the faces' Roman numeral
+  // ("tarock XII"); the rest as `cardName`. Screen-reader text keeps `cardName`.
+  function romanName(code) {
+    const m = /^T(\d+)$/.exec(code);
+    return m && m[1] !== "1" && m[1] !== "21" ? t("card.tarock", { n: tarockNumeral(+m[1]) }) : cardName(code);
+  }
+
+  return { t, tn, getLang: () => lang, setLang, onLang, suitName, cardName, romanName };
+}
+
+// Roman numerals as on the real pack: standard subtractive numerals, except 4, which is IIII.
+export function tarockNumeral(n) {
+  if (!Number.isInteger(n) || n < 1 || n > 21) throw new RangeError(`no tarock ${n}`);
+  if (n === 4) return "IIII";
+  let out = "";
+  let rest = n;
+  for (const [v, s] of [[10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]]) {
+    while (rest >= v) {
+      out += s;
+      rest -= v;
+    }
+  }
+  return out;
 }
 
 // ---- numbers, which do not depend on the language ------------------------
@@ -68,4 +90,4 @@ export const signed = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "0");
 // ---- the shipped table ----------------------------------------------------
 
 const shared = createStrings(TABLE);
-export const { t, tn, getLang, setLang, onLang, suitName, cardName } = shared;
+export const { t, tn, getLang, setLang, onLang, suitName, cardName, romanName } = shared;

@@ -97,6 +97,9 @@ button { font: inherit; }
 .controls { position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; height: 100px; padding: 4px 12px calc(8px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; pointer-events: none; }
 .controls > * { pointer-events: auto; }
 .prompt, .refusal, .aid-line { margin: 0; padding: 4px 12px; border-radius: 14px; font-size: 15px; background: var(--md-sys-color-surface-container-lowest); color: var(--md-sys-color-on-surface); }
+/* Above the Kibitzer's chips (z 15): a hint of two or three lines grows upward over them on a phone, and the text is what is being read. */
+.aid-line { position: relative; z-index: 16; max-width: min(100%, 44em); text-align: center; }
+.aid-more { display: block; margin-top: 2px; font-size: 13px; opacity: 0.85; }
 .prompt:empty, .refusal[hidden], .refusal:empty { display: none; }
 .refusal { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); border: 1px solid var(--md-sys-color-error); }
 .move-bar { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }

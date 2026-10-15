@@ -137,9 +137,11 @@ export function createUi(root, { t, onAct }) {
       note.dataset.text = text ?? "";
       return note;
     },
-    setAid(text) {
+    // One line of help under the prompt; `more` adds lines under it (the hint's
+    // rule and odds), each its own block so a long hint wraps tidily.
+    setAid(text, more = []) {
       aid.hidden = !text;
-      aid.textContent = text ?? "";
+      aid.replaceChildren(text ?? "", ...more.map((m) => el("span", { class: "aid-more" }, m)));
     },
 
     // The move bar. `groups`: [{ kind, buttons: [{ act, label, enabled, data, key, focus }] }].

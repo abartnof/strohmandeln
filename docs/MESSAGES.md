@@ -41,38 +41,70 @@ own them: `dealt` (the other hand) and `honour_forfeited` (RULES 13.2, 11.5).
 
 ## Hint reasons
 
-The tutor's hint (`strohmandeln_hint`, `docs/PROTOCOL.md`) carries one key and
-an object of parameters (none yet). The table translates the key; this is the
-English and German text each is shown with.
+The tutor's hint (`strohmandeln_hint`, `docs/PROTOCOL.md`) says which card and
+why. It carries a reason key with parameters, optionally a rule key (a second
+clause naming the maxim the move follows) and, at the top rung, `odds`. The
+table translates all three. A parameter naming a card is a code (the table
+names it), one ending `_thirds` is thirds of a point told with its unit ("4⅔ points",
+"⅔ point"; 107 is "35⅔"), the rest are counts. The move is never changed by its explanation. The text is the
+English and German the table shows.
 
-| Key | English | Deutsch |
-|---|---|---|
-| `bid-strong-hand` | Sure winners and the tarocks to back them: take up the 4. | Genug sichere Stiche und Tarock dazu: die Partie aufnehmen. |
-| `bid-weak-hand` | Too few sure winners to risk the 4. | Zu wenige sichere Stiche für das Aufnehmen. |
-| `bid-few-tarocks` | Honours, but too few tarocks. | Honneurs, aber zu wenig Tarock. |
-| `bid-sampled-take` | In most sampled deals taking up pays. | In den meisten durchgespielten Austeilungen lohnt sich das Aufnehmen. |
-| `bid-sampled-pass` | In most sampled deals the simple game is better. | In den meisten durchgespielten Austeilungen ist das einfache Spiel besser. |
-| `take-rich-trick` | Win this trick: it is rich in points. | Diesen Stich holen: er ist augenreich. |
-| `take-trick` | Win it, and cheaply. | Holen, und zwar billig. |
-| `finesse` | Do not spend an honour on a poor trick; let him lead. | Keinen Honneur auf einen armen Stich: er soll anspielen (Impassiren). |
-| `follow-cheaply` | Lose with the least, or win with the cheapest winner. | Mit dem Kleinsten abgeben oder mit dem billigsten Stecher holen. |
-| `play-packet-off` | Play a face-up packet card to see what lies beneath. | Das offene Paketblatt spielen, um das darunter zu sehen. |
-| `play-exposed-figure` | An exposed queen or cavall goes at once. | Eine offene Dame oder ein Cavall geht gleich. |
-| `lead-where-he-shows-none` | Lead a suit in which he shows no packet card. | Eine Farbe anspielen, in der er kein offenes Paketblatt zeigt. |
-| `dont-lead-split-suit` | The suit is evenly split: make him open it. | Die Farbe ist gleich verteilt: er soll sie eröffnen. |
-| `keep-packet` | Keep the packet: his Pagat ultimo threatens. | Das Paket behalten: sein Pagat ultimo droht. |
-| `hold-pagat` | Hold the Pagat for the last trick. | Den Pagat für den letzten Stich behalten. |
-| `cash-king` | The king is safe to cash. | Der König ist sicher zu spielen. |
-| `draw-trumps` | Strong in tarocks: draw his trumps. | Stark im Tarock: seine Tarock ziehen. |
-| `lead-solid-run` | Lead from a solid run of tarocks. | Aus einer festen Tarockfolge anspielen. |
-| `keep-tarocks` | Too few tarocks to lead them. | Zu wenig Tarock, um sie anzuspielen. |
-| `hold-high-trump` | Do not lead high tarocks into a lost cause. | Hohe Tarock nicht in einen verlorenen Stich anspielen. |
-| `lead-safe` | In the sampled deals this lead nearly always wins. | In den durchgespielten Austeilungen gewinnt dieses Anspiel fast immer. |
-| `lead-sampled` | In the sampled deals this lead often wins. | In den durchgespielten Austeilungen gewinnt dieses Anspiel oft. |
-| `lead-low` | In the sampled deals this lead rarely wins; it costs least. | In den durchgespielten Austeilungen gewinnt dieses Anspiel selten; es kostet am wenigsten. |
-| `search-best` | The search found it best over the sampled deals. | Die Suche hat es über die durchgespielten Austeilungen als das Beste gefunden. |
-| `decline-extension` | The sitting is not extended. | Die Runde wird nicht verlängert. |
-| `announce-honour` | Announce the Troule or the four kings. | Troule oder die vier Könige ansagen. |
+| Key | Parameters | English | Deutsch |
+|---|---|---|---|
+| `bid-strong-hand` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth {sure_thirds}, and {tarocks} tarocks behind them: take it up. | Karten, die sicher stechen, im Wert von {sure_thirds} und {tarocks} Tarock dahinter: aufnehmen. |
+| `bid-weak-hand` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth only {sure_thirds} ({tarocks} tarocks): too few to risk taking it up. | Karten, die sicher stechen, nur im Wert von {sure_thirds} ({tarocks} Tarock): zu wenig, um aufzunehmen. |
+| `bid-few-tarocks` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth {sure_thirds}, but only {tarocks} tarocks to back them. | Karten, die sicher stechen, im Wert von {sure_thirds}, aber nur {tarocks} Tarock dahinter. |
+| `bid-sampled-take` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth {sure_thirds}, and {tarocks} tarocks are short of the book's measure, but in most sampled deals taking it up pays. | Karten, die sicher stechen, im Wert von {sure_thirds} und {tarocks} Tarock reichen nicht ganz für die Regel, aber in den meisten durchgespielten Austeilungen lohnt sich das Aufnehmen. |
+| `bid-sampled-pass` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth {sure_thirds}, and {tarocks} tarocks meet the book's measure, but in most sampled deals the simple game is better. | Karten, die sicher stechen, im Wert von {sure_thirds} und {tarocks} Tarock genügen der Regel, aber in den meisten durchgespielten Austeilungen ist das einfache Spiel besser. |
+| `only-card` | `card` | {card} is your only legal card. | {card} ist Ihre einzige erlaubte Karte. |
+| `hold-pagat` | `card`, `tarocks` | Play {card}, not the Pagat: with {tarocks} tarocks you can bring the Pagat home in the last trick. | {card} spielen, nicht den Pagat: mit {tarocks} Tarock lässt sich der Pagat im letzten Stich heimbringen. |
+| `keep-packet` | `card` | His Pagat ultimo threatens: play {card} and keep the fullest packet unplayed. | Sein Pagat ultimo droht: {card} spielen und das vollste Paket liegen lassen. |
+| `win-cheapest` | `card`, `led`, `alt`, `trick_thirds` | {card} beats {led} and takes {trick_thirds}; it is the cheapest winner, and {alt} also wins but costs more to spend. | {card} sticht {led} und holt {trick_thirds}; es ist der billigste Stecher, und {alt} würde auch stechen, ist aber teurer. |
+| `win-over-cheaper` | `card`, `led`, `alt`, `trick_thirds` | {card} rather than {alt}: both beat {led} for {trick_thirds}, but {card} is the better play here. | {card} statt {alt}: beide stechen {led} für {trick_thirds}, aber {card} ist hier das bessere Spiel. |
+| `win-sole` | `card`, `led`, `trick_thirds` | Only {card} beats {led}: it takes {trick_thirds}. | Nur {card} sticht {led}: es holt {trick_thirds}. |
+| `decline-poor` | `card`, `led`, `alt`, `trick_thirds`, `given_thirds` | {led} is a poor trick (only {trick_thirds} even with {alt}): give up {card}, which costs {given_thirds}, and let him lead. | {led} ist ein armer Stich (selbst mit {alt} nur {trick_thirds}): {card} abgeben, das {given_thirds} kostet, und ihn anspielen lassen. |
+| `decline-rich` | `card`, `led`, `alt`, `trick_thirds`, `given_thirds` | {led} is worth taking ({trick_thirds} with {alt}), but {card} ({given_thirds}) is the better play here: let him lead. | {led} lohnt sich ({trick_thirds} mit {alt}), aber {card} ({given_thirds}) ist hier das bessere Spiel: ihn anspielen lassen. |
+| `lose-cheapest` | `card`, `led`, `given_thirds` | Nothing beats {led}: give up {card}, the cheapest card, for {given_thirds}. | Nichts sticht {led}: {card} abgeben, die billigste Karte, für {given_thirds}. |
+| `lose-other` | `card`, `led`, `alt`, `given_thirds` | Nothing beats {led}: {card} goes for {given_thirds}; {alt} would be cheaper. | Nichts sticht {led}: {card} geht für {given_thirds}; {alt} wäre billiger. |
+| `lose-packet` | `card`, `led`, `given_thirds` | Nothing beats {led}: give up the face-up packet card {card} ({given_thirds}) to see what lies beneath. | Nichts sticht {led}: das offene Paketblatt {card} ({given_thirds}) abgeben, um das darunter zu sehen. |
+| `lead-king` | `card`, `out` | {card} cannot be beaten in its suit: only a tarock takes it, and {out} tarocks are unseen. | {card} ist in seiner Farbe nicht zu schlagen: nur ein Tarock holt es, und {out} Tarock sind unbekannt. |
+| `lead-draw` | `card`, `mine`, `out` | You hold {mine} tarocks to {out} unseen: lead {card} to draw his trumps. | Sie halten {mine} Tarock gegen {out} unbekannte: {card} anspielen, um seine Tarock zu ziehen. |
+| `lead-exposed` | `card` | An exposed queen or cavall goes at once: lead {card}. | Eine offene Dame oder ein Cavall geht gleich: {card} anspielen. |
+| `lead-his-none` | `card` | He shows no packet card in this suit: lead {card}. | Er zeigt in dieser Farbe kein offenes Paketblatt: {card} anspielen. |
+| `lead-trump-void` | `card`, `out` | He has shown no tarock in hand, so only one from a packet could answer {card}; {out} tarocks are unseen. | Er hat kein Tarock in der Hand gezeigt, also könnte nur eines aus einem Paket {card} beantworten; {out} Tarock sind unbekannt. |
+| `lead-rate` | `card`, `wins`, `worlds` | {card} takes the trick in {wins} of {worlds} sampled deals. | {card} gewinnt den Stich in {wins} von {worlds} durchgespielten Austeilungen. |
+| `lead-cheap` | `card`, `wins`, `worlds`, `cost_thirds` | {card} usually loses the trick (it wins in {wins} of {worlds} sampled deals), but it costs least: {cost_thirds}. | {card} verliert den Stich meist (es gewinnt in {wins} von {worlds} durchgespielten Austeilungen), kostet aber am wenigsten: {cost_thirds}. |
+| `lead-cost` | `card`, `cost_thirds` | If he takes the trick, {card} costs only {cost_thirds}. | Holt er den Stich, kostet {card} nur {cost_thirds}. |
+| `decline-extension` | none | The sitting is not extended. | Die Runde wird nicht verlängert. |
+| `announce-honour` | none | Announce the Troule or the four kings. | Troule oder die vier Könige ansagen. |
+
+### Hint rules
+
+The second clause (`rule`), when the move follows a maxim of the period
+strategy notes. `research/07` is `research/07-strategy-stats-digital.md`.
+
+| Rule | English | Deutsch | Basis |
+|---|---|---|---|
+| `bid` | Rule: cards sure to take a trick, worth 20 to 25 points and 6 or 7 tarocks. | Regel: Karten, die sicher stechen, im Wert von 20 bis 25 Augen und 6 bis 7 Tarock. | research/07 1.1 (M&S; Werner) |
+| `cheapest` | Rule: do not spend a king where a small card serves. | Regel: keinen König, wo eine kleine Karte genügt. | research/07 1.3 (nach hinten spielen: "den König schinden und ein Skartindel zugeben"); 1.2 (following suit with junk) |
+| `finesse` | Rule: do not win a poor trick with an honour; the winner must lead, and whoever opens a contested suit ends worse in it (Impassiren). | Regel: einen armen Stich nicht mit einem Honneur holen; wer gewinnt, muss anspielen, und wer eine umkämpfte Farbe eröffnet, steht darin am Ende schlechter (Impassiren). | research/07 1.3 (nach hinten spielen; Zugzwang; Werner) |
+| `pagat-last` | Rule: with many tarocks, hold the Pagat for the last trick (ultimo). | Regel: mit vielen Tarock den Pagat für den letzten Stich behalten (Ultimo). | research/07 1.4, 1.5 (the source's threshold is more than 11 tarocks for a silent ultimo; the hint holds from 8); RULES 12.2 |
+| `keep-packet` | Rule: keep a packet unplayed while his Pagat ultimo threatens. | Regel: ein Paket liegen lassen, solange sein Pagat ultimo droht. | research/07 1.2 (Werner), 1.5 |
+| `packet-off` | Rule: play the face-up packet cards off, to see what lies beneath. | Regel: die offenen Paketblätter abspielen, um das darunter zu sehen. | research/07 1.2 |
+| `draw-trumps` | Rule: the player strong in tarocks leads them first, from a solid run. | Regel: wer im Tarock stark ist, tarockiert zuerst, aus einer geschlossenen Reihe. | research/07 1.4 |
+| `exposed` | Rule: an exposed queen or cavall is played at once. | Regel: eine offene Dame oder ein Cavall wird sofort gespielt. | research/07 1.2 |
+| `lead-none` | Rule: lead a suit in which he has no face-up card. | Regel: eine Farbe anspielen, in der er kein offenes Paketblatt hat. | research/07 1.2 |
+
+### Hint odds
+
+`odds` is `{alt, better, worlds, gain_thirds}`: the hinted card against the
+best other legal card `alt`, over `worlds` deals sampled from what the seat
+cannot see and solved with every card known. `better` is the deals in which the
+hinted card does strictly better, `gain_thirds` the average margin it gains.
+It comes from a fresh sample and is given only when it agrees with the choice
+(a gain of at least a third of a point); otherwise `odds` is `null`. Shown as
+"Against {alt}: ahead in {better} of {worlds} sampled deals, by {gain_thirds} on average." / "Gegen {alt}: vorn in {better} von {worlds} durchgespielten Austeilungen, im Schnitt um {gain_thirds}.". The table leads with the card:
+"Play {card}." / "{card} spielen."
 
 ## Review keys
 

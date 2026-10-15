@@ -22,6 +22,7 @@
 import { CanvasTexture } from "three";
 import { cardTexture } from "../../kit/js/materials.js";
 import { JUMBO } from "../../kit/js/faces.js";
+import { tarockNumeral } from "./strings.js";
 
 // ---- Codes (docs/RULES.md 1.2) --------------------------------------------
 
@@ -72,20 +73,8 @@ export const COURT_CODES = Object.freeze(ALL_CODES.filter((c) => /^[KQCJ][hdcs]$
 
 // ---- Roman numerals, as on the real pack -----------------------------------
 
-// Standard subtractive numerals, except 4, which is IIII.
-export function tarockNumeral(n) {
-  if (!Number.isInteger(n) || n < 1 || n > 21) throw new RangeError(`no tarock ${n}`);
-  if (n === 4) return "IIII";
-  let out = "";
-  let rest = n;
-  for (const [v, s] of [[10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]]) {
-    while (rest >= v) {
-      out += s;
-      rest -= v;
-    }
-  }
-  return out;
-}
+// (tarockNumeral lives in strings.js, which names cards in prose; re-exported here.)
+export { tarockNumeral };
 
 export const NICKNAMES = Object.freeze({ 1: "PAGAT", 2: "UHU", 3: "KAKADU", 4: "QUAPIL", 21: "MOND" });
 
