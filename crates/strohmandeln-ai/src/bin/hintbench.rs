@@ -17,9 +17,9 @@
 //!    `lead_wins` for the hinted card (what `hint` does) and for every legal
 //!    card (what `explain_play` could use);
 //! 2. `odds_with` at each worlds count, with the node budget as it is (30 000
-//!    shared by the worlds) and scaled to 3 000 per world (the depth the
-//!    default gives each world), with how many worlds finished and how often
-//!    odds are returned;
+//!    shared by the worlds) and scaled to 3 000 per world (`odds_config`, what
+//!    the hint uses), with how many worlds finished and how often odds are
+//!    returned;
 //! 3. the whole `hint` at levels 3 and 4 with the default config;
 //! 4. the sampling noise of the lead-rate line: the 95% half-width of the
 //!    proportion at each n, and how often two independent samples would
@@ -28,7 +28,7 @@
 //!    proportion measured over 2000 worlds.
 
 use std::time::Instant;
-use strohmandeln_ai::hint::{hint, odds_with};
+use strohmandeln_ai::hint::{hint, odds_config, odds_with};
 use strohmandeln_ai::know::Knowledge;
 use strohmandeln_ai::opponent::{Config, Level, Opponent};
 use strohmandeln_ai::rung3;
@@ -283,10 +283,11 @@ fn main() {
                 }
             ));
             for &w in &a.odds_worlds {
-                let mut cfg = config;
-                if scaled {
-                    cfg.budget.nodes = 3_000 * w as u64;
-                }
+                let cfg = if scaled {
+                    odds_config(config, w)
+                } else {
+                    config
+                };
                 let (mut times, mut got, mut finished) = (Vec::new(), 0usize, 0u32);
                 for &i in &all {
                     let k = Knowledge::from_view(&pos[i].view).unwrap();

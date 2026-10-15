@@ -105,8 +105,23 @@ pub const RULES: &[&str] = &[
     "lead-none",
 ];
 
-/// Worlds in the evidence for the search's ranking.
-const ODDS_WORLDS: usize = 10;
+/// Worlds in the evidence for the search's ranking. Each is searched as
+/// deeply as one of the decision's own (`odds_config`). Measured in
+/// `docs/OPPONENT.md`, "Hint evidence".
+pub const ODDS_WORLDS: usize = 50;
+
+/// Worlds a lead's rate is counted over ("takes the trick in N of
+/// {LEAD_WORLDS} sampled deals"). The opponent's own lead weighs
+/// `rung3::WORLDS`; this is only the evidence the learner is shown.
+pub const LEAD_WORLDS: usize = 1000;
+
+/// `config` with the node budget grown to `worlds`, at the share per world the
+/// decision has, so more worlds are not shallower worlds.
+pub fn odds_config(config: Config, worlds: usize) -> Config {
+    let mut c = config;
+    c.budget.nodes = config.budget.nodes / config.budget.worlds.max(1) as u64 * worlds as u64;
+    c
+}
 
 /// The best move for the seat to move in `view`, at `level`, with a reason.
 pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
@@ -160,7 +175,7 @@ pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
     // depend on the stream that chose the card.
     let sims = if rung >= 3 {
         let mut srng = Rng::stream(seed, view_seed(view) ^ 0x4813);
-        rung3::lead_sims(&k, &mut srng, rung3::WORLDS)
+        rung3::lead_sims(&k, &mut srng, LEAD_WORLDS)
     } else {
         Vec::new()
     };
@@ -176,7 +191,13 @@ pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
     );
     let odds = if rung >= 4 && k.legal.len() > 1 {
         let mut orng = Rng::stream(seed, view_seed(view) ^ 0x4812);
-        odds_with(&k, card, &mut orng, config, ODDS_WORLDS)
+        odds_with(
+            &k,
+            card,
+            &mut orng,
+            odds_config(config, ODDS_WORLDS),
+            ODDS_WORLDS,
+        )
     } else {
         None
     };
@@ -301,11 +322,65 @@ mod tests {
             };
             let k = Knowledge::from_view(&v).unwrap();
             let mut rng = Rng::stream(9, view_seed(&v) ^ 0x4812);
-            let again = odds_with(&k, *card, &mut rng, config, ODDS_WORLDS);
+            let again = odds_with(
+                &k,
+                *card,
+                &mut rng,
+                odds_config(config, ODDS_WORLDS),
+                ODDS_WORLDS,
+            );
             assert_eq!(again.as_ref(), Some(odds));
+            assert!(odds.worlds as usize <= ODDS_WORLDS);
             checked += 1;
         });
         assert!(checked > 0);
+    }
+
+    #[test]
+    fn the_odds_search_keeps_the_depth_per_world_of_the_decision() {
+        // More worlds must not mean shallower worlds: the node budget grows
+        // with them, at the decision's own share per world (30 000 / 10).
+        let config = Config::default();
+        let share = config.budget.nodes / config.budget.worlds as u64;
+        for worlds in [10usize, 50, 200] {
+            let c = odds_config(config, worlds);
+            assert_eq!(c.budget.nodes, share * worlds as u64, "{worlds}");
+            assert_eq!(c.weights, config.weights);
+        }
+        assert_eq!(odds_config(config, 50).budget.nodes, 150_000);
+        assert_eq!(ODDS_WORLDS, 50);
+    }
+
+    #[test]
+    fn a_lead_s_evidence_is_over_the_hint_s_many_worlds_and_the_move_is_the_opponent_s() {
+        // The evidence sample is its own stream and size: the lead-rate line
+        // counts LEAD_WORLDS, and the move is still what the opponent plays
+        // with its own 24 worlds.
+        let level = Level::from_halves(8);
+        let config = small();
+        let mut seen = 0;
+        for seed in 0..3 {
+            walk(seed, |s, seat| {
+                let v = view(s, seat);
+                let h = hint(&v, 9, level, config);
+                assert_eq!(
+                    h.action,
+                    Opponent::new(level, 9).with_config(config).decide(&v)
+                );
+                if h.key == "lead-rate" || h.key == "lead-cheap" {
+                    let worlds = h.params.iter().find(|(n, _)| *n == "worlds").unwrap();
+                    assert_eq!(worlds.1, Param::Int(LEAD_WORLDS as i64), "{h:?}");
+                    seen += 1;
+                }
+            });
+        }
+        assert!(seen > 0, "no lead carried a rate");
+        assert_eq!(LEAD_WORLDS, 1000);
+        assert_eq!(
+            rung3::WORLDS,
+            24,
+            "the opponent's own play is not the hint's"
+        );
     }
 
     #[test]
