@@ -155,3 +155,157 @@ of the suit, which is why the texts say "in hand or showing".
 | `explain-notarock-opp` | none | Your opponent has no tarock in hand or showing. | Ihr Gegner hat kein Tarock in der Hand oder offen. | RULES 5.4 |
 | `explain-won-you` | `winner`, `loser` (cards) | Your trick: {winner} beat {loser}. | Ihr Stich: {winner} schlug {loser}. | RULES 5.4, 5.5 |
 | `explain-won-opp` | `winner`, `loser` (cards) | Your opponent's trick: {winner} beat {loser}. | Der Stich Ihres Gegners: {winner} schlug {loser}. | RULES 5.4, 5.5 |
+
+## Tutor keys
+
+The tutor's brief (`strohmandeln_brief_of_record`, `strohmandeln_brief_sitting`,
+`docs/PROTOCOL.md`, `docs/TUTOR.md` 6 and 9) is at most three bullets
+`{lead, key, params}`: `lead` and `key` are both keys of this table (`lead` may be
+empty). Cards in `params` are codes, `thirds` and `sure` integer thirds (the
+table writes them as points, 107 is "35⅔"), `skill` and `skill2` a skill's slug
+(the table says `tutor.name.<slug>`), `honour` is `trull` or `kings`, `suit` a
+suit letter, `trick` a trick number of the deal, `n` a count.
+
+Every text keyed `tutor.rule.*` is shown after `tutor.lead.rule`, which is not
+counted in its words. The words are the Kibitzer's: dry, brief, kind
+(`docs/TABLE3D.md` 6.5). The brief is at most three bullets and about 45 words;
+a rule is at most 15 words (a fact in its place also), a try at most 12, a
+nudge at most 10, a well-went line at most 12 and an example at most 18, the
+parameters counted as one word each. A test holds this in both languages and
+holds the keys of the code to this table. Terminology: "Point" is a payment,
+"points" (Augen) the count.
+
+A rule is told only if it has not failed its measurement (`docs/TUTOR.md` 11,
+M5); every rule is provisional until then (`lessons::Gate`). Where a skill has
+no rule that applies, its fact (`tutor.fact.*`) is told in its place. The nudge
+keys (`tutor.nudge.*`) are shown in the Kibitzer's tab at the first clear chance
+at the focus (`strohmandeln_nudge`).
+
+### Leads and fixed lines
+
+| Key | Parameters | English | Deutsch | Basis |
+|---|---|---|---|---|
+| `tutor.lead.well` | none | Went well: | Gut gelaufen: | TUTOR 6 |
+| `tutor.lead.next` | `skill` | Next: {skill}. | Als Nächstes: {skill}. | TUTOR 6 |
+| `tutor.lead.deal` | none | This deal: | In dieser Partie: | TUTOR 6 |
+| `tutor.lead.try` | none | To try: | Zum Versuchen: | TUTOR 6 |
+| `tutor.lead.rule` | none | If I may: | Wenn ich mir erlauben darf: | TABLE3D 6.5; shown before every `tutor.rule.*` text, not counted in its words |
+| `tutor.well.mastered` | `skill` | Mastered: {skill}. | Gemeistert: {skill}. | TUTOR 5, 6 |
+| `tutor.well.mastered-two` | `skill`, `skill2` | Mastered: {skill} and {skill2}. | Gemeistert: {skill} und {skill2}. | TUTOR 5, 6 |
+| `tutor.well.met` | `chances`, `skill` | You met all {chances} chances: {skill}. | Sie nutzten alle {chances} Gelegenheiten: {skill}. | TUTOR 6 |
+| `tutor.well.announced` | `honour` | You announced {honour} in time. | Sie sagten {honour} rechtzeitig an. | RULES 11.3 |
+| `tutor.well.ultimo` | none | Your Pagat won the last trick and the ultimo. | Ihr Pagat gewann den letzten Stich und das Ultimo. | RULES 12.2 |
+| `tutor.well.mond` | `trick` | In trick {trick} your Sküs caught the Mond. | Im {trick}. Stich fing Ihr Sküs den Mond. | RULES 1.3, 1.4 |
+| `tutor.none.early` | none | A deal or two more, and there will be more to say. | Noch eine Partie oder zwei, dann gibt es mehr zu sagen. | TUTOR 6 |
+| `tutor.none.clean` | none | Nothing stood out to work on. | Nichts fiel auf, woran zu arbeiten wäre. | TUTOR 6 |
+| `tutor.none.up` | none | Nothing stood out. Try the next opponent up. | Nichts fiel auf. Versuchen Sie den nächsthöheren Gegner. | TUTOR 6; OPPONENT |
+| `tutor.short` | none | This deal gave you no real choices to review. | Diese Partie ließ Ihnen kaum Wahl, die sich besprechen ließe. | TUTOR 6 |
+| `tutor.how` | none | How is this worked out? | Wie kommt das zustande? | TUTOR 9 |
+| `tutor.method` | none | Your cards were compared afterwards with what the strongest computer player would have played in your place, knowing only what you knew. Only clear differences count, and cards played after a hint or a tip do not. Each skill is judged over your recent deals, the newest counting most; the one shown is the next on the ladder you are surely short of. The rules are the old Tarock books' advice; where the books differ, a plain fact is told instead. | Ihre Karten wurden nachträglich mit dem verglichen, was der stärkste Computerspieler an Ihrer Stelle gespielt hätte, wenn er nur wüsste, was Sie wussten. Nur deutliche Unterschiede zählen, Karten nach einem Hinweis oder Tipp nicht. Jede Fertigkeit wird über Ihre letzten Partien beurteilt, die neuesten zählen am meisten; gezeigt wird die nächste auf der Leiter, bei der Sie sicher noch fehlen. Die Regeln sind der Rat der alten Tarockbücher; wo die Bücher sich unterscheiden, wird stattdessen eine schlichte Tatsache genannt. | TUTOR 6; research/16 |
+
+### Skill names
+
+| Key | Parameters | English | Deutsch | Basis |
+|---|---|---|---|---|
+| `tutor.name.worth` | none | judging a trick's worth | der Wert des Stichs | Be 147; MS "Das Nach-hinten-Spielen" |
+| `tutor.name.cheap` | none | the cheapest card | die billigste Karte | MS "Das Nach-hinten-Spielen"; U 75 |
+| `tutor.name.off` | none | playing the packets off | das Abspielen der Pakete | W 134; U 71-75; Be 145, 148; MS |
+| `tutor.name.run` | none | leading tarocks | das Anspielen von Tarock | U 73-74; MS |
+| `tutor.name.pagat` | none | the Pagat | der Pagat | U 74; MS; W 133 |
+| `tutor.name.void` | none | your opponent's empty suits | die leeren Farben Ihres Gegners | MS; Be 150; U 75-76 |
+| `tutor.name.behind` | none | the contested suit | die umkämpfte Farbe | W 134-135; U 72-73; Be 146-151; MS |
+| `tutor.name.endgame` | none | the last tricks | die letzten Stiche | U 77; Be 147, 150 |
+| `tutor.name.bid` | none | taking up | das Aufnehmen | W 131; U 77-78; Be 145-146; MS |
+| `tutor.name.announce` | none | announcing | das Ansagen | W 133, 135; U 71; Be 146; MS |
+
+### Rules
+
+| Key | Parameters | English | Deutsch | Basis |
+|---|---|---|---|---|
+| `tutor.rule.worth.rich` | none | A trick with many points in it is worth winning: take it. | Ein Stich mit vielen Augen lohnt sich: holen Sie ihn. | Be 147; MS "Das Nach-hinten-Spielen" |
+| `tutor.rule.worth.poor` | none | Do not win a trick of few points with a king; give a small card. | Einen Stich mit wenigen Augen nicht mit dem König holen; eine kleine Karte zugeben. | Be 147; MS "Das Nach-hinten-Spielen" |
+| `tutor.rule.cheap` | none | Win with the lowest card that wins; otherwise give the lowest. | Den Stich mit der kleinsten Karte holen, die ihn gewinnt; sonst die kleinste zugeben. | MS "Das Nach-hinten-Spielen"; U 75 |
+| `tutor.rule.off.pip` | none | Play the face-up packet cards off; beneath may lie tarocks or kings. | Die offenen Paketkarten abspielen: darunter liegen vielleicht Tarock oder Könige. | W 134; U 71-75; Be 145, 148; MS |
+| `tutor.rule.off.figure` | none | A queen or cavall lying on a packet goes at once. | Eine Dame oder ein Cavall auf einem Paket gleich wegspielen. | W 134; U 71-75; Be 145, 148; MS |
+| `tutor.rule.run` | none | Lead tarocks from a solid run, whatever its height; with none, a low one. | Tarock aus geschlossener Reihe anspielen, gleich welcher Höhe; ohne Reihe ein niedriges. | U 73-74; MS |
+| `tutor.rule.pagat.cash` | none | With seven tarocks or fewer, cash the Pagat at the first chance. | Mit höchstens sieben Tarock den Pagat bei erster Gelegenheit einstechen. | U 74; MS; W 133 |
+| `tutor.rule.pagat.keep` | none | With twelve tarocks or more, the Pagat is worth keeping for the last trick. | Mit zwölf und mehr Tarock lohnt es, den Pagat für den letzten Stich zu behalten. | U 74; MS; W 133 |
+| `tutor.rule.void` | none | Lead no suit your opponent could not follow; it can be trumped. | Keine Farbe anspielen, die Ihr Gegner nicht bedienen konnte; sie kann gestochen werden. | MS; Be 150; U 75-76 |
+| `tutor.rule.endgame` | none | Late in the deal, count what you still need to reach 35⅔. | Gegen Ende zählen: Was fehlt noch auf 35⅔? | U 77; Be 147, 150 |
+| `tutor.rule.bid` | none | Take up with 20 to 25 points of sure winners and 6 or 7 tarocks. | Aufnehmen mit 20 bis 25 Augen sicherer Stecher und 6 bis 7 Tarock. | W 131; U 77-78; Be 145-146; MS |
+| `tutor.rule.announce` | none | Announce the Trull or the four kings before you play their first card. | Troule oder vier Könige ansagen, ehe deren erste Karte gespielt wird. | W 133, 135; U 71; Be 146; MS |
+
+### Facts
+
+| Key | Parameters | English | Deutsch | Basis |
+|---|---|---|---|---|
+| `tutor.fact.worth` | none | A trick is worth the points of its two cards. | Ein Stich ist so viel wert wie die Augen seiner beiden Karten. | RULES 8.1 |
+| `tutor.fact.cheap` | none | Two cards can win the same trick; the dearer one costs you points. | Zwei Karten können denselben Stich gewinnen; die teurere kostet Sie Augen. | RULES 8.1 |
+| `tutor.fact.off` | none | Hidden cards lie under a packet's top card until it is played. | Verdeckte Karten liegen unter der offenen Paketkarte, bis diese gespielt ist. | RULES 5.2, 6.1 |
+| `tutor.fact.run` | none | Tarocks in an unbroken run win tricks one after another. | Tarock in geschlossener Reihe machen Stich um Stich. | U 73-74 |
+| `tutor.fact.pagat` | none | The Pagat is the lowest tarock; played last, it wins or loses a Point. | Der Pagat ist das niedrigste Tarock; im letzten Stich gewinnt oder verliert er einen Point. | RULES 1.4, 5.3, 12.2 |
+| `tutor.fact.void` | none | Out of the suit led, a player must play a tarock if able. | Fehlt die ausgespielte Farbe, muss ein Tarock gespielt werden, wenn eines da ist. | RULES 5.4 |
+| `tutor.fact.behind` | none | Whoever opens a suit the hands share evenly often ends worse in it. | Wer eine gleichmäßig geteilte Farbe eröffnet, steht darin oft am Ende schlechter. | W 134-135; MS; against: Be 150-151 |
+| `tutor.fact.endgame` | none | When every packet is turned, your opponent's cards can be worked out. | Sind alle Pakete aufgedeckt, lassen sich die Karten Ihres Gegners ausrechnen. | RULES 13.6 |
+| `tutor.fact.bid` | none | Sure winners: the Sküs, the Mond, kings, guarded queens. | Sichere Stecher: Sküs, Mond, Könige, besetzte Damen. | W 131; MS |
+| `tutor.fact.announce` | none | An honour you hold but never announce is not paid. | Ein Honneur, den Sie halten, aber nicht ansagen, wird nicht bezahlt. | RULES 11.1, 11.5 |
+
+### Tries
+
+| Key | Parameters | English | Deutsch | Basis |
+|---|---|---|---|---|
+| `tutor.try.worth.1` | none | Before you follow, ask what the cards on the table are worth. | Fragen Sie vor dem Zugeben, was die ausliegenden Karten wert sind. | Be 147; MS "Das Nach-hinten-Spielen" |
+| `tutor.try.worth.2` | none | The king can wait for a queen or a cavall. | Der König kann auf eine Dame oder einen Cavall warten. | Be 147; MS "Das Nach-hinten-Spielen" |
+| `tutor.try.cheap.1` | none | Compare your two cheapest winners before you pick. | Vergleichen Sie Ihre zwei billigsten Stecher, ehe Sie wählen. | MS "Das Nach-hinten-Spielen"; U 75 |
+| `tutor.try.cheap.2` | none | When nothing wins, give the card that costs least. | Gewinnt nichts, die Karte zugeben, die am wenigsten kostet. | MS "Das Nach-hinten-Spielen"; U 75 |
+| `tutor.try.off.1` | none | Look at the packet cards before the hand cards. | Sehen Sie zuerst die Paketkarten an, dann die Handkarten. | W 134; U 71-75; Be 145, 148; MS |
+| `tutor.try.off.2` | none | Exception: your opponent shows two low cards of the same suit. | Ausnahme: Ihr Gegner zeigt zwei niedrige Karten derselben Farbe. | W 134; U 71-75; Be 145, 148; MS |
+| `tutor.try.run.1` | none | Look for your longest unbroken run before you lead a tarock. | Suchen Sie die längste geschlossene Reihe, ehe Sie Tarock anspielen. | U 73-74; MS |
+| `tutor.try.run.2` | none | Keep your smallest tarock back to bring your opponent in. | Das kleinste Tarock zurückhalten, um den Gegner ans Spiel zu bringen. | U 73-74; MS |
+| `tutor.try.pagat.1` | none | Count your tarocks before you decide about the Pagat. | Zählen Sie Ihre Tarock, ehe Sie über den Pagat entscheiden. | U 74; MS; W 133 |
+| `tutor.try.pagat.2` | none | A thinly guarded Pagat is not a sure trick. | Ein schwach besetzter Pagat ist kein sicherer Stich. | U 74; MS; W 133 |
+| `tutor.try.void.1` | none | Note which suit your opponent could not follow. | Merken Sie sich, welche Farbe Ihr Gegner nicht bedienen konnte. | MS; Be 150; U 75-76 |
+| `tutor.try.void.2` | none | Lead a tarock or another suit first. | Spielen Sie erst Tarock oder eine andere Farbe. | MS; Be 150; U 75-76 |
+| `tutor.try.behind.1` | none | Lead tarocks or a closed suit and make your opponent open it. | Spielen Sie Tarock oder eine geschlossene Farbe; lassen Sie den Gegner eröffnen. | W 134-135; U 72-73; Be 146-151; MS |
+| `tutor.try.behind.2` | none | Spare low cards in the suit can change this. | Überzählige kleine Karten in der Farbe können das ändern. | W 134-135; U 72-73; Be 146-151; MS |
+| `tutor.try.endgame.1` | none | Add up your take and your opponent's; see who needs what. | Zählen Sie Ihre Stiche und die Ihres Gegners zusammen; wer braucht was? | U 77; Be 147, 150 |
+| `tutor.try.endgame.2` | none | Count first; sometimes a low card wins what the king would not. | Erst zählen; manchmal gewinnt eine kleine Karte, was der König nicht gewinnt. | U 77; Be 147, 150 |
+| `tutor.try.bid.1` | none | Add up your sure winners: Sküs, Mond, kings, guarded queens. | Zählen Sie Ihre sicheren Stecher: Sküs, Mond, Könige, besetzte Damen. | W 131; U 77-78; Be 145-146; MS |
+| `tutor.try.bid.2` | none | Count your tarocks too; few make the game risky. | Zählen Sie auch Ihre Tarock; wenige machen das Spiel riskant. | W 131; U 77-78; Be 145-146; MS |
+| `tutor.try.announce.1` | none | Press Announce before the first card of the Trull or kings. | Drücken Sie „Ansagen“ vor der ersten Karte der Troule oder der Könige. | W 133, 135; U 71; Be 146; MS |
+| `tutor.try.announce.2` | none | With two of three, wait; the third may come from a packet. | Mit zwei von dreien warten: die dritte kann aus einem Paket kommen. | W 133, 135; U 71; Be 146; MS |
+
+### Nudges
+
+| Key | Parameters | English | Deutsch | Basis |
+|---|---|---|---|---|
+| `tutor.nudge.worth` | none | A trick worth a thought is on. | Ein Stich zum Nachdenken liegt aus. | TUTOR 6 |
+| `tutor.nudge.cheap` | none | Which card pays matters here. | Welche Karte zahlt, ist hier wichtig. | TUTOR 6 |
+| `tutor.nudge.off` | none | A packet card could go here. | Hier könnte eine Paketkarte gehen. | TUTOR 6 |
+| `tutor.nudge.run` | none | Which tarock you lead matters. | Welches Tarock Sie anspielen, ist wichtig. | TUTOR 6 |
+| `tutor.nudge.pagat` | none | Mind the Pagat here. | Achtung auf den Pagat. | TUTOR 6 |
+| `tutor.nudge.void` | none | Mind the suit your opponent is out of. | Achtung auf die Farbe, die Ihrem Gegner fehlt. | TUTOR 6 |
+| `tutor.nudge.behind` | none | Mind which suit you open. | Achten Sie darauf, welche Farbe Sie eröffnen. | TUTOR 6 |
+| `tutor.nudge.endgame` | none | The position is known now: count. | Die Lage ist jetzt bekannt: zählen. | TUTOR 6 |
+| `tutor.nudge.bid` | none | Look at your sure winners before you speak. | Prüfen Sie Ihre sicheren Stecher, ehe Sie sprechen. | TUTOR 6 |
+| `tutor.nudge.announce` | none | You hold an honour: announce it. | Sie halten einen Honneur: sagen Sie ihn an. | TUTOR 6 |
+
+### Examples
+
+| Key | Parameters | English | Deutsch | Basis |
+|---|---|---|---|---|
+| `tutor.miss.worth.poor` | `trick`, `played`, `better` (cards), `thirds` | Trick {trick}: your {played} won only {thirds} points; {better} would have saved it for a bigger trick. | Im {trick}. Stich holte {played} nur {thirds} Augen; {better} hätte ihn für einen größeren aufgespart. | TUTOR 2 (`worth`, greedy) |
+| `tutor.miss.worth.rich` | `trick`, `led`, `better` (cards), `thirds` | Trick {trick}: {led} led, with {thirds} points up for grabs; {better} would have taken them. | Im {trick}. Stich lagen mit {led} {thirds} Augen aus; {better} hätte sie geholt. | TUTOR 2 (`worth`, timid) |
+| `tutor.miss.cheap` | `trick`, `played`, `better` (cards) | Trick {trick}: {better} would have done the same job as {played} and left you better off. | Im {trick}. Stich hätte {better} dasselbe geleistet wie {played} und Sie besser gestellt. | TUTOR 2 (`cheap`) |
+| `tutor.miss.off.pip` | `trick`, `better` (card) | Trick {trick}: playing {better} from its packet would have shown you what lies beneath. | Im {trick}. Stich hätte {better} vom Paket gezeigt, was darunter liegt. | TUTOR 2 (`off`, pip) |
+| `tutor.miss.off.figure` | `card`, `king` (cards), `late` (trick) | This deal your {card} fell under his {king} in trick {late}; play it at once next time. | In dieser Partie fiel {card} im {late}. Stich unter {king}; spielen Sie die Figur das nächste Mal gleich. | TUTOR 2 (`off`, figure); only where the log shows the figure lost to a higher card of its suit |
+| `tutor.miss.off.figure-plain` | `trick`, `better` (card) | Trick {trick}: your {better}, lying on a packet, could have gone at once. | Im {trick}. Stich hätte {better} vom Paket gleich gehen können. | TUTOR 2 (`off`, figure) |
+| `tutor.miss.run` | `trick`, `played`, `better` (cards) | Trick {trick}: you led {played}; {better} was the better tarock to lead. | Im {trick}. Stich spielten Sie {played} an; {better} war das bessere Tarock. | TUTOR 2 (`run`) |
+| `tutor.miss.pagat.cash` | `trick`, `n` (tarocks held) | Trick {trick}: with {n} tarocks the Pagat should have gone at once. | Im {trick}. Stich hätte der Pagat mit {n} Tarock gleich gehen sollen. | TUTOR 2 (`pagat`, cash) |
+| `tutor.miss.pagat.keep` | `trick`, `n` (tarocks held) | Trick {trick}: with {n} tarocks the Pagat was worth keeping. | Im {trick}. Stich lohnte es mit {n} Tarock, den Pagat zu behalten. | TUTOR 2 (`pagat`, keep) |
+| `tutor.miss.void` | `trick`, `played` (card), `suit` | Trick {trick}: you led {played}, though your opponent had already failed to follow {suit}. | Im {trick}. Stich spielten Sie {played} an, obwohl Ihr Gegner {suit} schon nicht bedient hatte. | TUTOR 2 (`void`) |
+| `tutor.miss.behind` | `trick`, `suit`, `better` (card) | Trick {trick}: you opened {suit}, which the hands share evenly; {better} was the better lead. | Im {trick}. Stich eröffneten Sie {suit}, das sich gleichmäßig verteilt; {better} war die bessere Eröffnung. | TUTOR 2 (`behind`) |
+| `tutor.miss.endgame` | `trick`, `played`, `better` (cards) | Trick {trick}: with the position known, {better} was the card, not {played}. | Im {trick}. Stich war bei bekannter Lage {better} die Karte, nicht {played}. | TUTOR 2 (`endgame`) |
+| `tutor.miss.bid.pass` | `sure` (thirds), `n` (tarocks held) | You passed with {sure} points of sure winners and {n} tarocks; across sampled deals, taking up paid. | Sie passten mit {sure} Augen sicherer Stecher und {n} Tarock; über durchgespielte Austeilungen gerechnet lohnte sich das Aufnehmen. | TUTOR 2 (`bid`, passed) |
+| `tutor.miss.bid.take` | `sure` (thirds), `n` (tarocks held) | You took up with {sure} points of sure winners and {n} tarocks; across sampled deals, passing paid. | Sie nahmen auf mit {sure} Augen sicherer Stecher und {n} Tarock; über durchgespielte Austeilungen gerechnet lohnte sich das Passen. | TUTOR 2 (`bid`, took) |
+| `tutor.miss.announce` | `card`, `honour` | You played {card} without announcing {honour}: a Point lost. | Sie spielten {card}, ohne {honour} anzusagen: ein Point ging verloren. | RULES 11.5 |

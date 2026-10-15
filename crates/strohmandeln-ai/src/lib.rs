@@ -8,6 +8,7 @@ pub mod cardset;
 pub mod explain;
 pub mod hint;
 pub mod know;
+pub mod lessons;
 pub mod opponent;
 pub mod review;
 pub mod rung1;
