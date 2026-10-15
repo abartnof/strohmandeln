@@ -370,7 +370,7 @@ async function main() {
     for (const slot of placement.filter((x) => (x.zone === "your-hand" || x.zone === "their-hand") && x.public)) {
       const corner = new Vector3(-CARD.width / 2 + 0.2, -CARD.height / 2 + 0.2, CARD.thickness / 2);
       const at = director.toScreen(corner.applyQuaternion(slot.pose.quaternion).add(slot.pose.position));
-      list.push({ id: `pub:${slot.zone}:${slot.index}`, text: "", x: at.x + 7, y: at.y - 3, kind: "public", width: 12, height: 3, title: t("ui.public.tip") });
+      list.push({ id: `pub:${slot.zone}:${slot.index}`, text: "", x: at.x + 8, y: at.y - 6, kind: "public", width: 10, height: 10, title: t("ui.public.tip") });
     }
     ui.tags(list);
   }
