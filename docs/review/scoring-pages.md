@@ -67,3 +67,47 @@ Severity: bug, should, nit. None is a bug.
 ## Verdict
 
 Correct and well tested; no bug. Fix 1, 2, 3 and 5 (and 7, the spec text) before calling the work package done; 4, 6 and 8-15 may be recorded as open in PLAN.md.
+
+---
+
+## Second pass: the running tally and the fixes (2026-10-15)
+
+Scope: `git diff ae8e997..HEAD` (5 commits, ef32355 to 0a558d0): `runningTally` (`web3d/src/counting.js`), `showTally` and the count's reset (`web3d/src/main.js`), the card-value fixture and its two tests (`web3d/test/fixtures/card-values.json`, `crates/strohmandeln-core/src/cards.rs`, `web3d/test/scoring_pages.test.js`), `web3d/test/tally.test.js`, the page and string wording, `docs/TABLE3D.md` 2.1, 2.5.3, 6.2.
+
+Run: `cargo test -p strohmandeln-core`: 141 + 12 + 7 pass, including `rules_1_7_every_card_value_is_the_tables`. `node --test` on tally, scoring_pages, tutorial: 42 pass. `kit/build.py --check` (the rebuilt page matches its sources) and `cargo fmt --check` pass. The browser scenarios (`browser_scenarios.py`) were not run: Playwright is not installed here; the wiring was traced by reading.
+
+### Checks
+
+1. **Per-card is exact.** RULES 8.1 counts a take as the sum of `3 x value - 2` over its cards. `countLines` sums `thirdsOf` per card in each group of three, so a full group is `3(a+b+c) - 6` = (sum - 2) Points, and a leftover of one or two cards loses two-thirds each. The sum over all groups equals the sum over all cards whatever the grouping, so the running value after any trick is a partial sum of the same terms the count adds. After trick 27 it equals the engine's `count` event (`Deal::score` sums `Card::thirds()` over `takes`; `tally.test.js` asserts equality for four seeds x two policies, humans on seat 0 and 1, and that the total is 210).
+2. **Nothing hidden.** `runningTally` reads only `trick_won` (winner, both cards), which RULES 13.1 lists as public ("every card played, in order, and each trick's winner ... each take's running count"; 13.6).
+3. **Cases.** Pagat ultimo: the tally is set at `trick_won`, the ultimo event changes no card. Valat: all 27 tricks are played, the tally ends 210 : 0, then the count. Draw / double: 105 : 105 (or 106 : 104) is just the totals; the double is not part of it. Throw-in and void deal: no tricks; each deal (and each redeal) begins with `deal_start`, which resets the tally and the HUD. Human on either seat: `winner === human` picks the line (tested). Language switch: `hud.totals()` is kept and the HUD rebuilt (finding 3). Restore mid-deal: `showTally()` rebuilds from `r.state.events`, which hold the whole sitting; the fold resets at the last `deal_start` (finding 2).
+4. **Fixture.** It binds both ways: the Rust test asserts all 54 codes, the same key set (`len == 54`), `value()`, `thirds() == 3v - 2` and the sum 106; the Node test asserts the key set equals `PACK`, `valueOf` equals the fixture and `thirdsOf == 3v - 2`. `tally.test.js` closes the loop for `thirdsOf` against the engine's own counts.
+5. **Reset to nothing.** Scheduled at `count.lines[0] - 1`, i.e. as the first card of the count turns, after the last gather and any ultimo hold, so the final tally stays readable until the count starts. `hud.reset` bumps the epoch, so no queued tick survives it.
+
+### Findings
+
+Severity: bug, should, nit. None is a bug.
+
+#### Should
+
+1. **The HUD moves when the trick is complete, not when it lands on the pile.** `trick_won` is heard at `moments.start` (`web3d/src/choreography.js:580` `HEARD_WITHIN`, `:511-512`), which is the moment the second card lands, before the rest (1000 ms, 600 forced) and the carry (620 ms): the tally changes about 1.2 to 1.6 s before the cards reach the pile, while both still lie face up in the middle. At trick 27 the whole result is on the HUD before the trick is gathered. `docs/TABLE3D.md:185` says the lines move with the gather and the winner is named by the pile. The browser check only asks for `totals > 0` afterwards (`browser_scenarios.py:327`), so nothing pins the moment. Fix: expose a `landed` beat per stage (the local `marks` in `choreograph` has `moments.landed` but only `beats` leaves it; `result.marks` is the hint marks the director reads), add it to `beats`' sibling in `director.advance`, and run `showTally` from a moment at `landed`; keep the sentence, talk and aid line at `start`. `showTally(log.slice(0, index + 1))` is idempotent, so a skip or a change of speed is safe. Or amend 2.1 to "as the trick is complete". Either way add a test.
+2. **Wording that still means the count as a Point.**
+   - `words.json` `count-close.3` en: "By a single third of a Point!" (de: "Um ein einziges Drittel!"). Make it "By a single third!"; the phrase bank is generated (`tools/phrases.py`), so edit its source and run its check.
+   - `docs/RULES.md:256` "(70 Points)" and `:258` "36 Points" are the count (RULES 8.1, 8.2); `crates/strohmandeln-core/tests/review.rs:118` "35 2/3 Points" likewise. Say "points".
+   - The terminology decision (Point = payment only; points in English and Augen in German for the count) is written in no document (`grep` of `docs/` and `PLAN.md`). Record it, dated, with its source, in `docs/RULES.md` (conventions at the head) or `docs/MESSAGES.md`.
+
+#### Nit
+
+3. **Language switch mid-deal** (`main.js:1083-1085`) rebuilds the HUD as a counted hand (`hands: [ledger]`, `live: null`): the list reads "Deal 1 subtotal" instead of "live" until the next trick. Fix: when a deal is under way and the count has not begun, `showTally()` instead; keep the existing path for a count in progress (the ledger keeps its partial totals, and the later popups add to them correctly).
+4. **A restored sitting always gets a live ledger** (`main.js:981`): after a counted deal, or between deals, the HUD says "live" where the normal flow has called `hud.endHand(1)`. Fix: after `showTally()`, call `hud.endHand(1)` when the last event of the log is `count` or later.
+5. **The handover at the count is a visible drop** (the HUD shows e.g. 107 : 103, then 0 : 0 as the first card turns, then climbs back to the same numbers). It is the honest option: the ritual recounts group by group, so it must start from nothing, and the reset comes only once the reader has had the result for the whole gather and the pause. Starting the ritual from the running value would be wrong (it adds `+n` per group). Simplest improvement if wanted: nothing but a cue at the reset, the HUD's own "Count" string as a chip at `count_start`, so the drop reads as a new phase. Not needed. The spec (`TABLE3D.md:285-293`) and both pages already say it.
+6. **No cue and no announcement for the tally changing.** `showTally` sets the numbers at once with no `pop` (the HUD's `replay(b.num, "pop")` is available), and the running numbers sit in a `role="img"` label, which a screen reader does not announce; `sr.trick_won` does not carry the tally. Optional: add the tally to the live sentence for `trick_won`, or say nothing and accept it.
+7. **Tests for the wiring.** `tally.test.js` pins the function; nothing unit-tests `showTally`, the restore path or the moment (finding 1), and no played seed is asserted to include a valat, a draw or a pagat ultimo (they are linear, so they hold, but say so). Add a constructed valat (27 tricks to one seat is 210 : 0) and a draw (two 105-thirds takes) to the first test. Run `browser_scenarios.py` where Playwright is installed before calling the package done.
+8. **German settings use "Punkt/Punkte" for payments** (`strings.json:265, 267, 268`) where every other German string says "Point(s)" for the same thing. Use "Points" ("Points für ein einfaches Spiel ...", "1 Point", "2 Points").
+9. **German: one thing, two names.** The pages call the honours "Honneurs" (`tutorial.md:108, 172`) while the HUD row, and the new text at `:251`, say "Ansagen und Ultimo". Pick one for the row the reader sees, or keep the row and say "Honneurs (die Ansagen)" once.
+10. **Spec leftovers.** `TABLE3D.md:280` names the tutor page "the count in thirds" (now "Card values and the count"). 2.5.3's first paragraph still describes only the count; one sentence pointing to the running tally paragraph below it would do. The `thirds` page and 2.5.3 say a side that reaches 35⅔ "lights the finish"; with the running tally this also happens during play (a declarer may be certain of the game before trick 27). True and harmless; the HUD description could say "as soon as".
+11. **`cards.rs:375` reads a file in `web3d/` through a relative `include_str!`.** Fine inside the workspace; it fails if the crate is ever packaged alone. Note it next to the test or copy the fixture under `crates/` and let the Node test read that.
+
+### Verdict
+
+Correct and tested: the tally is exact, public, and ends on the count's own numbers for every case considered; the fixture binds Rust and JS; the wording fixes hold across the pages. No bug. Fix 1 (the moment, or the spec) and 2 (the last count-as-Point uses and the recorded decision) before calling the work package done; 3 to 11 may be recorded as open in `PLAN.md`.
