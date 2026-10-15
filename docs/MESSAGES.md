@@ -51,11 +51,11 @@ English and German the table shows.
 
 | Key | Parameters | English | Deutsch |
 |---|---|---|---|
-| `bid-strong-hand` | `sure_thirds`, `tarocks` | Sure winners worth {sure_thirds} and {tarocks} tarocks behind them: take up the 4. | Sichere Stecher im Wert von {sure_thirds} und {tarocks} Tarock dahinter: die Partie aufnehmen. |
-| `bid-weak-hand` | `sure_thirds`, `tarocks` | Sure winners worth only {sure_thirds} ({tarocks} tarocks): too few to risk the 4. | Sichere Stecher nur im Wert von {sure_thirds} ({tarocks} Tarock): zu wenig für das Aufnehmen. |
-| `bid-few-tarocks` | `sure_thirds`, `tarocks` | Sure winners worth {sure_thirds}, but only {tarocks} tarocks to back them. | Sichere Stecher im Wert von {sure_thirds}, aber nur {tarocks} Tarock dahinter. |
-| `bid-sampled-take` | `sure_thirds`, `tarocks` | Sure winners worth {sure_thirds} and {tarocks} tarocks are short of the book's measure, but in most sampled deals taking up pays. | Sichere Stecher im Wert von {sure_thirds} und {tarocks} Tarock reichen nicht ganz für die Regel, aber in den meisten durchgespielten Austeilungen lohnt sich das Aufnehmen. |
-| `bid-sampled-pass` | `sure_thirds`, `tarocks` | Sure winners worth {sure_thirds} and {tarocks} tarocks meet the book's measure, but in most sampled deals the simple game is better. | Sichere Stecher im Wert von {sure_thirds} und {tarocks} Tarock genügen der Regel, aber in den meisten durchgespielten Austeilungen ist das einfache Spiel besser. |
+| `bid-strong-hand` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth {sure_thirds}, and {tarocks} tarocks behind them: take it up. | Karten, die sicher stechen, im Wert von {sure_thirds} und {tarocks} Tarock dahinter: aufnehmen. |
+| `bid-weak-hand` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth only {sure_thirds} ({tarocks} tarocks): too few to risk taking it up. | Karten, die sicher stechen, nur im Wert von {sure_thirds} ({tarocks} Tarock): zu wenig, um aufzunehmen. |
+| `bid-few-tarocks` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth {sure_thirds}, but only {tarocks} tarocks to back them. | Karten, die sicher stechen, im Wert von {sure_thirds}, aber nur {tarocks} Tarock dahinter. |
+| `bid-sampled-take` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth {sure_thirds}, and {tarocks} tarocks are short of the book's measure, but in most sampled deals taking it up pays. | Karten, die sicher stechen, im Wert von {sure_thirds} und {tarocks} Tarock reichen nicht ganz für die Regel, aber in den meisten durchgespielten Austeilungen lohnt sich das Aufnehmen. |
+| `bid-sampled-pass` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth {sure_thirds}, and {tarocks} tarocks meet the book's measure, but in most sampled deals the simple game is better. | Karten, die sicher stechen, im Wert von {sure_thirds} und {tarocks} Tarock genügen der Regel, aber in den meisten durchgespielten Austeilungen ist das einfache Spiel besser. |
 | `only-card` | `card` | {card} is your only legal card. | {card} ist Ihre einzige erlaubte Karte. |
 | `hold-pagat` | `card`, `tarocks` | Play {card}, not the Pagat: with {tarocks} tarocks you can bring the Pagat home in the last trick. | {card} spielen, nicht den Pagat: mit {tarocks} Tarock lässt sich der Pagat im letzten Stich heimbringen. |
 | `keep-packet` | `card` | His Pagat ultimo threatens: play {card} and keep the fullest packet unplayed. | Sein Pagat ultimo droht: {card} spielen und das vollste Paket liegen lassen. |
@@ -85,7 +85,7 @@ strategy notes. `research/07` is `research/07-strategy-stats-digital.md`.
 
 | Rule | English | Deutsch | Basis |
 |---|---|---|---|
-| `bid` | Rule: sure winners worth 20 to 25 points and 6 or 7 tarocks. | Regel: sichere Stecher im Wert von 20 bis 25 Augen und 6 bis 7 Tarock. | research/07 1.1 (M&S; Werner) |
+| `bid` | Rule: cards sure to take a trick, worth 20 to 25 points and 6 or 7 tarocks. | Regel: Karten, die sicher stechen, im Wert von 20 bis 25 Augen und 6 bis 7 Tarock. | research/07 1.1 (M&S; Werner) |
 | `cheapest` | Rule: do not spend a king where a small card serves. | Regel: keinen König, wo eine kleine Karte genügt. | research/07 1.3 (nach hinten spielen: "den König schinden und ein Skartindel zugeben"); 1.2 (following suit with junk) |
 | `finesse` | Rule: do not win a poor trick with an honour; the winner must lead, and whoever opens a contested suit ends worse in it (Impassiren). | Regel: einen armen Stich nicht mit einem Honneur holen; wer gewinnt, muss anspielen, und wer eine umkämpfte Farbe eröffnet, steht darin am Ende schlechter (Impassiren). | research/07 1.3 (nach hinten spielen; Zugzwang; Werner) |
 | `pagat-last` | Rule: with many tarocks, hold the Pagat for the last trick (ultimo). | Regel: mit vielen Tarock den Pagat für den letzten Stich behalten (Ultimo). | research/07 1.4, 1.5 (the source's threshold is more than 11 tarocks for a silent ultimo; the hint holds from 8); RULES 12.2 |

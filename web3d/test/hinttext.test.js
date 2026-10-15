@@ -47,7 +47,7 @@ test("a hint without a card to play has no lead, without rule or odds no more", 
   const r = { hint: { action: "take" }, reason: "bid-weak-hand", params: { sure_thirds: 40, tarocks: 4 }, rule: null, odds: null };
   const en = hintLines(r, words("en"));
   assert.equal(en.lead, "");
-  assert.equal(en.reason, "Sure winners worth only 13⅓ points (4 tarocks): too few to risk the 4.");
+  assert.equal(en.reason, "Cards sure to take a trick, worth only 13⅓ points (4 tarocks): too few to risk taking it up.");
   assert.deepEqual(en.more, []);
 });
 
