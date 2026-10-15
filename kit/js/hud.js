@@ -66,7 +66,7 @@ export function createHud(root, game, { later = (ms, fn) => setTimeout(fn, ms), 
   const words = { ...WORDS, ...game.words };
   const { categories, segments: N, scale, format } = game;
   const handH = handHeight(game);
-  const whole = (units) => Math.floor(units / scale);
+  const whole = game.lit; // segments a score lights (scoring.js defineGame)
   const lines = { you: [], opp: [] };
   const line = (side) => {
     const row = el("div", { class: `hud-line ${side}` });
@@ -140,7 +140,7 @@ export function createHud(root, game, { later = (ms, fn) => setTimeout(fn, ms), 
   function drawSegments(side, from = null) {
     lines[side].forEach((seg, i) => {
       const n = i + 1;
-      const st = segmentState(n, totals[side], N, scale);
+      const st = segmentState(n, totals[side], N, scale, game.lit);
       const lighting = from !== null && n > whole(from) && n <= Math.min(N, whole(totals[side]));
       seg.className = `seg ${st}`;
       if (lighting) {

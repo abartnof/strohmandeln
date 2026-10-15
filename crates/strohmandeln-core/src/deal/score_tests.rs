@@ -553,3 +553,67 @@ fn rules_11_1_honours_are_independent_of_each_other() {
     announce(&mut deal, Seat::A, Honour::Kings).unwrap();
     assert_eq!(deal.legal_announcements(Seat::A), vec![Honour::Trull]);
 }
+
+/// Seat A holds the 22 tarocks, the four kings and `Qh`; B holds the other
+/// 27 suit cards. A leads tarocks, then the kings, `Qh`, and `T1` last.
+fn valat_deal(declarer: Option<Seat>) -> Deal {
+    let a_cards: Vec<String> = ["SK"]
+        .into_iter()
+        .map(String::from)
+        .chain((1..=21).map(|n| format!("T{n}")))
+        .chain(["Kh", "Kd", "Kc", "Ks", "Qh"].map(String::from))
+        .collect();
+    let b_cards: Vec<String> = Card::all()
+        .map(|c| c.code())
+        .filter(|code| !a_cards.contains(code))
+        .collect();
+    assert_eq!(b_cards.len(), 27);
+    let a: Vec<&str> = a_cards.iter().map(String::as_str).collect();
+    let b: Vec<&str> = b_cards.iter().map(String::as_str).collect();
+    let mut deal = arranged(&a, &b);
+    deal.declarer = declarer;
+    // A leads in this order; B answers with its first legal card
+    let order: Vec<String> = ["SK"]
+        .into_iter()
+        .map(String::from)
+        .chain((2..=21).rev().map(|n| format!("T{n}")))
+        .chain(["Kh", "Kd", "Kc", "Ks", "Qh", "T1"].map(String::from))
+        .collect();
+    assert_eq!(order.len(), 27);
+    for code in order {
+        let mut ev = Vec::new();
+        deal.apply(Seat::A, Action::play(c(&code)), &mut ev)
+            .unwrap();
+        let reply = deal.legal_plays(Seat::B)[0].0;
+        deal.apply(Seat::B, Action::play(reply), &mut ev).unwrap();
+    }
+    deal
+}
+
+#[test]
+fn rules_10_1_a_valat_played_out_pays_12_and_the_ultimo_and_no_game_value() {
+    for (declarer, result) in [
+        (Some(Seat::A), GameResult::DeclarerWin),
+        (Some(Seat::B), GameResult::DeclarerLoss),
+        (None, GameResult::SimpleWin),
+    ] {
+        let deal = valat_deal(declarer);
+        let Some(DealEnd::Played(sc)) = deal.end() else {
+            panic!("deal over")
+        };
+        assert_eq!(sc.valat, Some(Seat::A));
+        assert_eq!(sc.result, result);
+        let mut got: Vec<(Seat, Cause, u32)> = sc
+            .credits
+            .iter()
+            .map(|cr| (cr.seat, cr.cause, cr.points))
+            .collect();
+        got.sort_by_key(|(_, cause, _)| format!("{cause:?}"));
+        // 12 for the Valat, 1 for the Pagat ultimo: the game value is replaced
+        assert_eq!(
+            got,
+            vec![(Seat::A, Cause::UltimoWon, 1), (Seat::A, Cause::Valat, 12)]
+        );
+        assert_eq!(sc.thirds, [210, 0]);
+    }
+}

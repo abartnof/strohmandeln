@@ -296,6 +296,43 @@ impl std::fmt::Display for Refusal {
 
 impl std::error::Error for Refusal {}
 
+/// Why a sitting could not be begun or replayed: a message key and
+/// parameters, as for a [`Refusal`] (`docs/MESSAGES.md`).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "key", rename_all = "kebab-case")]
+pub enum SetupError {
+    /// A sitting is 3 or 6 Touren (RULES 15.2).
+    BadTouren { touren: u32 },
+    /// The ultimo setting is 1 or 2 Points (RULES 12.3).
+    BadUltimo { ultimo: u32 },
+    /// The record is of another version.
+    RecordVersion { found: u32, expected: u32 },
+    /// A move of the record was refused on replay.
+    ReplayRefused { index: usize, refusal: Refusal },
+}
+
+impl std::fmt::Display for SetupError {
+    /// An English rendering, for tests and the terminal client only.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SetupError::BadTouren { touren } => {
+                write!(f, "a sitting is 3 or 6 Touren, not {touren}")
+            }
+            SetupError::BadUltimo { ultimo } => {
+                write!(f, "the ultimo is 1 or 2 Points, not {ultimo}")
+            }
+            SetupError::RecordVersion { found, expected } => {
+                write!(f, "record version {found} is not {expected}")
+            }
+            SetupError::ReplayRefused { index, refusal } => {
+                write!(f, "move {index} refused on replay: {refusal}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for SetupError {}
+
 /// How a deal came out (RULES 8, 9.2).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -487,6 +524,62 @@ mod tests {
             serde_json::to_string(&r).unwrap(),
             r#"{"key":"not-your-turn","speaker":0}"#
         );
+    }
+
+    #[test]
+    fn docs_messages_md_lists_exactly_the_keys_the_code_can_emit() {
+        // The refusal and setup tables only: the hint reasons below them are
+        // the AI crate's (`hint::KEYS`, tested there).
+        let doc = include_str!("../../../docs/MESSAGES.md");
+        let doc = doc.split("\n## Hint reasons").next().unwrap();
+        let documented: std::collections::BTreeSet<&str> = doc
+            .lines()
+            .filter_map(|l| l.strip_prefix("| `"))
+            .filter_map(|l| l.split('`').next())
+            .collect();
+        let refusals = [
+            RefusalKind::NotYourTurn,
+            RefusalKind::WrongPhase,
+            RefusalKind::NotPlayable,
+            RefusalKind::MustFollowSuit,
+            RefusalKind::MustTrump,
+            RefusalKind::NotHeld,
+            RefusalKind::AlreadyAnnounced,
+            RefusalKind::HonourForfeited,
+            RefusalKind::DuplicateAnnouncement,
+            RefusalKind::Finished,
+        ];
+        let mut emitted: std::collections::BTreeSet<String> = refusals
+            .iter()
+            .map(|k| {
+                serde_json::to_value(Refusal::of(*k)).unwrap()["key"]
+                    .as_str()
+                    .unwrap()
+                    .to_string()
+            })
+            .collect();
+        let setup = [
+            SetupError::BadTouren { touren: 0 },
+            SetupError::BadUltimo { ultimo: 0 },
+            SetupError::RecordVersion {
+                found: 0,
+                expected: 0,
+            },
+            SetupError::ReplayRefused {
+                index: 0,
+                refusal: Refusal::of(RefusalKind::Finished),
+            },
+        ];
+        emitted.extend(setup.iter().map(|e| {
+            serde_json::to_value(e).unwrap()["key"]
+                .as_str()
+                .unwrap()
+                .to_string()
+        }));
+        let documented: std::collections::BTreeSet<String> =
+            documented.into_iter().map(String::from).collect();
+        // `Key` is the table's header row in backticks-free form, so absent
+        assert_eq!(documented, emitted);
     }
 
     #[test]

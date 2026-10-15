@@ -140,5 +140,26 @@ else
   parts+=("no web3d/game.toml, page check skipped")
 fi
 
+# ---- The page in a real browser, offline (a minute: --quick) ------------------
+# Needs Playwright's Python package and the system Chromium. The full run
+# (web3d/test/browser.py, about half an hour) is for before a work package is
+# called done. GATE_NO_BROWSER=1 leaves it out; it is skipped, with a note,
+# where there is no Playwright.
+if [ -f web3d/test/browser.py ] && [ -f web3d/strohmandeln.html ] && [ -z "${GATE_NO_BROWSER:-}" ]; then
+  py=""
+  for candidate in "$HOME/piquet/.venv/bin/python" python3; do
+    if "$candidate" -c "import playwright, PIL" >/dev/null 2>&1; then py="$candidate"; break; fi
+  done
+  if [ -n "$py" ] && [ -x /usr/bin/chromium ]; then
+    if ! br_out=$("$py" web3d/test/browser.py --quick 2>&1); then
+      { echo "$br_out" | tail -15 >&2; } || true
+      fail "browser test (--quick)"
+    fi
+    parts+=("browser quick ok")
+  else
+    echo "gate: note: no Playwright or Chromium, the browser test was skipped" >&2
+  fi
+fi
+
 summary=$(IFS=';'; echo "${parts[*]}")
 echo "gate: ok (${summary//;/; })"

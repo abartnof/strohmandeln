@@ -201,6 +201,10 @@ impl Deal {
         self.dealer.other()
     }
 
+    pub fn settings(&self) -> Settings {
+        self.settings
+    }
+
     pub fn multiplier(&self) -> u32 {
         self.multiplier
     }
@@ -351,13 +355,13 @@ impl Deal {
     /// Every card a seat may play to the current trick, with its source
     /// (RULES 5.2 to 5.7).
     pub fn legal_plays(&self, seat: Seat) -> Vec<(Card, Source)> {
+        if self.phase != Phase::Playing || self.to_move() != Some(seat) {
+            return Vec::new();
+        }
         let set = self.playable(seat);
         let Some((_, led_card, _)) = self.led else {
             return set;
         };
-        if self.to_move() != Some(seat) {
-            return Vec::new();
-        }
         let led = Led::of(led_card);
         let following: Vec<_> = set
             .iter()
@@ -1111,6 +1115,64 @@ mod tests {
         );
         assert_eq!(deal.cover(Seat::A, 1), None);
         assert_eq!(deal.hidden_count(Seat::A, 1), 0);
+    }
+
+    #[test]
+    fn rules_4_5_packets_of_only_tarocks_and_kings_give_all_twelve_cards_and_no_cover() {
+        let packets = [
+            ["T5", "Kh", "T6", "Kd"],
+            ["Kc", "T7", "Ks", "T8"],
+            ["T9", "T12", "T13", "T14"],
+        ];
+        let mut slots = vec![(0, "T10"), (5, "T11")];
+        for (p, cards) in packets.iter().enumerate() {
+            for (i, code) in cards.iter().enumerate() {
+                slots.push((30 + 8 * p + i, *code));
+            }
+        }
+        let (deal, ev) = reveal_events(&deck_from(&slots));
+        assert_eq!(deal.hand(Seat::A).len(), 27);
+        assert_eq!(deal.hand(Seat::A).iter().filter(|h| h.public).count(), 12);
+        for p in 1..=3 {
+            assert_eq!(deal.cover(Seat::A, p), None);
+            assert_eq!(deal.hidden_count(Seat::A, p), 0);
+        }
+        let last = |e: &&Event| {
+            matches!(
+                e,
+                Event::CardPulled {
+                    seat: Seat::A,
+                    last: true,
+                    ..
+                }
+            )
+        };
+        assert_eq!(ev.iter().filter(last).count(), 3);
+        assert_eq!(
+            ev.iter()
+                .filter(|e| matches!(e, Event::PacketEmpty { seat: Seat::A, .. }))
+                .count(),
+            3
+        );
+    }
+
+    #[test]
+    fn rules_4_5_three_low_covers_take_nothing() {
+        let mut slots = vec![(0, "T10"), (5, "T11")];
+        let tops = ["Qh", "Ch", "Jh"];
+        for (p, top) in tops.iter().enumerate() {
+            slots.push((30 + 8 * p, *top));
+        }
+        let (deal, ev) = reveal_events(&deck_from(&slots));
+        assert_eq!(deal.hand(Seat::A).len(), 15);
+        assert_eq!(deal.hand(Seat::A).iter().filter(|h| h.public).count(), 0);
+        for (p, top) in tops.iter().enumerate() {
+            assert_eq!(deal.cover(Seat::A, p as u8 + 1), Some(c(top)));
+            assert_eq!(deal.hidden_count(Seat::A, p as u8 + 1), 3);
+        }
+        assert!(!ev
+            .iter()
+            .any(|e| matches!(e, Event::CardPulled { seat: Seat::A, .. })));
     }
 
     #[test]

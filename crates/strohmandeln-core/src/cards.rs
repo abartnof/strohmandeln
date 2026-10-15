@@ -161,7 +161,38 @@ impl Card {
     }
 
     pub fn parse(code: &str) -> Option<Card> {
-        Card::all().find(|c| c.code() == code)
+        if code == "SK" {
+            return Some(Card::SKUS);
+        }
+        if let Some(n) = code.strip_prefix('T') {
+            // digits only: `T01` and `T+1` are not codes
+            let ok = !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()) && !n.starts_with('0');
+            return n
+                .parse::<u8>()
+                .ok()
+                .filter(|_| ok)
+                .and_then(|n| (1..=21).contains(&n).then(|| Card::tarock(n)));
+        }
+        let suit = Suit::ALL
+            .into_iter()
+            .find(|s| code.ends_with(s.letter()) && code.len() >= 2)?;
+        let rank = &code[..code.len() - 1];
+        let pos = match (suit.is_red(), rank) {
+            (_, "K") => 7,
+            (_, "Q") => 6,
+            (_, "C") => 5,
+            (_, "J") => 4,
+            (true, "1") => 3,
+            (true, "2") => 2,
+            (true, "3") => 1,
+            (true, "4") => 0,
+            (false, "10") => 3,
+            (false, "9") => 2,
+            (false, "8") => 1,
+            (false, "7") => 0,
+            _ => return None,
+        };
+        Some(Card::suit_card(suit, pos))
     }
 }
 
@@ -238,6 +269,21 @@ mod tests {
         assert_eq!(Card::parse("T22"), None);
         assert_eq!(Card::parse("10h"), None);
         assert_eq!(Card::parse("1c"), None);
+    }
+
+    #[test]
+    fn rules_1_2_only_the_54_codes_parse_and_malformed_strings_do_not() {
+        for bad in [
+            "", "T", "T0", "T01", "T+1", "T-1", "T22", "T256", "h", "1", "Kx", "KH", "SKs", "sk",
+            "Sk", "0h", "11h", "10", "7h", "1c", "10h", "Ké", "é", " Kh", "Kh ", "T1 ",
+        ] {
+            assert_eq!(Card::parse(bad), None, "{bad:?}");
+        }
+        let parsed = ["SK", "T1", "T21", "Kh", "10s", "4d", "1h"]
+            .into_iter()
+            .filter_map(Card::parse)
+            .count();
+        assert_eq!(parsed, 7);
     }
 
     #[test]

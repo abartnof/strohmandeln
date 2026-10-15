@@ -31,14 +31,17 @@ import { M3, M3_MS } from "./easing.js";
 import { aim, framing, STRIPS } from "./framing.js";
 import { FOG, REVEAL_FAR, REVEAL_MS, TABLE_EDGES, poseAt, revealPose } from "./reveal.js";
 import { BASE, PATTERNS, drawSurface } from "./surfaces.js";
-import { CAMERA, CAMERA_TOUCH } from "./units.js";
+import { CAMERA, CAMERA_PORTRAIT, CAMERA_TOUCH } from "./units.js";
 
 export function createScene(
   canvas,
-  { table: pattern = "plain", shadow = "vsm", shadowMap = 512, blurSamples = 8, eye, at, fov, lighting = {}, touch = false } = {},
+  { table: pattern = "plain", shadow = "vsm", shadowMap = 512, blurSamples = 8, eye, at, fov, lighting = {}, touch = false, eyes = {} } = {},
 ) {
   // Across the table, a tablet's own eye (units.js CAMERA_TOUCH).
-  const across = touch ? CAMERA_TOUCH : CAMERA;
+  // Strohmandeln kit change: a game with its own zones passes its own eyes
+  // ({ across, portrait }; units.js CAMERA* shapes); Cassino's are the default.
+  const across = eyes.across ?? (touch ? CAMERA_TOUCH : CAMERA);
+  const portraitEye = eyes.portrait ?? CAMERA_PORTRAIT;
   const renderer = new WebGLRenderer({ canvas, antialias: true });
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.shadowMap.enabled = true;
@@ -66,7 +69,7 @@ export function createScene(
   // fov (from the page's query, for tuning) win.
   function frame(aspect) {
     const sides = strips.left === undefined ? null : { left: strips.left, right: strips.right };
-    const play = aim(camera, aspect, inset, canvas.clientHeight || undefined, strips, sides, across);
+    const play = aim(camera, aspect, inset, canvas.clientHeight || undefined, strips, sides, across, portraitEye);
     const { upright } = play;
     if (revealed) placeRevealed(aspect, play);
     if (eye || at || fov) {
@@ -312,7 +315,7 @@ export function createScene(
     fill: () => {
       const height = canvas.clientHeight || 1;
       const sides = target.left === undefined ? null : { left: target.left, right: target.right };
-      return framing((canvas.clientWidth || 1) / height, inset, height, target, sides, across).fill;
+      return framing((canvas.clientWidth || 1) / height, inset, height, target, sides, across, portraitEye).fill;
     },
     frames: () => frames,
   });

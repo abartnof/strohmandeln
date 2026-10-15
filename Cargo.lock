@@ -76,6 +76,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "strohmandeln-ai"
+version = "0.1.0"
+dependencies = [
+ "strohmandeln-core",
+]
+
+[[package]]
 name = "strohmandeln-cli"
 version = "0.1.0"
 dependencies = [
@@ -96,6 +103,7 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "strohmandeln-ai",
  "strohmandeln-core",
 ]
 

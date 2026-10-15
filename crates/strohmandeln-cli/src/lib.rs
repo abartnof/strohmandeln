@@ -138,7 +138,9 @@ pub fn run(
     while let Some(seat) = sitting.to_move() {
         if seat != me {
             let v = view(&sitting, seat);
-            let action = opp.choose(&v);
+            let action = opp
+                .choose(&v)
+                .ok_or_else(|| io::Error::other("the opponent has no action to choose"))?;
             sitting
                 .apply(seat, action)
                 .map_err(|e| io::Error::other(refusal(lang, &e)))?;

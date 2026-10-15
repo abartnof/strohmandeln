@@ -39,7 +39,7 @@ Text goes in and out through linear memory, as in Cassino. `kit/js/engine.js`
 | `strohmandeln_legal()` | | | `{protocol, legal}` |
 | `strohmandeln_export()` | | | the saved sitting |
 | `strohmandeln_import(len)` | saved JSON in the buffer | 1 restored, 0 not (old sitting stays) | opening reply, or an error |
-| `strohmandeln_hint()` | | | `{protocol, hint: null, reason: "unavailable"}` (a stub until the opponent work package fills it) |
+| `strohmandeln_hint()` | | | `{protocol, hint, reason, params}`: the tutor's move (one of `legal`, same shape) and why; on the opponent's turn or after the end `hint` is `null` and `reason` `"not-your-turn"`. Does not move the game. See below |
 | `strohmandeln_audit()` | | | `{hidden: [codes]}`: test aid, see below |
 
 To call: `at = alloc(n); copy the UTF-8 bytes to memory[at..at+n]; send(n)`,
@@ -67,11 +67,14 @@ alphabetical order.
 | `seed` | integer 0 to 2^53 (a u64 in the module); the deals and the first dealer follow from it |
 | `touren` | `3` or `6` (15.2) |
 | `human` | the seat the human takes, `0` (default) or `1` |
-| `level` | the opponent's level, an opaque integer for now (default 0); the module carries it through export and import |
+| `level` | the opponent's level, 1 to 4 in half steps (default 1; outside the range is clamped, a fraction rounds to the nearest half). `docs/OPPONENT.md`; the module carries it through export and import |
 | `settings` | optional; any of `both_pass` (`"play"`, `"throw_in"`), `values` (`"2/3/4"`, `"1/2/3"`, `"1/2/4"`), `ultimo` (`1`, `2`); missing keys take the defaults of RULES 0 |
 
-Errors (output `{"ok":false,"error":"bad-config","detail":"..."}`, return 0):
-unparsable JSON, `touren` not 3 or 6, `human` not 0 or 1, bad settings.
+Errors (return 0; output `{"ok":false,"error":"bad-config", ...}` with either
+`"field"` (`config` unparsable, `human` not 0 or 1, `settings` bad) or
+`"setup"`, the core's `SetupError` as a key with parameters, e.g.
+`{"key":"bad-touren","touren":4}`; keys in `docs/MESSAGES.md`). No error
+carries prose.
 
 ## Replies
 
@@ -90,11 +93,13 @@ Every call that changes the sitting answers
   `ok: false, stepped: false` (and returns 0).
 
 Errors that are not rules refusals have no `state`:
-`{"protocol":1,"ok":false,"error":CODE,"detail":TEXT}` with `CODE` one of
+`{"protocol":1,"ok":false,"error":CODE, ...parameters}` with `CODE` one of
 `bad-config`, `bad-action` (the action JSON does not parse or names an unknown
-action or card), `bad-record` (import), `opponent-refused` (a bug in the
-opponent: it chose an action the engine refused), `no-sitting` (any call
-before `new`).
+action or card), `bad-record` (import: `field` or `setup` as for
+`bad-config`), `opponent-refused` (a bug in the opponent: it chose an action
+the engine refused; carries its `refusal`), `no-action` (the opponent found
+nothing to choose from; nothing moved), `no-sitting` (any call before
+`new`).
 
 ## The state
 
@@ -129,13 +134,14 @@ parts are shown in the next section):
 | `legal` | the human's legal actions, empty unless `prompt` is `"you"` (below) |
 | `deal` | the deal in progress, or `null` when there is none |
 | `events` | the events of the deal in progress, filtered; lets a client rebuild after a reload |
-| `level` | the opponent's level as created |
+| `level` | the opponent's level after clamping to half steps (a number, e.g. `2.5`) |
 
 ### `deal`
 
 ```json
 {
-  "dealer": 0, "forehand": 1, "multiplier": 1, "declarer": 1, "playing": true,
+  "dealer": 0, "forehand": 1, "multiplier": 1, "values": "2/3/4", "both_pass": "play",
+  "declarer": 1, "playing": true,
   "trick_number": 3,
   "own_hand": [{"card": "T5", "public": false}, {"card": "1d", "public": true}],
   "opponent_hand_size": 15,
@@ -153,6 +159,7 @@ parts are shown in the next section):
 | Field | Meaning |
 |---|---|
 | `dealer`, `forehand`, `multiplier`, `declarer` | as in RULES 2, 3, 14; `declarer` is `null` before a bid is taken or if nobody took the game |
+| `values`, `both_pass` | the sitting's settings (RULES 9.1, 3.4): `"2/3/4"`, `"1/2/3"` or `"1/2/4"`; `"play"` or `"throw_in"`. Public; they price a bid |
 | `playing` | the bidding is over |
 | `trick_number` | the current trick, 1 to 27 |
 | `own_hand` | the human's hand cards in dealt order, each with `public`: pulled packet cards and announced honour cards the opponent knows (13.4) |
@@ -163,7 +170,7 @@ parts are shown in the next section):
 | `tricks` | completed tricks of this deal: leader, the two cards in play order, where each came from, the winner |
 | `lead` | the card led to the open trick, or `null` |
 | `take_thirds` | the running count of each seat's won cards in thirds, by seat (the pack counts 70 points, 210 thirds; the threshold of the `count` event is 107, RULES 8) |
-| `announcements`, `forfeited` | honours announced, or lost by playing a card of them unannounced |
+| `announcements`, `forfeited` | honours announced (both seats), and the human's own honours lost by playing a card of them unannounced (the opponent's are never shown) |
 
 A packet card played from a packet leaves a `null` cover until the
 replacement events refill it (6.1).
@@ -259,7 +266,9 @@ examples (field order is alphabetical on the wire):
 Notes:
 
 - `dealt` appears only for the human's seat. The opponent's 15 cards are never
-  sent. A card appears in the stream only when the human may know it.
+  sent. Likewise `honour_forfeited` appears only for the human's own forfeit:
+  the opponent's is private (RULES 11.5, 13.2), and `deal.forfeited` lists only
+  the human's. A card appears in the stream only when the human may know it.
 - `credits[].cause` is one of `game trull kings ultimo_won ultimo_lost valat`;
   `result` one of `declarer_win declarer_loss simple_win draw`.
 - `sitting_end` is the settlement: `payer` is the losing seat (`null` if
@@ -267,7 +276,11 @@ Notes:
 - After `trick_won` come the replacement events for each cover used (6.1),
   leader first.
 - A `deal_start` may be followed by `dealt`, `void_deal`, and a new
-  `deal_start` (a hand without a tarock is dealt again, 2.6).
+  `deal_start` (a hand without a tarock is dealt again, 2.6). The `void_deal`
+  is in the `events` of the reply that carries it, where the table shows it
+  (it names the seats whose hand had no tarock). It is not in `state.events`,
+  which starts at the last `deal_start` and so never holds an annulled deal;
+  a client that rebuilds from a saved state does not see it again.
 
 ## Saving and restoring
 
@@ -308,3 +321,20 @@ action, declining any extension; the opponent is the default. A change to
 anything on the wire, or to the engine's play, shows as a mismatch in
 `cargo test -p strohmandeln-wasm --test golden` and in `smoke.mjs`; re-record
 with `UPDATE_GOLDEN=1` once the change is intended.
+
+## The hint
+
+`strohmandeln_hint` answers for the human's seat at the top rung (level 4,
+whole), whatever the opponent's level. It is a function of the position, so
+asking twice gives the same answer, and asking changes nothing.
+
+```json
+{"protocol": 1, "hint": {"action": "play", "card": "T21", "source": "hand"},
+ "reason": "hold-pagat", "params": {}}
+```
+
+`hint` is one of the entries of `state.legal` (send its card alone, as for any
+play). `reason` is a message key from the hint table in `docs/MESSAGES.md`;
+`params` is an object reserved for the key's parameters (none of the keys has
+any yet). The opponent's `step` and the hint share their rules: a hint is what
+the level-4 opponent would play.

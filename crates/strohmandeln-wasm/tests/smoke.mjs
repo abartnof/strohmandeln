@@ -44,6 +44,17 @@ const fnv = (chunks) => {
   return (BigInt(hi) << 32n) | BigInt(lo);
 };
 
+// The opponent's `dealt` (their 15 cards) never reaches the human, in the
+// events of a reply or in the state's own list of the deal's events.
+let dealtSeen = 0;
+const onlyOwnDealt = (r) => {
+  for (const e of [...r.events, ...(r.state?.events ?? [])]) {
+    if (e.type !== "dealt") continue;
+    dealtSeen++;
+    assert.equal(e.seat, r.state.human, "the opponent's dealt reached the human");
+  }
+};
+
 // The wire form of a play is the card alone; the source is for display.
 const wire = (a) => (a.action === "play" ? { action: "play", card: a.card } : a);
 
@@ -55,6 +66,7 @@ let bad = 0;
 for (const line of golden) {
   const [seed, touren, human, want, wantEvents, contos, balance] = line.trim().split(/\s+/);
   let r = create({ seed: Number(seed), touren: Number(touren), human: Number(human), level: 1 });
+  onlyOwnDealt(r);
   const chunks = [raw()];
   let events = r.events.length;
   while (r.state.prompt !== "over") {
@@ -65,6 +77,7 @@ for (const line of golden) {
     }
     chunks.push(raw());
     r = out();
+    onlyOwnDealt(r);
     events += r.events.length;
   }
   const ok = String(fnv(chunks)) === want && String(events) === wantEvents &&
@@ -75,7 +88,8 @@ for (const line of golden) {
   }
 }
 assert.equal(bad, 0, "the module must play the golden sittings as the native build does");
-console.log(`golden sittings: ${golden.length} of ${golden.length} play exactly as the native build`);
+assert.ok(dealtSeen > 6, "the human's own dealt events were seen");
+console.log(`golden sittings: ${golden.length} of ${golden.length} play exactly as the native build; ${dealtSeen} dealt events, all the human's`);
 
 // 2. Whole sittings by random legal actions.
 const mulberry = (a) => () => {
@@ -92,6 +106,7 @@ for (let i = 0; i < sittings; i++) {
   let r = create({ seed: 500 + i, touren: i % 2 ? 6 : 3, human: i % 2, level: 1 });
   let settled = false;
   const check = () => {
+    onlyOwnDealt(r);
     settled ||= r.events.some((e) => e.type === "sitting_end");
     const from = Math.max(0, r.events.map((e) => e.type).lastIndexOf("deal_start"));
     const seen = JSON.stringify(r.state) + JSON.stringify(r.events.slice(from));
@@ -138,6 +153,31 @@ w.strohmandeln_export();
 const saved = out();
 assert.equal(w.strohmandeln_import(write(JSON.stringify(saved))), 1);
 assert.deepEqual(out().state, before);
-w.strohmandeln_hint();
-assert.equal(out().hint, null);
-console.log("export/import restores the state; the hint is a stub");
+console.log("export/import restores the state");
+
+// 4. The hint (level-4 search): a legal move with a reason key, on the human's turn only.
+create({ seed: 78, touren: 3, human: 0, level: 3.5 });
+let hinted = 0;
+let worst = 0;
+for (let n = 0; n < 60; n++) {
+  w.strohmandeln_render();
+  const s = out().state;
+  if (s.prompt === "opponent") {
+    w.strohmandeln_hint();
+    assert.equal(out().hint, null);
+    assert.equal(out().reason, "not-your-turn");
+    assert.equal(w.strohmandeln_step(), 1);
+  } else if (s.prompt === "you") {
+    const t0 = performance.now();
+    w.strohmandeln_hint();
+    worst = Math.max(worst, performance.now() - t0);
+    const h = out();
+    assert.ok(s.legal.some((a) => JSON.stringify(a) === JSON.stringify(h.hint)), JSON.stringify(h));
+    assert.match(h.reason, /^[a-z]+(-[a-z]+)*$/);
+    assert.equal(typeof h.params, "object");
+    hinted++;
+    assert.ok(send(wire(h.hint)), "the hint is playable");
+  } else break;
+}
+assert.ok(hinted > 10, "several hints were taken");
+console.log(`${hinted} hints, each legal and playable (slowest ${worst.toFixed(0)} ms)`);

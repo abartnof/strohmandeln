@@ -354,6 +354,8 @@ dann natürlich nicht bezahlt"]. When a player plays a card of a held, unannounc
 honour (including by choosing "do not announce"), the honour is **forfeited** for
 the deal.
 
+> Decided where the sources are silent: the forfeit is private to the holder; at a real table the opponent would not know an announcement was missed.
+
 11.6 An announcement is public. It tells the opponent that the player holds those
 cards at that moment; the cards are not displayed (13.5).
 
@@ -383,13 +385,15 @@ addition to the game payment and the honours [03-S12].
 ## 13. Information
 
 13.1 **Public**, known to both players, the table and the talk, at every moment:
-- dealer and forehand, the bids, the announcements and forfeits;
+- dealer and forehand, the bids, the announcements, the sitting's settings
+  (`values`, `both_pass`) and the deal's doubling (14);
 - every card turned from a packet, whether pulled or left as a cover;
 - the covers of all six packets, and the number of face-down cards in each;
 - every card played, in order, and each trick's winner;
 - the size of each hand, and each take's running count.
 
-13.2 **Private** to its owner: dealt hand cards not yet played.
+13.2 **Private** to its owner: dealt hand cards not yet played, and a forfeit of an
+honour (11.5).
 
 13.3 **Unknown to both:** the face-down cards of every packet; the owner does not
 know them either [03-S14 "sie kennen einen Theil derselben gar nicht"].
@@ -519,7 +523,7 @@ to them.
 | `cover_set` | seat, packet, card | 4.5, 6.1 (packet card exposed) |
 | `packet_empty` | seat, packet | 4.7, 6.1 |
 | `announcement` | seat, `trull` or `kings`, cards | 11.3 |
-| `honour_forfeited` | seat, honour | 11.5 |
+| `honour_forfeited` | seat, honour | 11.5; private to the holder, dropped from the other seat's events (13.2) |
 | `card_played` | seat, card, source (`hand` or `packet n`), trick number | 5 |
 | `trick_won` | winner, both cards, trick number | 7 |
 | `pagat_ultimo` | seat, `won` or `lost` | 12.2 |
