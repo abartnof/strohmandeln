@@ -177,7 +177,9 @@ pub struct Verdict {
     /// `worth`: the thirds in the trick (the card led and the card that won
     /// it or would have).
     pub trick_thirds: u32,
-    /// `pagat`, `bid`: the player's tarocks.
+    /// `pagat`, `bid`: the player's tarocks now (hand and covers, as the
+    /// sources count "neben nur wenigen Taroks"); the brief tells a `pagat`
+    /// rule only inside its sourced zones, the direction is not tied to one.
     pub tarocks: u32,
     /// `bid`: the hand's sure winners in thirds.
     pub sure_thirds: u32,
@@ -439,8 +441,13 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
         }
     }
 
-    // pagat: play it now or keep it
-    if let (Some(p), Some(o)) = (
+    // pagat: play it now or keep it. Only when following: leading the Pagat
+    // is almost always worse than a tarock by the margin, so "keep" is
+    // trivially right and a random player meets it (rung 4 107 of 107, random
+    // 83 of 91 leads over 9 sittings each, default budget); following, rung 4
+    // meets 32 of 34 and a random player 15 of 29 (`print_pagat_variants`).
+    if let (true, Some(p), Some(o)) = (
+        k.lead.is_some(),
         best(scores, |c| c == Card::PAGAT),
         best(scores, |c| c != Card::PAGAT),
     ) {
@@ -824,7 +831,7 @@ mod tests {
         assert!(one_with(&f, "4h", &w, 30.0, false, Skill::Worth).is_none());
         assert!(one_with(&f, "Qh", &w, 0.0, false, Skill::Cheap).is_some());
         assert!(one_with(&f, "Qh", &w, 30.0, false, Skill::Cheap).is_none());
-        let p = know(&["T1", "T9", "Kh"], NO, HID, &[], None);
+        let p = know(&["T1", "T9", "Kh"], NO, HID, &[], Some("3d"));
         let ps = [("T1", 20.0), ("T9", 5.0), ("Kh", 3.0)];
         assert!(one_with(&p, "T9", &ps, 0.0, false, Skill::Pagat).is_some());
         assert!(one_with(&p, "T9", &ps, 30.0, false, Skill::Pagat).is_none());
@@ -1041,7 +1048,8 @@ mod tests {
 
     #[test]
     fn pagat_cash_it_or_keep_it() {
-        let k = know(&["T1", "T9", "Kh"], NO, HID, &[], None);
+        // he led a diamond and I have none: a tarock must go
+        let k = know(&["T1", "T9", "Kh"], NO, HID, &[], Some("3d"));
         let cash = [("T1", 20.0), ("T9", 5.0), ("Kh", 3.0)];
         assert!(one(&k, "T1", &cash, Skill::Pagat).unwrap().met);
         let m = one(&k, "T9", &cash, Skill::Pagat).unwrap();
@@ -1058,6 +1066,14 @@ mod tests {
         assert!(one(&k, "T9", &keep, Skill::Pagat).unwrap().met);
         let tie = [("T1", 8.0), ("T9", 10.0), ("Kh", 1.0)];
         assert!(one(&k, "T1", &tie, Skill::Pagat).is_none());
+    }
+
+    #[test]
+    fn pagat_is_no_chance_for_a_leader() {
+        // keeping the Pagat back from a lead is trivial (see classify_play)
+        let k = know(&["T1", "T9", "Kh"], NO, HID, &[], None);
+        let s = [("T1", 20.0), ("T9", 5.0), ("Kh", 3.0)];
+        assert!(one(&k, "T9", &s, Skill::Pagat).is_none());
     }
 
     #[test]

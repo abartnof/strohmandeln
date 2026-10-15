@@ -179,6 +179,64 @@ fn students() -> &'static Students {
 
 #[test]
 #[ignore = "calibration output"]
+fn print_pagat_variants() {
+    let wide = 0..9u64;
+    let whole: Vec<DealRecord> = wide
+        .clone()
+        .flat_map(|seed| deals_of(seed, &mut student(Lesion::None, seed + 77)))
+        .collect();
+    let random: Vec<DealRecord> = wide
+        .flat_map(|seed| deals_of(seed, &mut RandomPlayer::new(seed, HUMAN)))
+        .collect();
+    // (name, filter on the position) -> (met, chances), for rung 4 and random
+    type Filter = fn(&Knowledge) -> bool;
+    let wins: Filter = |k| {
+        k.lead
+            .is_some_and(|l| !crate::cardset::leader_wins(l, Card::PAGAT))
+    };
+    let filters: [(&str, Filter); 6] = [
+        ("all", |_| true),
+        ("follower", |k| k.lead.is_some()),
+        ("cash would win the trick", wins),
+        ("last 5 tricks", |k| k.trick_number >= 23),
+        ("sourced zones", |k| {
+            k.my_tarocks() <= 7 || k.my_tarocks() >= 12
+        }),
+        ("leader", |k| k.lead.is_none()),
+    ];
+    for (who, recs) in [("rung 4", &whole), ("random", &random)] {
+        let mut t = [(0u32, 0u32); 6];
+        for rec in recs {
+            rec.replay(|_, d, seat, a| {
+                if seat != HUMAN {
+                    return;
+                }
+                let v = bare_view(d, seat);
+                let Some(k) = Knowledge::from_view(&v) else {
+                    return;
+                };
+                for ch in decision_verdicts(&v, a, small())
+                    .iter()
+                    .filter(|x| x.skill == Skill::Pagat)
+                {
+                    for (i, (_, f)) in filters.iter().enumerate() {
+                        if f(&k) {
+                            t[i].1 += 1;
+                            t[i].0 += u32::from(ch.met);
+                        }
+                    }
+                }
+            })
+            .unwrap();
+        }
+        for (i, (name, _)) in filters.iter().enumerate() {
+            println!("{who:7} {name:26} met {} of {}", t[i].0, t[i].1);
+        }
+    }
+}
+
+#[test]
+#[ignore = "calibration output"]
 fn print_students() {
     let s = students();
     for (name, t) in [
