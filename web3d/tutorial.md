@@ -10,7 +10,7 @@ lesen: `[Text](#key)`, TABLE3D 6.2.4.
 Quellen: the-cards 15-S1 (Dummett, Kap. 4 und S. 100: zum Spielen gemacht, 1442; keine
 Kartomantie vor 1781), 15-S6 (Court de Gébelin 1781), 15-S7 und 15-S8 (Tarock und
 Tarot im Deutschen), 15-S9 und 15-S10 (die österreichischen Spiele; die Trümpfe),
-15-S11 (Piatnik, geprüft am 15. Okt. 2026), 15-S12 und 15-S14 (der Cavall, 3 Augen
+15-S11 (Piatnik verkauft Tarockblätter, geprüft am 15. Okt. 2026; die Seite nennt weder Wien noch das Muster), 15-S12 und 15-S14 (der Cavall, 3 Augen
 wert), 08-S9 und 08-S10 (ein echtes Blatt hat keine Indizes auf den Farbkarten),
 alle in research/15-the-pack-today.md.
 Klauseln (docs/RULES.md): the-cards 1.2 1.7; packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
@@ -34,14 +34,14 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 ## Die Tarocke
 
 - Die Tarocke sind schlicht Trümpfe: I bis XXI, und der Sküs über allen.
-- Diese Karten wurden zum Spielen gemacht, in Italien, spätestens 1442. Das Wahrsagen kam erst 1781 dazu, aus Frankreich.
-- Hier wird kein Schicksal gedeutet. Wenn ich mir erlauben darf: In Österreich spielt man Tarock noch immer, und Piatnik in Wien druckt dieses Blatt weiter.
+- Tarockkarten wurden zum Spielen gemacht, in Italien, spätestens 1442. Vom Wahrsagen mit ihnen ist erst ab 1781 die Rede, in Frankreich.
+- Hier wird kein Schicksal gedeutet. In Österreich spielt man noch immer Tarock, und Piatnik verkauft heute noch Tarockblätter.
 - Im Deutschen heißt das Spiel Tarock und das Blatt zum Wahrsagen Tarot. Das Englische hat für beides ein Wort, daher die Verwechslung.
 
 ## Das C
 
-- Das C ist der Cavall, ein Reiter zu Pferd, 3 Augen wert. Das Tarockblatt hat ihn behalten, das Blatt zu 52 hat ihn verloren.
-- Auf einem echten Blatt tragen die Hofkarten Bilder statt Buchstaben. Unsere großen Buchstaben und Ziffern sind für den raschen Blick.
+- Das C ist der Cavall, ein Reiter zu Pferd, 3 Augen wert. Tarockblätter haben ihn, das Französische Blatt zu 52 Karten nicht.
+- Auf einem echten Blatt tragen die Hofkarten Bilder statt Buchstaben. Unsere großen Buchstaben und Eckzahlen sind für den raschen Blick.
 
 # Die Pakete
 
