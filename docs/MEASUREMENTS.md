@@ -818,3 +818,34 @@ reliable detections and the false-focus rate on a third set of windows.
 --windows 6` (defaults: `--seed 60000000 --fresh-seed 65000000 --sittings 3`;
 `--tune-cache FILE` and `--fresh-cache FILE` keep the windows' summaries so the
 grid can be rerun without playing).
+
+## M7 Latency
+
+### Plan (2026-10-15, before the run)
+
+**Question.** How long does the evidence of a deal take in the browser's module,
+and is the main thread enough? `docs/TUTOR.md` 1 and 10 assume a Worker for the
+history recompute and the main thread for one deal's evidence; `evidence_latency`
+(`tutor_tests.rs`) measured only native, 24 deals of rung 4 against rung 4.
+
+**Data.** 24 sittings of 3 Touren (144 deals) from seed 70,000,000, played in the
+wasm module by the human taking every hint against the opponent at level 3 (the
+browser's default); after each scored deal, `strohmandeln_deal_record` and then
+`strohmandeln_evidence_of` (no assisted decision) are timed in Node with
+`performance.now` (`crates/strohmandeln-wasm/tests/evidencebench.mjs`). The same
+records are timed natively (`examples/evidencebench.rs`, release) in the same
+machine state. Also `hint_latency` (ignored test, `hint.rs`) once natively.
+Descriptive, a fixed count.
+
+**Reported.** Median, 95th percentile and maximum per deal, in the module and
+natively, and their ratio; the time to recompute the 60 deals the store keeps
+(60 x median, and the sum of the 60 slowest-first draws is not needed).
+
+**Decision rule (fixed now).** The main thread suffices for one deal's evidence if
+the module's 95th percentile is at most 0.5 second. The history recompute needs
+a Worker if 60 deals take more than 2 seconds in the module. The cap on the
+advisor's worlds stays (`Budget::default()`, 10 worlds) if the first holds; if
+not, the worlds are halved and the measurement repeated.
+
+**Stopping.** A descriptive count, no looks. The machine is shared with other
+processes; the load is recorded.
