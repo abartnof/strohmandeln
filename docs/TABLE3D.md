@@ -796,8 +796,8 @@ beyond the one line. When the human first opens the tutor, the intro line is
 (en), parsed by `kit/js/tutorial.js` `parseTutorial(markdown, keys)`. Each is
 written for its moment, for a new player: what is about to happen, only what is
 needed to play it, the interface named as it is. Sections of one-line bullets,
-no preamble; every line at most 25 words (a test holds this, and a jargon list
-out of the pages, as Cassino's).
+no preamble; every line at most 25 words and every page at most 150 (a test holds this, and a jargon list
+out of the pages, as Cassino's). The one exception is the long page `scoring-full` (6.2.4).
 
 6.2.2 **A page opens at the first occurrence of its concept** in a real sitting,
 each once (`seen` in the preferences, 7.7), and only while the tutor is on and
@@ -816,19 +816,19 @@ bar and the prompts are drawn, so it is on screen when the question is asked.
 | Page key | Opens at | Says |
 |---|---|---|
 | `packets` | the first `dealt` | what the three packets are, the face-up card on top, the count of hidden cards beneath, that you and your opponent each have three, that a cover is yours to play |
-| `bidding` | the first `bid` turn (the human's, or the first `bid` event seen) | who speaks first; "Ich nehme auf" or "Weiter"; the declarer; the card values (the 70 Points) and the 36 needed; what is won (3 / 4 by default); both pass plays a simple game or throws in, by the setting |
+| `bidding` | the first `bid` turn (the human's, or the first `bid` event seen) | who speaks first; "Ich nehme auf" or "Weiter"; the declarer; the card values (RULES 1.7, with the court letters the faces show: K Q C J, German K D C B), that the 54 cards count 70 in threes and 36 are needed, and a link to `thirds`; what is won and lost by the `values` setting; both pass plays a simple game (and what it pays) or throws in, by the setting |
 | `the-pull` | the first `reveal_start` (no decision is asked: the cards turn themselves) | the cards are turned in turn; a tarock or a king goes to the hand; the turning continues; a low card stays; the last card of a packet always goes |
 | `playing` | the human's first play turn | how a card is played (tap, then tap again or Play); the leader; the trick winner leads; the HUD |
 | `following` | the first human play turn with a card led | the follower must follow suit, else trump, else any; covers count as hand cards for this; no obligation to win |
 | `from-a-packet` | the first human play turn with a cover legal (or the first cover played) | afterwards the card beneath is turned and may be pulled; the opponent plays before seeing it |
 | `honours` | the first time the human may announce, or the first `announcement` | announce the Trull (Sküs, Mond, Pagat) or four kings before the first card of it is played; 1 Point; paid even if lost; staying silent is allowed, unpaid; the prompt (3.3) |
-| `thirds` | the first `trick_won` (the tally begins to run), or the first `count` | the count in thirds: each card its value less two-thirds (a group of three: the sum less 2) [RULES 8.1]; 36 of 70 is 35⅔; 35⅓ loses; the HUD shows the tally |
+| `thirds` | the first `trick_won` (the tally begins to run), or the first `count` | **the table of what every card is worth** (RULES 1.7: 5, 4, 3, 2, 1 with the court letters of the faces), then the count: groups of three, the sum less 2, with one worked example (K, J, 7: 5 + 2 + 1 = 8, less 2 = 6); each card its value less two-thirds [RULES 8.1]; the leftover one or two cards; the two takes make 70; 35⅔ is enough for 36, 35⅓ loses; the count is made after the last trick, the score fills as the groups are turned up (the HUD runs no tally during play, 2.5); a link to `scoring-full` |
 | `pagat-ultimo` | the first time the human holds `T1` at the last 5 tricks, or the first `pagat_ultimo` | the Pagat in the last trick wins or loses a Point; it is quiet, never announced; the Pagat is the lowest tarock |
-| `scoring` | trick 21, or the first `count` / `game_scored` | what the deal pays: the game (2 / 3 / 4), the honours, the Pagat, all paid between the two players [RULES 9.2, 9.3]; credited to the slate; the evening settled at 2 kreuzer a Point [RULES 15.5, 15.7] |
+| `scoring` | trick 21, or the first `count` / `game_scored` | what the deal pays: a Point is what is paid, not a point of the count; the game by the `values` setting (and a plain game by it when both pass plays), with one example (a win with the Trull announced), the honours, the Pagat by the `ultimo` setting, all paid between the two players [RULES 9.2, 9.3]; credited to the slate; the evening settled at 2 kreuzer a Point [RULES 15.5, 15.8]; a link to `scoring-full` |
 | `draw` | the first `draw` | a simple game that ends 35 : 35 is undecided; the next deal counts double |
 | `touren-slate` | the first `tour_end`, or the first slate opening | the Touren, two deals each; the slate; the note that this is a reconstruction (4.6), said once |
 | `extension` | the first `extension_offered`, or the human's extend prompt | one more Tour needs both players' consent |
-| `scoring-full` | never by itself: Help, or the link on `bidding`, `thirds` and `scoring` | see 6.2.4 |
+| `scoring-full` | never by itself: Help, or the link on `thirds` and `scoring` | "Scoring in full" / "Die Abrechnung im Ganzen", 6.2.4 |
 
 The pages are authored in English and German at the same time (11); each is a
 key in the tutorial file. The `keys` argument of `parseTutorial` is the list
@@ -841,9 +841,28 @@ above.
 (`data-act="page"`, as the Help list's). Pressed on a page that opened by
 itself, it marks that page seen (as "Not now") and opens the linked page as a
 Help page; when that is closed the next page due opens, if there is one.
-Pressed on a Help page, it opens the linked page over it. `scoring-full`, the
-long page, is the one linked to; it never falls due (`pagesDue` does not
-return it) and is read from Help or a link.
+Pressed on a Help page, it opens the linked page over it. `thirds` and
+`scoring` link to `scoring-full`, and `bidding` to `thirds` (its card values).
+
+**`scoring-full`, "Scoring in full".** The one long page: it never falls due
+(`pagesDue` does not return it) and is read from Help or from those links, at
+leisure. It is exempt from the pop-ups' limits, by name, in
+`web3d/test/tutorial.test.js` (at most 1500 words a page, 45 a line); the
+exemption is checked as used. It takes, in order, with worked examples: what
+every card is worth (RULES 1.7; the 54 cards add up to 106) and the letters the
+faces show; counting in threes and why it comes to thirds (8.1; 106 less 18
+groups of 2 is 70); 36 of 70 and the 35⅔ boundary (8.2 to 8.4); what the score
+at the top shows, during play and at the count (2.5); what the game is worth,
+by `values` and `both_pass` (9.1, 9.2; the Valat, 10); the honours (11); the
+Pagat ultimo by `ultimo` (12); a draw and the double, by `both_pass` (14); one
+whole deal from the two takes to the slate lines; Touren and the slate (15.2,
+15.3, 15.5, 15.9); and the settlement at 2 kreuzer a Point with a worked
+evening (15.8). The pages see the sitting's `values`, `ultimo` and `both_pass`
+settings (`tutorialPages`), and an if-block may name several. Every number in
+the pages is held by a test: the value table against the table's card values
+for all 54 cards, the game values against the engine's credits for each
+`values` setting, the worked deal and evening against core tests
+(`web3d/test/scoring_pages.test.js`).
 
 ### 6.3 Hints and explanations
 
