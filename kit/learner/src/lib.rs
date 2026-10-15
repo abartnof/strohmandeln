@@ -12,6 +12,8 @@
 //! (`kit/STAMP`).
 
 pub mod beta;
+mod learn;
 mod model;
 
+pub use learn::{learn, Learner, SkillState};
 pub use model::{stale, Chance, Ladder, Params, SkillSpec, Summary, Tally};
