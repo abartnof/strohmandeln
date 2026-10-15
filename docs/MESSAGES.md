@@ -73,3 +73,56 @@ English and German text each is shown with.
 | `search-best` | The search found it best over the sampled deals. | Die Suche hat es über die durchgespielten Austeilungen als das Beste gefunden. |
 | `decline-extension` | The sitting is not extended. | Die Runde wird nicht verlängert. |
 | `announce-honour` | Announce the Troule or the four kings. | Troule oder die vier Könige ansagen. |
+
+## Review keys
+
+The end-of-deal review (`strohmandeln_review`, `docs/PROTOCOL.md`) is up to
+three bullets, each `{lead, key, params}`: `lead` is `count`, `decided` or
+`try`. Cards in `params` are codes and `thirds` are integer thirds; the table
+names the cards, formats the thirds (107 is "35⅔") and the honour
+(`card.honour.*`). Each text is the English and German the table shows.
+
+| Key | Parameters | English | Deutsch | Basis |
+|---|---|---|---|---|
+| `count` | `mine`, `theirs` (thirds) | You counted {mine} to your opponent's {theirs}; 35⅔ was the line. | Sie zählten {mine} gegen {theirs} Ihres Gegners; 35⅔ war die Grenze. | RULES 8.1, 8.2 |
+| `sitting-tally` | `won`, `lost`, `drawn`, `net` (Points) | Deals: {won} won, {lost} lost, {drawn} drawn; {net} Points in all. | Partien: {won} gewonnen, {lost} verloren, {drawn} unentschieden; {net} Points im Ganzen. | RULES 9.2, 15.5 |
+| `ultimo-won-you` | none | Your Pagat in the last trick won the ultimo. | Ihr Pagat im letzten Stich gewann das Ultimo. | RULES 12.2 |
+| `ultimo-lost-you` | none | Your Pagat in the last trick was beaten, and the ultimo was paid. | Ihr Pagat im letzten Stich wurde gestochen, und das Ultimo wurde bezahlt. | RULES 12.2 |
+| `ultimo-won-opp` | none | Your opponent's Pagat won the last trick and the ultimo. | Der Pagat Ihres Gegners gewann den letzten Stich und das Ultimo. | RULES 12.2 |
+| `ultimo-lost-opp` | none | Your opponent's Pagat was beaten in the last trick: the ultimo is yours. | Der Pagat Ihres Gegners wurde im letzten Stich gestochen: das Ultimo gehört Ihnen. | RULES 12.2 |
+| `mond-caught` | `trick` | In trick {trick} your Sküs caught the Mond. | Im {trick}. Stich fing Ihr Sküs den Mond. | RULES 1.3, 1.4 |
+| `mond-lost` | `trick` | In trick {trick} your Mond fell to the Sküs. | Im {trick}. Stich fiel Ihr Mond dem Sküs zu. | RULES 1.3, 1.4 |
+| `trick-lost-rich` | `trick`, `mine`, `theirs` (cards), `thirds` | Trick {trick} was the rich one you lost: {mine} against {theirs}, {thirds} between them. | Der {trick}. Stich war der reiche, den Sie abgaben: {mine} gegen {theirs}, zusammen {thirds}. | RULES 8.1 |
+| `trick-won-rich` | `trick`, `mine`, `theirs` (cards), `thirds` | Trick {trick} was your best: {mine} beat {theirs}, {thirds} between them. | Der {trick}. Stich war Ihr bester: {mine} schlug {theirs}, zusammen {thirds}. | RULES 8.1 |
+| `level` | none | Nothing stood out: the cards ran evenly. | Nichts fiel auf: die Karten liefen gleichmäßig. | |
+| `try-pagat` | none | If I may: the Pagat is the lowest tarock; kept for the last trick it wins or loses a Point. | Wenn ich mir erlauben darf: der Pagat ist das niedrigste Tarock; für den letzten Stich aufgehoben gewinnt oder verliert er einen Point. | RULES 1.4, 5.3, 12.2 |
+| `try-announce` | `honour` | If I may: you held {honour} and did not announce it; announced, it is paid. | Wenn ich mir erlauben darf: Sie hielten {honour} und sagten nicht an; angesagt, wird er bezahlt. | RULES 11.1, 11.5 |
+| `try-count` | none | If I may: count the tarocks out as they fall; there are 22, the Sküs among them. | Wenn ich mir erlauben darf: Zählen Sie die Tarock mit, die fallen; es sind 22, der Sküs darunter. | RULES 1.3, 13.6 |
+
+The `decided` bullet is the first of: the Pagat ultimo, a Mond caught by the
+Sküs, the richest trick the human lost (from 23 thirds, a king and a queen),
+the richest trick the human won, else `level`. The `try` bullet is the first
+of: the Pagat led before the last trick, an honour held in the hand and not
+announced, else `try-count`. For a sitting, `sitting-tally` replaces `count`,
+the `decided` bullet is that of the deal that went worst (else best) and
+carries a `deal` number, and the `try` bullet is the most frequent one.
+
+## Explanation keys
+
+The line under the prompt after a trick (`strohmandeln_explain`,
+`docs/PROTOCOL.md`; the setting "Explanations", `docs/TABLE3D.md` 6.3.3) is one
+bullet `{lead: "explain", key, params}`. `suit` is a suit letter. The
+deductions rest on the rule of following (RULES 5.4) and on the playable set
+being the hand and the covers (RULES 5.2): a face-down packet card may still be
+of the suit, which is why the texts say "in hand or showing".
+
+| Key | Parameters | English | Deutsch | Basis |
+|---|---|---|---|---|
+| `explain-trump-you` | `suit` | Trump: you had no {suit} in hand or showing, so a tarock was needed. | Tarock: Sie hatten kein {suit} in der Hand oder offen, also musste gestochen werden. | RULES 5.4 |
+| `explain-trump-opp` | `suit` | Trump: your opponent has no {suit} in hand or showing. | Tarock: Ihr Gegner hat kein {suit} in der Hand oder offen. | RULES 5.4 |
+| `explain-void-you` | `suit` | You had neither {suit} nor a tarock in hand or showing, so any card went. | Sie hatten weder {suit} noch Tarock in der Hand oder offen, also ging jede Karte. | RULES 5.4 |
+| `explain-void-opp` | `suit` | Your opponent has neither {suit} nor a tarock in hand or showing. | Ihr Gegner hat weder {suit} noch Tarock in der Hand oder offen. | RULES 5.4 |
+| `explain-notarock-you` | none | You had no tarock in hand or showing, so any card went. | Sie hatten kein Tarock in der Hand oder offen, also ging jede Karte. | RULES 5.4 |
+| `explain-notarock-opp` | none | Your opponent has no tarock in hand or showing. | Ihr Gegner hat kein Tarock in der Hand oder offen. | RULES 5.4 |
+| `explain-won-you` | `winner`, `loser` (cards) | Your trick: {winner} beat {loser}. | Ihr Stich: {winner} schlug {loser}. | RULES 5.4, 5.5 |
+| `explain-won-opp` | `winner`, `loser` (cards) | His trick: {winner} beat {loser}. | Sein Stich: {winner} schlug {loser}. | RULES 5.4, 5.5 |
