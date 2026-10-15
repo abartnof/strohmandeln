@@ -43,6 +43,13 @@ Text goes in and out through linear memory, as in Cassino. `kit/js/engine.js`
 | `strohmandeln_review()` | | | `{protocol, review}`: the review of the last scored deal, or `review: null` before one is scored. Does not move the game. See "The review" |
 | `strohmandeln_review_sitting()` | | | the same shape, over every deal scored so far |
 | `strohmandeln_explain()` | | | `{protocol, explain}`: what the last trick showed, one bullet, or `explain: null` before a trick is won. See "The review" |
+| `strohmandeln_deal_record()` | | | `{protocol, record}`: the record text of the deal that last ended, or `record: null` before one has. See "The tutor" |
+| `strohmandeln_evidence_of(len)` | a record, a line `==`, the assisted action numbers | | `{protocol, summary}` or an error. Stateless |
+| `strohmandeln_learner(len)` | summaries, oldest first, a line `--` between | | `{protocol, deals, focus, mastered, just_mastered, stale, version}`. Stateless |
+| `strohmandeln_brief_of_record(len)` | `level n`, a record, `==`, the assisted numbers, `--`, the history | | `{protocol, brief}`. Stateless |
+| `strohmandeln_brief_sitting(len)` | `level n`, the sitting's deals, `--`, the history | | the same, over the sitting. Stateless |
+| `strohmandeln_set_focus(len)` | a skill's slug (empty: none) | 1 set, 0 not a skill | none |
+| `strohmandeln_nudge()` | | | `{protocol, deal_action, nudge}`. Does not move the game |
 | `strohmandeln_tracker()` | | | `{protocol, tracker}`: where each of the 54 cards is from the human's view, and what is still out; `tracker: null` with no deal in progress. Does not move the game. See "The tracker" |
 | `strohmandeln_audit()` | | | `{hidden: [codes]}`: test aid, see below |
 
@@ -385,6 +392,87 @@ setting "Explanations", `docs/TABLE3D.md` 6.3.3): one bullet
 "Explanation keys" table of `docs/MESSAGES.md`. It deduces from the rule of
 following only what the rule gives (a trump on a suit led: none of that suit in
 hand or showing), from the human's filtered events.
+
+## The tutor
+
+The tutor judges the human's decisions afterwards, from a **deal record** and
+the actions a hint or a nudge was shown for (`docs/TUTOR.md` 3, 10). Five of the
+calls are **stateless** (text in, JSON out, no sitting needed), so that an
+instance of the module of its own, in a Worker or a test, can run them. The
+record is the table's to keep; the engine restores a deal from it.
+
+`strohmandeln_deal_record` answers `{"protocol": 1, "record": "<text>"}` for the
+deal that last ended, or `"record": null` before one has. The table asks right
+after the `game_scored` event, before another deal can end. The text is
+`{"v":1,"human":1,"deal":{"deck":[54 codes],"dealer":0,"multiplier":1,"settings":{...},"actions":[{"seat":1,"action":{...}}...]}}`,
+about 2 KB; the human's seat is in it, since the evidence is of one seat's
+decisions. Actions are numbered from 0 over both seats' actions of the deal;
+`state.deal_actions` and the hint's and nudge's `deal_action` are those numbers.
+
+**Input.** Lines, in the alloc buffer. A deal is `[deal N]`, the record on one
+line, a line `==`, then the assisted action numbers separated by spaces (none:
+nothing). `deal N` is the number the table shows for the deal and is read by the
+sitting's brief only. A history is summaries, oldest first, a line `--` between
+(each summary is the text `evidence_of` gave, `docs/TUTOR.md` 3). The brief
+calls begin with a line `level n`, the opponent's level (1 to 4): it decides
+whether "try the next opponent up" can be said.
+
+```
+strohmandeln_evidence_of      <record>\n==\n<numbers>
+strohmandeln_learner          <summary>\n--\n<summary> ...
+strohmandeln_brief_of_record  level 3\n<record>\n==\n<numbers>\n--\n<history>
+strohmandeln_brief_sitting    level 3\n[deal 1\n]<record>\n==\n<numbers>\n++\n[deal 2\n]... \n--\n<history>
+```
+
+**Replies.**
+
+```json
+{"protocol": 1, "summary": "strohmandeln evidence v2\nworth 7 5 9\n... announce 0 0 0"}
+{"protocol": 1, "deals": 12, "focus": "cheap", "mastered": ["worth"], "just_mastered": [],
+ "stale": [3], "version": 2}
+{"protocol": 1, "brief": {"bullets": [
+   {"lead": "tutor.lead.well", "key": "tutor.well.met", "params": {"chances": 3, "skill": "off"}},
+   {"lead": "tutor.lead.next", "key": "tutor.rule.cheap", "params": {"skill": "cheap"}},
+   {"lead": "tutor.lead.deal", "key": "tutor.miss.cheap", "params": {"trick": 9, "played": "Kh", "better": "4h"}}],
+ "method": "tutor.method", "summary": "strohmandeln evidence v2\n...", "focus": "cheap"}}
+{"protocol": 1, "deal_action": 41, "nudge": {"skill": "worth", "key": "tutor.nudge.worth"}}
+```
+
+`summary` is the text the learner reads, one line a skill: `<slug> <chances> <met>
+<missed thirds>`. In `learner`, `deals` counts the summaries of the present
+`version`; `stale` lists the indexes (from 0, in the order given) of entries to
+recompute with `evidence_of` before they count (another version, damaged or
+empty); a summary of a *newer* version is listed too and is not to be recomputed
+back: the table reads its header. `focus` and the lists hold slugs.
+
+`brief` holds at most three bullets `{lead, key, params}`: keys of the "Tutor
+keys" tables of `docs/MESSAGES.md` (a bullet's `lead` may be empty); a skill in
+`params` (`skill`, `skill2`) is a slug, a card a code, `thirds` and `sure`
+integer thirds, `honour` `trull` or `kings`, `suit` a letter, the rest counts.
+`method` is the key of the folded method, `summary` the deal's (or the
+sitting's) evidence, which the table stores, and `focus` the slug the learner
+names after this deal. One advisor pass serves the evidence, the misses and the
+brief. The sitting's brief is the same function over its deals summed as one
+game; its example names the deal (`tutor.lead.deal-n`). With `history` the
+brief is told against what the earlier deals showed (mastery, the focus); an
+entry that is unusable is left out.
+
+An error is `{"protocol": 1, "error": CODE, ...}` with `CODE` `bad-input` (the
+text does not parse: `why` says which part) or `replay` (the record is
+unrestorable, or its deal did not end: `why` is the core's `ReplayError`); a
+brief call then also says `"brief": null`. Nothing in a reply is prose.
+
+`strohmandeln_set_focus` sets the skill the nudge shows (kept by the module
+across sittings; empty for none) and returns 0 for a slug that is not a skill,
+leaving the focus as it was. `strohmandeln_nudge` answers for the human's
+position now: `nudge` is `{skill, key}` when the position is a clear chance at
+the focus (the evidence would have judged a move there on it), else `null`
+(also with no focus, or off the human's turn). `deal_action` is the number the
+decision has in the deal; the table adds it to its assisted list when it shows
+the nudge. It is a function of the position, one advisor run, and changes
+nothing; the table asks once a position, as for the hint. Measured in the
+module (Node, `release`): the evidence of a deal and its brief, 60 to 70 ms
+median, 120 ms at most over six deals.
 
 ## The tracker
 

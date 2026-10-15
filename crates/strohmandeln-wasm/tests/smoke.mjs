@@ -223,3 +223,64 @@ assert.equal(out().review.bullets.length, 2);
 assert.equal(out().review.bullets[0].key, "sitting-tally");
 assert.ok(reviewed >= 3, "every scored deal had a review");
 console.log(`${reviewed} deal reviews and a sitting review`);
+
+// 6. The tutor: the record of each scored deal, its evidence, the learner
+//    over the summaries, the brief of the deal and of the sitting, the
+//    nudge. Stateless calls take text; none moves the game.
+create({ seed: 91, touren: 3, human: 1 });
+assert.equal(w.strohmandeln_set_focus(write("nonsense")), 0);
+assert.equal(w.strohmandeln_set_focus(write("worth")), 1);
+w.strohmandeln_deal_record();
+assert.equal(out().record, null);
+const records = [];
+const summaries = [];
+let nudged = 0;
+for (let n = 0; n < 4000; n++) {
+  w.strohmandeln_render();
+  const s = out().state;
+  if (s.prompt === "over") break;
+  if (s.prompt === "opponent") assert.equal(w.strohmandeln_step(), 1);
+  else {
+    if (s.phase === "play" && n % 3 === 0) {
+      w.strohmandeln_nudge();
+      const r = out();
+      assert.equal(r.deal_action, s.deal_actions);
+      if (r.nudge) {
+        nudged++;
+        assert.deepEqual(r.nudge, { key: "tutor.nudge.worth", skill: "worth" });
+      }
+      w.strohmandeln_render();
+      assert.deepEqual(out().state, s, "a nudge moves nothing");
+    }
+    const a = s.legal[0];
+    assert.ok(send(a.action === "extend" ? { action: "extend", accept: false } : wire(a)));
+  }
+  if (out().events?.some((e) => e.type === "game_scored")) {
+    w.strohmandeln_deal_record();
+    const record = out().record;
+    assert.equal(typeof record, "string");
+    records.push(record);
+    w.strohmandeln_evidence_of(write(`${record}\n==\n`));
+    const e = out();
+    assert.match(e.summary, /^strohmandeln evidence v\d+\nworth \d+ \d+ [\d.]+\n/);
+    summaries.push(e.summary);
+    w.strohmandeln_learner(write(summaries.join("\n--\n")));
+    const learnt = out();
+    assert.equal(learnt.deals, summaries.length);
+    assert.deepEqual(learnt.stale, []);
+    const history = summaries.slice(0, -1).join("\n--\n");
+    w.strohmandeln_brief_of_record(write(`level 3\n${record}\n==\n--\n${history}`));
+    const b = out().brief;
+    assert.ok(b.bullets.length >= 1 && b.bullets.length <= 3, JSON.stringify(b));
+    for (const x of b.bullets) assert.match(x.key, /^tutor\.[a-z.1-9-]+$/);
+    assert.equal(b.summary, e.summary, "one advisor pass serves both");
+    assert.equal(b.method, "tutor.method");
+  }
+}
+assert.ok(records.length >= 3, "deals were scored");
+console.log(`${records.length} deals through the tutor's calls, ${nudged} nudges`);
+const sittingDeals = records.map((r, i) => `deal ${i + 1}\n${r}\n==\n`).join("++\n");
+w.strohmandeln_brief_sitting(write(`level 3\n${sittingDeals}--\n`));
+assert.ok(out().brief.bullets.length <= 3);
+w.strohmandeln_brief_of_record(write("level 3\nnot a record\n==\n"));
+assert.equal(out().error, "bad-input");
