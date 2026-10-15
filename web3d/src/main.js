@@ -744,6 +744,7 @@ async function main() {
       return false;
     }
     sel = { ...sel, chosen: null };
+    focus = null; // the card in focus is played (or its row has changed under it): the next arrow starts again from the hand
     advance(r);
     return true;
   }
