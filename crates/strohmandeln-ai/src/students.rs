@@ -3,10 +3,11 @@
 //! that the evidence points at the skill that is missing (`tutor_tests.rs`),
 //! the measurements to price each skill and to tune the learner (M4, M6).
 //!
-//! A knock-out is total (the skill is never used) so that it shows in a few
-//! deals; partial ones, which show in tens, are for M6. Each student decides
-//! from its own view only, as rung 4 does, and is a pure function of the
-//! seed and the view.
+//! A knock-out removes the skill (it is never used), except `Pagat` and `Bid`,
+//! which are halved: a coin decides, so a fair share of their chances is met
+//! by luck. Total ones show in a few deals; partial ones, which show in tens,
+//! are for M6. Each student decides from its own view only, as rung 4 does,
+//! and is a pure function of the seed and the view.
 
 use crate::know::Knowledge;
 use crate::opponent::{Config, Level, Opponent};
@@ -34,8 +35,8 @@ pub enum Lesion {
     Off,
     /// `run`: leads a tarock at random among its tarocks.
     Run,
-    /// `pagat`: plays the Pagat or keeps it by a coin, whenever it follows
-    /// with a choice.
+    /// `pagat`: plays the Pagat or keeps it by a coin (halved, not removed),
+    /// whenever it follows with a choice.
     Pagat,
     /// `void`: leads the best card of a suit he has shown he is out of, when
     /// it has one.
@@ -45,7 +46,7 @@ pub enum Lesion {
     Behind,
     /// `endgame`: plays rung 2 from the first position with nothing face down.
     Endgame,
-    /// `bid`: takes up or passes by a coin.
+    /// `bid`: takes up or passes by a coin (halved, not removed).
     Bid,
     /// `announce`: never announces.
     Announce,

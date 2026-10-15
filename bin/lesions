@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# The lesion tests of the tutor's evidence (docs/TUTOR.md 12): students with
+# one skill knocked out must be pointed at, rung 4 whole must meet nearly all
+# of its chances. They take about 100 s, so `cargo test` skips them (#[ignore])
+# and the gate asks for this script only when the code they judge has changed.
+#
+#   bin/lesions         run them; on success write target/lesions.stamp
+#   bin/lesions --hash  print the hash of the sources they judge
+#
+# The stamp holds that hash. bin/gate fails ("run bin/lesions") when the stamp
+# is missing or differs, so a commit that touches the advisor, the classifiers,
+# the students or the deal record cannot skip the check silently, and one that
+# does not pays nothing. The publish step (merge to main) runs this script
+# unconditionally.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+
+sources=(
+  crates/strohmandeln-ai/src/{tutor,students,tutor_tests,rung2,rung3,rung4,know,sampler,solver,sim,opponent,cardset,seed}.rs
+  crates/strohmandeln-core/src/{deal,dealrec}.rs
+)
+
+hash() {
+  cat "${sources[@]}" | sha256sum | cut -d' ' -f1
+}
+
+if [ "${1:-}" = "--hash" ]; then
+  hash
+  exit 0
+fi
+
+h=$(hash)
+cargo test --release -p strohmandeln-ai --lib -- --ignored a_student_who whole_rung_four
+mkdir -p target
+echo "$h" > target/lesions.stamp
+echo "lesions: ok ($h)"
