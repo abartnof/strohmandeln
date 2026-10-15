@@ -63,3 +63,11 @@ test("the edge: a tick is drawn once a side has 107; a side on 106 stands one sh
   assert.deepEqual(edgeOf({ you: 105, opp: 105 }), { tick: false, short: [] }, "35 : 35 is no edge");
   assert.deepEqual(edgeOf({ you: 210, opp: 0 }), { tick: true, short: [] });
 });
+
+// A language switch rebuilds the HUD: the tick (2.5.4) and a dropped drag must survive it.
+test("the main page re-applies the edge to a rebuilt HUD and ends a drag the browser cancelled", () => {
+  const main = src("main.js");
+  const lang = main.slice(main.indexOf("onLang((lang)"));
+  assert.match(lang.slice(0, lang.indexOf("stage.render()")), /createHud[\s\S]*classList\.toggle\("edge", edgeOf\(totals\)\.tick\)/);
+  assert.match(main, /addEventListener\("pointercancel"/);
+});

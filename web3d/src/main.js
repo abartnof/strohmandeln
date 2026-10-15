@@ -899,6 +899,7 @@ async function main() {
     const ledger = countLedger(game, []);
     ledger.count = { you: totals.you, opp: totals.opp };
     hud.reset({ hands: [ledger], live: null });
+    hud.node.classList.toggle("edge", edgeOf(totals).tick); // the tick (2.5.4) is on the old HUD's node
     if (wasm) {
       refresh();
       showTour();
@@ -930,6 +931,7 @@ async function main() {
     const slot = director.pick(e.clientX, e.clientY);
     dragFrom = { x: e.clientX, y: e.clientY, scroll: clampScroll(sel.scroll), code: slot?.zone === "your-hand" || slot?.zone === "your-packets" ? slot.code : null };
   });
+  canvas.addEventListener("pointercancel", () => (dragFrom = null)); // the browser took the touch
   canvas.addEventListener("pointermove", (e) => {
     if (!dragFrom || zonesNow().yourHand.fan || director.busy()) return;
     const dx = e.clientX - dragFrom.x;
