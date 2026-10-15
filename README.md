@@ -77,7 +77,9 @@ python3 web3d/test/browser.py --quick          # about a minute
 python3 web3d/test/browser.py [--only=a,b] [screenshot-dir]   # the full suite, about half an hour
 ```
 
-Use whichever Python has Playwright, for instance a virtualenv's.
+The tested versions are pinned in `web3d/test/requirements.txt`
+(`python3 -m venv .venv && .venv/bin/pip install -r web3d/test/requirements.txt`;
+Playwright also needs a Chromium, here the system one).
 
 ## Layout
 
