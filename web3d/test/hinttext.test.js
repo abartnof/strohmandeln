@@ -13,7 +13,7 @@ const slots = (s) => [...new Set([...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]))
 
 const words = (lang) => {
   const s = createStrings(TABLE, lang);
-  return { t: s.t, cardName: s.cardName, romanName: s.romanName, thirds };
+  return { t: s.t, cardName: s.cardName, romanName: s.romanName, thirds, count: s.count };
 };
 
 test("a card parameter is named, a _thirds parameter is told in points, a count stays", () => {
@@ -96,4 +96,20 @@ test("shown tarocks use the faces' Roman numerals; Pagat, Mond, Sküs keep their
   assert.deepEqual(["T12", "T4", "T1", "T21", "SK", "Jh"].map(name), ["tarock XII", "tarock IIII", "Pagat", "Mond", "Sküs", "jack of hearts"]);
   assert.equal(hintParams({ n_thirds: 0 }, w).n_thirds, "0 points");
   assert.equal(hintLines({ hint: { action: "play", card: "T12" }, reason: "only-card", params: { card: "T12" } }, { ...w, cardName: name }).lead, "Play tarock XII.");
+});
+
+test("a count of a thousand or more is grouped as the language writes it", () => {
+  const rate = { hint: { action: "play", card: "Kh" }, reason: "lead-rate", params: { card: "Kh", wins: 1000, worlds: 1000 }, rule: null, odds: null };
+  assert.equal(hintLines(rate, words("en")).reason, "King of hearts takes the trick in 1,000 of 1,000 sampled deals.");
+  assert.equal(hintLines(rate, words("de")).reason, "Herz-König gewinnt den Stich in 1.000 von 1.000 durchgespielten Austeilungen.");
+  const part = { ...rate, params: { card: "Kh", wins: 640, worlds: 1000 } };
+  assert.match(hintLines(part, words("en")).reason, /in 640 of 1,000 sampled deals\.$/);
+  assert.match(hintLines(part, words("de")).reason, /in 640 von 1\.000 durchgespielten/);
+  const odds = hintLines({ ...part, odds: { alt: "T21", better: 31, worlds: 50, gain_thirds: 4 } }, words("en"));
+  assert.equal(odds.more[0], "Against Mond: ahead in 31 of 50 sampled deals, by 1⅓ points on average.");
+  assert.equal(hintParams({ out: 999, wins: 10000 }, words("en")).wins, "10,000");
+  assert.equal(hintParams({ out: 999 }, words("en")).out, 999);
+  // A caller that passes no count gets the plain number.
+  const { count, ...plain } = words("en");
+  assert.equal(hintParams({ wins: 1000 }, plain).wins, 1000);
 });
