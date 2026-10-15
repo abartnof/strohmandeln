@@ -65,7 +65,7 @@ if-Zeile auf eine Einstellung gekennzeichnete Blöcke gelten nur für diese
 
 ## Eine Deckkarte spielen
 
-- Tippen Sie eine Deckkarte an wie eine Handkarte. Tippen Sie nochmals oder drücken Sie **Ausspielen**.
+- Tippen Sie eine Deckkarte an wie eine Handkarte. Tippen Sie sie nochmals an, um sie auszuspielen.
 - Ist der Stich eingezogen, wird die Karte darunter aufgedeckt. Ein Tarock oder König kommt in Ihre Hand, eine niedrige Karte wird die neue Deckkarte.
 - Die Karte darunter kennen weder Sie noch Ihr Gegner, bis sie aufgedeckt wird.
 - Ist die Karte darunter die letzte des Pakets, kommt sie in Ihre Hand, was sie auch sei.

@@ -1,5 +1,4 @@
 {
-  "ui.play": {"en": "Play", "de": "Ausspielen"},
   "ui.take": {"en": "I take it up", "de": "Ich nehme auf"},
   "ui.pass": {"en": "Pass", "de": "Weiter"},
   "ui.pass.gloss": {"en": "Weiter = pass", "de": "Weiter = passen"},

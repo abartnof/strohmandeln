@@ -65,7 +65,7 @@ tutorialPages): bidding and draw have one for each both_pass value (RULES 3.4, 1
 
 ## Using a cover
 
-- Tap a cover as you would a card in your hand. Tap again, or press **Play**.
+- Tap a cover as you would a card in your hand. Tap it again to play it.
 - When the trick is gathered, the card beneath is turned. A tarock or king goes into your hand; a low card is the new cover.
 - Neither you nor your opponent knows the card beneath until it is turned.
 - If the card beneath is the last of its packet, it goes into your hand, whatever it is.

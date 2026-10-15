@@ -356,11 +356,14 @@ it never hides, disables or allows a card by a rule of the page. (A test fails
 if the page code contains the follow-suit rules: `must-follow`, suit
 comparisons in the table code.)
 
-3.1.2 **Tap or click** a lit card: it lifts (hand) or rises (cover) and the move
-bar offers **Play** ("Ausspielen" / "Play"); a second tap on the card, or a
-tap on Play, plays it. A double-tap or a drag of the card to the trick zone
-plays it directly. Where a card of a held, unannounced honour is chosen, the
-announce prompt appears first (3.3).
+3.1.2 **Tap or click** a lit card: it lifts (hand) or rises (cover). A second
+tap on the same card plays it, however much later; a tap on another lit card moves
+the choice. The chosen card lifts from under the pointer, so a second click within
+10 px of the first counts as the same card, whatever then lies there (`sameSpot`).
+There is no Play button: the second tap, Enter or Space on the focused card (3.10.1)
+and the drag below all play. A drag of the card up to the trick zone plays it
+directly. Where a card of a held, unannounced honour is chosen, the announce
+prompt appears first (3.3).
 
 3.1.3 **A card that is not lit**: a tap sends the card anyway only when a refusal
 is wanted (3.2); the default is a gentle shake of the card and the *reason*
@@ -1115,6 +1118,9 @@ motion are saved to `web3d/test/out/`.
 - `announce_prompt`: selecting a held honour card prompts; Announce pays the point
   and appears on the slate; Do not announce forfeits (the engine's
   `honour-forfeited` on a later try); the prompt is absent for an unheld honour.
+- `tap_twice`: a click chooses a lit card; a second click at the same spot plays it, after
+  any pause, including at the card's foot where the lift has moved it from under the
+  pointer; the move bar offers no Play button.
 - `announce_chip`: the chip announces without playing; it is refused when not
   held (`not-held`).
 - `bid_buttons`: "Ich nehme auf" / "Weiter" in German and the English

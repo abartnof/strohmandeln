@@ -22,7 +22,7 @@ import { decodeBase64 } from "../../kit/js/engine.js";
 import { CARD } from "../../kit/js/units.js";
 import { sentence, where } from "./a11y.js";
 import { choreograph, initialPlacement, LAST_TRICK, opening } from "./choreography.js";
-import { dragKind, shake } from "./gesture.js";
+import { dragKind, sameSpot, shake } from "./gesture.js";
 import { handRange } from "./layout.js";
 import { TRULL, KINGS } from "./cardinfo.js";
 import { bonusLines, countGame, countLines, edgeOf } from "./counting.js";
@@ -653,7 +653,6 @@ async function main() {
         if (has("pass")) buttons.push({ act: "pass", label: t("ui.pass"), enabled: true, kind: "pass" });
         groups.push({ kind: "bid", buttons });
       } else if (wasm.phase === "play") {
-        if (sel.chosen) groups.push({ kind: "play", buttons: [{ act: "play", label: t("ui.play"), enabled: true, kind: "primary" }] });
         const held = heldHonours();
         groups.push({
           kind: "announce",
@@ -689,11 +688,14 @@ async function main() {
   const legalNarrowed = () => lit.size < (wasm.deal?.own_hand?.length ?? 0) + (wasm.deal?.covers?.[wasm.human] ?? []).filter(Boolean).length;
 
   // A tap or a click on the table.
-  function tapped(slot) {
+  // `at` is where the click fell. A card chosen has lifted from under the pointer, so a
+  // second click at the same spot is the chosen card again, whatever lies there now (3.1.2).
+  function tapped(slot, at) {
     if (director.busy() || pending > 0) {
       director.skip();
       return;
     }
+    if (sel.chosen && slot?.code !== sel.chosen && sameSpot(sel.at, at)) slot = director.placement().find((m) => m.code === sel.chosen) ?? slot;
     ui.hideBanner();
     if (!slot || !slot.code || !(slot.zone === "your-hand" || slot.zone.endsWith("packets") || slot.zone === "trick" || slot.zone === "count")) {
       if (sel.chosen) {
@@ -706,7 +708,7 @@ async function main() {
     const code = slot.code;
     if (wasm.prompt !== "you" || !lit.has(code)) return askRefusal(code);
     if (sel.chosen === code) return commit(code);
-    sel = { ...sel, chosen: code };
+    sel = { ...sel, chosen: code, at };
     focus = null;
     ui.setRefusal(null);
     refresh();
@@ -790,8 +792,6 @@ async function main() {
       case "take":
       case "pass":
         return send({ action: act });
-      case "play":
-        return sel.chosen && commit(sel.chosen);
       case "announce": {
         const r = engine.send({ action: "announce", honour: data.honour });
         if (!r.ok) return showRefusal(r.refusal);
@@ -1073,7 +1073,7 @@ async function main() {
   let afterDrag = false; // the click that follows a drag is not a tap
   canvas.addEventListener("click", (e) => {
     if (afterDrag) return (afterDrag = false);
-    tapped(director.pick(e.clientX, e.clientY));
+    tapped(director.pick(e.clientX, e.clientY), { x: e.clientX, y: e.clientY });
   });
   document.getElementById("overlay").addEventListener("click", (e) => {
     if (e.target.closest("button, .dialog, .slate, .settings, .hud")) return;
@@ -1154,7 +1154,7 @@ async function main() {
     if (!code || !wasm || wasm.phase !== "play" || director.busy() || pending > 0) return;
     if (!lit.has(code) || wasm.prompt !== "you") return askRefusal(code);
     if (sel.chosen === code) return commit(code);
-    sel = { ...sel, chosen: code };
+    sel = { ...sel, chosen: code, at: null };
     refresh();
     director.rearrange();
   }

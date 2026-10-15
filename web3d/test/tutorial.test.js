@@ -72,9 +72,9 @@ test("the two languages are parallel: same pages, same shape of blocks", () => {
 
 test("the pages name the buttons as the strings do", () => {
   const bold = (lang) => new Set(pages(lang).flatMap((p) => p.blocks.flatMap((b) => b.spans ?? b.items.flat())).filter((x) => x.bold).map((x) => x.text));
-  const names = { en: ["I take it up", "Pass", "Play", "Announce Trull", "Announce four kings", "Slate", "One more Tour", "Enough"], de: ["Ich nehme auf", "Weiter", "Ausspielen", "Troule ansagen", "Vier Könige ansagen", "Tafel", "Noch eine Tour", "Genug"] };
+  const names = { en: ["I take it up", "Pass", "Announce Trull", "Announce four kings", "Slate", "One more Tour", "Enough"], de: ["Ich nehme auf", "Weiter", "Troule ansagen", "Vier Könige ansagen", "Tafel", "Noch eine Tour", "Genug"] };
   for (const lang of ["en", "de"]) for (const n of names[lang]) assert.ok(bold(lang).has(n), `${lang}: ${n}`);
-  const label = { "I take it up": "ui.take", Pass: "ui.pass", Play: "ui.play", "Announce Trull": "ui.announce.trull", "Announce four kings": "ui.announce.kings", Slate: "ui.menu.slate", "One more Tour": "ui.ext.yes", Enough: "ui.ext.no" };
+  const label = { "I take it up": "ui.take", Pass: "ui.pass", "Announce Trull": "ui.announce.trull", "Announce four kings": "ui.announce.kings", Slate: "ui.menu.slate", "One more Tour": "ui.ext.yes", Enough: "ui.ext.no" };
   for (const [en, key] of Object.entries(label)) assert.equal(STRINGS[key].en, en);
 });
 
