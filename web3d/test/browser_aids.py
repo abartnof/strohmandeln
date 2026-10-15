@@ -816,7 +816,6 @@ def check_deal_brief(browser, failures):
         fail_if(not lead.endswith(":") and not lead.endswith("."), failures, f"deal_brief: the lead {lead!r}")
     fail_if(page.locator("[data-dialog=review] summary").inner_text() != t("tutor.how"), failures, "deal_brief: no folded method")
     fail_if(page.locator("[data-dialog=review] details[open]").count(), failures, "deal_brief: the method is not folded")
-    shot_name = "deal_brief"
     page.locator("[data-dialog=review] [data-dialog-act=close]").click()
     page.wait_for_function("!document.querySelector('[data-dialog=review]')", timeout=10_000)
     # muted: no chip, no dialog
@@ -835,8 +834,23 @@ def check_deal_brief(browser, failures):
         assisted = js(page, "briefing()")["assisted"]
         if assisted:
             note = js(page, "tutor()")["note"]
-            fail_if(note != t(f"tutor.nudge.{focus}"), failures, f"deal_brief: the nudge says {note!r}, not the focus's ({focus})")
+            words = t(f"tutor.nudge.{focus}")
+            fail_if(note != f"{t('tutor.lead.rule')} {words[0].lower()}{words[1:]}", failures, f"deal_brief: the nudge says {note!r}, not the focus's ({focus})")
             fail_if(len(assisted) != 1, failures, f"deal_brief: the nudged decision is not assisted: {assisted}")
+    # clearing what the Kibitzer keeps asks first, says it is done, and the focus does not come back
+    kept_before = len(js(page, "briefing()")["kept"])
+    fail_if(kept_before < 1, failures, "deal_brief: nothing kept")
+    page.locator("[data-act=settings]").click()
+    page.locator("[data-action=progress-clear]").click()
+    page.wait_for_selector("[data-dialog=clear]", timeout=10_000)
+    page.locator("[data-dialog=clear] [data-dialog-act=no]").click()
+    fail_if(len(js(page, "briefing()")["kept"]) != kept_before, failures, "deal_brief: Cancel cleared what is kept")
+    page.locator("[data-action=progress-clear]").click()
+    page.wait_for_selector("[data-dialog=clear]", timeout=10_000)
+    page.locator("[data-dialog=clear] [data-dialog-act=yes]").click()
+    page.wait_for_function("window.strohmandeln3d.briefing().kept.length === 0", timeout=10_000)
+    fail_if(js(page, "briefing()")["focus"] is not None, failures, "deal_brief: the focus survived the clearing")
+    page.keyboard.press("Escape")
     check_offline(page, failures, "deal_brief: ")
     # the German, and the tips off: the count and what went well, nothing to work on
     for prefs, check in (

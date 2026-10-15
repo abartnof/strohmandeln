@@ -938,37 +938,54 @@ a card, never the person.
 
 6.4.2 At the sitting's end the chip says "Review the sitting": the same dialog over
 the whole sitting's deals as one game, with the sitting's tally (`sitting-tally`)
-as its header. Not shown when muted.
+as its header. It is made of what was kept when each deal was scored (6.4.4) and
+runs no advisor; a mastery is told in the brief of the deal that earned it, not
+again here. Not shown when muted.
+
+In the leads and the lines the English never stacks a second colon and goes on in
+lower case after one ("Went well: playing your covers off – all 3 chances met.",
+"This deal: in trick 9, ..."); a skill is named by the act (`tutor.name.*`), and the
+card on a packet is a "cover" (Decke), as everywhere else on the table.
 
 6.4.3 The evidence of a deal (the advisor over every unassisted decision with a
 choice) runs on the **main thread**, once the deal has settled and the cards are
-still (`rested`), in a task of its own: some tens of milliseconds natively and
-60 to 120 ms in the module (`docs/PROTOCOL.md` "The tutor"). The recompute of
-stale summaries after a change to the evidence runs one record at a time while
-the table is idle. A Worker is not built (open: needed only if slower devices
-show a stall).
+still (`rested`), in a task of its own: some tens of milliseconds natively and, in
+the module, about 110 ms and at most about 135 ms on the development VM, more on
+a loaded or slower machine (`docs/PROTOCOL.md` "Timing"). It can exceed 150 ms, so
+**the chip is shown in a working state** ("Working...", disabled) from the moment
+the deal is scored until its evidence is kept. The recompute of stale summaries
+after a change to the evidence, and of a detail kept without one, runs one record
+at a time and only at rest, with no dialog open, and looks again at each rest; it
+starts 3 s after load and again when the Kibitzer is turned on or a file is loaded.
+A Worker is not built (open: needed only if slower devices show a stall).
 
 6.4.4 What the tutor keeps: `strohmandeln.tutor`, version 1, the last 60 scored
 deals, each with its record, the actions a hint or a nudge was shown for, its
-summary and its sitting (`docs/TUTOR.md` 8); every access in try/catch, a newer
+summary, its detail (what the sitting's brief is made of) and its sitting
+(`docs/TUTOR.md` 8); every access in try/catch, a newer
 store read as empty and never written over, a summary recomputed from its record
 when the engine calls it stale (a deal is never dropped for that; one the engine
 cannot restore is dropped after one try). Absent storage means the brief rests
-on the deal just played. Settings can export it, load a file (a bad one refused
-in a sentence, changing nothing) and clear it. The old `strohmandeln.progress` is
-left unread. Test runs write to a memory store, never the real key.
+on the deal just played. Settings can export it, load a file (which replaces what
+is kept; a bad one refused in a sentence, changing nothing) and clear it (after
+asking, with a line saying it is done; the page's own memory of the deals is
+cleared with it, and a newer page's store is left alone). The old
+`strohmandeln.progress` is left unread. Test runs write to a memory store, never
+the real key.
 
 6.4.5 **Teaching is two touches** (`docs/TUTOR.md` 6): the rule in the brief and,
 in the next deal, one **nudge** in the Kibitzer's tab (his note) at the first
 clear chance at the focus, asked once a position and once a deal, never in an
 animation. That decision then counts as **assisted** and is not evidence; so is
 every decision a hint was shown for (the engine's `deal_action` number goes in
-the deal's assisted list, which is kept with the sitting).
+the deal's assisted list, which is kept with the sitting, as is whether the deal's
+nudge was shown: a reload neither takes a mark back nor shows a second nudge).
 
 6.4.6 **Mute and the setting "Tips from the Kibitzer"** (7.1). Muted, the tutor
-shows no brief (the chip is not there) and no nudge. With the tips off the module
-is told no focus, no nudge is asked, and the brief keeps its first bullet only,
-and only if it is what went well, under the count.
+shows no brief (the chip is not there) and no nudge. With the tips off no nudge is
+asked, and the brief keeps its first bullet only, and only if it is what went
+well, under the count. Until the rules have been measured every focus is told as
+its fact (`docs/TUTOR.md` 6).
 
 ### 6.5 Voice
 
@@ -1083,7 +1100,7 @@ numbered (7.7).
 | Speed | Slow / Normal / Fast / Instant | Normal | now |
 | Table talk | All / Calls only / None | All | now |
 | Tutor | On / Off (off: no pages, no tips, no review chip) | On | now |
-| Tips from the Kibitzer | On / Off (off: no work to do and no nudge; the review keeps its first line, 6.4.6) | On | now |
+| Tips from the Kibitzer | On / Off (off: no advice in the Kibitzer's tab and no "Next" in the review; it shows the count and what went well, 6.4.6) | On | now |
 | Hints | On / Off (the hint chip) | Off | now |
 | Cards out | On / Off (the tracker, 6.6; shown only with Hints on) | On | now |
 | Explanations | On / Off | Off | now |

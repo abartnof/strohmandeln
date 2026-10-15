@@ -16,9 +16,10 @@ export function tutorApi(call, callNumber) {
     evidenceOf: (record, assisted) => call("evidence_of", `${record}\n==\n${numbers(assisted)}`),
     learner: (history) => call("learner", summaries(history)),
     briefOfRecord: (level, record, assisted, history) => call("brief_of_record", `level ${level}\n${record}\n==\n${numbers(assisted)}\n--\n${summaries(history)}`),
-    // deals: [{ record, assisted, n }], the sitting's, oldest first.
+    // deals: [{ n, detail }], the sitting's, oldest first: what was kept of each deal when it was
+    // scored (docs/PROTOCOL.md "The tutor"); the advisor does not run.
     briefSitting: (level, deals, history) => {
-      const body = deals.map((d) => `${Number.isInteger(d.n) && d.n > 0 ? `deal ${d.n}\n` : ""}${d.record}\n==\n${numbers(d.assisted)}`).join("\n++\n");
+      const body = deals.map((d) => `deal ${d.n}\n${JSON.stringify(d.detail)}`).join("\n++\n");
       return call("brief_sitting", `level ${level}\n${body}\n--\n${summaries(history)}`);
     },
     setFocus: (slug) => callNumber("set_focus", slug ?? ""),

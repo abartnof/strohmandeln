@@ -18,6 +18,7 @@ import {
   isNewerStore,
   loadDeals,
   refreshOne,
+  setEvidence,
   setSummary,
   summaryVersion,
   validSummary,
@@ -40,6 +41,7 @@ const broken = {
 };
 const SLUGS = ["worth", "cheap", "off", "run", "pagat", "void", "behind", "endgame", "bid", "announce"];
 const summary = (v = 2, worth = "7 5 9") => ["strohmandeln evidence v" + v, ...SLUGS.map((s) => (s === "worth" ? `worth ${worth}` : `${s} 0 0 0`))].join("\n");
+const detail = (s = summary()) => ({ summary: s, decisions: 12, facts: { ultimo_won: false, mond_caught: null, announced: [] }, misses: {}, settings: {}, variety: 3 });
 const deal = (n, over = {}) => ({ record: `{"v":1,"n":${n}}`, assisted: [], summary: null, at: 1_760_000_000 + n, ...over });
 
 test("the key and the caps are those of the spec", () => {
@@ -86,6 +88,14 @@ test("a summary is set once worked out, and only if it reads as the engine's", (
   assert.equal(setSummary(store, deal(1).record, summary()), true);
   assert.equal(loadDeals(store)[0].summary, summary());
   assert.equal(setSummary(store, "no such record", summary()), false);
+});
+
+test("a record is one line of JSON with a version: a wire separator in it is refused", () => {
+  const store = memory();
+  for (const record of ["not json", "[1]", '{"v":2}', '{"v":1}\n==\n{"v":1}', '{"v":1}\r\n', "--", "==", "++", ""]) {
+    assert.equal(addDeal(store, deal(1, { record })), false, JSON.stringify(record));
+  }
+  assert.equal(addDeal(store, deal(1)), true);
 });
 
 test("a bad entry is dropped, the rest kept; a bad store reads as empty", () => {
@@ -138,6 +148,34 @@ test("the history is the summaries oldest first, missing ones null", () => {
   assert.deepEqual(historyOf(loadDeals(store)), [summary(), null]);
 });
 
+test("what the sitting's brief is made of is kept with the deal: its detail", () => {
+  const store = memory();
+  addDeal(store, deal(1));
+  assert.equal(loadDeals(store)[0].detail, null);
+  assert.equal(setEvidence(store, deal(1).record, summary(), detail()), true);
+  assert.deepEqual(loadDeals(store)[0].detail, detail());
+  assert.equal(loadDeals(store)[0].summary, summary());
+  // a detail that is not an object, or is too large, or lacks the engine's summary, is not kept
+  for (const bad of [null, "x", [1], { ...detail(), summary: "junk" }, { ...detail(), pad: "x".repeat(5000) }]) {
+    assert.equal(setEvidence(store, deal(1).record, summary(), bad), false);
+  }
+  assert.deepEqual(loadDeals(store)[0].detail, detail(), "unchanged");
+  store.setItem(KEY, JSON.stringify({ v: 1, deals: [deal(2, { summary: summary(), detail: "junk" })] }));
+  assert.equal(loadDeals(store)[0].detail, null, "a damaged detail reads as missing");
+  assert.equal(setEvidence(null, "x", summary(), detail()), false);
+});
+
+test("clearing leaves a newer page's store alone", () => {
+  const store = memory();
+  store.setItem(KEY, JSON.stringify({ v: 2, deals: [deal(1)] }));
+  clearTutor(store);
+  assert.ok(store.getItem(KEY), "a newer page's store is not ours to clear");
+  const mine = memory();
+  addDeal(mine, deal(1));
+  clearTutor(mine);
+  assert.equal(mine.getItem(KEY), null);
+});
+
 test("it can be exported, cleared and imported; a bad file is refused in a key and changes nothing", () => {
   const store = memory();
   addDeal(store, deal(1, { summary: summary() }));
@@ -171,14 +209,15 @@ const fakeEngine = ({ stale, version = 2, summaryFor = () => summary(), calls = 
   },
   evidenceOf: (record, assisted) => {
     calls.push(["evidenceOf", record, assisted]);
-    return summaryFor(record);
+    const s = summaryFor(record);
+    return typeof s === "string" ? { summary: s, detail: detail(s) } : s;
   },
 });
 
 test("a stale summary is recomputed from its record and kept; a deal is never dropped for it", async () => {
   const store = memory();
   addDeal(store, deal(1, { summary: summary(1), assisted: [2] }));
-  addDeal(store, deal(2, { summary: summary() }));
+  addDeal(store, deal(2, { summary: summary(), detail: detail() }));
   const calls = [];
   const engine = fakeEngine({ stale: (h) => h.map((s, i) => (summaryVersion(s) === 1 ? i : -1)).filter((i) => i >= 0), calls });
   assert.equal(await refreshOne(store, engine), true);
@@ -186,6 +225,15 @@ test("a stale summary is recomputed from its record and kept; a deal is never dr
   assert.equal(summaryVersion(loadDeals(store)[0].summary), 2);
   assert.equal(await refreshOne(store, engine), false, "nothing left stale");
   assert.equal(loadDeals(store).length, 2);
+});
+
+test("a deal kept without its detail has it worked out while the table is idle", async () => {
+  const store = memory();
+  addDeal(store, deal(1, { summary: summary() }));
+  const engine = fakeEngine({ stale: () => [] });
+  assert.equal(await refreshOne(store, engine), true);
+  assert.deepEqual(loadDeals(store)[0].detail, detail());
+  assert.equal(await refreshOne(store, engine), false);
 });
 
 test("a record the engine can no longer restore is dropped after one failed try", async () => {
