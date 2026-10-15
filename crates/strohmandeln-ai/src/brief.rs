@@ -408,11 +408,12 @@ fn brief_from(parts: &[(u32, &Detail)], history: &[Summary], level: f64, sitting
     let mut all = history.to_vec();
     for (number, d) in parts {
         for (sum, t) in played.summary.tallies.iter_mut().zip(&d.summary.tallies) {
-            sum.chances += t.chances;
-            sum.met += t.met;
-            sum.missed += t.missed;
+            // a detail comes from storage: sums that cannot overflow
+            sum.chances = sum.chances.saturating_add(t.chances);
+            sum.met = sum.met.saturating_add(t.met);
+            sum.missed = (sum.missed + t.missed).min(f64::MAX);
         }
-        played.decisions += d.decisions;
+        played.decisions = played.decisions.saturating_add(d.decisions);
         played.facts.push(d.facts.clone());
         for (slot, m) in played.misses.iter_mut().zip(&d.misses) {
             if let Some(m) = m {

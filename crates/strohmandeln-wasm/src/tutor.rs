@@ -749,6 +749,33 @@ mod tests {
                 }
             }
         }
+        // a detail comes from storage too: tallies and counts at the top of their
+        // range, in three deals, must not overflow the sums of a sitting's brief
+        let e = evidence_of(&input(&text, ""));
+        let mut extreme = e["detail"].clone();
+        let max = u32::MAX;
+        let lines: Vec<String> = LADDER
+            .skills
+            .iter()
+            .map(|s| format!("{} {max} {max} 1e308", s.slug))
+            .collect();
+        extreme["summary"] = json!(format!(
+            "strohmandeln evidence v{EVIDENCE_VERSION}\n{}",
+            lines.join("\n")
+        ));
+        extreme["decisions"] = json!(max);
+        extreme["misses"] = json!({"worth": {
+            "action": u64::MAX, "trick": max, "played": "Kh", "better": "4h", "cost": 1e308,
+            "direction": "greedy", "led": "Jh", "trick_thirds": max, "tarocks": max,
+            "sure_thirds": max, "consequence": {"by": "Kh", "trick": max},
+        }});
+        let deals = [(1, &extreme), (2, &extreme), (3, &extreme)];
+        let v = brief_sitting(&sitting_input("3", &deals));
+        assert!(v.is_object(), "{v}");
+        for odd_number in [0u64, 10_000, 4_294_967_295, 4_294_967_296] {
+            let v = brief_sitting(&format!("level 3\ndeal {odd_number}\n{extreme}\n--\n"));
+            assert!(v.is_object(), "{odd_number}: {v}");
+        }
         // the structure of the text itself
         for odd in [
             "",

@@ -339,6 +339,24 @@ assert.equal(out().error, "bad-input");
     }
   }
   for (const t of oddText) for (const call of calls) await attempt(call, t);
+  // a detail comes from storage too: numbers at the top of their range, damaged misses,
+  // odd deal numbers, an old summary
+  const max = 4294967295;
+  const extreme = JSON.parse(details[0]);
+  const slugs = ["worth", "cheap", "off", "run", "pagat", "void", "behind", "endgame", "bid", "announce"];
+  extreme.summary = `${extreme.summary.split("\n")[0]}\n${slugs.map((k) => `${k} ${max} ${max} 1e308`).join("\n")}`;
+  extreme.decisions = max;
+  extreme.misses = { worth: { action: 1e30, trick: max, played: "Kh", better: "4h", cost: 1e308, direction: "greedy", led: "Jh", trick_thirds: max, tarocks: max, sure_thirds: max, consequence: { by: "Kh", trick: max } } };
+  const old = { ...JSON.parse(details[0]) };
+  old.summary = old.summary.replace(/evidence v\d+/, "evidence v1");
+  const damaged = { ...JSON.parse(details[0]), misses: { off: { cost: 1 } } };
+  const sittings = [
+    [1, 2, 3].map((n) => `deal ${n}\n${JSON.stringify(extreme)}`).join("\n++\n"),
+    ...[0, 10000, max, 4294967296, -1].map((n) => `deal ${n}\n${JSON.stringify(extreme)}`),
+    `deal 1\n${JSON.stringify(old)}`,
+    `deal 1\n${JSON.stringify(damaged)}`,
+  ];
+  for (const body of sittings) await attempt("brief_sitting", `level 3\n${body}\n--\n`);
   const x = await loadWasm(bytes, "strohmandeln");
   for (const slug of ["", " ", "worth ", "WORTH", "w".repeat(100000)]) x.exports.strohmandeln_set_focus(x.write(slug));
   x.exports.strohmandeln_nudge();
