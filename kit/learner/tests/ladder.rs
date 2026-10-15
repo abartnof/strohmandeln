@@ -37,6 +37,14 @@ fn a_cycle_in_needs_is_refused() {
 }
 
 #[test]
+fn a_skill_is_seen_from_exactly_its_min_chances() {
+    let spec = s("a", &[]);
+    assert!(spec.seen(4.0));
+    assert!(spec.seen(7.5));
+    assert!(!spec.seen(3.999));
+}
+
+#[test]
 fn shared_prerequisites_are_not_a_cycle_but_a_repeated_one_is_a_slip() {
     static DIAMOND: [SkillSpec; 4] = [s("a", &[]), s("b", &[0]), s("c", &[0]), s("d", &[1, 2])];
     assert_eq!(ladder(&DIAMOND).check(), Ok(()));

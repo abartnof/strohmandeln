@@ -19,6 +19,15 @@ pub struct SkillSpec {
     pub min_chances: f64,
 }
 
+impl SkillSpec {
+    /// Whether this many discounted chances are enough for the skill's rate
+    /// to count (`min_chances` or more). The one definition the fold, the
+    /// focus and the brief share.
+    pub fn seen(&self, chances: f64) -> bool {
+        chances >= self.min_chances
+    }
+}
+
 /// A game's skills, in ladder order (exact ties in the focus go to the
 /// earlier skill), and the version of the evidence that tallies them.
 #[derive(Copy, Clone, Debug, PartialEq)]

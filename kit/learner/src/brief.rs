@@ -162,7 +162,7 @@ pub fn brief(
                 .skills
                 .iter()
                 .zip(ladder.skills)
-                .filter(|(state, spec)| state.chances >= spec.min_chances)
+                .filter(|(state, spec)| spec.seen(state.chances))
                 .count();
             let key = if seen < cfg.enough_skills {
                 keys.none_early

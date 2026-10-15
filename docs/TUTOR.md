@@ -508,6 +508,7 @@ Crate `kit-learner` (lib `kit_learner`), as built (15 Oct 2026):
 // The ladder and the constants
 pub struct SkillSpec { pub slug: &'static str, pub needs: &'static [usize],
                        pub top_rate: f64, pub top_cost: f64, pub min_chances: f64 }
+impl SkillSpec { pub fn seen(&self, chances: f64) -> bool; }    // chances >= min_chances
 pub struct Ladder { pub name: &'static str, pub version: u32, pub skills: &'static [SkillSpec] }
 impl Ladder { pub fn check(&self) -> Result<(), String>;      // slugs, needs, rates
               pub fn index_of(&self, slug: &str) -> Option<usize>; }
@@ -518,13 +519,13 @@ impl Params { pub fn check(&self) -> Result<(), String>;      // finite, discoun
               pub fn master(&self, s: &SkillSpec) -> f64;      // master_of_top * top_rate
               pub fn lose(&self, s: &SkillSpec) -> f64; }      // master - lose_below, at least 0
 // Evidence
-pub struct Tally { pub chances: u32, pub met: u32, pub missed: f64 }
+pub struct Tally { pub chances: u32, pub met: u32, pub missed: f64 }   // one deal; is_valid(): met <= chances, missed finite >= 0
 pub struct Chance { pub skill: usize, pub met: bool, pub gap: f64 }
 pub struct Summary { pub version: u32, pub tallies: Vec<Tally> }   // one per skill, ladder order
 impl Summary { pub fn new(l: &Ladder) -> Summary;
                pub fn from_chances(l: &Ladder, c: &[Chance]) -> Summary;
                pub fn of(&self, skill: usize) -> Tally;
-               pub fn is_current(&self, l: &Ladder) -> bool;        // version and size fit
+               pub fn is_current(&self, l: &Ladder) -> bool;        // version, size and tallies fit
                pub fn to_text(&self, l: &Ladder) -> String;         // "<name> evidence v<n>", a line a skill
                pub fn parse(l: &Ladder, text: &str) -> Result<Summary, String>; }
 pub fn stale(l: &Ladder, games: &[Summary]) -> Vec<usize>;
@@ -570,8 +571,12 @@ game keeps its enum and maps it. Where the build departs from the sketch of
   having no focus.
 - Exact ties in gain go to the earlier skill in the ladder (section 1);
   Cassino's `max_by` took the later.
-- A summary of another version or size than the ladder's is stale: `learn` skips
+- A summary of another version or size than the ladder's, or with an impossible tally, is stale: `learn` skips
   it and `stale` lists it.
+- `Chance.gap` that is not finite and above 0 counts as 0. `Ladder::check` also
+  refuses a cycle or a repeat in `needs`; `Params::check` refuses constants that
+  cannot work; `learn` asserts both in debug builds, and a game calls them once
+  at start. Costs are in the game's score unit. The crate has no default `Params`.
 
 **Test of equivalence** (`kit/learner/tests/equivalence.rs`): with Cassino's
 ladder and constants written out as a `Ladder` and `Params`, the crate gives the

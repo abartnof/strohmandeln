@@ -80,7 +80,7 @@ pub fn learn(ladder: &Ladder, p: &Params, games: &[Summary]) -> Learner {
             chances[i] = chances[i] * p.discount + f64::from(t.chances);
             met[i] = met[i] * p.discount + f64::from(t.met);
             missed[i] = missed[i] * p.discount + t.missed;
-            if chances[i] < spec.min_chances {
+            if !spec.seen(chances[i]) {
                 continue;
             }
             let (a, b) = (1.0 + met[i], 1.0 + chances[i] - met[i]);
@@ -112,7 +112,7 @@ pub fn learn(ladder: &Ladder, p: &Params, games: &[Summary]) -> Learner {
             }
         })
         .collect();
-    let seen = |i: usize| skills[i].chances >= ladder.skills[i].min_chances;
+    let seen = |i: usize| ladder.skills[i].seen(skills[i].chances);
     // Surely short: enough chances, and the rate shown below mastery.
     let short = |i: usize| {
         seen(i)
