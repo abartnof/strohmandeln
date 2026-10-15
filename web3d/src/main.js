@@ -478,6 +478,14 @@ async function main() {
     for (const m of momentsOf({ events, since, beats: timing.beats, count: countEvent ? timing.count : null })) {
       later(m.ms, () => (m.synthetic ? talk.onEvent(m.event, { human }) : onEvent(m.event, m.index, model, timing)));
     }
+    // The tally moves as each trick's cards reach the pile (2.1), not as the trick is complete.
+    for (const [at, ms] of Object.entries(timing.landed ?? {})) {
+      later(ms, () => {
+        showTally(log.slice(0, Number(at) + 1));
+        const tally = hud.totals();
+        ui.live(t("sr.tally", { a: thirds(tally.you), b: thirds(tally.opp) }));
+      });
+    }
     if (countEvent) schedulePopups(timing.count, lines, since + events.indexOf(countEvent), events.find((e) => e.type === "game_scored"));
     persist(reply);
     refresh();
@@ -516,6 +524,14 @@ async function main() {
 
   // The running tally (2.5.3): the HUD's lines hold the take so far, counted as the count
   // will count it. The count starts again from nothing and lands on the same numbers.
+  // Whether this deal's count has begun: a `count` since the last `deal_start`.
+  function countBegun() {
+    for (let i = log.length - 1; i >= 0; i--) {
+      if (log[i].type === "count") return true;
+      if (log[i].type === "deal_start") return false;
+    }
+    return false;
+  }
   function showTally(events = log) {
     const ledger = countLedger(game, []);
     ledger.count = runningTally(events, human);
@@ -546,7 +562,6 @@ async function main() {
         showTutor();
         break;
       case "trick_won":
-        showTally(log.slice(0, index + 1));
         // The line under the prompt, from the module's own deduction (6.3.3).
         if (prefs.explain && !prefs.muted) {
           const line = explainText(engine.explain()?.explain, tutorWords());
@@ -1037,6 +1052,7 @@ async function main() {
     trickShown = r.state.deal?.playing ? r.state.deal.trick_number : 0;
     showTour();
     showTally(); // a deal under way shows its take so far
+    if (countBegun()) hud.endHand(1); // a counted deal is not live
     ui.root.classList.toggle("left", prefs.leftHanded);
     if (r.state.over) {
       const end = [...log].reverse().find((e) => e.type === "sitting_end");
@@ -1139,9 +1155,12 @@ async function main() {
     ui.hudSlot.replaceChildren();
     game = countGame(hudWords());
     hud = createHud(ui.hudSlot, game, { later: (ms, fn) => director.at(ms, fn), reduced: () => calm() });
-    const ledger = countLedger(game, []);
-    ledger.count = { you: totals.you, opp: totals.opp };
-    hud.reset({ hands: [ledger], live: null });
+    if (log.some((e) => e.type === "deal_start") && !countBegun()) showTally(); // a deal under way keeps its live ledger
+    else {
+      const ledger = countLedger(game, []);
+      ledger.count = { you: totals.you, opp: totals.opp };
+      hud.reset({ hands: [ledger], live: null });
+    }
     hud.node.classList.toggle("edge", edgeOf(totals).tick); // the tick (2.5.4) is on the old HUD's node
     if (wasm) {
       refresh();

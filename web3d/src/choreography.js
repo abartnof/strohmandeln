@@ -602,5 +602,8 @@ export function choreograph(prev, next, placement, view = {}, options = {}) {
     const within = HEARD_WITHIN[mark.type] && mark.moments[HEARD_WITHIN[mark.type]];
     beats[mark.at] = within ?? (mark.early ? mark.start : mark.end);
   }
-  return { ...result, beats };
+  // When a trick's cards reach its winner's pile (a trick won is heard earlier, as it is complete).
+  const landed = {};
+  for (const mark of marks) if (mark.moments.landed !== undefined) landed[mark.at] = mark.moments.landed;
+  return { ...result, beats, landed };
 }

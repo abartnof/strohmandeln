@@ -371,6 +371,7 @@
   "sr.game_scored.declarer_loss": {"en": "the declarer loses", "de": "der Aufnehmer verliert"},
   "sr.game_scored.simple_win": {"en": "a simple game is won", "de": "ein einfaches Spiel ist gewonnen"},
   "sr.game_scored.draw": {"en": "a draw", "de": "unentschieden"},
+  "sr.tally": {"en": "Your tally {a}, your opponent\u2019s {b}.", "de": "Ihr Stand {a}, der Ihres Gegners {b}."},
   "sr.doubling_set": {"en": "The next deal counts double.", "de": "Die nächste Partie zählt doppelt."},
   "sr.doubling_applied": {"en": "This deal counts double.", "de": "Diese Partie zählt doppelt."},
   "sr.doubling_lapsed": {"en": "The doubling lapses.", "de": "Das Doppelte verfällt."},
