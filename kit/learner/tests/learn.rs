@@ -176,6 +176,7 @@ static TWINS: [SkillSpec; 3] = [
         top_rate: 0.9,
         top_cost: 0.1,
         min_chances: 4.0,
+        may_focus: true,
     },
     SkillSpec {
         slug: "b",
@@ -183,6 +184,7 @@ static TWINS: [SkillSpec; 3] = [
         top_rate: 0.9,
         top_cost: 0.1,
         min_chances: 4.0,
+        may_focus: true,
     },
     SkillSpec {
         slug: "c",
@@ -190,6 +192,7 @@ static TWINS: [SkillSpec; 3] = [
         top_rate: 0.9,
         top_cost: 0.1,
         min_chances: 4.0,
+        may_focus: true,
     },
 ];
 
@@ -243,9 +246,11 @@ fn a_skill_with_its_own_min_chances_counts_from_there() {
         top_rate: 0.95,
         top_cost: 0.0,
         min_chances: 2.0,
+        may_focus: true,
     }];
     static COMMON: [SkillSpec; 1] = [SkillSpec {
         min_chances: 4.0,
+        may_focus: true,
         ..RARE[0]
     }];
     let ladder = |skills| Ladder {
@@ -260,4 +265,79 @@ fn a_skill_with_its_own_min_chances_counts_from_there() {
         s.tallies[0].missed = 12.0;
         assert_eq!(learn(&ladder, &PARAMS, &[s]).focus, focus);
     }
+}
+
+// New: a skill that may not be the focus (the game found it worth nothing).
+
+static MUTE: [SkillSpec; 3] = [
+    SkillSpec {
+        slug: "a",
+        needs: &[],
+        top_rate: 0.9,
+        top_cost: 0.1,
+        min_chances: 4.0,
+        may_focus: false,
+    },
+    SkillSpec {
+        slug: "b",
+        needs: &[0],
+        top_rate: 0.9,
+        top_cost: 0.1,
+        min_chances: 4.0,
+        may_focus: true,
+    },
+    SkillSpec {
+        slug: "c",
+        needs: &[],
+        top_rate: 0.9,
+        top_cost: 0.1,
+        min_chances: 4.0,
+        may_focus: true,
+    },
+];
+
+fn mute() -> Ladder {
+    Ladder {
+        name: "mute",
+        version: 3,
+        skills: &MUTE,
+    }
+}
+
+fn mute_games(lines: &[(usize, u32, u32, f64)]) -> Vec<Summary> {
+    let mut s = Summary::new(&mute());
+    for &(i, chances, met, missed) in lines {
+        s.tallies[i].chances = chances;
+        s.tallies[i].met = met;
+        s.tallies[i].missed = missed;
+    }
+    vec![s; 6]
+}
+
+#[test]
+fn a_skill_that_may_not_be_the_focus_never_is_however_much_it_costs() {
+    let games = mute_games(&[(0, 6, 0, 60.0)]);
+    let l = learn(&mute(), &PARAMS, &games);
+    assert!(l.state(0).gain > PARAMS.costly_gain, "it does cost");
+    assert_eq!(l.focus, None);
+    // the others are still chosen among
+    let games = mute_games(&[(0, 6, 0, 60.0), (2, 6, 1, 10.0)]);
+    assert_eq!(learn(&mute(), &PARAMS, &games).focus, Some(2));
+}
+
+#[test]
+fn a_skill_that_may_not_be_the_focus_does_not_hold_back_what_needs_it() {
+    // b needs a; a is short and costly, but it cannot be the focus, so b is
+    // not made to wait for it.
+    let games = mute_games(&[(0, 6, 0, 60.0), (1, 6, 1, 10.0)]);
+    assert_eq!(learn(&mute(), &PARAMS, &games).focus, Some(1));
+}
+
+#[test]
+fn a_skill_that_may_not_be_the_focus_is_still_counted_and_mastered() {
+    let one = mute_games(&[(0, 6, 6, 0.0)]).remove(0);
+    let games = vec![one; 4];
+    let l = learn(&mute(), &PARAMS, &games);
+    assert!(l.mastered(0));
+    assert!(l.state(0).chances > 0.0);
 }

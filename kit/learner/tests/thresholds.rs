@@ -60,6 +60,7 @@ static ONE: [SkillSpec; 1] = [SkillSpec {
     top_rate: 0.5,
     top_cost: 0.0,
     min_chances: 4.0,
+    may_focus: true,
 }];
 
 fn one(skills: &'static [SkillSpec]) -> Ladder {
@@ -100,6 +101,7 @@ fn a_prerequisite_gaining_exactly_min_gain_is_not_cleared() {
             top_rate: 0.9,
             top_cost: 0.0,
             min_chances: 4.0,
+            may_focus: true,
         },
         SkillSpec {
             slug: "b",
@@ -107,6 +109,7 @@ fn a_prerequisite_gaining_exactly_min_gain_is_not_cleared() {
             top_rate: 0.9,
             top_cost: 0.0,
             min_chances: 4.0,
+            may_focus: true,
         },
     ];
     let l = Ladder {

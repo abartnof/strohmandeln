@@ -35,7 +35,7 @@ inside it. A plain directory is in every worktree from the start.
 the game), the game-independent part of Cassino's learner: the discounted Beta
 fold, mastery with hysteresis, the focus over a prerequisite graph, the summary's
 text form and versions, and the brief's shape. A game supplies a `Ladder` (its
-skills as indexes, with `needs`, `top_rate`, `top_cost`, `min_chances`) and
+skills as indexes, with `needs`, `top_rate`, `top_cost`, `min_chances`, `may_focus`) and
 `Params`; the evidence, the words and the rules stay the game's.
 `docs/TUTOR.md` section 13 has the API. Its tests include an equivalence test
 against Cassino's own learner (`learner/tests/equivalence.rs`); `STAMP` lists

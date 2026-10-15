@@ -9,6 +9,7 @@ const fn s(slug: &'static str, needs: &'static [usize]) -> SkillSpec {
         top_rate: 0.9,
         top_cost: 0.1,
         min_chances: 4.0,
+        may_focus: true,
     }
 }
 

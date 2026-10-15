@@ -27,6 +27,7 @@ const fn spec(
         top_rate,
         top_cost,
         min_chances: 4.0,
+        may_focus: true,
     }
 }
 
