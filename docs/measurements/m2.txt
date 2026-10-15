@@ -1,0 +1,16 @@
+M2: 1800 played deals (0 thrown in) from 300 sittings of rung 4 against rung 4 (seeds 20000000..20000299), 116s
+net Points per third: slope 0.04259 +- 0.00071 (cluster), intercept -0.044, correlation 0.809
+thirds per Point = 1/slope = 23.48 (95% interval 22.73 to 24.27); rounded 23
+reverse regression (thirds on Points): 15.38 thirds per Point
+
+mean net Points by decile of the margin (thirds):
+  margin -180.0 to  -68.0: mean  -91.8, points  -2.88
+  margin  -68.0 to  -44.0: mean  -55.0, points  -2.87
+  margin  -44.0 to  -28.0: mean  -35.6, points  -2.71
+  margin  -28.0 to  -12.0: mean  -20.3, points  -2.58
+  margin  -12.0 to    2.0: mean   -5.7, points  -1.78
+  margin    2.0 to   18.0: mean    9.5, points   2.33
+  margin   18.0 to   32.0: mean   24.8, points   2.47
+  margin   32.0 to   48.0: mean   39.7, points   2.67
+  margin   48.0 to   70.0: mean   58.3, points   2.72
+  margin   70.0 to  170.0: mean   92.1, points   2.88

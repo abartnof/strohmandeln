@@ -2,7 +2,9 @@
 
 > Status: **proposed**, 15 Oct 2026; the evidence (3, 4), the lessons and the
 > brief (6, 9), the wasm calls (10) and the table (14) are built (15 Oct 2026);
-> the measurements (11) are not, and every rule is provisional until M5. Specifies
+> the measurements (11) are built and recorded in `docs/MEASUREMENTS.md`: the focus
+> is validated by M6 and its acceptance is not met, and two of the twelve rules
+> passed M5 and are told (the others by their facts). Specifies
 > the post-game tutor that replaces the heuristic `try` bullet of the end-of-deal
 > review.
 > Layout: desktop. The phone layout is deferred (maintainer, 15 Oct 2026).
@@ -62,13 +64,15 @@ the engine's. A slug is the wire name.
 
 **Praise-only skills (M4, 15 Oct 2026).** `void` and `behind` are judged and may be
 praised, but are never the focus: a student made to lead into a shown void, or
-into a split suit, loses nothing it can show against whole rung 4 in 160 mirrored
-pairs (`void` +0.49 +- 0.45, `behind` -0.49 +- 0.47 Points a pair; `docs/MEASUREMENTS.md`
-M4), so a learner sent to work on them would be sent to something that does not
-pay. The learner's `may_focus` is false for them until a measurement shows a
-worth. Of the ten prerequisite edges above only two were shown by pairs of
-knock-outs (`off` needs `worth`, `behind` needs `off`); the others stay as the
-logical order of the sources (`research/16`), not contradicted by the data.
+into a split suit, was **not shown to lose anything** against whole rung 4 in 160
+mirrored pairs (`void` +0.49 +- 0.45, `behind` -0.49 +- 0.47 Points a pair, the
+second interval reaching 2.7 thirds a deal; `docs/MEASUREMENTS.md` M4), so a
+learner sent to work on them would be sent to something unproven. The learner's
+`may_focus` is false for them until a measurement shows a worth. Of the ten
+prerequisite edges above only one was shown by pairs of knock-outs (`off` needs
+`worth`; the drop for `behind` needs `off` is a sign reversal of a skill with no
+shown worth, not a dependence); the others stay as the logical order of the
+sources (`research/16`), not contradicted at that power.
 
 Definitions the table leans on:
 
@@ -224,10 +228,14 @@ here; Cassino's values are starting points only, to be re-tested):
 
 As built, `Ladder::check` and `Params::check` run once when the wasm tutor is first
 used, in the release module too (`learn` asserts them in debug builds only); an
-error value (`bad-constants`) if they cannot work. **That they work says nothing
-of whether the focus is right: the focus is unvalidated until M6** (the lesioned
-students must be named within K deals and whole rung 4 not); the constants
-(`PARAMS`) are Cassino's ratios, provisional.
+error value (`bad-constants`) if they cannot work. That they work says nothing
+of whether the focus is right; M6 checked it (`docs/MEASUREMENTS.md`): the
+lesioned students were named within their limits in 0.556 of the windows on
+fresh seeds against the 0.7 asked (acceptance **not met**: `worth` and `off`
+are named every time within six deals, the rare skills seldom), and whole rung 4
+was given a focus on 0.039 of its deals. The constants (`PARAMS`) are the grid
+point M6 chose; it is not shown to beat the provisional ones (one window of
+one student on the fresh windows).
 
 The rare skills (`announce`, `pagat`, `bid`) will have fewer than one chance a
 deal and cannot be certified in a sitting from their chances alone (Cassino saw
@@ -250,11 +258,10 @@ a link, never in the bullets. Each bullet is `{lead, key, params}` (section 9).
 2. **Next: the skill, and its rule** (at most 18 words): the focus's name and the
    rule of at most 15 words, chosen by the direction of this deal's costliest
    miss when there is one. The rule is the first suggestion. Where no rule has
-   passed its gate, one plain fact in its place. **Decision, 15 Oct 2026 (review
-   of the brief, finding 2; the spec's own text): until M5 sets a rule's gate to
-   passed, no rule is told and every focus is told as its fact**; the rules in the
-   code stay provisional. The `bid` and `pagat` rules are, besides, told only
-   under the default settings until M5 has checked others.
+   passed its gate, one plain fact in its place. **As measured (M5, 15 Oct
+   2026): only `worth.rich` (told when the card led was worth 7 thirds or more,
+   the trigger measured) and `announce` passed, under every setting; every
+   other skill is told as its fact.** The gates are in `lessons.rs`.
 3. **This deal** (at most 18 words): the costliest miss at the focus this deal,
    with the card played and the better one, in the kibitzer's voice ("This deal
    your Q of hearts fell under his king in trick 14; play it at once next time");
@@ -519,14 +526,16 @@ below is the specification they were run from. The constants they set:
 | `THIRDS_PER_POINT` | 12 | 23 | M2 |
 | `SPLIT_SHARE`, `SPLIT_MIN_POINTS` | (0.3, 0.7), 6 | (0.1, 0.6), 6 | M8 |
 | `LADDER`: `top_rate`, `top_cost`, `min_chances` | fitted to 54 deals | rung 4 against rung 3, 1,200 deals | M3 |
-| `PARAMS.min_gain`, `costly_gain` | 2.0, 8.0 | 1.1, 4.4 thirds a deal | M4 |
-| `PARAMS.discount`, `upper`, `master_of_top` | 0.8, 0.9, 0.85 | 0.88, 0.8, 0.80 | M6 (`lower` 0.2, `lose_below` 0.2 kept) |
+| `PARAMS.min_gain`, `costly_gain` | 1.0, 4.0 (placeholders) | 1.1, 4.4 thirds a deal | M4 |
+| `PARAMS.discount` | 0.8 (Cassino's), then 0.83 (M3) | 0.88 | M3, M6 |
+| `PARAMS.upper`, `master_of_top` | 0.9, 0.85 | 0.8, 0.80 | M6 (`lower` 0.2, `lose_below` 0.2 kept) |
 | Rule gates | all provisional | `worth.rich` and `announce` passed, the rest failed | M5 |
 | `EVIDENCE_VERSION` | 3 | 4 | the above change the evidence |
 
 What the runs found against the specification: `void` and `behind` have no
-worth in Points against rung 4 (praise-only, section 2); only 2 of 10
-prerequisite edges were shown; two rules of fourteen passed the gate; the learner
+shown worth in Points against rung 4 (praise-only, section 2); only 1 of 10
+prerequisite edges was shown (`off` needs `worth`); two of the twelve rules
+passed the gate; the learner
 names `worth` and `off` within six deals but the rare skills not within a
 window (M6 acceptance not met); the evidence is 59 ms a deal in the module (M7).
 The 60-deal recompute (about 3.5 s in all) runs one deal per idle step at rest

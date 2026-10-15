@@ -140,6 +140,20 @@ fn a_focus_with_a_miss_is_told_by_the_rule_of_its_direction_and_the_example() {
     assert_eq!(b.bullets[0].key, "tutor.rule.worth.rich");
     assert_eq!(b.bullets[1].key, "tutor.miss.worth.rich");
     assert_eq!(param(&b.bullets[1], "led"), &Param::Text("Kd".into()));
+    // a timid miss on a trick led with a pip is outside what M5 measured:
+    // the fact, not the rule
+    let mut poor = miss(Skill::Worth, Some(Direction::Timid));
+    poor.led = Some(card("3h"));
+    let mut m = nothing();
+    m[0] = Some((poor, 0));
+    let played = deal_of(
+        summary(&[(Skill::Worth, 6, 2, 60.0)]),
+        12,
+        m,
+        Facts::default(),
+    );
+    let b = made(&history, &played, true);
+    assert_eq!(b.bullets[0].key, "tutor.fact.worth", "{b:?}");
 }
 
 #[test]

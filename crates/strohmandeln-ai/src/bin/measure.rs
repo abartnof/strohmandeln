@@ -1,9 +1,21 @@
-//! The tutor's measurements, M1 to M8 (`docs/MEASUREMENTS.md`). Each prints
-//! its plan's numbers; the computations are in `strohmandeln_ai::measure`.
+//! The tutor's measurements (`docs/MEASUREMENTS.md`). Each command prints the
+//! numbers of its plan; the computations are in `strohmandeln_ai::measure`.
 //!
 //! ```text
-//! measure m1 [--seed S] [--plays N] [--bids N] [--streams K]
+//! measure m1 [--seed S] [--plays N] [--bids N] [--streams K]   advisor noise
+//! measure m2 [--seed S] [--sittings N]                           thirds per Point
+//! measure m3 [--sittings N] [--other-sittings N]                 what rung 4 meets
+//! measure m4 [--only singles|pairs] [--bid coin|pass] [--batch N] [--looks K]
+//!            [--pair-looks K] [--seed S]                         what a skill is worth
+//! measure m4report SINGLES PAIRS                                 M4's derived numbers from its logs
+//! measure m5 [--seed S] [--sittings N] [--setting NAME] [--only IDS]   rule precision
+//! measure m6 [--windows N] [--sittings N] [--seed S] [--fresh-seed S]
+//!            [--tune-cache FILE] [--fresh-cache FILE]            diagnosis
+//! measure m8 [--seed S] [--sittings N]                           the split suit
 //! ```
+//!
+//! M7 (latency) is timed in the module and natively by
+//! `strohmandeln-wasm/tests/evidencebench.mjs` and `examples/evidencebench.rs`.
 
 use kit_learner::Summary;
 use std::time::Instant;
@@ -47,6 +59,7 @@ fn main() {
         "m2" => m2(&args),
         "m3" => m3(&args),
         "m4" => m4(&args),
+        "m4report" => m4report(&args),
         "m5" => m5(&args),
         "m6" => m6(&args),
         "m8" => m8(&args),
@@ -891,7 +904,7 @@ fn m6_groups(first: u64, windows: u64, sittings: u64, cache: Option<&str>) -> Ve
 }
 
 fn m6(args: &Args) {
-    use strohmandeln_ai::tutor::PARAMS;
+    use strohmandeln_ai::measure::M6_BASE;
     let started = Instant::now();
     let windows = args.num("--windows", 8);
     let sittings = args.num("--sittings", 3);
@@ -933,12 +946,12 @@ fn m6(args: &Args) {
     };
     println!(
         "\nthe provisional constants (discount {}):",
-        PARAMS.discount
+        M6_BASE.discount
     );
-    report("tuning", &PARAMS, &tune);
-    report("fresh", &PARAMS, &fresh);
+    report("tuning", &M6_BASE, &tune);
+    report("fresh", &M6_BASE, &fresh);
 
-    let grid = measure::m6_grid(&PARAMS);
+    let grid = measure::m6_grid(&M6_BASE);
     let scored: Vec<(kit_learner::Params, measure::Score)> = grid
         .iter()
         .map(|p| (*p, measure::score(p, &tune)))
@@ -948,7 +961,7 @@ fn m6(args: &Args) {
         scored.len(),
         started.elapsed().as_secs_f64()
     );
-    let Some((best, _)) = measure::m6_choice(&PARAMS, &scored) else {
+    let Some((best, _)) = measure::m6_choice(&M6_BASE, &scored) else {
         println!("no sets");
         return;
     };
@@ -1003,4 +1016,65 @@ fn m6(args: &Args) {
         );
     }
     println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}
+
+/// What M4's logs say: the worth of each knock-out in thirds a deal, `min_gain`
+/// and `costly_gain` by the rule, and each prerequisite edge's drop. Reads the
+/// text `measure m4` printed (`docs/measurements/m4-singles.txt`, `m4-pairs.txt`).
+fn m4report(args: &Args) {
+    let read = |i: usize| {
+        let path = args
+            .rest
+            .get(i)
+            .unwrap_or_else(|| panic!("m4report SINGLES PAIRS"));
+        measure::parse_m4(&std::fs::read_to_string(path).expect("a log"))
+    };
+    let (singles, pairs) = (read(0), read(1));
+    let per_point = strohmandeln_ai::tutor::THIRDS_PER_POINT;
+    println!("worth of each knock-out (Points a pair of 12 deals; thirds a deal at {per_point} a Point):");
+    let mut clear_worths = Vec::new();
+    for e in &singles {
+        let w = measure::worth_thirds_per_deal(e.mean, per_point);
+        let counted = e.verdict == "CLEAR" && e.mean < 0.0;
+        if counted {
+            clear_worths.push(w);
+        }
+        println!(
+            "  {:10} {:12} look {} ({:>3} pairs) {:+7.3} +- {:.3}  worth {:6.2}{}",
+            e.name,
+            e.verdict,
+            e.look,
+            e.pairs,
+            e.mean,
+            e.se,
+            w,
+            if counted { "" } else { "  (not counted)" }
+        );
+    }
+    let min_gain = measure::min_gain_rule(&clear_worths);
+    println!(
+        "min_gain {min_gain} (half the least clear worth, {:.2}), costly_gain {:.1}",
+        clear_worths.iter().copied().fold(f64::INFINITY, f64::min),
+        4.0 * min_gain
+    );
+    println!("\nprerequisites (the drop is the worth alone less the worth with the prerequisite out, Points a pair):");
+    for e in &pairs {
+        let Some((skill, rest)) = e.name.split_once(" with ") else {
+            continue;
+        };
+        let need = rest.trim_end_matches(" out");
+        let Some(alone) = singles.iter().find(|s| s.name == skill) else {
+            continue;
+        };
+        let (drop, se, holds) = measure::edge_drop(alone, e);
+        println!(
+            "  {skill:8} needs {need:6} alone {:+.2} (look {}), with out {:+.2} (look {}): drop {drop:+.2} +- {se:.2}, z {:+.2}  {}",
+            -alone.mean,
+            alone.look,
+            -e.mean,
+            e.look,
+            drop / se,
+            if holds { "holds" } else { "not shown" }
+        );
+    }
 }

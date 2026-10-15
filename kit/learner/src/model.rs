@@ -18,8 +18,9 @@ pub struct SkillSpec {
     /// it the state does not change.
     pub min_chances: f64,
     /// Whether the skill may be the focus. A game turns it off for a skill
-    /// it has found worth nothing (its knock-out costs the strongest player
-    /// nothing it can show): the skill is still counted, mastered and
+    /// it has not shown to be worth anything (its knock-out costs the
+    /// strongest player nothing the measurement can show): the skill is still
+    /// counted, mastered and
     /// praised, but never chosen to work on, and it does not hold back the
     /// skills that need it.
     pub may_focus: bool,

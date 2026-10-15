@@ -1,0 +1,44 @@
+M4: batches of 40, singles at most 4 looks (boundaries [4.05, 2.86, 2.34, 2.02]), pairs at most 3 looks, negligible +-0.5, first seed 40000000
+single knock-outs against rung 4 whole (Points per mirrored pair, 12 deals):
+  Worth look 1: 40 pairs, -6.300 +- 1.153 (z -5.47, boundary 4.05), 47s
+Worth: CLEAR at look 1 (40 pairs): -6.300 +- 1.153, 95% interval -8.559 to -4.041
+  Cheap look 1: 40 pairs, -13.675 +- 0.998 (z -13.70, boundary 4.05), 52s
+Cheap: CLEAR at look 1 (40 pairs): -13.675 +- 0.998, 95% interval -15.632 to -11.718
+  Off look 1: 40 pairs, -14.025 +- 1.103 (z -12.71, boundary 4.05), 60s
+Off: CLEAR at look 1 (40 pairs): -14.025 +- 1.103, 95% interval -16.187 to -11.863
+  Run look 1: 40 pairs, -0.400 +- 0.861 (z -0.46, boundary 4.05), 48s
+  Run look 2: 80 pairs, -1.562 +- 0.703 (z -2.22, boundary 2.86), 117s
+  Run look 3: 120 pairs, -1.300 +- 0.556 (z -2.34, boundary 2.34), 201s
+Run: CLEAR at look 3 (120 pairs): -1.300 +- 0.556, 95% interval -2.390 to -0.210
+  Pagat look 1: 40 pairs, -2.850 +- 0.803 (z -3.55, boundary 4.05), 81s
+  Pagat look 2: 80 pairs, -2.438 +- 0.842 (z -2.90, boundary 2.86), 148s
+Pagat: CLEAR at look 2 (80 pairs): -2.438 +- 0.842, 95% interval -4.088 to -0.787
+  Void look 1: 40 pairs, +0.900 +- 0.610 (z +1.48, boundary 4.05), 62s
+  Void look 2: 80 pairs, +0.775 +- 0.605 (z +1.28, boundary 2.86), 97s
+  Void look 3: 120 pairs, +0.717 +- 0.494 (z +1.45, boundary 2.34), 199s
+  Void look 4: 160 pairs, +0.487 +- 0.446 (z +1.09, boundary 2.02), 348s
+Void: INCONCLUSIVE at look 4 (160 pairs): +0.487 +- 0.446, 95% interval -0.387 to +1.362
+  Behind look 1: 40 pairs, -0.550 +- 1.023 (z -0.54, boundary 4.05), 151s
+  Behind look 2: 80 pairs, -0.275 +- 0.656 (z -0.42, boundary 2.86), 246s
+  Behind look 3: 120 pairs, -0.158 +- 0.538 (z -0.29, boundary 2.34), 318s
+  Behind look 4: 160 pairs, -0.494 +- 0.469 (z -1.05, boundary 2.02), 388s
+Behind: INCONCLUSIVE at look 4 (160 pairs): -0.494 +- 0.469, 95% interval -1.412 to +0.425
+  Endgame look 1: 40 pairs, -1.325 +- 0.975 (z -1.36, boundary 4.05), 56s
+  Endgame look 2: 80 pairs, -1.012 +- 0.706 (z -1.43, boundary 2.86), 112s
+  Endgame look 3: 120 pairs, -1.250 +- 0.569 (z -2.20, boundary 2.34), 168s
+  Endgame look 4: 160 pairs, -1.575 +- 0.489 (z -3.22, boundary 2.02), 230s
+Endgame: CLEAR at look 4 (160 pairs): -1.575 +- 0.489, 95% interval -2.533 to -0.617
+  Bid look 1: 40 pairs, -3.700 +- 1.084 (z -3.41, boundary 4.05), 60s
+  Bid look 2: 80 pairs, -2.650 +- 0.814 (z -3.26, boundary 2.86), 99s
+Bid: CLEAR at look 2 (80 pairs): -2.650 +- 0.814, 95% interval -4.245 to -1.055
+  AlwaysPass look 1: 40 pairs, +0.250 +- 0.941 (z +0.27, boundary 4.05), 31s
+  AlwaysPass look 2: 80 pairs, +0.287 +- 0.720 (z +0.40, boundary 2.86), 76s
+  AlwaysPass look 3: 120 pairs, +0.250 +- 0.553 (z +0.45, boundary 2.34), 139s
+  AlwaysPass look 4: 160 pairs, -0.062 +- 0.479 (z -0.13, boundary 2.02), 174s
+AlwaysPass: INCONCLUSIVE at look 4 (160 pairs): -0.062 +- 0.479, 95% interval -1.002 to +0.877
+  Announce look 1: 40 pairs, -0.550 +- 0.984 (z -0.56, boundary 4.05), 50s
+  Announce look 2: 80 pairs, -0.375 +- 0.702 (z -0.53, boundary 2.86), 81s
+  Announce look 3: 120 pairs, -0.767 +- 0.608 (z -1.26, boundary 2.34), 112s
+  Announce look 4: 160 pairs, -1.106 +- 0.511 (z -2.16, boundary 2.02), 144s
+Announce: CLEAR at look 4 (160 pairs): -1.106 +- 0.511, 95% interval -2.108 to -0.105
+prerequisites: the skill's worth with its prerequisite already knocked out (both out against the prerequisite out alone):

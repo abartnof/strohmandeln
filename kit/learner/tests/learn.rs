@@ -267,7 +267,7 @@ fn a_skill_with_its_own_min_chances_counts_from_there() {
     }
 }
 
-// New: a skill that may not be the focus (the game found it worth nothing).
+// New: a skill that may not be the focus (the game has not shown it worth anything).
 
 static MUTE: [SkillSpec; 3] = [
     SkillSpec {

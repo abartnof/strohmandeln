@@ -1,0 +1,10 @@
+M5: 2 candidates, 2400 deals (400 sittings, seeds 55000000..55000399), setting default, rung 4 against rung 3, 81s
+id               fired     ok       p   n_eff   lower  rule
+worth.rich.1       121    115   0.950   120.8   0.896* follower, a card led worth 7 thirds or more, can win and can not: win
+announce.1         206    206   1.000   206.0   0.982* about to play a card of a held honour: announce it
+
+the candidate with the best lower bound at or above 0.80, by rule:
+  announce       announce.1      0.982
+  worth.rich     worth.rich.1    0.896
+
+total 81s
