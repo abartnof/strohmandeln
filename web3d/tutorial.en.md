@@ -1,12 +1,17 @@
 <!--
 The Kibitzer's pages (docs/TABLE3D.md 6.2), English. Keys by position, as the
-table in 6.2.2: packets, bidding, the-pull, playing, following, from-a-packet,
+table in 6.2.2: the-cards, packets, bidding, the-pull, playing, following, from-a-packet,
 honours, thirds, pagat-ultimo, scoring, draw, touren-slate, extension,
 scoring-full. Parallel to tutorial.md. Each page holds what its first decision
 needs, no more (docs/review/tutorial-pacing.md); scoring-full is the one long
 page, never due, read from Help or from the links on bidding (to thirds) and on
 thirds and scoring (to it): `[text](#key)`, TABLE3D 6.2.4.
-Clauses (docs/RULES.md): packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
+Sources: the-cards 15-S1 (Dummett, ch. 4 and p. 100: made for play, 1442; no cartomancy before
+1781), 15-S6 (Court de Gébelin 1781), 15-S7 and 15-S8 (Tarock and Tarot in German), 15-S9
+and 15-S10 (the Austrian games; the trumps), 15-S11 (Piatnik, checked 15 Oct 2026), 15-S12
+and 15-S14 (the Cavall, worth 3), 08-S9 and 08-S10 (a real pack has no indices on suit
+cards), all in research/15-the-pack-today.md.
+Clauses (docs/RULES.md): the-cards 1.2 1.7; packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
 8.2 8.4 9.1 (card values 1.7); the-pull 4.3 4.5 4.6 4.7; playing 5.1-5.3 5.5;
 following 5.2 5.4; from-a-packet 6.1 6.2; honours 11.1-11.5; thirds 1.7 8.1 8.2;
 pagat-ultimo 1.4 12.1-12.4; scoring 9.1-9.3 11 12.3 15.5 15.8; draw 8.4 9.2 11.7
@@ -21,6 +26,20 @@ tutorialPages): the pages that name a game value, the ultimo or what happens
 when both pass have one block for each value of `values`, `ultimo` and
 `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 -->
+
+# The cards
+
+## The tarocks
+
+- The tarocks are trumps: I to XXI, and the Sküs above them all.
+- These cards were made to play with, in Italy, by 1442. Fortune-telling found them only in 1781, in France.
+- Nothing here tells your fortune. If I may: Austrians still play Tarock, and Piatnik of Vienna still prints this pack.
+- German keeps two words: Tarock for the game, Tarot for the fortune-telling deck. English uses one for both.
+
+## The C
+
+- The C is the Cavall, a knight on horseback, worth 3 points. Tarock packs kept him; the 52-card pack dropped him.
+- On a real pack the courts carry pictures, not letters. These big letters and numerals are for a quick look.
 
 # The packets
 

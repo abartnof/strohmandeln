@@ -822,12 +822,13 @@ menu ("Help").
 asked, and says only what that decision needs; detail needed later goes on the
 later page (`web3d/test/tutor.test.js` pins each decision to its page; the
 audit is `docs/review/tutorial-pacing.md`). Pages due at one rest follow in the
-table's order, each after the last is closed; the page opens before the action
+table's order, each after the last is closed (at the first `dealt`: `the-cards`, then `packets`); the page opens before the action
 bar and the prompts are drawn, so it is on screen when the question is asked.
 
 | Page key | Opens at | Says |
 |---|---|---|
-| `packets` | the first `dealt` | what the three packets are, the face-up card on top, the count of hidden cards beneath, that you and your opponent each have three, that a cover is yours to play |
+| `the-cards` | the first `dealt`, first of the pages due at that rest (the cards are the first thing a newcomer sees) | what the cards are: the tarocks are trumps I to XXI and the Sküs, made for play (Italy, by 1442; fortune-telling is French and later, 1781), nothing here tells a fortune; Austrians still play Tarock and the pack is still printed (Piatnik, Vienna); German keeps Tarock (the game) and Tarot (the divining deck) apart, English has one word; the C is the Cavall, a knight worth 3 points, kept by the Tarock pack and dropped by the 52-card pack; the faces show big letters and numerals where a real pack has pictures. Wording and sources: `research/15-the-pack-today.md` ("For the tutor") |
+| `packets` | the first `dealt`, after `the-cards` | what the three packets are, the face-up card on top, the count of hidden cards beneath, that you and your opponent each have three, that a cover is yours to play |
 | `bidding` | the first `bid` turn (the human's, or the first `bid` event seen) | who speaks first; "Ich nehme auf" or "Weiter"; the declarer; the card values (RULES 1.7, with the court letters the faces show: K Q C J, German K D C B), that the 54 cards count 70 in threes and 36 are needed, and a link to `thirds`; what is won and lost by the `values` setting; both pass plays a simple game (and what it pays) or throws in, by the setting |
 | `the-pull` | the first `reveal_start` (no decision is asked: the cards turn themselves) | the cards are turned in turn; a tarock or a king goes to the hand; the turning continues; a low card stays; the last card of a packet always goes |
 | `playing` | the human's first play turn | how a card is played (tap, then tap again or Play); the leader; the trick winner leads; the HUD |

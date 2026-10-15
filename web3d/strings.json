@@ -156,6 +156,7 @@
   "tutor.muted": {"en": "The Kibitzer is muted.", "de": "Der Kiebitz ist stumm."},
   "tutor.help.title": {"en": "Help", "de": "Hilfe"},
   "tutor.page.close": {"en": "Close the page", "de": "Die Seite schließen"},
+  "tutor.page.the-cards": {"en": "The cards", "de": "Die Karten"},
   "tutor.page.packets": {"en": "The packets", "de": "Die Pakete"},
   "tutor.page.bidding": {"en": "Bidding", "de": "Das Aufnehmen"},
   "tutor.page.the-pull": {"en": "The turning", "de": "Das Aufdecken"},

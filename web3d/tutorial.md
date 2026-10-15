@@ -1,13 +1,19 @@
 <!--
 Die Seiten des Kiebitzes (docs/TABLE3D.md 6.2), deutsch. Schlüssel nach Stelle,
-wie in der Tabelle 6.2.2: packets, bidding, the-pull, playing, following,
+wie in der Tabelle 6.2.2: the-cards, packets, bidding, the-pull, playing, following,
 from-a-packet, honours, thirds, pagat-ultimo, scoring, draw, touren-slate,
 extension, scoring-full. Parallel zu tutorial.en.md. Jede Seite enthält, was
 ihre erste Entscheidung braucht, nicht mehr (docs/review/tutorial-pacing.md);
 scoring-full ist die eine lange Seite, nie fällig, aus der Hilfe oder über die
 Verweise auf bidding (nach thirds) sowie thirds und scoring (nach ihr) zu
 lesen: `[Text](#key)`, TABLE3D 6.2.4.
-Klauseln (docs/RULES.md): packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
+Quellen: the-cards 15-S1 (Dummett, Kap. 4 und S. 100: zum Spielen gemacht, 1442; keine
+Kartomantie vor 1781), 15-S6 (Court de Gébelin 1781), 15-S7 und 15-S8 (Tarock und
+Tarot im Deutschen), 15-S9 und 15-S10 (die österreichischen Spiele; die Trümpfe),
+15-S11 (Piatnik, geprüft am 15. Okt. 2026), 15-S12 und 15-S14 (der Cavall, 3 Augen
+wert), 08-S9 und 08-S10 (ein echtes Blatt hat keine Indizes auf den Farbkarten),
+alle in research/15-the-pack-today.md.
+Klauseln (docs/RULES.md): the-cards 1.2 1.7; packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
 8.2 8.4 9.1 (Kartenwerte 1.7); the-pull 4.3 4.5 4.6 4.7; playing 5.1-5.3 5.5;
 following 5.2 5.4; from-a-packet 6.1 6.2; honours 11.1-11.5; thirds 1.7 8.1 8.2;
 pagat-ultimo 1.4 12.1-12.4; scoring 9.1-9.3 11 12.3 15.5 15.8; draw 8.4 9.2 11.7
@@ -22,6 +28,20 @@ oder mehrere Einstellungen gekennzeichnete Blöcke gelten nur für diese
 Weiterpassen nennen, haben je einen Block für jeden Wert von `values`, `ultimo`
 und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 -->
+
+# Die Karten
+
+## Die Tarocke
+
+- Die Tarocke sind schlicht Trümpfe: I bis XXI, und der Sküs über allen.
+- Diese Karten wurden zum Spielen gemacht, in Italien, spätestens 1442. Das Wahrsagen kam erst 1781 dazu, aus Frankreich.
+- Hier wird kein Schicksal gedeutet. Wenn ich mir erlauben darf: In Österreich spielt man Tarock noch immer, und Piatnik in Wien druckt dieses Blatt weiter.
+- Im Deutschen heißt das Spiel Tarock und das Blatt zum Wahrsagen Tarot. Das Englische hat für beides ein Wort, daher die Verwechslung.
+
+## Das C
+
+- Das C ist der Cavall, ein Reiter zu Pferd, 3 Augen wert. Das Tarockblatt hat ihn behalten, das Blatt zu 52 hat ihn verloren.
+- Auf einem echten Blatt tragen die Hofkarten Bilder statt Buchstaben. Unsere großen Buchstaben und Ziffern sind für den raschen Blick.
 
 # Die Pakete
 
