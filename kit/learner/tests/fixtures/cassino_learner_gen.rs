@@ -8,9 +8,11 @@
 // read.
 //
 // Generates tests/fixtures/cassino_learner.txt of the kit/learner crate by
-// running Cassino's own learner (cassino-core @ 73f0cd7) on summaries: the
-// hand-made cases are the scenarios of Cassino's learner tests, the rest are
-// from a fixed linear congruential generator. Cases where two skills tie
+// running Cassino's own learner (cassino-core @ 73f0cd7) on summaries: 27
+// hand-made cases (the scenarios of Cassino's learner tests, and the exact
+// thresholds `edge-*`), then 100 sequences from a fixed linear congruential
+// generator (100 tried, none dropped for a tie): 127 cases in all.
+// Cases where two skills tie
 // exactly in gain are dropped (kit/learner breaks ties to the earlier skill,
 // Cassino to the later; docs/TUTOR.md section 1).
 use cassino_core::learner::{learn, Summary, Tally};
@@ -195,6 +197,23 @@ fn main() {
         vec![game(Valuables, 10, 0, 1.0), game(Valuables, 10, 10, 1.0)],
         &mut out,
     );
+    // The thresholds, exactly: answering-builds has top_cost 0 and top_rate 1,
+    // so its gain is the miss itself (tests/thresholds.rs holds the same).
+    // min_chances 4, min_gain 0.5, costly_chances 8, costly_gain 2.
+    for (name, chances, met, missed) in [
+        ("edge-min-gain-at", 4, 0, 0.5),
+        ("edge-min-gain-below", 4, 0, 0.499),
+        ("edge-min-chances-below", 3, 0, 0.5),
+        ("edge-costly-at", 8, 7, 2.0),
+        ("edge-costly-chances-below", 7, 6, 2.0),
+        ("edge-costly-gain-below", 8, 7, 1.999),
+    ] {
+        hand(
+            name,
+            vec![summary(&[(AnsweringBuilds, chances, met, missed)])],
+            &mut out,
+        );
+    }
     let mut stale = summary(&[(Pairs, 20, 0, 40.0)]);
     stale.version += 1;
     hand("stale", vec![stale], &mut out);

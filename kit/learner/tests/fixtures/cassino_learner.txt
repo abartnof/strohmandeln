@@ -1618,6 +1618,132 @@ state sweeps 0 0.0 0.0 0.0 0.0
 state valuables 0 18.0 10.0 4.444444444444445 4.404444444444445
 state trailing 0 0.0 0.0 0.0 0.0
 end
+case edge-min-gain-at
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 4 0 0.5
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=answering-builds just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 4.0 0.0 0.5 0.5
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case edge-min-gain-below
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 4 0 0.499
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 4.0 0.0 0.499 0.499
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case edge-min-chances-below
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 3 0 0.5
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 3.0 0.0 0.5 0.5
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case edge-costly-at
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 8 7 2
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=answering-builds just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 8.0 7.0 2.0 2.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case edge-costly-chances-below
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 7 6 2
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 7.0 6.0 2.0 2.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case edge-costly-gain-below
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 8 7 1.999
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 8.0 7.0 1.999 1.999
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
 case stale
 deal
 cassino evidence v2
