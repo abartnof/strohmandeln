@@ -896,7 +896,8 @@ cards itself.
 6.3.2 **Hint** (the `H` key, the chip's "Hint"; setting "Hints", 7.1): shows, under
 the prompt, one sentence ("Lead the Pagat? Too early: it is your ultimo card."
 by key) and lights the suggested card with a thin gold outline. Never plays
-for the human. Asking costs nothing and is never counted.
+for the human. Asking costs nothing and changes nothing in the game; the decision it was
+asked at is not counted as evidence (6.4.5).
 
 6.3.3 **Explain** (setting "Explanations", 7.1): after each of the human's plays and
 the opponent's replies, a one-line explanation under the prompt names what
@@ -908,27 +909,66 @@ line; off, the line is empty. The game's result is said whatever.
 `rested`), once per position, never in an animation. If the muted tutor is
 asked for a hint, the chip says "Tips are off (§ 13)" / "Tipps sind aus (§ 13)", unmuting only by the human's tap.
 
-### 6.4 The end-of-deal review
+### 6.4 The end-of-deal brief
+
+The review of the deal is the tutor's **brief** (`docs/TUTOR.md` 6, 14): what the
+person reads after a scored deal and at the sitting's end, a few bullets at most.
 
 6.4.1 After each deal's `game_scored` (not after a void deal or a throw-in), a
-small "Review" chip appears at the tutor's tab. It opens a dialog, **"How the
-deal went"**: one to three bullets, each with a bold lead, from the engine's
-review (message keys with parameters, like the hint): the count against 107; the
-place the deal was decided (the trick, the honour, the Pagat); one thing to
-try. It is gentle and about trends, not a list of faults (Cassino's rule).
-A folded "How is this worked out?" has the method.
+small "Review" chip appears at the tutor's tab and stays until the next deal is
+scored (and for a sitting, until the farewell). It opens a dialog, **"How the
+deal went"**: the **count** as the header line (`review.say.count`, the result,
+not advice), then **at most three bullets** with a bold lead, from the engine's
+brief (message keys with parameters, `docs/MESSAGES.md` "Tutor keys"):
+
+1. *Went well:* a skill just mastered, else the deal's best strength (all
+   chances at a skill met, an honour announced, the Pagat ultimo won, the Mond
+   caught). Never the skill that is the focus.
+2. *Next: {skill}.* and the rule ("If I may: ...") or, where none applies, a
+   plain fact.
+3. *This deal:* the costliest miss at the focus, with the card played and the
+   better one (*Deal n:* in the sitting's), or *To try:* one of the skill's two
+   tries when the deal holds no miss.
+
+No focus: one bullet says that nothing stood out (and to try the next opponent
+up, below the top of the dial), or that it is too early to say. A deal with too
+few decisions with a choice says so in one bullet. A folded **"How is this worked
+out?"** holds the method. The tone is the Kibitzer's (6.5) and gentle: it notes
+a card, never the person.
 
 6.4.2 At the sitting's end the chip says "Review the sitting": the same dialog over
-the whole sitting, three bullets. Not shown when muted.
+the whole sitting's deals as one game, with the sitting's tally (`sitting-tally`)
+as its header. Not shown when muted.
 
-6.4.3 The heavy calls (the review of a record) run in a Web Worker as Cassino's
-(`tutorworker`), falling back to the main thread, `?noworker` forces it. The
-engine's review of a record is stateless; the worker has its own instance of
-the wasm. The review is asked for once the deal's ending has settled.
+6.4.3 The evidence of a deal (the advisor over every unassisted decision with a
+choice) runs on the **main thread**, once the deal has settled and the cards are
+still (`rested`), in a task of its own: some tens of milliseconds natively and
+60 to 120 ms in the module (`docs/PROTOCOL.md` "The tutor"). The recompute of
+stale summaries after a change to the evidence runs one record at a time while
+the table is idle. A Worker is not built (open: needed only if slower devices
+show a stall).
 
-6.4.4 What the tutor keeps: the last 30 sittings' summaries (`strohmandeln.progress`,
-version 1, try/catch) for trends, as Cassino's `progress.js`; exportable and
-clearable in Settings; absent storage means a sitting alone.
+6.4.4 What the tutor keeps: `strohmandeln.tutor`, version 1, the last 60 scored
+deals, each with its record, the actions a hint or a nudge was shown for, its
+summary and its sitting (`docs/TUTOR.md` 8); every access in try/catch, a newer
+store read as empty and never written over, a summary recomputed from its record
+when the engine calls it stale (a deal is never dropped for that; one the engine
+cannot restore is dropped after one try). Absent storage means the brief rests
+on the deal just played. Settings can export it, load a file (a bad one refused
+in a sentence, changing nothing) and clear it. The old `strohmandeln.progress` is
+left unread. Test runs write to a memory store, never the real key.
+
+6.4.5 **Teaching is two touches** (`docs/TUTOR.md` 6): the rule in the brief and,
+in the next deal, one **nudge** in the Kibitzer's tab (his note) at the first
+clear chance at the focus, asked once a position and once a deal, never in an
+animation. That decision then counts as **assisted** and is not evidence; so is
+every decision a hint was shown for (the engine's `deal_action` number goes in
+the deal's assisted list, which is kept with the sitting).
+
+6.4.6 **Mute and the setting "Tips from the Kibitzer"** (7.1). Muted, the tutor
+shows no brief (the chip is not there) and no nudge. With the tips off the module
+is told no focus, no nudge is asked, and the brief keeps its first bullet only,
+and only if it is what went well, under the count.
 
 ### 6.5 Voice
 
@@ -1124,7 +1164,7 @@ The desktop hand fan spreads wide enough (spacing 3.6 cm, width 62 cm) that an
 ### 7.7 Persistence of settings: versioned localStorage with try/catch
 
 7.7.1 Keys: `strohmandeln.prefs` (settings), `strohmandeln.sitting` (the saved
-sitting, 9), `strohmandeln.progress` (the tutor's summaries, 6.4.4),
+sitting, 9), `strohmandeln.tutor` (the tutor's deals and summaries, 6.4.4),
 `strohmandeln.seen` (tutorial pages seen, with the prefs' version).
 
 7.7.2 Every read and write is in a `try/catch`. A missing, full or blocked store
@@ -1197,7 +1237,7 @@ export, extras}`) and "Load a sitting" (a file chosen; a bad one is refused in a
 sentence and changes nothing; over 1 MB refused).
 
 9.4 **A finished sitting** is cleared from `strohmandeln.sitting` at the farewell
-(its summary goes to the tutor's progress, 6.4.4).
+(its deals are already in the tutor's store, 6.4.4).
 
 9.5 **Offline single file.** `web3d/strohmandeln.html`, built by `kit/build.py` from
 `web3d/game.toml`: the bundle, the wasm, the faces, `words.json`,
@@ -1329,8 +1369,11 @@ motion are saved to `web3d/test/out/`.
   Kibitzer muted takes it away, and back on returns it.
 - `tracker_languages`: the tab, the lines and the court labels are German in
   German, and the German legend is whole inside the panel; held upright it is not shown.
-- `deal_review`: after a scored deal the chip opens "How the deal went" with up to
-  three bullets; none after a void deal or a throw-in.
+- `deal_brief`: after a scored deal the chip opens "How the deal went": the count as
+  the header, at most three bullets with a bold lead each, the method folded; none
+  after a void deal or a throw-in; in German in German; muted it shows nothing; with the
+  tips off one bullet at most and no "Next:"; a hint shown marks its decision assisted,
+  and so does the nudge, which comes once a deal in the Kibitzer's tab.
 
 ### 10.5 Settings, language, persistence
 

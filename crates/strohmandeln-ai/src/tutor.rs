@@ -35,9 +35,11 @@ use strohmandeln_core::view::{bare_view, View};
 /// The version of what [`evidence`] computes. Bump it whenever a classifier,
 /// a constant or the advisor changes, so that a stored summary made before is
 /// recomputed from its record (`docs/TUTOR.md` 3).
-pub const EVIDENCE_VERSION: u32 = 2;
+pub const EVIDENCE_VERSION: u32 = 3;
 
-/// The least gap in thirds that can be a clear chance: a class must beat the
+/// The resolution of the evidence: a player who loses less than this on a
+/// decision is perfect in it, and a miss costs at least this (so `top_cost` is
+/// conditional on it). The least gap in thirds that can be a clear chance: a class must beat the
 /// next by more than this and by more than twice the standard error of the
 /// per-world difference ([`Advice::std_error`]), and a spread card is met
 /// unless it is worse than the best by as much. Provisional; M1 (advisor
@@ -244,6 +246,10 @@ pub struct Advice<'a> {
     pub per_world: &'a [Vec<(Card, i32)>],
     /// The position is solved exactly ([`search_complete`]).
     pub exact: bool,
+    /// Nothing is face down: the opponent's hand follows from the log. Such a
+    /// position is searched in one world by design, so a single world is no
+    /// sign of a starved budget there.
+    pub known: bool,
 }
 
 impl Advice<'_> {
@@ -266,7 +272,11 @@ impl Advice<'_> {
 
     /// The standard error of the mean of `a` less `b` over the worlds, the
     /// pairs taken world by world (as `hint.rs` `odds_for` does): the same
-    /// worlds serve both cards, so what they share cancels.
+    /// worlds serve both cards, so what they share cancels. Fewer than two
+    /// worlds say nothing of the spread: infinity (nothing clears the noise
+    /// rule) for an open position, where it means a budget that finished one
+    /// world of many; 0 for a known position, which is searched in one world
+    /// by design and where the margin is all there is.
     fn std_error(&self, a: Card, b: Card) -> f64 {
         let diffs: Vec<f64> = self
             .per_world
@@ -282,7 +292,7 @@ impl Advice<'_> {
             .collect();
         let n = diffs.len() as f64;
         if n < 2.0 {
-            return 0.0;
+            return if self.known { 0.0 } else { f64::INFINITY };
         }
         let mean = diffs.iter().sum::<f64>() / n;
         let var = diffs.iter().map(|d| (d - mean).powi(2)).sum::<f64>() / (n - 1.0);
@@ -452,11 +462,14 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
         }
     }
 
-    // pagat: play it now or keep it. Only when following: leading the Pagat
-    // is almost always worse than a tarock by the margin, so "keep" is
-    // trivially right and a random player meets it (rung 4 107 of 107, random
-    // 83 of 91 leads over 9 sittings each, default budget); following, rung 4
-    // meets 32 of 34 and a random player 15 of 29 (`print_pagat_variants`).
+    // pagat: play it now or keep it. Only when following. Leading the Pagat
+    // is almost always worse than a tarock by the margin, so keeping it is
+    // trivial: measured at b3ffb01 (before the gate; the leader row of
+    // `print_pagat_variants` at that commit, 9 sittings, default budget), rung 4
+    // met 107 of 107 leads and a random player 83 of 91. Not reproducible at
+    // HEAD, where a lead is no chance. Following, at HEAD and reproducible
+    // (`cargo test -p strohmandeln-ai --release print_pagat_variants --
+    // --ignored --nocapture`, 9 sittings): rung 4 32 of 34, random 15 of 29.
     if let (true, Some(p), Some(o)) = (
         k.lead.is_some(),
         best(scores, |c| c == Card::PAGAT),
@@ -607,6 +620,7 @@ pub fn decision_verdicts(view: &View, action: &Action, budget: Budget) -> Vec<Ve
             scores: &table.scores,
             per_world: &table.per_world,
             exact: search_complete(&k, table.depth),
+            known: k.hidden_total() == 0,
         };
         out.extend(classify_play(&k, *card, &advice));
     }
@@ -639,6 +653,7 @@ pub fn open_skills(view: &View, budget: Budget) -> Vec<Skill> {
             scores: &table.scores,
             per_world: &table.per_world,
             exact: search_complete(&k, table.depth),
+            known: k.hidden_total() == 0,
         };
         for &(card, _) in &table.scores {
             for v in classify_play(&k, card, &advice) {
@@ -673,24 +688,25 @@ impl Verdict {
 /// The ladder the learner folds (`docs/TUTOR.md` 13). Prerequisites are those
 /// of [`Skill::needs`] (a test holds them equal).
 ///
-/// **Provisional.** `top_rate` and `top_cost` are what rung 4 met and lost
-/// per deal in 18 deals against itself with the default budget (indicative
-/// only); M3 (rung 4 against rung 3, both seats) sets them. `min_chances` is
-/// Cassino's 4 for the skills that come up several times a deal, lower for
-/// the rare ones; M3 sets it from the chances a deal.
+/// **Provisional.** `top_rate` and `top_cost` are what rung 4 met and lost per
+/// deal against a rung-4 opponent over 54 deals (9 sittings, default budget,
+/// `print_students`), after the noise rule; `top_cost` is conditional on the
+/// resolution (a miss costs at least `MARGIN`). M3 (rung 4 against rung 3, both
+/// seats) sets them finally. `min_chances` is Cassino's 4, except `announce`
+/// (2: six chances in 54 deals); M3 sets it from the chances a deal.
 pub const LADDER: Ladder = Ladder {
     name: "strohmandeln",
     version: EVIDENCE_VERSION,
     skills: &[
-        spec("worth", &[], 0.85, 2.4, 4.0),
-        spec("cheap", &[0], 0.92, 2.9, 4.0),
-        spec("off", &[0], 0.58, 5.9, 4.0),
-        spec("run", &[1], 0.95, 1.3, 4.0),
-        spec("pagat", &[3], 1.0, 0.0, 2.0),
-        spec("void", &[0], 0.88, 1.6, 4.0),
-        spec("behind", &[2, 5], 0.91, 1.0, 4.0),
-        spec("endgame", &[1, 5], 0.84, 2.1, 4.0),
-        spec("bid", &[0], 1.0, 0.0, 2.0),
+        spec("worth", &[], 0.96, 0.96, 4.0),
+        spec("cheap", &[0], 0.96, 1.22, 4.0),
+        spec("off", &[0], 0.93, 0.95, 4.0),
+        spec("run", &[1], 0.91, 1.92, 4.0),
+        spec("pagat", &[3], 0.94, 0.57, 4.0),
+        spec("void", &[0], 0.96, 0.32, 4.0),
+        spec("behind", &[2, 5], 0.91, 1.76, 4.0),
+        spec("endgame", &[1, 5], 0.93, 1.00, 4.0),
+        spec("bid", &[0], 1.0, 0.0, 4.0),
         spec("announce", &[], 1.0, 0.0, 2.0),
     ],
 };
@@ -965,6 +981,7 @@ mod tests {
             scores: &scores,
             per_world: &per_world,
             exact,
+            known: k.hidden_total() == 0,
         };
         classify_play(k, c(played), &advice)
             .into_iter()
@@ -977,6 +994,58 @@ mod tests {
     }
 
     // ---- the advisor's noise and its exactness ---------------------------
+
+    fn advice<'a>(
+        scores: &'a [(Card, f64)],
+        per_world: &'a [Vec<(Card, i32)>],
+        known: bool,
+    ) -> Advice<'a> {
+        Advice {
+            scores,
+            per_world,
+            exact: false,
+            known,
+        }
+    }
+
+    #[test]
+    fn the_standard_error_is_that_of_the_paired_differences() {
+        let (a, b) = (c("Kh"), c("4h"));
+        let scores = [(a, 10.0), (b, 9.0)];
+        // differences 0 and 2: mean 1, sample variance 2, error sqrt(2 / 2)
+        let rows = vec![vec![(a, 10), (b, 10)], vec![(a, 10), (b, 8)]];
+        assert!((advice(&scores, &rows, false).std_error(a, b) - 1.0).abs() < 1e-12);
+        // the sign of the pair does not matter
+        assert!((advice(&scores, &rows, false).std_error(b, a) - 1.0).abs() < 1e-12);
+        // a world that lacks one of the cards is dropped
+        let mut with_gap = rows.clone();
+        with_gap.push(vec![(a, 99)]);
+        assert!((advice(&scores, &with_gap, false).std_error(a, b) - 1.0).abs() < 1e-12);
+        // a card against itself has no spread
+        assert_eq!(advice(&scores, &rows, false).std_error(a, a), 0.0);
+        // steady worlds: no error
+        let steady = vec![vec![(a, 10), (b, 5)]; 6];
+        assert_eq!(advice(&scores, &steady, false).std_error(a, b), 0.0);
+    }
+
+    #[test]
+    fn one_counted_world_clears_nothing_unless_the_position_is_known() {
+        let (a, b) = (c("Kh"), c("4h"));
+        let scores = [(a, 40.0), (b, 0.0)];
+        let one = vec![vec![(a, 40), (b, 0)]];
+        // a budget that finished one world of ten: the noisiest estimate
+        // may not get the loosest test
+        let open = advice(&scores, &one, false);
+        assert!(open.std_error(a, b).is_infinite());
+        assert!(!open.clearly_better(a, b));
+        // a known position is searched in one world by design: the margin
+        // alone, the error being the horizon's
+        let known = advice(&scores, &one, true);
+        assert_eq!(known.std_error(a, b), 0.0);
+        assert!(known.clearly_better(a, b));
+        // no worlds at all
+        assert!(advice(&scores, &[], false).std_error(a, b).is_infinite());
+    }
 
     #[test]
     fn a_gap_inside_twice_its_standard_error_is_no_chance() {

@@ -113,6 +113,7 @@ impl DealRecord {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cards::Honour;
     use crate::rng::{purpose, Rng};
     use crate::session::Sitting;
     use crate::types::*;
@@ -326,12 +327,17 @@ mod tests {
 
     #[test]
     fn mutated_records_never_panic() {
+        // Deck, action list, dealer, and the contents of an action (its seat,
+        // its card, its announcements, its kind) are all changed at random;
+        // each mutant replays or is refused, none panics.
         let base = first();
         let mut rng = Rng::stream(9, 1);
-        for n in 0..300 {
+        let (mut replayed, mut refused) = (0, 0);
+        for _ in 0..3000 {
             let mut r = base.clone();
             for _ in 0..1 + rng.below(3) {
-                match rng.below(6) {
+                let at = rng.below(r.actions.len().max(1) as u64) as usize;
+                match rng.below(10) {
                     0 => r.deck.swap(rng.below(54) as usize, rng.below(54) as usize),
                     1 => {
                         let at = rng.below(r.deck.len() as u64) as usize;
@@ -341,22 +347,49 @@ mod tests {
                         .actions
                         .truncate(rng.below(r.actions.len() as u64 + 1) as usize),
                     3 if !r.actions.is_empty() => {
-                        let at = rng.below(r.actions.len() as u64) as usize;
                         r.actions.remove(at);
                     }
                     4 if !r.actions.is_empty() => {
-                        let a = rng.below(r.actions.len() as u64) as usize;
                         let b = rng.below(r.actions.len() as u64) as usize;
-                        r.actions.swap(a, b);
+                        r.actions.swap(at, b);
+                    }
+                    5 if !r.actions.is_empty() => r.actions[at].seat = r.actions[at].seat.other(),
+                    6 if !r.actions.is_empty() => {
+                        let card = Card::from_index(rng.below(54) as u8).unwrap();
+                        r.actions[at].action = Action::play(card);
+                    }
+                    7 if !r.actions.is_empty() => {
+                        let honour = if rng.below(2) == 0 {
+                            Honour::Trull
+                        } else {
+                            Honour::Kings
+                        };
+                        r.actions[at].action = match r.actions[at].action.clone() {
+                            Action::Play { card, .. } => Action::Play {
+                                card,
+                                announce: vec![honour, honour],
+                            },
+                            _ => Action::Announce { honour },
+                        };
+                    }
+                    8 if !r.actions.is_empty() => {
+                        r.actions[at].action = match rng.below(3) {
+                            0 => Action::Take,
+                            1 => Action::Pass,
+                            _ => Action::Extend { accept: true },
+                        };
                     }
                     _ => r.dealer = r.dealer.other(),
                 }
             }
-            let _ = r.replay_to_end(|_, d, seat, _| {
+            match r.replay_to_end(|_, d, seat, _| {
                 let _ = bare_view(d, seat);
-            });
-            let _ = n;
+            }) {
+                Ok(_) => replayed += 1,
+                Err(_) => refused += 1,
+            }
         }
+        assert!(replayed > 0 && refused > 1000, "{replayed} {refused}");
     }
 
     #[test]

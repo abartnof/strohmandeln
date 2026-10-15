@@ -74,6 +74,10 @@ fn student(lesion: Lesion, seed: u64) -> Student {
 
 const SEEDS: std::ops::Range<u64> = 0..4;
 
+/// The sittings the printed measurements use (`print_students`,
+/// `print_lesions`, `print_pagat_variants`).
+const WIDE: std::ops::Range<u64> = 0..9;
+
 fn play(lesion: Lesion) -> Vec<DealRecord> {
     SEEDS
         .flat_map(|seed| deals_of(seed, &mut student(lesion, seed + 77)))
@@ -100,29 +104,48 @@ struct Students {
     random_t: [Tally; SKILLS],
 }
 
-/// The students are played once and shared by the tests.
+/// Rung 4 whole, the no-cover student and a random player over `seeds`
+/// sittings of seat A.
+fn fixture(seeds: std::ops::Range<u64>) -> Students {
+    let plays = |lesion: Lesion| -> Vec<DealRecord> {
+        seeds
+            .clone()
+            .flat_map(|seed| deals_of(seed, &mut student(lesion, seed + 77)))
+            .collect()
+    };
+    let whole = plays(Lesion::None);
+    let no_cover = plays(Lesion::Off);
+    let random: Vec<DealRecord> = seeds
+        .clone()
+        .flat_map(|seed| deals_of(seed, &mut RandomPlayer::new(seed, HUMAN)))
+        .collect();
+    Students {
+        whole_t: totals(&whole),
+        no_cover_t: totals(&no_cover),
+        random_t: totals(&random),
+        whole,
+        no_cover,
+    }
+}
+
+/// The students over `SEEDS`, played once and shared by the lesion tests
+/// (`bin/lesions`).
 fn students() -> &'static Students {
     static S: OnceLock<Students> = OnceLock::new();
-    S.get_or_init(|| {
-        let whole = play(Lesion::None);
-        let no_cover = play(Lesion::Off);
-        let random: Vec<DealRecord> = SEEDS
-            .flat_map(|seed| deals_of(seed, &mut RandomPlayer::new(seed, HUMAN)))
-            .collect();
-        Students {
-            whole_t: totals(&whole),
-            no_cover_t: totals(&no_cover),
-            random_t: totals(&random),
-            whole,
-            no_cover,
-        }
-    })
+    S.get_or_init(|| fixture(SEEDS))
+}
+
+/// One sitting (6 deals, a few seconds): what the tests that only need
+/// records, and the gate's lesion check, use.
+fn one_sitting() -> &'static Students {
+    static S: OnceLock<Students> = OnceLock::new();
+    S.get_or_init(|| fixture(0..1))
 }
 
 #[test]
 #[ignore = "calibration output"]
 fn print_pagat_variants() {
-    let wide = 0..9u64;
+    let wide = WIDE;
     let whole: Vec<DealRecord> = wide
         .clone()
         .flat_map(|seed| deals_of(seed, &mut student(Lesion::None, seed + 77)))
@@ -136,7 +159,7 @@ fn print_pagat_variants() {
         k.lead
             .is_some_and(|l| !crate::cardset::leader_wins(l, Card::PAGAT))
     };
-    let filters: [(&str, Filter); 6] = [
+    let filters: [(&str, Filter); 5] = [
         ("all", |_| true),
         ("follower", |k| k.lead.is_some()),
         ("cash would win the trick", wins),
@@ -144,10 +167,9 @@ fn print_pagat_variants() {
         ("sourced zones", |k| {
             k.my_tarocks() <= 7 || k.my_tarocks() >= 12
         }),
-        ("leader", |k| k.lead.is_none()),
     ];
     for (who, recs) in [("rung 4", &whole), ("random", &random)] {
-        let mut t = [(0u32, 0u32); 6];
+        let mut t = [(0u32, 0u32); 5];
         for rec in recs {
             rec.replay(|_, d, seat, a| {
                 if seat != HUMAN {
@@ -177,18 +199,34 @@ fn print_pagat_variants() {
     }
 }
 
+/// The met-rate matrix of `docs/TUTOR.md` 11 (M4): for each knock-out, every
+/// skill's met chances over `WIDE` sittings (`cargo test -p strohmandeln-ai
+/// --release print_lesions -- --ignored --nocapture`).
 #[test]
 #[ignore = "calibration output"]
 fn print_lesions() {
-    let seeds = 0..6u64;
     let run = |lesion: Lesion| -> [Tally; SKILLS] {
-        let recs: Vec<DealRecord> = seeds
-            .clone()
+        let recs: Vec<DealRecord> = WIDE
             .flat_map(|seed| deals_of(seed, &mut student(lesion, seed + 77)))
             .collect();
         totals(&recs)
     };
-    let whole = run(Lesion::None);
+    let row = |name: &str, t: &[Tally; SKILLS]| {
+        let cells: Vec<String> = Skill::ALL
+            .iter()
+            .map(|sk| {
+                let x = t[sk.index()];
+                format!("{:>3}/{:<3}", x.met, x.chances)
+            })
+            .collect();
+        println!("{name:12} {}", cells.join(" "));
+    };
+    let heads: Vec<String> = Skill::ALL
+        .iter()
+        .map(|s| format!("{:7}", s.slug()))
+        .collect();
+    println!("{:12} {}", "", heads.join(" "));
+    row("whole", &run(Lesion::None));
     for l in [
         Lesion::Worth,
         Lesion::Cheap,
@@ -203,61 +241,63 @@ fn print_lesions() {
         Lesion::AlwaysTake,
         Lesion::Announce,
     ] {
-        let t = run(l);
-        let sk = l.skill().unwrap();
-        let (a, w) = (t[sk.index()], whole[sk.index()]);
-        println!(
-            "{:12} {:8} lesioned {:3}/{:3} missed {:7.1} | whole {:3}/{:3} missed {:6.1} | overall {:.2}",
-            format!("{l:?}"),
-            sk.slug(),
-            a.met,
-            a.chances,
-            a.missed,
-            w.met,
-            w.chances,
-            w.missed,
-            overall(&t)
-        );
+        row(&format!("{l:?}"), &run(l));
     }
 }
 
+/// Rung 4 and a random player over `WIDE` sittings, by skill: what `LADDER`'s
+/// `top_rate` and `top_cost` are refitted from.
 #[test]
 #[ignore = "calibration output"]
 fn print_students() {
-    let s = students();
-    for (name, t) in [
-        ("whole", &s.whole_t),
-        ("no cover", &s.no_cover_t),
-        ("random", &s.random_t),
-    ] {
-        println!("{name} overall {:.2}", overall(t));
+    let s = fixture(WIDE);
+    let deals = s.whole.len() as f64;
+    for (name, t) in [("whole", &s.whole_t), ("random", &s.random_t)] {
+        println!("{name} overall {:.3} over {deals} deals", overall(t));
         for sk in Skill::ALL {
             let x = t[sk.index()];
             println!(
-                "  {:8} chances {:4} met {:4} missed {:7.1}",
+                "  {:8} chances {:4} met {:4} rate {:.3} missed {:7.1} ({:.2} a deal)",
                 sk.slug(),
                 x.chances,
                 x.met,
-                x.missed
+                f64::from(x.met) / f64::from(x.chances.max(1)),
+                x.missed,
+                x.missed / deals
             );
         }
     }
 }
 
+/// In the gate, on one sitting: a lesion is seen (0 of 34 over four sittings
+/// against 14 of 15 for rung 4).
 #[test]
 fn a_student_who_never_plays_a_cover_off_misses_every_off_chance() {
-    let s = students();
+    let s = one_sitting();
     let off = s.no_cover_t[Skill::Off.index()];
-    assert!(off.chances >= 10, "{off:?}");
+    assert!(off.chances >= 4, "{off:?}");
     assert_eq!(off.met, 0, "{off:?}");
     let whole = s.whole_t[Skill::Off.index()];
-    assert!(rate(&s.whole_t, Skill::Off) >= 0.8, "{whole:?}");
-    assert!(
-        off.missed > 3.0 * whole.missed,
-        "{} against {}",
-        off.missed,
-        whole.missed
+    assert!(off.missed > 3.0 * whole.missed, "{off:?} against {whole:?}");
+}
+
+#[test]
+fn rung_four_whole_plays_as_the_opponent_does() {
+    // Lesion::None is the opponent; the other tests treat it as one.
+    struct Checked(Student, Opponent);
+    impl Player for Checked {
+        fn choose(&mut self, view: &View) -> Option<Action> {
+            let mine = self.0.choose(view)?;
+            assert_eq!(Some(mine.clone()), self.1.choose(view));
+            Some(mine)
+        }
+    }
+    let config = config();
+    let mut checked = Checked(
+        Student::new(Lesion::None, 77, config),
+        Opponent::new(Level::from_halves(8), 77).with_config(config),
     );
+    assert!(deals_of(0, &mut checked).len() >= 6);
 }
 
 /// A student with `lesion` over the fixture's sittings: how its target
@@ -286,62 +326,86 @@ fn lesion_shows_missing(lesion: Lesion, at_least_chances: u32, rate_below_by: f6
         l.missed > times * w.missed,
         "{lesion:?}: {l:?} against {w:?}"
     );
+    // the knock-out hurts its own skill most, among the skills it had five
+    // chances at (a class lesion costs others something: `docs/TUTOR.md` 11)
+    for other in Skill::ALL {
+        let x = t[other.index()];
+        if other != skill && x.chances >= 5 {
+            assert!(
+                rate(&t, skill) <= rate(&t, other),
+                "{lesion:?}: {} {x:?} is worse than {} {l:?}",
+                other.slug(),
+                skill.slug()
+            );
+        }
+    }
 }
 
 // The numbers in the comments are from 6 sittings at the default budget
 // (`print_lesions`): the target skill's met chances, lesioned and whole.
 
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn a_student_who_lets_every_trick_go_misses_worth() {
     lesion_shows(Lesion::Worth, 20, 0.5); // 0/56 and 54/57
 }
 
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn a_student_who_plays_the_dearest_card_misses_cheap() {
     lesion_shows(Lesion::Cheap, 20, 0.5); // 11/65 and 91/92
 }
 
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn a_student_who_never_plays_a_cover_off_misses_off() {
     lesion_shows(Lesion::Off, 10, 0.5); // 0/48 and 17/18
 }
 
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn a_student_who_leads_a_random_tarock_misses_run() {
     lesion_shows(Lesion::Run, 10, 0.1); // 27/38 and 44/48
 }
 
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn a_student_who_tosses_a_coin_for_the_pagat_misses_pagat() {
     lesion_shows(Lesion::Pagat, 4, 0.25); // 10/20 and 18/18
 }
 
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn a_student_who_leads_into_his_void_misses_void() {
     lesion_shows(Lesion::Void, 3, 0.5); // 0/17 and 25/25
 }
 
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn a_student_who_opens_the_split_suit_misses_behind() {
     lesion_shows(Lesion::Behind, 10, 0.5); // 0/39 and 31/34
 }
 
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn a_student_who_stops_counting_in_the_endgame_misses_endgame() {
     lesion_shows_missing(Lesion::Endgame, 10, 0.1, 2.0); // 37/52 and 50/54
 }
 
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn a_student_who_bids_by_a_coin_misses_bid() {
     lesion_shows(Lesion::Bid, 5, 0.25); // 9/17 and 17/17
 }
 
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn a_student_who_takes_up_every_hand_misses_bid() {
     lesion_shows(Lesion::AlwaysTake, 5, 0.5); // 1/17 and 17/17
 }
 
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn a_student_who_never_announces_misses_announce() {
     lesion_shows(Lesion::Announce, 1, 0.5); // 0/4 and 4/4
 }
@@ -350,6 +414,7 @@ fn a_student_who_never_announces_misses_announce() {
 /// rung 4 meets 0.96 of its chances (every skill with 8 or more chances at
 /// 0.88 or better), a random player 0.63 (`worth` 24 of 44).
 #[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
 fn whole_rung_four_meets_nearly_every_chance_and_a_random_player_does_not() {
     let s = students();
     assert!(overall(&s.whole_t) >= 0.9, "{:?}", s.whole_t);
@@ -374,7 +439,7 @@ fn whole_rung_four_meets_nearly_every_chance_and_a_random_player_does_not() {
 fn a_search_that_finished_no_trick_gives_no_play_verdict() {
     // With a budget too small to finish a trick `move_table` falls back to
     // rung 3's scale, which is not thirds: the decision is skipped.
-    let rec = &students().whole[0];
+    let rec = &one_sitting().whole[0];
     let starved = Budget {
         worlds: 3,
         nodes: 1,
@@ -402,7 +467,7 @@ fn a_search_that_finished_no_trick_gives_no_play_verdict() {
 
 #[test]
 fn the_costliest_miss_is_a_real_decision_of_the_human_in_the_deal() {
-    let s = students();
+    let s = one_sitting();
     let mut seen = 0;
     for rec in &s.no_cover {
         let e = evidence(rec, HUMAN, &[], small()).unwrap();
@@ -439,7 +504,7 @@ fn the_costliest_miss_is_a_real_decision_of_the_human_in_the_deal() {
 
 #[test]
 fn an_assisted_decision_is_no_evidence() {
-    let s = students();
+    let s = one_sitting();
     let rec = &s.no_cover[0];
     let full = evidence(rec, HUMAN, &[], small()).unwrap();
     // every action assisted: nothing counted
@@ -478,15 +543,17 @@ fn an_assisted_announcement_covers_the_play_it_belongs_to() {
     // A hint is shown for the position; the human may then announce and play
     // in the same turn. Marking the announcement marks the play too.
     use strohmandeln_core::session::Move;
-    let (rec, at) = students()
+    // (seed 0 has one: the human announces with a card in it)
+    let (rec, at) = one_sitting()
         .whole
         .iter()
+        .cloned()
         .find_map(|r| {
             let at = r.actions.iter().position(|m| {
                 m.seat == HUMAN
                     && matches!(&m.action, Action::Play { announce, .. } if !announce.is_empty())
             })?;
-            Some((r.clone(), at))
+            Some((r, at))
         })
         .expect("a deal in which the human announces with a card");
     // split the announcing play in two: Announce, then the card alone
@@ -572,7 +639,7 @@ fn a_bid_is_judged_end_to_end_both_ways() {
 
 #[test]
 fn the_evidence_is_a_function_of_the_record() {
-    let rec = &students().whole[1];
+    let rec = &one_sitting().whole[1];
     let a = evidence(rec, HUMAN, &[2], small()).unwrap();
     assert_eq!(a, evidence(rec, HUMAN, &[2], small()).unwrap());
     assert_eq!(a.summary.version, EVIDENCE_VERSION);
@@ -582,7 +649,7 @@ fn the_evidence_is_a_function_of_the_record() {
 
 #[test]
 fn a_record_that_does_not_replay_is_an_error_not_evidence() {
-    let mut rec = students().whole[0].clone();
+    let mut rec = one_sitting().whole[0].clone();
     rec.actions.truncate(3);
     rec.actions.push(rec.actions[2].clone());
     assert!(evidence(&rec, HUMAN, &[], small()).is_err());
@@ -678,7 +745,12 @@ fn the_skills_are_ten_in_ladder_order_and_the_prerequisites_come_first() {
 fn every_chance_the_evidence_judges_is_open_to_the_nudge() {
     let mut judged = [0u32; SKILLS];
     let mut open_n = [0u32; SKILLS];
-    for rec in students().whole.iter().chain(&students().no_cover).take(8) {
+    for rec in one_sitting()
+        .whole
+        .iter()
+        .chain(&one_sitting().no_cover)
+        .take(8)
+    {
         rec.replay(|_, d, seat, a| {
             if seat != HUMAN {
                 return;
@@ -706,7 +778,7 @@ fn every_chance_the_evidence_judges_is_open_to_the_nudge() {
 
 #[test]
 fn a_view_with_no_move_to_make_opens_nothing() {
-    let rec = &students().whole[0];
+    let rec = &one_sitting().whole[0];
     let done = rec.replay_to_end(|_, _, _, _| {}).unwrap();
     let view = bare_view(&done, HUMAN);
     assert!(open_skills(&view, small()).is_empty());
@@ -720,7 +792,7 @@ fn the_evidence_counts_the_decisions_with_a_choice_and_reads_the_deals_facts() {
     use strohmandeln_core::deal::DealEnd;
     use strohmandeln_core::types::UltimoResult;
     let (mut ultimo, mut announced, mut mond) = (0, 0, 0);
-    for rec in students().whole.iter().chain(&students().no_cover) {
+    for rec in one_sitting().whole.iter().chain(&one_sitting().no_cover) {
         let mut choices = 0;
         let deal = rec
             .replay_to_end(|_, d, seat, _| {
@@ -800,7 +872,7 @@ fn the_facts_of_a_deal_follow_its_tricks_from_either_seat() {
 
 #[test]
 fn an_assisted_decision_is_not_counted_as_a_decision() {
-    let rec = &students().whole[0];
+    let rec = &one_sitting().whole[0];
     let all = evidence(rec, HUMAN, &[], small()).unwrap();
     let every: Vec<usize> = (0..rec.actions.len()).collect();
     let none = evidence(rec, HUMAN, &every, small()).unwrap();

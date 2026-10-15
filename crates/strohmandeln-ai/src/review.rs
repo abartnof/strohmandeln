@@ -782,6 +782,7 @@ mod tests {
         }
         let doc = include_str!("../../../docs/MESSAGES.md");
         let section = doc.split("\n## Explanation keys").nth(1).expect("section");
+        let section = section.split("\n## Tutor keys").next().expect("section");
         let documented: Vec<&str> = section
             .lines()
             .filter(|l| l.starts_with("| `"))

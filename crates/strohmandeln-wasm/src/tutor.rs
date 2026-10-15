@@ -478,12 +478,9 @@ mod tests {
 
     #[test]
     fn a_learner_over_bad_deals_names_the_skill_to_work_on() {
-        let worth = "strohmandeln evidence v2\nworth 6 2 60\ncheap 0 0 0\noff 0 0 0\nrun 0 0 0\npagat 0 0 0\nvoid 0 0 0\nbehind 0 0 0\nendgame 0 0 0\nbid 0 0 0\nannounce 0 0 0\n";
-        assert!(
-            worth.contains(&format!("v{EVIDENCE_VERSION}")),
-            "update this fixture"
-        );
-        let history = [worth; 4].join("--\n");
+        let lines = "worth 6 2 60\ncheap 0 0 0\noff 0 0 0\nrun 0 0 0\npagat 0 0 0\nvoid 0 0 0\nbehind 0 0 0\nendgame 0 0 0\nbid 0 0 0\nannounce 0 0 0\n";
+        let worth = format!("strohmandeln evidence v{EVIDENCE_VERSION}\n{lines}");
+        let history = [worth.as_str(); 4].join("--\n");
         let v = learner_of(&history);
         assert_eq!(v["focus"], "worth", "{v}");
     }
@@ -591,7 +588,10 @@ mod tests {
                 let before = s.clone();
                 h.show(|t| t.nudge(Some(Skill::Worth)));
                 let r = out(&h);
-                assert_eq!(r["deal_action"], s["deal_actions"], "the number of the decision");
+                assert_eq!(
+                    r["deal_action"], s["deal_actions"],
+                    "the number of the decision"
+                );
                 if r["nudge"].is_object() {
                     shown += 1;
                     assert_eq!(r["nudge"]["skill"], "worth");

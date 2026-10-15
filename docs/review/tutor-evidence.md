@@ -266,3 +266,223 @@ The learner-level diagnosis (`docs/TUTOR.md` 12: a lesioned student given the
 focus within K deals; the prerequisites) needs the constants of M3 and M6 and
 cannot be judged here. Findings 1, 2, 5 and 6 change what those constants are
 fitted to, so they should land first and bump `EVIDENCE_VERSION`.
+
+## Second pass (2026-10-15)
+
+Scope: `git diff f3e3b51 HEAD` without `web3d/strohmandeln.html` and without
+what came in with the merge of main (1628eb1): commits 42e75e1 to ff3c2a7
+(`tutor.rs`, `tutor_tests.rs`, `students.rs`, `rung4.rs`, `dealrec.rs`,
+`session.rs`, the wasm `lib.rs`, `golden.txt`, `docs/PROTOCOL.md`,
+`docs/TUTOR.md`). `cargo test -p strohmandeln-core -p strohmandeln-ai
+-p strohmandeln-wasm` passes (ai 190, core 150 + 12 + 7, wasm 26 + 2; 2 min 21 s
+wall on the 2-core VM); `cargo clippy --all-targets -D warnings` and `cargo fmt
+--check` are clean. Numbers below come from `print_students`,
+`print_pagat_variants` (both kept, ignored), per-test timings and one throw-away
+edit, reverted.
+
+### Verdict
+
+Accept with fixes. No bug and no leak. Findings 1 to 5 are *should*: fix or
+record open in `PLAN.md` before the package is called done. The first pass's
+findings 1 to 7, 9, 10, 11 are fixed as claimed; 8 and 12 are closed in part
+(findings 4 and 12 below).
+
+### Checked and holds
+
+- **Golden hashes.** Only hashes moved; event counts, final Contos and balances
+  of all six sittings are unchanged. The cause is `state.deal_actions`, which is
+  now in every reply the hash covers (FNV over the raw reply bytes). Reproduced:
+  with the `deal_actions` insertion removed from `render` and the golden file of
+  1628eb1 restored, `golden_games_replay_byte_for_byte` passes with the *old*
+  hashes. The opponent's decisions are therefore unchanged. The diff to the AI
+  crate adds `bid_samples` (a new function; `bid_advantage`, `move_table`,
+  `decide` untouched), `students.rs` and `tutor.rs`; nothing the opponent calls
+  moved. The browser tests' seeds play the same game.
+- **Standard error** (`tutor.rs:270`): paired per world, difference `a - b` of
+  the same world, sample variance with `n - 1`, standard error `sqrt(var / n)`,
+  worlds that lack either card dropped. It assumes `scores` and `per_world` cover
+  the same worlds with every legal card in each (`move_table` does); then the
+  mean of the differences equals the gap of `scores`. Not tested numerically
+  (finding 2).
+- **One rule everywhere.** Every play skill's trigger and every spread skill's
+  miss goes through `Advice::clearly_better` (gap above the margin *and* above
+  twice the standard error); the exact margin applies only when
+  `search_complete` (nothing face down, `depth >= 28 - trick_number`, and
+  `trick_number` is the sampler's `sim.trick`). `bid` has its own pair in
+  `classify_bid`, `announce` needs no search. Unit test covers worth, cheap, off,
+  pagat, void, behind, run with noise 0 and 30.
+- **`bid_samples`** draws in the order of `bid_advantage` and the test pins
+  `multiplier * mean == bid_advantage` to 1e-9. The two loops are duplicated;
+  keep it so: deriving one from the other would change float rounding in the
+  opponent's `> margin` comparison, and "the opponent is unchanged" is worth the
+  duplicate.
+- **`dealrec`.** `check` rejects a deck that is not a permutation of the 54,
+  multiplier outside 1 to 2, ultimo outside 1 to 2 and a hand without a tarock;
+  `start`, `replay`, `replay_to_end` return `Err`; a thrown-in deal is finished
+  (`end()` is `Some`). No caller of `start()` is left outside the module.
+- **Action count.** `Sitting::deal_action_count` is `deal_actions.len()`; it is
+  cleared when a non-void deal starts, taken at the deal's end, not touched by
+  `Extend`. Reload gives the same number (test). The wasm test pins
+  `state.deal_actions` and `hint.action` over 40 steps.
+- **`assisted_actions`**: an assisted `Announce` extends over following actions
+  of the same seat to the card; an assisted `Play`, `Take`, `Pass` covers itself
+  only; an index past the end is ignored; `covered` is sized to the record so
+  `evidence` cannot index out of range.
+- **web3d.** Nothing reads `state.deal_actions` or the reply's `action`.
+  `hinttext.js:27` and `main.js:873` read `r.hint.action` (the string
+  `"play"`), not the new top-level field. `engine.js` passes replies through.
+  No table change is needed until the table stores the assisted list.
+- **No leak.** Unchanged in kind: classifiers see `bare_view` only; the twin
+  test now runs `decision_verdicts` on every legal action (more than 100 twins).
+
+### Findings
+
+#### 1. should - the ladder's constants predate the noise rule (`tutor.rs:622-636`)
+
+`top_rate`/`top_cost` are the figures of the first pass's 18 deals (off 0.58 =
+14/24, worth 0.85 = 28/33, cheap 0.92, 5.9 thirds of `off` a deal). The rule
+changed what rung 4 meets: `print_students` (4 sittings) gives worth 32/35, cheap
+60/60, off 14/15 (the test comment says 17/18 over 6), run 18/19, void 14/14,
+behind 14/15, endgame 34/37, pagat 6/6, bid 12/12. With `off` at 0.58 the bar
+(`master` at 0.85 of `top_rate`) is 0.49, which a player who covers half as often
+as rung 4 clears. Costs are also censored now: a spread-skill miss is at least
+the margin (6 thirds), so `top_cost` is conditional on that. The doc says
+"indicative only", but `EVIDENCE_VERSION` was bumped for this change, which is
+where the constants are meant to be refitted. Fix: refit from `print_students`
+at 9 sittings (as the pagat figures use) before `off`/`behind` are used, or
+record the constants as open for M3 in `PLAN.md` and set `off` to the measured
+value now. Set `pagat` `top_rate` to the measured 0.94 (32/34), not 1.0.
+
+#### 2. should - one counted world switches the noise rule off (`tutor.rs:284`)
+
+`std_error` returns 0 for fewer than two worlds, so `clearly_better` falls back
+to the bare margin. That is right for an exact position (one world, solved) but
+wrong where the budget finished only one world of ten (a small `Budget` on a slow
+device, M7; `counted == 1` in `move_table`): the noisiest estimate gets the
+loosest test. It is also the same for a known but incompletely searched position
+(`hidden_total() == 0`, `exact` false: one world by design), where the error is
+the horizon's, not the sampling's, and the margin of 6 is all there is. Fix:
+`std_error` returns infinity for `n < 2` when `!exact`, except the known-position
+case, which keeps the margin (say so in the doc comment). Add tests of the number
+itself: two worlds with differences 0 and 2 give `sqrt(1 / 2)`; a world missing a
+card is dropped; one world.
+
+#### 3. should - the pagat figures that justify the gate cannot be reproduced (`tutor.rs:455-460`, `docs/TUTOR.md` 4)
+
+The comment and the doc give "rung 4 107 of 107, random 83 of 91 leads over 9
+sittings". `print_pagat_variants` still has a "leader" row, but since b3ffb01 the
+code gives no leader chance: the row is `0 of 0`. The following figures reproduce
+(32 of 34, random 15 of 29; "sourced zones" 17 of 17 and 14 of 24). `CLAUDE.md`
+asks that a computed number a document relies on has a check that reproduces it.
+Fix: have the print function judge leaders with the gate bypassed (a
+`pagat_chance(k, advice, following_only: bool)` parameter, or a copy in the
+test), or cite the leader figures as a dated measurement at b3ffb01 and say they
+are not reproducible at HEAD. Statistics of the gate: 32/34 against 15/29 is
+decisive (Fisher one-sided p about 1e-4, my calculation); the fixture's 6/6
+against 9/15 is not (p = 0.09), so the 6/6 is not evidence by itself. For a
+learner the chance rate is about 4 a sitting; at the bar of 0.85, 10 chances
+(about 3 sittings) pass a random player 1.5% of the time and rung 4 (true rate
+0.94) 88%; 5 chances 4% and 73%; 2 chances (`min_chances` 2) pass a random player
+27% of the time. Enough to tell over a few sittings, not within one; raise
+`min_chances` of `pagat` and `bid` (3 chances a sitting) to 4 or let M3 decide.
+
+#### 4. should - the knock-outs are not specific, and two are coins (`students.rs`, `tutor_tests.rs:265-345`)
+
+Each test asserts only the target skill's drop, not that nothing else fell. It
+does not hold: the no-cover student (`print_students`) meets void 5/7 (whole
+14/14), behind 15/19 (14/15), cheap 41/47 (60/60), and has 4 endgame chances
+against 37, because packets stay face down longer. A forced hand card is also a
+miss of `cheap`/`void`/`behind` wherever the cover was the best of its kind. This
+is inherent to a class lesion, and matters for the learner (prerequisites are
+meant to absorb it, TUTOR.md 2), so it should be recorded rather than hidden.
+`Pagat` and `Bid` are 50% coins (10/20, 9/17 against 18/18, 17/17), not total
+knock-outs as the module header says; `Announce` is judged on 4 chances. Fix:
+(a) record the matrix of all skills' rates for each knock-out in `docs/TUTOR.md`
+11 (M4) from `print_lesions`; (b) add to `lesion_shows` that the target has the
+lowest met rate among skills with at least 5 chances, so a knock-out that hurts
+something else more fails; (c) reword the header ("one skill removed or
+halved"). The thresholds of the coin tests (0.25 below, 4 and 5 chances) were
+set against one realisation of the seeds: deterministic, but any change to the
+advisor re-rolls them, and a rate of 8 in 10 by chance at p = 0.5 is 5%.
+
+#### 5. should - keep the gate fast (`tutor_tests.rs`, `bin/gate`)
+
+`bin/gate` runs `cargo test` for the workspace before every commit; the ai lib
+tests now take 122 s wall (150 s CPU for the lesions; first pass: 76 s for core
+and ai together). Per test, alone, in seconds (each includes the shared fixture,
+about 20 s of 12 sittings, built once when run together): pagat 45, endgame 41,
+bid 41, run 33, void 32, always-take 31, behind 28, off 28, announce 28, worth
+27, cheap 26, and 19 to 31 for the five tests that only need records
+(`an_assisted_decision`, `an_assisted_announcement`, `the_costliest_miss`,
+`a_search_that_finished_no_trick`, `the_evidence_is_a_function`,
+`a_record_that_does_not_replay`, `whole_rung_four`). The test profile is already
+optimised, so release does not help. Proposal, keeping the check:
+
+1. `#[ignore = "lesions, about 100 s: bin/lesions"]` on the eleven
+   `a_student_who_*` tests and on `whole_rung_four_meets_nearly_every_chance...`
+   (they all need the three-student fixture). Keep `a_student_who_never_plays_a_cover_off_misses_every_off_chance`
+   un-ignored on a one-sitting fixture (0 of 34 against 14 of 15 is the
+   strongest signal; a few seconds): the gate still proves that a lesion is seen.
+2. A one-sitting fixture (`whole[..]` of seed 0, about 5 s) for the tests that
+   only need records. The assisted-announcement test needs a deal in which the
+   human announces; keep one hand-picked seed for it.
+3. `bin/lesions`: `cargo test -p strohmandeln-ai --lib -- --ignored a_student_who whole_rung_four`,
+   which on success writes `target/lesions.stamp` holding a hash of
+   `crates/strohmandeln-ai/src/{tutor,students,tutor_tests,rung2,rung3,rung4,know,sampler,solver,sim,opponent}.rs`
+   and `crates/strohmandeln-core/src/{deal,dealrec}.rs`. `bin/gate` compares the
+   hash and fails with "run bin/lesions" only when they differ, so a commit
+   that does not touch the advisor or the classifiers pays nothing, and a
+   commit that does cannot skip the check silently. The merge to main (the
+   publish step) runs `bin/lesions` unconditionally. The gate stays about 25 s
+   dearer than before the package instead of about 100 s.
+
+#### 6. nit - the argmax is not in the standard error (`tutor.rs:294`)
+
+The error is that of the two chosen cards' difference; the cards were chosen as
+the best of their classes by the same worlds, which biases the gap upward when a
+class holds many cards (cover against up to 15 hand cards; `cheap`, `endgame`
+over every legal card). The rule is a large improvement (off 58% to 93%) and the
+fixture shows no excess of misses, so no change now; M1 should measure it, with
+the independent-seed redraw of the first pass's finding 1, and say whether the
+paired maximum over the class per world is needed.
+
+#### 7. nit - the margin censors small losses (`tutor.rs:250-300`, `docs/TUTOR.md` 4)
+
+A spread card is met unless it is worse than the best by more than the margin
+and twice the error, so a player who loses 3 to 5 thirds on every decision is
+perfect in the evidence, and a miss costs at least 6 thirds. Not undetectable (a
+random player's `cheap` is 34/65 and costs 608 thirds in the fixture; the
+dearest-card student 11/65), and it follows the spec ("within `MARGIN` of the
+best"); say in the doc that the margin is a resolution, and that `top_cost` is
+conditional on it (finding 1).
+
+#### 8. nit - the mutation test is narrow (`dealrec.rs:328-360`)
+
+300 cases, one base record, mutations of the deck, the action list and the
+dealer only. No mutation of an action's contents (seat, card, `announce` list,
+honour), multiplier or settings (those have unit cases). Leftover `let _ = n`
+(`dealrec.rs:358`). The test takes well under a second; raise to 3000 cases, add
+a mutator for the contents of one action and for the seat, drop `n`.
+
+#### 9. nit - wasm reply (`strohmandeln-wasm/src/lib.rs:752`, `docs/PROTOCOL.md:345`)
+
+The hint's top-level `action` (a number) sits beside `hint.action` (a string),
+and both are named in the same paragraph; rename the new field `for_action` or
+`deal_action` (nothing in web3d reads it yet, so the change is free now). The doc
+comment on `strohmandeln_hint` still lists the old shape. The PROTOCOL paragraph
+was re-flowed into one long line.
+
+#### 10. nit - small inconsistencies
+
+- `docs/TUTOR.md` 4 says rung 4 met 91% of `off` after the rule; the fixture says
+  14/15 (93%) and the test comment 17/18 (94%). State the fixture's figure and
+  its size.
+- `Lesion::None` is "rung 4 whole" but is re-built through `play_card`; assert
+  once that `Student::decide` equals `Opponent::decide` for `Lesion::None` over a
+  sitting, since the tests treat it as the opponent.
+- The twin test does not call `evidence` (the `Miss` fields `led`, `trick`,
+  `consequence` are outside it); unchanged from the first pass's finding 12,
+  harmless for the reasons given there.
+- Partial-lesion case of the first pass's finding 8 (a student that covers half
+  as often, to measure what the margin can see in one sitting) is still absent;
+  the two coin lesions are the nearest and are not measured as a rate of power.
