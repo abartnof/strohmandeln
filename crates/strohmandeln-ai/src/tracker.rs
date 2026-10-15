@@ -258,8 +258,8 @@ mod tests {
                 for (n, tr) in d.tricks.iter().enumerate() {
                     let trick = n as u32 + 1;
                     let by = [tr.leader, tr.leader.other()];
-                    for i in 0..2 {
-                        assert_eq!(place(tr.cards[i]), Place::Played { by: by[i], trick });
+                    for (card, by) in tr.cards.iter().zip(by) {
+                        assert_eq!(place(*card), Place::Played { by, trick });
                         plays += 1;
                     }
                 }
