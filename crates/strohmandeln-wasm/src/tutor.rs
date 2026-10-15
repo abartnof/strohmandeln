@@ -631,9 +631,9 @@ mod tests {
             format!("level 2\n{d}\n--\n"),
             format!("level 2\ndeal 0\n{d}\n--\n"),
             format!("level 2\ndeal x\n{d}\n--\n"),
-            format!("level 2\ndeal 1\n--\n"),
-            format!("level 2\ndeal 1\n{{}}\n--\n"),
-            format!("level 2\ndeal 1\nnot json\n--\n"),
+            "level 2\ndeal 1\n--\n".to_string(),
+            "level 2\ndeal 1\n{}\n--\n".to_string(),
+            "level 2\ndeal 1\nnot json\n--\n".to_string(),
             format!("level 2\ndeal 1\n{d}\n{d}\n--\n"),
         ] {
             let v = brief_sitting(&bad_deal);
@@ -729,7 +729,8 @@ mod tests {
             long_numbers,
             many_numbers,
         ];
-        let calls: [(&str, fn(&str) -> Value); 3] = [
+        type Call = fn(&str) -> Value;
+        let calls: [(&str, Call); 3] = [
             ("evidence", evidence_of),
             ("brief", |t| brief_of_record(&format!("level 3\n{t}"))),
             ("learner", learner_of),
