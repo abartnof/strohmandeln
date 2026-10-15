@@ -26,7 +26,7 @@ test("every {slot} in en is in de and the reverse", () => {
 });
 
 test("keys are namespaced", () => {
-  const ok = /^(ui|chip|banner|hud|slate|refusal|hint|review|sr|card|settings|error|tutor|keys)\./;
+  const ok = /^(ui|chip|banner|hud|slate|refusal|hint|explain|review|sr|card|settings|error|tutor|keys)\./;
   for (const key of Object.keys(TABLE)) assert.match(key, ok, key);
 });
 
@@ -169,6 +169,35 @@ test("the settlement line says what is owed, not that it was paid", () => {
 test("the both-pass note names the sources of the rules (research/14 rule 7)", () => {
   const note = TABLE["settings.both_pass.note"];
   for (const lang of ["en", "de"]) for (const who of ["Werner", "Mayr", "Sedlaczek", "Ulmann", "Beck"]) assert.ok(note[lang].includes(who), `${lang} ${who}`);
+});
+
+// The review and explanation keys of docs/MESSAGES.md, with the texts it gives.
+const messageRows = (from, to) => {
+  const part = doc("MESSAGES.md").split(from)[1].split(to ?? "\n## END")[0];
+  return [...part.matchAll(/^\| `([a-z-]+)` \| [^|]*\| ([^|]*) \| ([^|]*) \|/gm)].map((m) => ({ key: m[1], en: m[2].trim(), de: m[3].trim() }));
+};
+
+test("every review key of docs/MESSAGES.md has a review.say.* string with the text the doc gives", () => {
+  const rows = messageRows("\n## Review keys", "\n## Explanation keys");
+  assert.equal(rows.length, 14);
+  for (const r of rows) {
+    const s = TABLE["review.say." + r.key];
+    assert.ok(s, r.key);
+    assert.equal(s.en, r.en, r.key);
+    assert.equal(s.de, r.de, r.key);
+  }
+  for (const lead of ["count", "decided", "try", "sitting"]) assert.ok(TABLE["review.lead." + lead], lead);
+});
+
+test("every explanation key of docs/MESSAGES.md has an explain.* string with the text the doc gives", () => {
+  const rows = messageRows("\n## Explanation keys");
+  assert.equal(rows.length, 8);
+  for (const r of rows) {
+    const s = TABLE["explain." + r.key.slice("explain-".length)];
+    assert.ok(s, r.key);
+    assert.equal(s.en, r.en, r.key);
+    assert.equal(s.de, r.de, r.key);
+  }
 });
 
 test("the declarer is the Aufnehmer in German, as in the books", () => {
