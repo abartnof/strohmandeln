@@ -171,7 +171,21 @@ async function main() {
     onChange: (key, value) => changed(key, value),
     onAction: (name) => settingsAction(name),
   });
-  const slate = createSlate(ui.slateRoot, { t, tn, later: (ms, fn) => director.at(ms, fn, "linger") });
+  // The slate's self-folding timer must be cancellable (director.at returns no id): a fold set at a
+  // Tour's end would otherwise close the settlement opened at the sitting's end.
+  const slateTimers = new Set();
+  let slateTimer = 0;
+  const slate = createSlate(ui.slateRoot, {
+    t,
+    tn,
+    later: (ms, fn) => {
+      const id = ++slateTimer;
+      slateTimers.add(id);
+      director.at(ms, () => slateTimers.delete(id) && fn(), "linger");
+      return id;
+    },
+    cancel: (id) => slateTimers.delete(id),
+  });
 
   // The opponent has one voice: lines wait their turn, and chatter yields to the calls (5.2.2).
   const boxes = new Map();
