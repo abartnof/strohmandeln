@@ -1,0 +1,35 @@
+M5: 27 candidates, 2400 deals (400 sittings, seeds 50000000..50000399), setting default, rung 4 against rung 3, 78s
+id               fired     ok       p   n_eff   lower  rule
+worth.rich.1       115    112   0.974   115.0   0.926* follower, a card led worth 7 thirds or more, can win and can not: win
+worth.rich.2        29     29   1.000    29.0   0.883* ... led worth 10 thirds or more: win
+worth.rich.3         0      0     NaN     0.0   0.000  ... led worth 13 thirds (king or honour): win
+worth.poor.1      1896   1550   0.818  1795.4   0.799  follower, led worth 1 third, a king wins and another card is legal: no king
+worth.poor.2      1976   1589   0.804  1878.8   0.786  ... led worth 4 thirds or less: no king
+cheap.1          20432  15027   0.735 19223.8   0.729  follower, two or more cards of the outcome played: the cheapest of them (thirds, then strength)
+cheap.2          14487  10348   0.714 14487.0   0.707  ... only when the card played wins: the cheapest winner
+off.pip.1         4524   2405   0.532  4524.0   0.517  follower, a cover and a hand card legal: a cover
+off.pip.2        25212   6713   0.266 25212.0   0.261  leader, a cover and a hand card legal: a cover
+off.figure.1     11524   3564   0.309 11524.0   0.301  a Dame or Cavall cover and a hand card legal: a cover
+off.figure.2     11524   2321   0.201 11524.0   0.194  ... the higher figure cover itself
+off.figure.3     10910   2314   0.212 10890.2   0.205  ... the higher figure cover itself, unless he shows two low cards of its suit
+run.1             9533    416   0.044  9382.1   0.040  leader leading a tarock from two or more: the top of the longest solid run, else the lowest
+run.2             9533   7228   0.758  8838.6   0.749  ... a card of any solid run, else the lowest
+run.part.3        9065   7089   0.782  8998.5   0.773  ... holding a solid run: a card of a run
+run.part.4         468    139   0.297   468.0   0.257  ... holding no run: the lowest tarock
+pagat.cash.1      2410    446   0.185  2087.8   0.169  follower with the Pagat and another card, 7 tarocks or fewer: the Pagat
+pagat.cash.2      2888    510   0.177  2681.3   0.163  ... 8 tarocks or fewer: the Pagat
+pagat.keep.1       117     89   0.761   112.6   0.674  follower with the Pagat and another card, 12 tarocks or more: keep it
+pagat.keep.2       269    214   0.796   257.9   0.742  ... 11 tarocks or more: keep it
+void.1           12607   7594   0.602 12070.0   0.594  leader with a lead into a suit he has shown void and another: not into it
+behind.1         26015  13855   0.533 15085.5   0.525  leader with a lead in a split suit and another: not in a split suit
+behind.2         25113   6146   0.245 14163.0   0.238  ... and a tarock: lead a tarock
+behind.3         25850  12231   0.473 13679.7   0.465  ... and a tarock or a suit mostly mine: lead one of those
+bid.1               58     44   0.759    58.0   0.635  20 to 25 points (60 to 75 thirds) of sure winners and 6 or 7 tarocks: take up
+bid.2               72     58   0.806    72.0   0.700  20 points or more of sure winners and 6 tarocks or more: take up
+announce.1         233    233   1.000   233.0   0.984* about to play a card of a held honour: announce it
+
+the candidate with the best lower bound at or above 0.80, by rule:
+  announce       announce.1      0.984
+  worth.rich     worth.rich.1    0.926
+
+total 78s

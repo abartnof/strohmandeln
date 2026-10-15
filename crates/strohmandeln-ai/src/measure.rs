@@ -867,6 +867,21 @@ pub fn score(params: &Params, groups: &[Group]) -> Score {
     }
 }
 
+/// The constants M6 started from: the provisional values before its choice
+/// (`discount` from M3, the gains from M4, the rest Cassino's), the base of
+/// the grid, of the tie-break and of the "provisional" rows of its report.
+/// `tutor::PARAMS` is the chosen set.
+pub const M6_BASE: Params = Params {
+    discount: 0.83,
+    min_gain: 1.1,
+    costly_gain: 4.4,
+    costly_chances: 8.0,
+    lower: 0.2,
+    upper: 0.9,
+    master_of_top: 0.85,
+    lose_below: 0.2,
+};
+
 /// The grid of M6: the discount, the quantiles for mastery and for "surely
 /// short", mastery as a fraction of what rung 4 meets, and the drop that
 /// loses it; the gains and chances of `base` are kept.
@@ -932,6 +947,70 @@ pub fn m6_choice(base: &Params, scored: &[(Params, Score)]) -> Option<(Params, S
                 .then(ka.2.total_cmp(&kb.2))
         })
         .cloned()
+}
+
+// ---- M4: what a skill is worth ----------------------------------------------------
+
+/// One finished comparison of M4, read from its log line.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Estimate {
+    pub name: String,
+    /// `CLEAR`, `INCONCLUSIVE` or `NEGLIGIBLE`.
+    pub verdict: String,
+    pub look: usize,
+    pub pairs: usize,
+    pub mean: f64,
+    pub se: f64,
+}
+
+/// The finished comparisons in the text `measure m4` printed: the lines
+/// `<name>: <VERDICT> at look <k> (<n> pairs): <mean> +- <se>, ...`.
+pub fn parse_m4(text: &str) -> Vec<Estimate> {
+    text.lines()
+        .filter_map(|line| {
+            let line = line.trim();
+            let (name, rest) = line.split_once(": ")?;
+            let (verdict, rest) = rest.split_once(" at look ")?;
+            if !["CLEAR", "INCONCLUSIVE", "NEGLIGIBLE"].contains(&verdict) {
+                return None;
+            }
+            let (look, rest) = rest.split_once(" (")?;
+            let (pairs, rest) = rest.split_once(" pairs): ")?;
+            let (mean, rest) = rest.split_once(" +- ")?;
+            let se = rest.split(',').next()?;
+            Some(Estimate {
+                name: name.to_string(),
+                verdict: verdict.to_string(),
+                look: look.parse().ok()?,
+                pairs: pairs.parse().ok()?,
+                mean: mean.parse().ok()?,
+                se: se.parse().ok()?,
+            })
+        })
+        .collect()
+}
+
+/// A knock-out's worth in thirds a deal: minus its effect in Points a mirrored
+/// pair (12 deals each), at `thirds_per_point` thirds a Point.
+pub fn worth_thirds_per_deal(effect_per_pair: f64, thirds_per_point: f64) -> f64 {
+    -effect_per_pair / 12.0 * thirds_per_point
+}
+
+/// `min_gain` by the rule of M4: half the least worth among the knock-outs
+/// that are clear with a negative effect, to 0.1.
+pub fn min_gain_rule(clear_worths: &[f64]) -> f64 {
+    let least = clear_worths.iter().copied().fold(f64::INFINITY, f64::min);
+    (least / 2.0 * 10.0).round() / 10.0
+}
+
+/// A prerequisite edge: the worth of a skill alone less its worth with the
+/// prerequisite knocked out, in Points a pair, the standard error of that
+/// difference (the two runs taken as independent), and whether it exceeds twice
+/// the error. The two effects come from runs that stopped at their own looks.
+pub fn edge_drop(alone: &Estimate, with: &Estimate) -> (f64, f64, bool) {
+    let drop = -alone.mean - (-with.mean);
+    let se = alone.se.hypot(with.se);
+    (drop, se, drop > 2.0 * se)
 }
 
 #[cfg(test)]
@@ -1387,6 +1466,12 @@ mod tests {
         use crate::tutor::PARAMS;
         let grid = m6_grid(&PARAMS);
         assert_eq!(grid.len(), 5 * 3 * 3 * 4 * 3);
+        // the start of the grid is in it, and so is the chosen set
+        assert!(grid.contains(&M6_BASE));
+        assert!(grid.contains(&PARAMS));
+        // only the five tuned constants vary: the gains are those of M4
+        assert_eq!(M6_BASE.min_gain, PARAMS.min_gain);
+        assert_eq!(M6_BASE.costly_gain, PARAMS.costly_gain);
         assert!(grid.iter().all(|p| p.check().is_ok()));
         let mk = |sens, fals, mast| Score {
             sensitivity: sens,
@@ -1420,5 +1505,35 @@ mod tests {
         let none = vec![(a, mk(0.9, 0.5, 4.0)), (b, mk(0.7, 0.2, 4.0))];
         assert_eq!(m6_choice(&PARAMS, &none).unwrap().0, b);
         assert!(m6_choice(&PARAMS, &[]).is_none());
+    }
+
+    #[test]
+    fn the_m4_log_lines_are_read_and_the_derived_numbers_follow() {
+        let text = "  Worth look 1: 40 pairs, -6.300 +- 1.153 (z -5.47)\n\
+Announce: CLEAR at look 4 (160 pairs): -1.106 +- 0.511, 95% interval -2.108 to -0.105\n\
+Void: INCONCLUSIVE at look 4 (160 pairs): +0.487 +- 0.446, 95% interval -0.387 to +1.362\n\
+Off: CLEAR at look 1 (40 pairs): -14.025 +- 1.103, 95% interval -16.187 to -11.863\n\
+Off with Worth out: CLEAR at look 1 (40 pairs): -8.700 +- 0.991, 95% interval -10.643 to -6.757\n\
+total 1073s\n";
+        let e = parse_m4(text);
+        assert_eq!(e.len(), 4, "{e:?}");
+        assert_eq!(e[0].name, "Announce");
+        assert_eq!(
+            (e[0].look, e[0].pairs, e[0].verdict.as_str()),
+            (4, 160, "CLEAR")
+        );
+        assert_eq!((e[0].mean, e[0].se), (-1.106, 0.511));
+        assert_eq!(e[1].mean, 0.487);
+        // the worth of announce: 1.106 / 12 x 23 = 2.12 thirds a deal
+        let w = worth_thirds_per_deal(e[0].mean, 23.0);
+        assert!((w - 2.120_2).abs() < 1e-3, "{w}");
+        assert_eq!(min_gain_rule(&[12.1, w, 4.7]), 1.1);
+        assert_eq!(min_gain_rule(&[3.0]), 1.5);
+        // off needs worth: 14.025 less 8.700 is 5.325, error 1.4826, holds
+        let (drop, se, holds) = edge_drop(&e[2], &e[3]);
+        assert!((drop - 5.325).abs() < 1e-9 && (se - 1.482_6).abs() < 1e-3);
+        assert!(holds);
+        // the other way round: it grows, so it does not hold
+        assert!(!edge_drop(&e[3], &e[2]).2);
     }
 }

@@ -1,0 +1,56 @@
+M6: 12 students, 6 windows of 3 sittings (6 deals each) from 60000000 (tuning) and 65000000 (fresh)
+  whole: 6 windows
+  Worth: 6 windows
+  Cheap: 6 windows
+  Off: 6 windows
+  Run: 6 windows
+  Pagat: 6 windows
+  Void: 6 windows
+  Behind: 6 windows
+  Endgame: 6 windows
+  Bid: 6 windows
+  AlwaysPass: 6 windows
+  Announce: 6 windows
+tuning windows ready, 89s
+  whole: 6 windows
+  Worth: 6 windows
+  Cheap: 6 windows
+  Off: 6 windows
+  Run: 6 windows
+  Pagat: 6 windows
+  Void: 6 windows
+  Behind: 6 windows
+  Endgame: 6 windows
+  Bid: 6 windows
+  AlwaysPass: 6 windows
+  Announce: 6 windows
+fresh windows ready, 178s
+
+the provisional constants (discount 0.83):
+tuning: sensitivity 0.537, false focus 0.098, whole mastered 4.00
+ Worth 1.00; Cheap 0.50; Off 1.00; Run 0.17; Pagat 0.83; Endgame 0.50; Bid 0.67; AlwaysPass 0.17; Announce 0.00;
+fresh: sensitivity 0.537, false focus 0.059, whole mastered 4.33
+ Worth 1.00; Cheap 0.83; Off 1.00; Run 0.33; Pagat 0.50; Endgame 0.33; Bid 0.67; AlwaysPass 0.17; Announce 0.00;
+
+grid: 540 sets scored on the tuning windows, 500s
+chosen: discount 0.88 lower 0.2 upper 0.8 master_of_top 0.8 lose_below 0.2
+tuning:
+  chosen: sensitivity 0.574, false focus 0.078, whole mastered 6.50
+ Worth 1.00; Cheap 0.50; Off 1.00; Run 0.33; Pagat 0.83; Endgame 0.50; Bid 0.67; AlwaysPass 0.33; Announce 0.00;
+fresh:
+  chosen: sensitivity 0.556, false focus 0.039, whole mastered 6.33
+ Worth 1.00; Cheap 0.83; Off 1.00; Run 0.33; Pagat 0.50; Endgame 0.33; Bid 0.83; AlwaysPass 0.17; Announce 0.00;
+praise-only student Void (tuning): the focus after the last deal, by window: none none none none none none
+praise-only student Behind (tuning): the focus after the last deal, by window: none none none none none none
+praise-only student Void (fresh): the focus after the last deal, by window: none off off none none none
+praise-only student Behind (fresh): the focus after the last deal, by window: none none run none none none
+acceptance on the fresh windows (sensitivity >= 0.7, false focus <= 0.15, whole mastered >= 3): NOT met
+
+the five most sensitive sets with false focus <= 0.10:
+  d 0.88 lo 0.2 up 0.8 m 0.8 l 0.1: sens 0.574 false 0.078 mastered 6.50
+  d 0.88 lo 0.2 up 0.8 m 0.8 l 0.2: sens 0.574 false 0.078 mastered 6.50
+  d 0.88 lo 0.2 up 0.8 m 0.8 l 0.3: sens 0.574 false 0.078 mastered 6.50
+  d 0.88 lo 0.3 up 0.8 m 0.8 l 0.1: sens 0.574 false 0.078 mastered 8.17
+  d 0.88 lo 0.3 up 0.8 m 0.8 l 0.2: sens 0.574 false 0.078 mastered 8.17
+
+total 502s

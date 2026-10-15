@@ -1,0 +1,35 @@
+M4: batches of 40, singles at most 4 looks (boundaries [4.05, 2.86, 2.34, 2.02]), pairs at most 3 looks, negligible +-0.5, first seed 40000000
+
+prerequisites: the skill's worth with its prerequisite already knocked out (both out against the prerequisite out alone):
+  Cheap with Worth out look 1: 40 pairs, -14.300 +- 1.008 (z -14.18, boundary 3.47), 38s
+Cheap with Worth out: CLEAR at look 1 (40 pairs): -14.300 +- 1.008, 95% interval -16.277 to -12.323
+  Off with Worth out look 1: 40 pairs, -8.700 +- 0.991 (z -8.78, boundary 3.47), 47s
+Off with Worth out: CLEAR at look 1 (40 pairs): -8.700 +- 0.991, 95% interval -10.643 to -6.757
+  Run with Cheap out look 1: 40 pairs, -2.175 +- 1.197 (z -1.82, boundary 3.47), 30s
+  Run with Cheap out look 2: 80 pairs, -3.013 +- 0.810 (z -3.72, boundary 2.45), 61s
+Run with Cheap out: CLEAR at look 2 (80 pairs): -3.013 +- 0.810, 95% interval -4.600 to -1.425
+  Pagat with Run out look 1: 40 pairs, -1.025 +- 0.796 (z -1.29, boundary 3.47), 40s
+  Pagat with Run out look 2: 80 pairs, -1.988 +- 0.674 (z -2.95, boundary 2.45), 76s
+Pagat with Run out: CLEAR at look 2 (80 pairs): -1.988 +- 0.674, 95% interval -3.309 to -0.666
+  Void with Worth out look 1: 40 pairs, +0.800 +- 0.996 (z +0.80, boundary 3.47), 35s
+  Void with Worth out look 2: 80 pairs, +0.087 +- 0.638 (z +0.14, boundary 2.45), 97s
+  Void with Worth out look 3: 120 pairs, +0.058 +- 0.530 (z +0.11, boundary 2.00), 141s
+Void with Worth out: INCONCLUSIVE at look 3 (120 pairs): +0.058 +- 0.530, 95% interval -0.981 to +1.097
+  Behind with Off out look 1: 40 pairs, +3.325 +- 0.774 (z +4.30, boundary 3.47), 88s
+Behind with Off out: CLEAR at look 1 (40 pairs): +3.325 +- 0.774, 95% interval +1.808 to +4.842
+  Behind with Void out look 1: 40 pairs, -1.300 +- 1.054 (z -1.23, boundary 3.47), 86s
+  Behind with Void out look 2: 80 pairs, -1.600 +- 0.818 (z -1.95, boundary 2.45), 156s
+  Behind with Void out look 3: 120 pairs, -2.100 +- 0.669 (z -3.14, boundary 2.00), 221s
+Behind with Void out: CLEAR at look 3 (120 pairs): -2.100 +- 0.669, 95% interval -3.411 to -0.789
+  Endgame with Cheap out look 1: 40 pairs, -1.100 +- 1.053 (z -1.04, boundary 3.47), 38s
+  Endgame with Cheap out look 2: 80 pairs, -1.788 +- 0.810 (z -2.21, boundary 2.45), 71s
+  Endgame with Cheap out look 3: 120 pairs, -1.375 +- 0.635 (z -2.17, boundary 2.00), 121s
+Endgame with Cheap out: CLEAR at look 3 (120 pairs): -1.375 +- 0.635, 95% interval -2.619 to -0.131
+  Endgame with Void out look 1: 40 pairs, +0.200 +- 0.957 (z +0.21, boundary 3.47), 83s
+  Endgame with Void out look 2: 80 pairs, -1.488 +- 0.830 (z -1.79, boundary 2.45), 159s
+  Endgame with Void out look 3: 120 pairs, -1.700 +- 0.640 (z -2.66, boundary 2.00), 223s
+Endgame with Void out: CLEAR at look 3 (120 pairs): -1.700 +- 0.640, 95% interval -2.954 to -0.446
+  Bid with Worth out look 1: 40 pairs, -4.625 +- 1.174 (z -3.94, boundary 3.47), 56s
+Bid with Worth out: CLEAR at look 1 (40 pairs): -4.625 +- 1.174, 95% interval -6.926 to -2.324
+
+total 1073s
