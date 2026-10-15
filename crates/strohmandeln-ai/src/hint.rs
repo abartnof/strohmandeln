@@ -176,7 +176,7 @@ pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
     );
     let odds = if rung >= 4 && k.legal.len() > 1 {
         let mut orng = Rng::stream(seed, view_seed(view) ^ 0x4812);
-        odds_for(&k, card, &mut orng, config)
+        odds_with(&k, card, &mut orng, config, ODDS_WORLDS)
     } else {
         None
     };
@@ -189,10 +189,18 @@ pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
     }
 }
 
-/// The search's evidence for `card` against the best other legal card.
-fn odds_for(k: &Knowledge, card: Card, rng: &mut Rng, config: Config) -> Option<Odds> {
+/// The search's evidence for `card` against the best other legal card, over
+/// `worlds` sampled deals (the hint uses `ODDS_WORLDS`; `bin/hintbench.rs`
+/// varies it). The node budget in `config` is shared by the worlds.
+pub fn odds_with(
+    k: &Knowledge,
+    card: Card,
+    rng: &mut Rng,
+    config: Config,
+    worlds: usize,
+) -> Option<Odds> {
     let mut budget = config.budget;
-    budget.worlds = ODDS_WORLDS;
+    budget.worlds = worlds;
     let table = rung4::move_table(k, rng, budget, &config.weights);
     if table.per_world.is_empty() {
         return None;
@@ -278,6 +286,26 @@ mod tests {
             });
         }
         assert!(odds > 0, "no hint carried odds");
+    }
+
+    #[test]
+    fn the_hint_s_odds_are_odds_with_the_hint_s_worlds() {
+        let level = Level::from_halves(8);
+        let config = small();
+        let mut checked = 0;
+        walk(2, |s, seat| {
+            let v = view(s, seat);
+            let h = hint(&v, 9, level, config);
+            let (Some(odds), Action::Play { card, .. }) = (&h.odds, &h.action) else {
+                return;
+            };
+            let k = Knowledge::from_view(&v).unwrap();
+            let mut rng = Rng::stream(9, view_seed(&v) ^ 0x4812);
+            let again = odds_with(&k, *card, &mut rng, config, ODDS_WORLDS);
+            assert_eq!(again.as_ref(), Some(odds));
+            checked += 1;
+        });
+        assert!(checked > 0);
     }
 
     #[test]
