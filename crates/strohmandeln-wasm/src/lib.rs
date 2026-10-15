@@ -14,6 +14,7 @@ use serde::Deserialize;
 use serde_json::{json, Map, Value};
 use strohmandeln_ai::hint::hint as ai_hint;
 use strohmandeln_ai::opponent::{Config as AiConfig, Level, Opponent};
+use strohmandeln_ai::review::{explain_last, review_last, review_sitting, Bullet, Param, Review};
 use strohmandeln_core::agents::Player;
 use strohmandeln_core::cards::{Card, Honour};
 use strohmandeln_core::session::{Record, Sitting};
@@ -132,6 +133,22 @@ pub struct Table {
     opponent: Box<dyn Player>,
     /// How many of the sitting's events the host has been sent.
     sent: usize,
+}
+
+/// A review or explanation bullet on the wire.
+fn bullet_json(b: Bullet) -> Value {
+    let params: Map<String, Value> = b
+        .params
+        .into_iter()
+        .map(|(k, v)| {
+            let v = match v {
+                Param::Num(n) => json!(n),
+                Param::Text(s) => json!(s),
+            };
+            (k.to_string(), v)
+        })
+        .collect();
+    json!({"lead": b.lead, "key": b.key, "params": params})
 }
 
 /// An error reply: the code, and the parameters (an object) beside it.
@@ -368,6 +385,34 @@ impl Table {
             other => serde_json::to_value(other).unwrap_or(Value::Null),
         };
         json!({"protocol": PROTOCOL, "hint": action, "reason": h.key, "params": {}})
+    }
+
+    /// The review of the last scored deal, or of the whole sitting so far,
+    /// from the human's filtered events (so it holds nothing the human's view
+    /// does not): `{"review": {"deal", "bullets": [{"lead", "key",
+    /// "params"}]}}`, or `"review": null` when no deal was scored yet.
+    pub fn review(&self, whole_sitting: bool) -> Value {
+        let events = filter_events(self.sitting.events(), self.human);
+        let r = if whole_sitting {
+            review_sitting(&events, self.human)
+        } else {
+            review_last(&events, self.human)
+        };
+        let review = r.map(|Review { deal, bullets }| {
+            let bullets: Vec<Value> = bullets.into_iter().map(bullet_json).collect();
+            json!({"deal": deal, "bullets": bullets})
+        });
+        json!({"protocol": PROTOCOL, "review": review})
+    }
+
+    /// What the last trick showed, for the line under the prompt
+    /// (`{"explain": {"lead", "key", "params"}}`, or `null` before a trick is
+    /// won). The trick is the last of the human's filtered events, so a trick
+    /// of an earlier deal is explained until the next is won.
+    pub fn explain(&self) -> Value {
+        let events = filter_events(self.sitting.events(), self.human);
+        let bullet = explain_last(&events, self.human).map(bullet_json);
+        json!({"protocol": PROTOCOL, "explain": bullet})
     }
 
     fn my_hint_legal(&self) -> Option<Vec<Value>> {
@@ -619,6 +664,26 @@ pub mod ffi {
     #[no_mangle]
     pub extern "C" fn strohmandeln_hint() {
         HOST.with(|h| h.borrow_mut().show(|t| t.hint()))
+    }
+
+    /// Renders the review of the last scored deal
+    /// (`{"review": {"deal", "bullets"}}` or `"review": null`).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_review() {
+        HOST.with(|h| h.borrow_mut().show(|t| t.review(false)))
+    }
+
+    /// Renders the review of the sitting so far (the same shape).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_review_sitting() {
+        HOST.with(|h| h.borrow_mut().show(|t| t.review(true)))
+    }
+
+    /// Renders the explanation of the last trick
+    /// (`{"explain": {"lead", "key", "params"}}` or `"explain": null`).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_explain() {
+        HOST.with(|h| h.borrow_mut().show(|t| t.explain()))
     }
 
     /// A test aid: the codes of the cards the human must not see.
@@ -1030,5 +1095,114 @@ mod tests {
             }
             assert_eq!(out(&h)["state"]["prompt"], "over", "level {level}");
         }
+    }
+
+    /// Plays the first legal action for the human until `stop` holds.
+    fn play_until(h: &mut Host, stop: impl Fn(&Value) -> bool) {
+        h.render();
+        for _ in 0..5000 {
+            let s = out(h)["state"].clone();
+            if stop(&s) || s["prompt"] == "over" {
+                return;
+            }
+            if s["prompt"] == "opponent" {
+                assert_eq!(h.step(), 1);
+                continue;
+            }
+            let a = s["legal"][0].clone();
+            let a = if a["action"] == "extend" {
+                json!({"action":"extend","accept":false})
+            } else if a["action"] == "play" {
+                json!({"action":"play","card":a["card"]})
+            } else {
+                a
+            };
+            assert_eq!(h.send(&a.to_string()), 1);
+        }
+    }
+
+    #[test]
+    fn the_review_is_null_before_a_deal_is_scored() {
+        let mut h = host(CONFIG);
+        h.show(|t| t.review(false));
+        assert_eq!(out(&h)["review"], Value::Null);
+        h.show(|t| t.review(true));
+        assert_eq!(out(&h)["review"], Value::Null);
+    }
+
+    #[test]
+    fn the_review_follows_the_last_scored_deal_with_known_keys() {
+        for seed in [3u64, 7, 11] {
+            let mut h = host(&format!(r#"{{"seed":{seed},"touren":3,"human":1}}"#));
+            play_until(&mut h, |s| s["deals_counted"].as_u64().unwrap_or(0) >= 1);
+            h.show(|t| t.review(false));
+            let r = out(&h);
+            let review = &r["review"];
+            assert!(review.is_object(), "{r}");
+            assert_eq!(review["bullets"][0]["lead"], "count");
+            for b in review["bullets"].as_array().unwrap() {
+                let key = b["key"].as_str().unwrap();
+                assert!(strohmandeln_ai::review::KEYS.contains(&key), "{key}");
+                assert!(b["params"].is_object());
+            }
+            assert!(review["deal"].as_u64().unwrap() >= 1);
+            play_until(&mut h, |_| false);
+            h.show(|t| t.review(true));
+            let r = out(&h);
+            assert_eq!(r["review"]["bullets"].as_array().unwrap().len(), 3, "{r}");
+            assert_eq!(r["review"]["bullets"][0]["key"], "sitting-tally");
+        }
+    }
+
+    #[test]
+    fn the_explanation_follows_each_trick_with_a_listed_key() {
+        let mut h = host(r#"{"seed":5,"touren":3,"human":0}"#);
+        h.show(|t| t.explain());
+        assert_eq!(out(&h)["explain"], Value::Null, "no trick yet");
+        let mut seen = 0;
+        h.render();
+        for _ in 0..400 {
+            let s = out(&h)["state"].clone();
+            if s["prompt"] == "over" {
+                break;
+            }
+            let won = out(&h)["events"]
+                .as_array()
+                .is_some_and(|e| e.iter().any(|e| e["type"] == "trick_won"));
+            if won {
+                h.show(|t| t.explain());
+                let r = out(&h);
+                let key = r["explain"]["key"].as_str().unwrap();
+                assert!(strohmandeln_ai::review::EXPLAIN_KEYS.contains(&key), "{r}");
+                assert_eq!(r["explain"]["lead"], "explain");
+                seen += 1;
+                h.render();
+            }
+            if s["prompt"] == "opponent" {
+                h.step();
+            } else {
+                let a = s["legal"][0].clone();
+                let a = if a["action"] == "extend" {
+                    json!({"action":"extend","accept":false})
+                } else if a["action"] == "play" {
+                    json!({"action":"play","card":a["card"]})
+                } else {
+                    a
+                };
+                h.send(&a.to_string());
+            }
+        }
+        assert!(seen > 20, "only {seen} tricks explained");
+    }
+
+    #[test]
+    fn a_review_does_not_move_the_game() {
+        let mut h = host(CONFIG);
+        play_until(&mut h, |s| s["deals_counted"].as_u64().unwrap_or(0) >= 1);
+        h.render();
+        let before = out(&h);
+        h.show(|t| t.review(false));
+        h.render();
+        assert_eq!(out(&h), before);
     }
 }

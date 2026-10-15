@@ -22,6 +22,8 @@ export async function loadEngine(bytes, onTrap) {
       export: () => call("export"),
       import: (record) => call("import", JSON.stringify(record)),
       hint: () => call("hint"),
+      review: () => call("review"),
+      reviewSitting: () => call("review_sitting"),
       audit: () => call("audit"),
     },
     onTrap,
