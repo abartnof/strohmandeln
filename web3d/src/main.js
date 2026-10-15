@@ -157,7 +157,7 @@ async function main() {
     goal: t("hud.thirds", { n: 36 }),
     names: { you: t("hud.you"), opp: t("hud.opp") },
     group: (n) => t("hud.group", { n }),
-    hud: { score: t("hud.score"), hand: t("hud.deal"), live: t("hud.live"), subtotal: t("hud.subtotal"), total: t("hud.total"), show: t("hud.show"), hide: t("hud.hide") },
+    hud: { score: t("hud.score"), hand: t("hud.hand"), live: t("hud.live"), subtotal: t("hud.subtotal"), total: t("hud.total"), show: t("hud.show"), hide: t("hud.hide") },
   });
 
   // ---- the page ---------------------------------------------------------------

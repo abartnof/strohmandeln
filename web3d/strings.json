@@ -96,6 +96,7 @@
   "hud.score": {"en": "The score", "de": "Der Stand"},
   "hud.tour": {"en": "Tour {n} of {total}", "de": "Tour {n} von {total}"},
   "hud.deal": {"en": "Deal {n}", "de": "Partie {n}"},
+  "hud.hand": {"en": "Deal", "de": "Partie"},
   "hud.conto": {"en": "Account", "de": "Conto"},
   "hud.you": {"en": "You", "de": "Sie"},
   "hud.opp": {"en": "Your opponent", "de": "Ihr Gegner"},

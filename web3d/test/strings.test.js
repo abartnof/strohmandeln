@@ -25,6 +25,13 @@ test("every {slot} in en is in de and the reverse", () => {
   for (const [key, v] of Object.entries(TABLE)) assert.deepEqual(slots(v.en), slots(v.de), key);
 });
 
+test("the word the score HUD puts before a hand number has no slot", () => {
+  const main = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
+  assert.match(main, /hand: t\("hud\.hand"\)/);
+  assert.deepEqual(slots(TABLE["hud.hand"].en), []);
+  assert.deepEqual(slots(TABLE["hud.hand"].de), []);
+});
+
 test("keys are namespaced", () => {
   const ok = /^(ui|chip|banner|hud|slate|refusal|hint|explain|review|sr|card|settings|error|tutor|keys)\./;
   for (const key of Object.keys(TABLE)) assert.match(key, ok, key);
