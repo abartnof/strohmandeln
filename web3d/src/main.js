@@ -21,11 +21,11 @@ import { largeTextHere } from "../../kit/js/faces.js";
 import { decodeBase64 } from "../../kit/js/engine.js";
 import { CARD } from "../../kit/js/units.js";
 import { sentence, where } from "./a11y.js";
-import { choreograph, initialPlacement, opening } from "./choreography.js";
+import { choreograph, initialPlacement, LAST_TRICK, opening } from "./choreography.js";
 import { dragKind, shake } from "./gesture.js";
 import { handRange } from "./layout.js";
 import { TRULL, KINGS } from "./cardinfo.js";
-import { countGame, countLines, TARGET } from "./counting.js";
+import { bonusLines, countGame, countLines, edgeOf } from "./counting.js";
 import { loadEngine } from "./engine.js";
 import { createMirror } from "./mirror.js";
 import { momentsOf } from "./moments.js";
@@ -144,6 +144,7 @@ async function main() {
   // The director's zones (handEdge of an empty hand) come from the view.
   const hudWords = () => ({
     category: t("hud.count"),
+    bonus: t("hud.bonus"),
     goal: t("hud.thirds", { n: 36 }),
     names: { you: t("hud.you"), opp: t("hud.opp") },
     group: (n) => t("hud.group", { n }),
@@ -300,7 +301,7 @@ async function main() {
     for (const m of momentsOf({ events, since, beats: timing.beats, count: countEvent ? timing.count : null })) {
       later(m.ms, () => (m.synthetic ? talk.onEvent(m.event, { human }) : onEvent(m.event, m.index, model, timing)));
     }
-    if (countEvent) schedulePopups(timing.count, lines, since + events.indexOf(countEvent));
+    if (countEvent) schedulePopups(timing.count, lines, since + events.indexOf(countEvent), events.find((e) => e.type === "game_scored"));
     persist(reply);
     refresh();
   }
@@ -318,17 +319,21 @@ async function main() {
     });
   }
 
-  // The count's popups, each at its line's moment, and the edge after.
-  function schedulePopups(count, lines, at) {
+  // The count's popups, each at its line's moment; then the edge (the tick
+  // at 107, the chip on 106) and the bonuses the deal paid, in Points (2.5.4, 2.5.5).
+  function schedulePopups(count, lines, at, scored) {
     if (!count) return;
     const events = countEvents(game, lines, { at, hand: 1 });
     for (const ev of events) {
       later(ev.end ? count.end : (count.lines[ev.line] ?? count.end), () => (ev.end ? hud.endHand(1) : hud.score(ev)));
     }
-    later(count.end + 200, () => {
-      const totals = hud.totals();
-      for (const side of ["you", "opp"]) if (totals[side] === TARGET - 1) ui.chip(t("chip.not-36", { a: thirds(totals[side]) }), { x: 120, y: side === "you" ? 150 : 100, kind: "edge", ms: 3000 });
+    later(count.end + 1, () => {
+      const edge = edgeOf(hud.totals());
+      hud.node.classList.toggle("edge", edge.tick);
+      for (const side of edge.short) ui.chip(t("chip.not-36", { a: thirds(hud.totals()[side]) }), { x: 120, y: side === "you" ? 150 : 100, kind: "edge", ms: 3000 });
     });
+    const paid = bonusLines(scored?.credits ?? [], human, (cause) => t(`slate.cause.${cause}`));
+    for (const ev of countEvents(game, paid, { at, hand: 1 })) if (!ev.end) later(count.end + 700, () => hud.score(ev));
   }
 
   // ---- what is shown at an event's moment ------------------------------------------
@@ -345,10 +350,16 @@ async function main() {
     switch (e.type) {
       case "deal_start":
         dealNo = e.deal_number;
+        trickShown = 0;
         hud.reset({ hands: [], live: null });
+        hud.node.classList.remove("edge");
         hud.dealt(1);
         showTour();
         ui.hideBanner();
+        break;
+      case "card_played":
+        trickShown = e.trick;
+        showTour();
         break;
       case "bid":
         chip(t("ui.take"), e.seat, "bid", 1800);
@@ -407,11 +418,12 @@ async function main() {
     }
   }
 
-  // "Tour 2 of 3 · Deal 3 · ×2": from the last deal begun in the log.
+  // "Tour 2 of 3 · Deal 3 · ×2 · Trick 27 / 27": from the last deal begun in the log.
+  let trickShown = 0;
   function showTour() {
     const d = [...log].reverse().find((e) => e.type === "deal_start");
     if (!d || !wasm) return ui.setTour("");
-    ui.setTour(`${t("hud.tour", { n: d.tour, total: wasm.touren_total })} · ${t("hud.deal", { n: d.deal_number })}${d.multiplier > 1 ? ` · ${t("hud.double")}` : ""}`);
+    ui.setTour([t("hud.tour", { n: d.tour, total: wasm.touren_total }), t("hud.deal", { n: d.deal_number }), d.multiplier > 1 ? t("hud.double") : null, trickShown ? t("hud.trick", { n: trickShown, total: LAST_TRICK }) : null].filter(Boolean).join(" · "));
   }
 
   // What a Point is worth on the deal now: the ultimo setting times the doubling.
@@ -787,6 +799,7 @@ async function main() {
     settings.setSitting(true);
     director.restart(S, { dealt: false });
     restModel = model;
+    trickShown = r.state.deal?.playing ? r.state.deal.trick_number : 0;
     showTour();
     hud.reset({ hands: [], live: null });
     ui.root.classList.toggle("left", prefs.leftHanded);

@@ -101,6 +101,8 @@
   "hud.balance": {"en": "Balance", "de": "Saldo"},
   "hud.double": {"en": "×2", "de": "×2"},
   "hud.count": {"en": "Count", "de": "Zählung"},
+  "hud.bonus": {"en": "Honours and ultimo", "de": "Ansagen und Ultimo"},
+  "hud.trick": {"en": "Trick {n} / {total}", "de": "Stich {n} / {total}"},
   "hud.thirds": {"en": "{n} of 70", "de": "{n} von 70"},
   "hud.declarer": {"en": "Declarer", "de": "Aufnehmer"},
   "hud.dealer": {"en": "Dealer", "de": "Geber"},

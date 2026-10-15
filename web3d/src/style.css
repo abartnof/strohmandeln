@@ -52,6 +52,8 @@ button { font: inherit; }
 .chip.announce { background: var(--accent); }
 .chip.forfeit, .chip.lost { background: #6a2b2b; }
 .chip.won { background: #2b6a3d; }
+/* 2.5.4: once a side has 107 the target is joined by a tick on both lines. */
+.hud.edge .hud-line .seg:last-child { box-shadow: 0 0 0 2px var(--gold); height: 12px; }
 .chip.edge { background: #6a4b00; }
 @keyframes rise { from { transform: translate(-50%, 14px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 
