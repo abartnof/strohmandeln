@@ -34,6 +34,7 @@
   "ui.new.hand.lot": {"en": "By lot", "de": "Nach dem Los"},
   "ui.new.deal": {"en": "Deal", "de": "Geben"},
   "ui.new.cancel": {"en": "Cancel", "de": "Abbrechen"},
+  "ui.new.kept": {"en": "Kept for your next sittings; changeable under Settings.", "de": "Gilt auch für die nächsten Abende; unter Einstellungen zu ändern."},
   "ui.new.applies": {"en": "From the next sitting.", "de": "Ab dem nächsten Abend."},
   "ui.new.plus": {"en": "New sitting", "de": "Neuer Abend"},
   "ui.review": {"en": "Review", "de": "Rückblick"},

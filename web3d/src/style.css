@@ -66,10 +66,16 @@ button { font: inherit; }
 
 .dialogs { position: absolute; inset: 0; pointer-events: none; z-index: 50; }
 .shade { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.35); display: grid; place-items: center; pointer-events: auto; }
-.dialog { background: #fff; color: #1d2433; border-radius: 14px; padding: 18px 22px; max-width: min(440px, 92vw); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4); }
+.dialog { max-height: 92vh; overflow-y: auto; background: #fff; color: #1d2433; border-radius: 14px; padding: 18px 22px; max-width: min(440px, 92vw); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4); }
 .dialog h2 { margin: 0 0 10px; font-size: 20px; }
 .dialog .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap; }
-.dialog .choice { display: flex; gap: 10px; flex-wrap: wrap; }
+.dialog .choice { display: flex; gap: 8px; flex-wrap: wrap; }
+.new-row { margin: 10px 0; }
+.new-label { display: block; font-weight: 600; margin-bottom: 4px; }
+.new-fixed { opacity: 0.8; }
+.new-note { opacity: 0.7; font-size: 13px; margin: 8px 0 0; }
+.new .big { min-width: 56px; padding: 0 14px; font-size: 16px; }
+.new .big.on { outline: 3px solid var(--gold); }
 .keys { padding-left: 18px; margin: 0; }
 
 .mirror { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

@@ -28,6 +28,7 @@ import { TRULL, KINGS } from "./cardinfo.js";
 import { bonusLines, countGame, countLines, edgeOf } from "./counting.js";
 import { loadEngine } from "./engine.js";
 import { createMirror } from "./mirror.js";
+import { createNewSitting } from "./newsitting.js";
 import { momentsOf } from "./moments.js";
 import { check, emptyModel, fromState, reduce } from "./model.js";
 import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
@@ -692,12 +693,15 @@ async function main() {
       if (rest[0] === "continue") continueSitting();
       else askNew();
     } else if (id === "new") {
-      const length = Number(document.querySelector('[data-length].on')?.dataset.length ?? prefs.touren);
+      const chosen = newScreen?.values() ?? {};
       ui.closeDialog("new");
       if (rest[0] === "deal") {
-        save({ touren: length });
-        settings.set("touren", length);
-        newSitting({ touren: length });
+        for (const [key, value] of Object.entries(chosen)) {
+          if (prefs[key] === value) continue;
+          save({ [key]: value });
+          settings.set(key, value);
+        }
+        newSitting({ touren: prefs.touren });
       }
     } else if (id === "over") {
       ui.closeDialog("over");
@@ -744,22 +748,11 @@ async function main() {
     advance(r, { first: true });
   }
 
+  // The new-sitting screen (3.5.1): what is chosen is kept as the next default (3.5.2).
+  let newScreen = null;
   function askNew() {
-    const body = ui.el(
-      "div",
-      { class: "new" },
-      ui.el("p", {}, t("ui.new.helper")),
-      ui.el("div", { class: "choice", role: "radiogroup", "aria-label": t("ui.new.length") }, ...[3, 6].map((n) => ui.el("button", { class: `big${prefs.touren === n ? " on" : ""}`, type: "button", "data-length": String(n), role: "radio", "aria-checked": String(prefs.touren === n) }, t(`ui.new.length.${n}`)))),
-    );
-    body.addEventListener("click", (e) => {
-      const b = e.target.closest("[data-length]");
-      if (!b) return;
-      body.querySelectorAll("[data-length]").forEach((x) => {
-        x.classList.toggle("on", x === b);
-        x.setAttribute("aria-checked", String(x === b));
-      });
-    });
-    ui.dialog({ id: "new", title: t("ui.new.title"), body, buttons: [{ label: t("ui.new.deal"), act: "deal", primary: true, focus: true }, ...(wasm && !sittingOver ? [{ label: t("ui.new.cancel"), act: "cancel" }] : [])] });
+    newScreen = createNewSitting(document, { t, prefs });
+    ui.dialog({ id: "new", title: t("ui.new.title"), body: newScreen.node, buttons: [{ label: t("ui.new.deal"), act: "deal", primary: true, focus: true }, ...(wasm && !sittingOver ? [{ label: t("ui.new.cancel"), act: "cancel" }] : [])] });
   }
 
   // ---- keeping the sitting -----------------------------------------------------------------------
