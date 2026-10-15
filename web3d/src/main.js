@@ -34,6 +34,7 @@ import { check, emptyModel, fromState, reduce } from "./model.js";
 import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
 import { loadPrefsInfo, savePrefs, sittingConfig, speedScale, urlOverrides, withUrl } from "./prefs.js";
 import { createSettings } from "./settings.js";
+import { createSpeaker } from "./speaker.js";
 import { createSlate } from "./slate.js";
 import { cardName, getLang, onLang, setLang, t, tn, thirds } from "./strings.js";
 import { createTalk } from "./talk.js";
@@ -172,17 +173,27 @@ async function main() {
   });
   const slate = createSlate(ui.slateRoot, { t, tn, later: (ms, fn) => director.at(ms, fn, "linger") });
 
+  // The opponent has one voice: lines wait their turn, and chatter yields to the calls (5.2.2).
+  const boxes = new Map();
+  const speaker = createSpeaker({
+    clock: () => director.clock(),
+    later: (ms, fn, kind) => director.at(ms, fn, kind),
+    show: (line) => boxes.set(line, showLine(line.text)),
+    hide: (line) => {
+      boxes.get(line)?.remove();
+      boxes.delete(line);
+    },
+  });
   const talk = createTalk({
     words: WORDS,
     getLang,
     rng: Math.random,
-    say: ({ text }) => sayLine(text),
+    say: ({ text, call }) => speaker.offer({ text, call }),
   });
   talk.setMode(prefs.talk);
 
   // A line in a box by the opponent's hand, clear of the cards and the controls.
-  function sayLine(text) {
-    if (!text) return;
+  function showLine(text) {
     const edge = director.handEdge("them");
     const places = [
       { kind: "below", x: edge.x, y: edge.y },
@@ -194,7 +205,7 @@ async function main() {
     const keep = cardRectsOf("their-packets").concat(cardRectsOf("your-packets"), cardRectsOf("trick"), [hudRect(), ...controlRects()]);
     const place = choosePlace(places, () => ({ w: rect.width, h: rect.height, natural: rect.width, spills: false }), keep, { width: window.innerWidth, height: window.innerHeight });
     placeBox(box, place, rect);
-    director.at(Math.max(1800, 250 + 65 * text.length + 600), () => box.remove(), "linger");
+    return box;
   }
   function placeBox(box, place, rect) {
     const w = rect.width;
@@ -717,6 +728,8 @@ async function main() {
     idleTimers.forEach(clearTimeout);
     idleTimers = [];
     pending = 0;
+    speaker.stop();
+    boxes.clear();
     ui.hush();
     ui.clearChips();
     ui.hideBanner();
