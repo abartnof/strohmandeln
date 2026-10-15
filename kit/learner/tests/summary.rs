@@ -149,6 +149,7 @@ fn a_ladder_is_checked() {
             top_rate: 0.9,
             top_cost: 0.1,
             min_chances: 4.0,
+            may_focus: true,
         },
         SkillSpec {
             slug: "b",
@@ -156,6 +157,7 @@ fn a_ladder_is_checked() {
             top_rate: 0.9,
             top_cost: 0.1,
             min_chances: 4.0,
+            may_focus: true,
         },
     ];
     let ladder = |skills| Ladder {

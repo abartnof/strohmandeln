@@ -55,8 +55,9 @@ impl Learner {
 /// stays as it was, so progress does not flicker. With fewer than the
 /// skill's `min_chances` discounted chances nothing changes.
 ///
-/// **Focus.** Of the skills not mastered, whose prerequisites are *cleared*
-/// (mastered, or gaining less than `min_gain`, which covers a skill whose
+/// **Focus.** Of the skills not mastered that may be the focus
+/// ([`crate::SkillSpec::may_focus`]), whose prerequisites are *cleared*
+/// (mastered, a skill that may not be the focus, or gaining less than `min_gain`, which covers a skill whose
 /// chances do not come up, or not shown to be short), and whose met rate is
 /// surely short of mastery (the `upper` quantile below [`Params::master`]),
 /// or which costs a great deal (a gain of `costly_gain` over `costly_chances`
@@ -122,9 +123,12 @@ pub fn learn(ladder: &Ladder, p: &Params, games: &[Summary]) -> Learner {
     // Cleared: mastered, or costing too little to matter, or not shown to be
     // short (a prerequisite half-proven either way must not hold back its
     // dependents).
-    let cleared = |i: usize| mastered[i] || skills[i].gain < p.min_gain || !short(i);
+    let cleared = |i: usize| {
+        mastered[i] || !ladder.skills[i].may_focus || skills[i].gain < p.min_gain || !short(i)
+    };
     let open = |i: usize| {
         !mastered[i]
+            && ladder.skills[i].may_focus
             && skills[i].gain >= p.min_gain
             && ladder.skills[i].needs.iter().all(|&need| cleared(need))
     };

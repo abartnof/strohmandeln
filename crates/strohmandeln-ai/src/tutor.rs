@@ -12,18 +12,16 @@
 //! they are tested on hand-built positions; [`decision_verdicts`] adds the
 //! search, and [`evidence`] replays a deal record and tallies.
 //!
-//! **Provisional constants.** The values of [`MARGIN`], [`EXACT_MARGIN`],
-//! [`BID_MARGIN`], [`THIRDS_PER_POINT`] and the split-suit share are
-//! placeholders; each names the measurement (M1 to M8, `docs/TUTOR.md` 11)
-//! that sets it. Changing any of them, or the advisor, bumps
-//! [`EVIDENCE_VERSION`].
+//! **Measured constants.** The values of [`MARGIN`], [`EXACT_MARGIN`],
+//! [`BID_MARGIN`], [`THIRDS_PER_POINT`], the split-suit share, [`LADDER`] and
+//! [`PARAMS`] are set by the measurements M1 to M8 (`docs/MEASUREMENTS.md`).
+//! Changing any of them, or the advisor, bumps [`EVIDENCE_VERSION`].
 
 use crate::cardset::{leader_wins, Kind};
 use crate::know::Knowledge;
 use crate::rung2::Weights;
 use crate::rung4::{self, Budget};
 use crate::seed::view_seed;
-use crate::sim::ULTIMO_THIRDS;
 use kit_learner::{learn, Chance, Ladder, Learner, Params, SkillSpec, Summary};
 use strohmandeln_core::cards::{Card, Honour, Suit};
 use strohmandeln_core::deal::{Deal, DealEnd, HonourState, TrickRecord};
@@ -35,43 +33,56 @@ use strohmandeln_core::view::{bare_view, View};
 /// The version of what [`evidence`] computes. Bump it whenever a classifier,
 /// a constant or the advisor changes, so that a stored summary made before is
 /// recomputed from its record (`docs/TUTOR.md` 3).
-pub const EVIDENCE_VERSION: u32 = 3;
+pub const EVIDENCE_VERSION: u32 = 4;
 
 /// The resolution of the evidence: a player who loses less than this on a
 /// decision is perfect in it, and a miss costs at least this (so `top_cost` is
-/// conditional on it). The least gap in thirds that can be a clear chance: a class must beat the
-/// next by more than this and by more than twice the standard error of the
-/// per-world difference ([`Advice::std_error`]), and a spread card is met
-/// unless it is worse than the best by as much. Provisional; M1 (advisor
-/// noise under independent seeds) sets it, and says whether the standard
-/// error rule alone would do.
-pub const MARGIN: f64 = 6.0;
+/// conditional on it). The least gap in thirds that can be a clear chance: a
+/// class must beat the next by more than this and by more than twice the
+/// standard error of the per-world difference ([`Advice::std_error`]), and a
+/// spread card is met unless it is worse than the best by as much.
+///
+/// **Measured, M1** (`docs/MEASUREMENTS.md`): twice the median across-stream
+/// standard deviation of the gap, 5 thirds, over 596 positions each re-drawn
+/// under 8 independent streams. The two-standard-error rule alone is honest
+/// (calibration 0.97 to 1.19, sign replication 0.97 to 1.00).
+pub const MARGIN: f64 = 10.0;
 
 /// The same where the search solved the position (nothing face down and the
 /// search reached the last trick, [`search_complete`]): the least loss that
-/// counts. Provisional; M1 sets it.
+/// counts. **Measured, M1**: an exact position has no spread across streams
+/// (68 exact reads of position and skill, all zero), so it is the resolution of the
+/// solver, one third.
 pub const EXACT_MARGIN: f64 = 1.0;
 
 /// The least expectation in Points, per unit of doubling, that can make a bid
 /// a clear chance, besides twice its standard error over the sampled worlds
-/// (`rung4::bid_samples`). Provisional; M1 sets it.
-pub const BID_MARGIN: f64 = 0.5;
+/// (`rung4::bid_samples`). **Measured, M1**: twice the median across-stream
+/// standard deviation of the bid mean (0.217 Point), 200 bids under 8 streams.
+pub const BID_MARGIN: f64 = 0.45;
 
 /// Thirds in a Point, to price a bid or an announcement in the unit of the
-/// rest. **Borrowed**: it is the solver's weight of the ultimo inside the final
-/// margin (`sim::ULTIMO_THIRDS`), not derived from the payment; the true rate
-/// is probably higher. Provisional; M2 (final margin in thirds against net
-/// Points of the deal) sets it.
-pub const THIRDS_PER_POINT: f64 = ULTIMO_THIRDS as f64;
+/// rest. **Measured, M2** (`docs/MEASUREMENTS.md`): the reciprocal of the slope
+/// of a deal's net Points (per unit of doubling) on its count margin in
+/// thirds, 1,800 deals of rung 4 against rung 4: 0.0426 Point a third, 23.5
+/// thirds a Point (95% interval 22.7 to 24.3). The solver's own weight of the
+/// ultimo (`sim::ULTIMO_THIRDS`, 12) is lower and is not changed here: it is
+/// the opponent's.
+pub const THIRDS_PER_POINT: f64 = 23.0;
 
 /// A suit is split when my share (my value points over mine and everything
-/// unseen, of the suit) lies in this range. Rung 2 uses 30% to 70% of the
-/// suit's whole 18 points, a different quantity, so the range is a first
-/// guess here. Provisional; M8 sets it for this definition.
-pub const SPLIT_SHARE: (f64, f64) = (0.3, 0.7);
+/// unseen, of the suit) lies in this range. **Measured, M8**
+/// (`docs/MEASUREMENTS.md`): over 36,665 suit-leads of 100 sittings, rung 4
+/// surely prefers another lead for shares up to 0.6 (the mean gap crosses 0
+/// there), and opens the suit in at least a tenth of the cases from 0.1 (below
+/// it the suit is his). Rung 2 uses 30% to 70% of the suit's whole 18 points,
+/// a different quantity.
+pub const SPLIT_SHARE: (f64, f64) = (0.1, 0.6);
 
-/// Unplayed value points a suit needs to be worth contesting. Provisional;
-/// M8 sets it.
+/// Unplayed value points a suit needs to be worth contesting. **Measured,
+/// M8**: from 6 points unplayed, with the share in the band, another lead is
+/// clearly better (beyond `MARGIN`) in at least a quarter of the cases (26%,
+/// 35%, 52% for 6 to 9, 9 to 12, 12 and more; 15% and 19% below 6).
 pub const SPLIT_MIN_POINTS: u32 = 6;
 
 /// The stream the advisor's draws come from, mixed with the view.
@@ -263,7 +274,8 @@ impl Advice<'_> {
         }
     }
 
-    fn value(&self, card: Card) -> f64 {
+    /// The advisor's value of `card` in thirds (NaN if it is not a legal card).
+    pub fn value(&self, card: Card) -> f64 {
         self.scores
             .iter()
             .find(|(c, _)| *c == card)
@@ -277,7 +289,7 @@ impl Advice<'_> {
     /// rule) for an open position, where it means a budget that finished one
     /// world of many; 0 for a known position, which is searched in one world
     /// by design and where the margin is all there is.
-    fn std_error(&self, a: Card, b: Card) -> f64 {
+    pub fn std_error(&self, a: Card, b: Card) -> f64 {
         let diffs: Vec<f64> = self
             .per_world
             .iter()
@@ -344,14 +356,20 @@ fn points_in(cards: impl IntoIterator<Item = Card>, suit: Suit) -> u32 {
 /// cannot tell from his (so the share is biased low by about my hidden
 /// fraction of the suit).
 pub(crate) fn is_split(k: &Knowledge, suit: Suit) -> bool {
-    let mine = points_in(k.playable().iter(), suit);
-    let theirs = points_in(k.opp_possible().iter(), suit);
-    let total = mine + theirs;
+    let (mine, total) = suit_share(k, suit);
     if total < SPLIT_MIN_POINTS {
         return false;
     }
     let share = f64::from(mine) / f64::from(total);
     (SPLIT_SHARE.0..=SPLIT_SHARE.1).contains(&share)
+}
+
+/// My value points of `suit` among the unplayed cards, and all of them (mine
+/// and "his", see [`is_split`]).
+pub fn suit_share(k: &Knowledge, suit: Suit) -> (u32, u32) {
+    let mine = points_in(k.playable().iter(), suit);
+    let theirs = points_in(k.opp_possible().iter(), suit);
+    (mine, mine + theirs)
 }
 
 /// A suit he has shown he is out of: he could not follow, and no cover of his
@@ -375,6 +393,21 @@ pub(crate) fn shown_void(k: &Knowledge, suit: Suit) -> bool {
 /// than twice the standard error of the difference ([`Advice::std_error`]);
 /// a spread card is met unless it is clearly worse than the best of its kind.
 pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict> {
+    classify_play_probed(k, card, advice, &mut |_, _, _| {})
+}
+
+/// As [`classify_play`], and `probe(skill, a, b)` hears the pair of cards each
+/// skill compares whenever its question applies, clear or not: `a` the best
+/// card of the class the skill's rule favours, `b` the best of the other (for
+/// the spread skills, the best and the worst of the kind). The gap
+/// `value(a) - value(b)` is what the margin is tested against; `measure.rs`
+/// (M1) re-draws it under other streams.
+pub fn classify_play_probed(
+    k: &Knowledge,
+    card: Card,
+    advice: &Advice,
+    probe: &mut dyn FnMut(Skill, Card, Card),
+) -> Vec<Verdict> {
     let scores = advice.scores;
     let mut out = Vec::new();
     if scores.len() < 2 {
@@ -395,6 +428,7 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
         // worth: win the trick, or let it go
         if let (Some(w), Some(l)) = (best(scores, beats), best(scores, |c| !beats(c))) {
             let (hi, lo) = if w.1 > l.1 { (w, l) } else { (l, w) };
+            probe(Skill::Worth, w.0, l.0);
             if better(hi.0, lo.0) {
                 let right_beats = w.1 > l.1;
                 let met = beats(card) == right_beats;
@@ -415,6 +449,9 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
         // cheap: among the cards that give the outcome played
         let same = |c: Card| beats(c) == beats(card);
         if let (Some(top), Some(low)) = (best(scores, same), worst(scores, same)) {
+            if top.0 != low.0 {
+                probe(Skill::Cheap, top.0, low.0);
+            }
             if better(top.0, low.0) {
                 let lost = lost_to(top.0);
                 out.push(
@@ -429,6 +466,7 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
         best(scores, |c| k.is_cover(c)),
         best(scores, |c| !k.is_cover(c)),
     ) {
+        probe(Skill::Off, cover.0, hand.0);
         if better(cover.0, hand.0) {
             let figure = cover.0.suit().is_some() && matches!(cover.0.strength(), 5 | 6);
             let dir = if figure {
@@ -455,6 +493,9 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
             best(scores, tarock),
             worst(scores, tarock),
         ) {
+            if t.0 != low.0 {
+                probe(Skill::Run, t.0, low.0);
+            }
             if t.0 != low.0 && better(t.0, low.0) {
                 let lost = lost_to(t.0);
                 out.push(Verdict::new(Skill::Run, lost.is_none(), lost.unwrap_or(0.0)).better(t.0));
@@ -476,6 +517,7 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
         best(scores, |c| c != Card::PAGAT),
     ) {
         let (hi, lo) = if p.1 > o.1 { (p, o) } else { (o, p) };
+        probe(Skill::Pagat, p.0, o.0);
         if better(hi.0, lo.0) {
             let play_it = p.1 > o.1;
             let met = (card == Card::PAGAT) == play_it;
@@ -496,6 +538,7 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
         // void: a lead into a suit he has shown he is out of
         let into_void = |c: Card| c.suit().is_some_and(|s| shown_void(k, s));
         if let (Some(v), Some(o)) = (best(scores, into_void), best(scores, |c| !into_void(c))) {
+            probe(Skill::Void, o.0, v.0);
             if better(o.0, v.0) {
                 out.push(Verdict::new(Skill::Void, !into_void(card), o.1 - v.1).better(o.0));
             }
@@ -503,6 +546,7 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
         // behind: opening a suit the hands share evenly
         let opens_split = |c: Card| c.suit().is_some_and(|s| is_split(k, s));
         if let (Some(s), Some(o)) = (best(scores, opens_split), best(scores, |c| !opens_split(c))) {
+            probe(Skill::Behind, o.0, s.0);
             if better(o.0, s.0) {
                 out.push(Verdict::new(Skill::Behind, !opens_split(card), o.1 - s.1).better(o.0));
             }
@@ -512,6 +556,9 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
     // endgame: the position is known and solved
     if advice.exact {
         if let (Some(top), Some(low)) = (best(scores, |_| true), worst(scores, |_| true)) {
+            if top.0 != low.0 {
+                probe(Skill::Endgame, top.0, low.0);
+            }
             if better(top.0, low.0) {
                 let lost = lost_to(top.0);
                 out.push(
@@ -560,30 +607,54 @@ pub fn classify_announce(k: &Knowledge, action: &Action) -> Option<Verdict> {
     Some(Verdict::new(Skill::Announce, met, THIRDS_PER_POINT))
 }
 
-/// The advisor's table for a playing decision with a choice (rung 4 from the
-/// view alone, the same draws for every card), or `None` for a forced card or
-/// a search that finished no trick (a budget too small: `MoveTable` then holds
-/// rung 3's scale, which is not thirds).
-fn play_table(k: &Knowledge, view: &View, budget: Budget) -> Option<rung4::MoveTable> {
+/// The stream of the advisor's draws for stream number `salt` of `view`: the
+/// evidence's own for salt 0, an independent one for any other (M1 re-draws a
+/// position under several).
+fn advisor_rng(view: &View, salt: u64, purpose: u64) -> Rng {
+    Rng::stream(
+        EVIDENCE_SEED ^ salt.wrapping_mul(0x9e37_79b9_7f4a_7c15),
+        view_seed(view) ^ purpose,
+    )
+}
+
+/// The advisor's table for a play in `view` (`k` its knowledge), drawn from
+/// stream `salt`; `None` when the budget finished no trick, so that the
+/// values are not in thirds. A position with nothing face down is the same
+/// world every time, so the nodes are spent on one.
+pub fn play_table(
+    k: &Knowledge,
+    view: &View,
+    budget: Budget,
+    salt: u64,
+) -> Option<rung4::MoveTable> {
     if k.legal.len() < 2 {
         return None;
     }
     let mut budget = budget;
     if k.hidden_total() == 0 {
-        // Nothing is hidden: every world is the same one, so spend the nodes
-        // on it.
         budget.nodes *= budget.worlds as u64;
         budget.worlds = 1;
     }
-    let mut rng = Rng::stream(EVIDENCE_SEED, view_seed(view) ^ 0x7001);
+    let mut rng = advisor_rng(view, salt, 0x7001);
     let table = rung4::move_table(k, &mut rng, budget, &Weights::default());
     (!table.per_world.is_empty()).then_some(table)
 }
 
-/// The bid's expectation in Points over the sampled worlds: its mean and its
-/// standard error, or `None` with too few worlds.
-fn bid_estimate(k: &Knowledge, view: &View, budget: Budget) -> Option<(f64, f64)> {
-    let mut rng = Rng::stream(EVIDENCE_SEED, view_seed(view) ^ 0x7002);
+/// The advice a table gives (`k` its position).
+pub fn advice_of<'a>(k: &Knowledge, table: &'a rung4::MoveTable) -> Advice<'a> {
+    Advice {
+        scores: &table.scores,
+        per_world: &table.per_world,
+        exact: search_complete(k, table.depth),
+        known: k.hidden_total() == 0,
+    }
+}
+
+/// The expectation in Points of taking up, per unit of doubling, over the
+/// sampled worlds of stream `salt`, and its standard error; `None` for fewer
+/// than two worlds.
+pub fn bid_estimate(k: &Knowledge, view: &View, budget: Budget, salt: u64) -> Option<(f64, f64)> {
+    let mut rng = advisor_rng(view, salt, 0x7002);
     let samples = rung4::bid_samples(k, &mut rng, budget.bid_worlds);
     let n = samples.len() as f64;
     if n < 2.0 {
@@ -617,20 +688,14 @@ pub fn decision_verdicts(view: &View, action: &Action, budget: Budget) -> Vec<Ve
         if !view.legal_actions.contains(action) {
             return out;
         }
-        if let Some((mean, se)) = bid_estimate(&k, view, budget) {
+        if let Some((mean, se)) = bid_estimate(&k, view, budget, 0) {
             out.extend(classify_bid(&k, take, mean, se));
         }
         return out;
     }
     out.extend(classify_announce(&k, action));
-    if let (Action::Play { card, .. }, Some(table)) = (action, play_table(&k, view, budget)) {
-        let advice = Advice {
-            scores: &table.scores,
-            per_world: &table.per_world,
-            exact: search_complete(&k, table.depth),
-            known: k.hidden_total() == 0,
-        };
-        out.extend(classify_play(&k, *card, &advice));
+    if let (Action::Play { card, .. }, Some(table)) = (action, play_table(&k, view, budget, 0)) {
+        out.extend(classify_play(&k, *card, &advice_of(&k, &table)));
     }
     out
 }
@@ -648,7 +713,7 @@ pub fn open_skills(view: &View, budget: Budget) -> Vec<Skill> {
     if !k.playing {
         let can_bid = view.legal_actions.contains(&Action::Take);
         if can_bid {
-            if let Some((mean, se)) = bid_estimate(&k, view, budget) {
+            if let Some((mean, se)) = bid_estimate(&k, view, budget, 0) {
                 open.extend(classify_bid(&k, true, mean, se).map(|v| v.skill));
             }
         }
@@ -662,13 +727,8 @@ pub fn open_skills(view: &View, budget: Budget) -> Vec<Skill> {
     {
         open.push(Skill::Announce);
     }
-    if let Some(table) = play_table(&k, view, budget) {
-        let advice = Advice {
-            scores: &table.scores,
-            per_world: &table.per_world,
-            exact: search_complete(&k, table.depth),
-            known: k.hidden_total() == 0,
-        };
+    if let Some(table) = play_table(&k, view, budget, 0) {
+        let advice = advice_of(&k, &table);
         for &(card, _) in &table.scores {
             for v in classify_play(&k, card, &advice) {
                 if !open.contains(&v.skill) {
@@ -702,42 +762,46 @@ impl Verdict {
 /// The ladder the learner folds (`docs/TUTOR.md` 13). Prerequisites are those
 /// of [`Skill::needs`] (a test holds them equal).
 ///
-/// **Provisional.** `top_rate` and `top_cost` are what rung 4 met and lost per
-/// deal against a rung-4 opponent over 54 deals (9 sittings, default budget,
-/// `print_students`), after the noise rule; `top_cost` is conditional on the
-/// resolution (a miss costs at least `MARGIN`). M3 (rung 4 against rung 3, both
-/// seats) sets them finally. `min_chances` is Cassino's 4, except `announce`
-/// (2: six chances in 54 deals); M3 sets it from the chances a deal.
+/// **Measured, M3** (`docs/MEASUREMENTS.md`): `top_rate` and `top_cost` are
+/// what rung 4 met and lost per deal against rung 3, both seats, 1,200 deals
+/// (200 sittings) at the default settings, after the noise rule and the margin
+/// of M1; `top_cost` is conditional on the resolution (a miss costs at least
+/// `MARGIN`). `min_chances` is half the chances a skill offers in six deals,
+/// rounded down, between 2 and 4.
 pub const LADDER: Ladder = Ladder {
     name: "strohmandeln",
     version: EVIDENCE_VERSION,
     skills: &[
-        spec("worth", &[], 0.96, 0.96, 4.0),
-        spec("cheap", &[0], 0.96, 1.22, 4.0),
-        spec("off", &[0], 0.93, 0.95, 4.0),
-        spec("run", &[1], 0.91, 1.92, 4.0),
-        spec("pagat", &[3], 0.94, 0.57, 4.0),
-        spec("void", &[0], 0.96, 0.32, 4.0),
-        spec("behind", &[2, 5], 0.91, 1.76, 4.0),
-        spec("endgame", &[1, 5], 0.93, 1.00, 4.0),
-        spec("bid", &[0], 1.0, 0.0, 4.0),
+        spec("worth", &[], 0.99, 0.32, 4.0),
+        spec("cheap", &[0], 0.96, 1.35, 4.0),
+        spec("off", &[0], 0.92, 0.72, 2.0),
+        spec("run", &[1], 0.95, 0.93, 3.0),
+        spec("pagat", &[3], 0.98, 0.22, 2.0),
+        praise_only("void", &[0], 0.96, 0.62, 2.0),
+        praise_only("behind", &[2, 5], 0.96, 1.42, 4.0),
+        spec("endgame", &[1, 5], 0.93, 0.86, 3.0),
+        spec("bid", &[0], 0.99, 0.09, 2.0),
         spec("announce", &[], 1.0, 0.0, 2.0),
     ],
 };
 
-/// The learner's constants (`docs/TUTOR.md` 5). **Provisional**: Cassino's
-/// ratios (discount 0.8, mastery at 85% of what the strongest rung meets,
-/// the quantiles 0.2 and 0.9, a loss of mastery 0.2 below it) with the
-/// gains in thirds a deal; M3 (what rung 4 meets and loses), M4 (what a
-/// skill is worth) and M6 (the lesioned students) set them.
+/// The learner's constants (`docs/TUTOR.md` 5). `min_gain` and `costly_gain`:
+/// half the worth of the least valuable skill whose knock-out costs rung 4
+/// clearly (`announce`, 2.1 thirds a deal), and four times that;
+/// `costly_chances` twice the largest `min_chances` (M4). The rest are the
+/// grid point of M6 that named the most lesioned students' skills within their
+/// limits while naming no focus for whole rung 4 on more than one deal in ten
+/// of its windows (`docs/MEASUREMENTS.md`): a window of about eight deals
+/// (`discount` 0.88), mastery at 80% of what rung 4 meets, the quantiles 0.2
+/// and 0.8, a loss of mastery 0.2 below it.
 pub const PARAMS: Params = Params {
-    discount: 0.8,
-    min_gain: 2.0,
-    costly_gain: 8.0,
+    discount: 0.88,
+    min_gain: 1.1,
+    costly_gain: 4.4,
     costly_chances: 8.0,
     lower: 0.2,
-    upper: 0.9,
-    master_of_top: 0.85,
+    upper: 0.8,
+    master_of_top: 0.80,
     lose_below: 0.2,
 };
 
@@ -759,6 +823,22 @@ const fn spec(
         top_rate,
         top_cost,
         min_chances,
+        may_focus: true,
+    }
+}
+
+/// A skill that is judged and praised but never the focus: M4 found it worth
+/// nothing against the strongest rung (`docs/MEASUREMENTS.md`).
+const fn praise_only(
+    slug: &'static str,
+    needs: &'static [usize],
+    top_rate: f64,
+    top_cost: f64,
+    min_chances: f64,
+) -> SkillSpec {
+    SkillSpec {
+        may_focus: false,
+        ..spec(slug, needs, top_rate, top_cost, min_chances)
     }
 }
 
@@ -976,6 +1056,9 @@ mod tests {
     use crate::testutil::{c, know};
     use strohmandeln_core::cards::Honour;
 
+    /// The tests' open-position values are written for a margin of 5; this
+    /// brings them to `MARGIN` (a test holds the fit).
+    const OPEN: f64 = 2.0;
     const NO: [&str; 3] = ["", "", ""];
     /// An opponent cover keeps the position from being exact.
     const HID: [&str; 3] = ["T2", "", ""];
@@ -1012,7 +1095,13 @@ mod tests {
         exact: bool,
         skill: Skill,
     ) -> Option<Verdict> {
-        let scores = sc(scores);
+        // the values are written for a margin of 5 and doubled where the
+        // search is not exact (`OPEN`); an exact position keeps them
+        let scale = if exact { 1.0 } else { OPEN };
+        let scores: Vec<(Card, f64)> = sc(scores)
+            .into_iter()
+            .map(|(c, v)| (c, v * scale))
+            .collect();
         let per_world = rows(&scores, noise);
         let advice = Advice {
             scores: &scores,
@@ -1091,32 +1180,32 @@ mod tests {
         // the same means: steady worlds make a clear chance, wild ones do not
         assert!(one_with(&k, "Kh", &s, 0.0, false, Skill::Off).is_some());
         assert!(one_with(&k, "Kh", &s, 2.0, false, Skill::Off).is_some());
-        assert!(one_with(&k, "Kh", &s, 30.0, false, Skill::Off).is_none());
-        assert!(one_with(&k, "Qh", &s, 30.0, false, Skill::Off).is_none());
+        assert!(one_with(&k, "Kh", &s, 30.0 * OPEN, false, Skill::Off).is_none());
+        assert!(one_with(&k, "Qh", &s, 30.0 * OPEN, false, Skill::Off).is_none());
         // worth, cheap, pagat, void, behind, run are held to the same rule
         let f = know(&["Kh", "Qh", "4h"], NO, HID, &[], Some("3h"));
         let w = [("Kh", 20.0), ("Qh", 12.0), ("4h", 0.0)];
         assert!(one_with(&f, "4h", &w, 0.0, false, Skill::Worth).is_some());
-        assert!(one_with(&f, "4h", &w, 30.0, false, Skill::Worth).is_none());
+        assert!(one_with(&f, "4h", &w, 30.0 * OPEN, false, Skill::Worth).is_none());
         assert!(one_with(&f, "Qh", &w, 0.0, false, Skill::Cheap).is_some());
-        assert!(one_with(&f, "Qh", &w, 30.0, false, Skill::Cheap).is_none());
+        assert!(one_with(&f, "Qh", &w, 30.0 * OPEN, false, Skill::Cheap).is_none());
         let p = know(&["T1", "T9", "Kh"], NO, HID, &[], Some("3d"));
         let ps = [("T1", 20.0), ("T9", 5.0), ("Kh", 3.0)];
         assert!(one_with(&p, "T9", &ps, 0.0, false, Skill::Pagat).is_some());
-        assert!(one_with(&p, "T9", &ps, 30.0, false, Skill::Pagat).is_none());
+        assert!(one_with(&p, "T9", &ps, 30.0 * OPEN, false, Skill::Pagat).is_none());
         let r = know(&["T10", "T9", "T3", "Kh"], NO, HID, &[], None);
         let rs = [("T10", 12.0), ("T9", 11.0), ("T3", 2.0), ("Kh", 0.0)];
         assert!(one_with(&r, "T3", &rs, 0.0, false, Skill::Run).is_some());
-        assert!(one_with(&r, "T3", &rs, 30.0, false, Skill::Run).is_none());
+        assert!(one_with(&r, "T3", &rs, 30.0 * OPEN, false, Skill::Run).is_none());
         let mut v = know(&["Kh", "Qd", "T3"], NO, HID, &[], None);
         v.opp_void[0] = true;
         let vs = [("Qd", 10.0), ("T3", 4.0), ("Kh", 0.0)];
         assert!(one_with(&v, "Kh", &vs, 0.0, false, Skill::Void).is_some());
-        assert!(one_with(&v, "Kh", &vs, 30.0, false, Skill::Void).is_none());
+        assert!(one_with(&v, "Kh", &vs, 30.0 * OPEN, false, Skill::Void).is_none());
         let b = know(&["Kh", "Qh", "9c"], NO, HID, &[], None);
         let bs = [("9c", 10.0), ("Kh", 0.0), ("Qh", 1.0)];
         assert!(one_with(&b, "Kh", &bs, 0.0, false, Skill::Behind).is_some());
-        assert!(one_with(&b, "Kh", &bs, 30.0, false, Skill::Behind).is_none());
+        assert!(one_with(&b, "Kh", &bs, 30.0 * OPEN, false, Skill::Behind).is_none());
     }
 
     #[test]
@@ -1126,7 +1215,7 @@ mod tests {
         // Qh is 15 below the best: a miss when the worlds agree, met when not
         let steady = one_with(&k, "Qh", &s, 0.0, false, Skill::Cheap).unwrap();
         assert!(!steady.met);
-        assert!(one_with(&k, "Qh", &s, 30.0, false, Skill::Cheap).is_none());
+        assert!(one_with(&k, "Qh", &s, 30.0 * OPEN, false, Skill::Cheap).is_none());
     }
 
     #[test]
@@ -1155,6 +1244,60 @@ mod tests {
         assert!(!search_complete(&open, 28.0), "a packet card is face down");
     }
 
+    #[test]
+    fn the_test_values_fit_the_margin() {
+        // near ties are written as gaps of 4 or less, clear chances as 10 or more
+        const { assert!(4.0 * OPEN < MARGIN && MARGIN < 10.0 * OPEN) };
+    }
+
+    // ---- the probe (M1) ----------------------------------------------------
+
+    #[test]
+    fn the_probe_names_each_skills_pair_clear_or_not() {
+        let probed = |k: &Knowledge, played: &str, scores: &[(&str, f64)]| {
+            let scores: Vec<(Card, f64)> =
+                sc(scores).into_iter().map(|(c, v)| (c, v * OPEN)).collect();
+            let per_world = rows(&scores, 0.0);
+            let advice = Advice {
+                scores: &scores,
+                per_world: &per_world,
+                exact: false,
+                known: k.hidden_total() == 0,
+            };
+            let mut seen = Vec::new();
+            let verdicts =
+                classify_play_probed(k, c(played), &advice, &mut |s, a, b| seen.push((s, a, b)));
+            // the same verdicts as classify_play
+            assert_eq!(verdicts, classify_play(k, c(played), &advice));
+            (seen, verdicts)
+        };
+        // off: the best cover against the best hand card
+        let k = know(&["Kh", "4h"], ["Qh", "", ""], HID, &[], None);
+        let (seen, v) = probed(&k, "Kh", &[("Qh", 20.0), ("Kh", 10.0), ("4h", 5.0)]);
+        assert!(seen.contains(&(Skill::Off, c("Qh"), c("Kh"))), "{seen:?}");
+        assert!(v.iter().any(|x| x.skill == Skill::Off));
+        // inside the margin the pair is still named, and there is no verdict
+        let (seen, v) = probed(&k, "Kh", &[("Qh", 12.0), ("Kh", 10.0), ("4h", 5.0)]);
+        assert!(seen.contains(&(Skill::Off, c("Qh"), c("Kh"))), "{seen:?}");
+        assert!(v.iter().all(|x| x.skill != Skill::Off));
+        // worth: the best card that beats the lead against the best that does not
+        let f = know(&["Kh", "Qh", "4h"], NO, HID, &[], Some("3h"));
+        let (seen, _) = probed(&f, "4h", &[("Kh", 20.0), ("Qh", 12.0), ("4h", 0.0)]);
+        assert!(seen.contains(&(Skill::Worth, c("Kh"), c("4h"))), "{seen:?}");
+        // cheap: the best and the worst of the kind played
+        let (seen, _) = probed(&f, "Qh", &[("Kh", 20.0), ("Qh", 12.0), ("4h", 0.0)]);
+        assert!(seen.contains(&(Skill::Cheap, c("Kh"), c("Qh"))), "{seen:?}");
+        // void and behind: the lead that is not into the void / the split suit,
+        // then the one that is
+        let mut v = know(&["Kh", "Qd", "T3"], NO, HID, &[], None);
+        v.opp_void[0] = true;
+        let (seen, _) = probed(&v, "Kh", &[("Qd", 10.0), ("T3", 4.0), ("Kh", 0.0)]);
+        assert!(seen.contains(&(Skill::Void, c("Qd"), c("Kh"))), "{seen:?}");
+        // a skill that does not apply is not probed
+        let (seen, _) = probed(&k, "Kh", &[("Qh", 12.0), ("Kh", 10.0), ("4h", 5.0)]);
+        assert!(seen.iter().all(|(s, _, _)| *s != Skill::Pagat));
+    }
+
     // ---- worth ----------------------------------------------------------
 
     #[test]
@@ -1165,7 +1308,7 @@ mod tests {
         assert!(met.met && met.cost == 0.0);
         let missed = one(&k, "4h", &s, Skill::Worth).unwrap();
         assert!(!missed.met);
-        assert_eq!(missed.cost, 15.0);
+        assert_eq!(missed.cost, 15.0 * OPEN);
         assert_eq!(missed.direction, Some(Direction::Timid));
         assert_eq!(missed.better, Some(c("Kh")));
     }
@@ -1178,7 +1321,7 @@ mod tests {
         assert!(!missed.met);
         assert_eq!(missed.direction, Some(Direction::Greedy));
         assert_eq!(missed.better, Some(c("4h")));
-        assert_eq!(missed.cost, 15.0);
+        assert_eq!(missed.cost, 15.0 * OPEN);
         // the trick it won: the lead and the king
         assert_eq!(missed.trick_thirds, c("3h").thirds() + c("Kh").thirds());
         assert!(one(&k, "4h", &s, Skill::Worth).unwrap().met);
@@ -1214,7 +1357,7 @@ mod tests {
         assert!(one(&k, "Kh", &s, Skill::Cheap).unwrap().met);
         let m = one(&k, "Qh", &s, Skill::Cheap).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 8.0);
+        assert_eq!(m.cost, 8.0 * OPEN);
         assert_eq!(m.better, Some(c("Kh")));
         assert!(one(&k, "Qh", &[("Kh", 20.0), ("Qh", 17.0)], Skill::Cheap).is_none());
     }
@@ -1226,7 +1369,7 @@ mod tests {
         let s = [("Jh", -10.0), ("4h", 0.0)];
         let m = one(&k, "Jh", &s, Skill::Cheap).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 10.0);
+        assert_eq!(m.cost, 10.0 * OPEN);
         assert!(one(&k, "4h", &s, Skill::Cheap).unwrap().met);
     }
 
@@ -1245,7 +1388,7 @@ mod tests {
         assert!(one(&k, "Qh", &s, Skill::Off).unwrap().met);
         let m = one(&k, "Kh", &s, Skill::Off).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 10.0);
+        assert_eq!(m.cost, 10.0 * OPEN);
         assert_eq!(m.better, Some(c("Qh")));
         assert_eq!(m.direction, Some(Direction::Figure));
     }
@@ -1289,7 +1432,7 @@ mod tests {
         );
         let m = one(&k, "T3", &s, Skill::Run).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 10.0);
+        assert_eq!(m.cost, 10.0 * OPEN);
         assert_eq!(m.better, Some(c("T10")));
     }
 
@@ -1325,7 +1468,7 @@ mod tests {
         assert!(!m.met);
         assert_eq!(m.direction, Some(Direction::Cash));
         assert_eq!(m.better, Some(c("T1")));
-        assert_eq!(m.cost, 15.0);
+        assert_eq!(m.cost, 15.0 * OPEN);
         assert_eq!(m.tarocks, 2);
         let keep = [("T1", 3.0), ("T9", 10.0), ("Kh", 1.0)];
         let m = one(&k, "T1", &keep, Skill::Pagat).unwrap();
@@ -1363,7 +1506,7 @@ mod tests {
         let s = [("Qd", 10.0), ("T3", 4.0), ("Kh", 0.0)];
         let m = one(&k, "Kh", &s, Skill::Void).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 10.0);
+        assert_eq!(m.cost, 10.0 * OPEN);
         assert_eq!(m.better, Some(c("Qd")));
         assert!(one(&k, "Qd", &s, Skill::Void).unwrap().met);
         assert!(one(&k, "T3", &s, Skill::Void).unwrap().met);
@@ -1415,7 +1558,7 @@ mod tests {
         let s = [("9c", 10.0), ("Kh", 0.0), ("Qh", 1.0)];
         let m = one(&k, "Kh", &s, Skill::Behind).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 9.0);
+        assert_eq!(m.cost, 9.0 * OPEN);
         assert_eq!(m.better, Some(c("9c")));
         assert!(one(&k, "9c", &s, Skill::Behind).unwrap().met);
     }
@@ -1535,7 +1678,7 @@ mod tests {
         k.announceable = vec![Honour::Trull];
         let silent = classify_announce(&k, &Action::play(c("T21"))).unwrap();
         assert!(!silent.met);
-        assert_eq!(silent.cost, 12.0);
+        assert_eq!(silent.cost, THIRDS_PER_POINT);
         assert_eq!(silent.skill, Skill::Announce);
         let said = Action::Play {
             card: c("T21"),

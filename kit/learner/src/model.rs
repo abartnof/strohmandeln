@@ -17,6 +17,12 @@ pub struct SkillSpec {
     /// The discounted chances the skill needs before its rate counts. Below
     /// it the state does not change.
     pub min_chances: f64,
+    /// Whether the skill may be the focus. A game turns it off for a skill
+    /// it has found worth nothing (its knock-out costs the strongest player
+    /// nothing it can show): the skill is still counted, mastered and
+    /// praised, but never chosen to work on, and it does not hold back the
+    /// skills that need it.
+    pub may_focus: bool,
 }
 
 impl SkillSpec {

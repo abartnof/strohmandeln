@@ -1,0 +1,1006 @@
+//! The tutor's measurements, M1 to M8 (`docs/MEASUREMENTS.md`). Each prints
+//! its plan's numbers; the computations are in `strohmandeln_ai::measure`.
+//!
+//! ```text
+//! measure m1 [--seed S] [--plays N] [--bids N] [--streams K]
+//! ```
+
+use kit_learner::Summary;
+use std::time::Instant;
+use strohmandeln_ai::know::Knowledge;
+use strohmandeln_ai::measure::{self, Position};
+use strohmandeln_ai::opponent::Config;
+use strohmandeln_ai::rung4::Budget;
+use strohmandeln_ai::stats::{run_sequential, Plan, Verdict};
+use strohmandeln_ai::students::{Lesion, Student};
+use strohmandeln_ai::tutor::{self, Skill, SKILLS};
+use strohmandeln_core::agents::Player;
+use strohmandeln_core::types::{Action, BothPass, Settings, Values};
+
+struct Args {
+    rest: Vec<String>,
+}
+
+impl Args {
+    fn num(&self, name: &str, default: u64) -> u64 {
+        self.rest
+            .iter()
+            .position(|a| a == name)
+            .map_or(default, |i| {
+                self.rest
+                    .get(i + 1)
+                    .and_then(|v| v.parse().ok())
+                    .unwrap_or_else(|| panic!("{name} N"))
+            })
+    }
+}
+
+fn main() {
+    let mut argv: Vec<String> = std::env::args().skip(1).collect();
+    if argv.is_empty() {
+        panic!("measure m1|m2|...");
+    }
+    let which = argv.remove(0);
+    let args = Args { rest: argv };
+    match which.as_str() {
+        "m1" => m1(&args),
+        "m2" => m2(&args),
+        "m3" => m3(&args),
+        "m4" => m4(&args),
+        "m5" => m5(&args),
+        "m6" => m6(&args),
+        "m8" => m8(&args),
+        other => panic!("unknown measurement {other}"),
+    }
+}
+
+/// Every 7th play and every 2nd bid of the sittings from `first_seed`, until
+/// the counts are reached.
+fn collect(first_seed: u64, plays: usize, bids: usize) -> (Vec<Position>, Vec<Position>, u64) {
+    let (mut p, mut b) = (Vec::new(), Vec::new());
+    let (mut pi, mut bi) = (0usize, 0usize);
+    let mut seed = first_seed;
+    while p.len() < plays || b.len() < bids {
+        for rec in measure::rung4_deals(seed, Config::default()) {
+            let (ps, bs) = measure::decisions(&rec);
+            for x in ps {
+                if p.len() < plays && pi % 7 == 0 {
+                    p.push(x);
+                }
+                pi += 1;
+            }
+            for x in bs {
+                if b.len() < bids && bi % 2 == 0 {
+                    b.push(x);
+                }
+                bi += 1;
+            }
+        }
+        seed += 1;
+    }
+    (p, b, seed - first_seed)
+}
+
+fn m1(args: &Args) {
+    let first = args.num("--seed", 10_000_000);
+    let plays = args.num("--plays", 600) as usize;
+    let bids = args.num("--bids", 200) as usize;
+    let streams = args.num("--streams", 8);
+    let budget = Budget::default();
+    let started = Instant::now();
+    let (pp, bp, sittings) = collect(first, plays, bids);
+    println!(
+        "M1: {} plays and {} bids from {sittings} sittings of rung 4 against rung 4 (seeds {first}..{}), {streams} streams, {:.0}s",
+        pp.len(),
+        bp.len(),
+        first + sittings - 1,
+        started.elapsed().as_secs_f64()
+    );
+    let mut reads = Vec::new();
+    let mut starved = 0;
+    for pos in &pp {
+        let k = Knowledge::from_view(&pos.view).expect("a deal");
+        let Action::Play { card, .. } = &pos.action else {
+            continue;
+        };
+        match measure::play_tables(&k, &pos.view, budget, streams) {
+            Some(t) => reads.push(measure::read_play(&k, *card, &t)),
+            None => starved += 1,
+        }
+    }
+    println!(
+        "plays read: {} ({} starved), {:.0}s",
+        reads.len(),
+        starved,
+        started.elapsed().as_secs_f64()
+    );
+    let mut bid_reads = Vec::new();
+    for pos in &bp {
+        let k = Knowledge::from_view(&pos.view).expect("a deal");
+        if let Some(r) = measure::read_bid(&k, &pos.view, budget, streams) {
+            bid_reads.push(r);
+        }
+    }
+    println!(
+        "bids read: {}, {:.0}s",
+        bid_reads.len(),
+        started.elapsed().as_secs_f64()
+    );
+
+    let split = measure::by_skill(&reads);
+    let noises: Vec<_> = Skill::ALL
+        .iter()
+        .map(|&s| measure::noise_of(s, &split[s.index()]))
+        .collect();
+    println!("\nnoise: across-stream standard deviation of the gap, thirds (positions not exact)");
+    println!(
+        "{:8} {:>5} {:>5} {:>6} {:>6} {:>6} {:>7} {:>7} {:>5} {:>7} {:>8}",
+        "skill",
+        "pos",
+        "exact",
+        "median",
+        "p90",
+        "p95",
+        "calMed",
+        "calRMS",
+        "noSE",
+        "select",
+        "exSpread"
+    );
+    for n in &noises {
+        println!(
+            "{:8} {:>5} {:>5} {:>6.2} {:>6.2} {:>6.2} {:>7.2} {:>7.2} {:>5} {:>7.2} {:>8.2}",
+            n.skill.slug(),
+            n.positions,
+            n.exact_spread.len(),
+            measure::median(&n.spread),
+            measure::quantile(&n.spread, 0.9),
+            measure::quantile(&n.spread, 0.95),
+            n.calibration_median,
+            n.calibration_rms,
+            n.unbounded,
+            n.selection,
+            measure::quantile(&n.exact_spread, 0.95),
+        );
+    }
+    let margin = measure::margin_rule(&noises);
+    let exact = measure::exact_margin_rule(&noises);
+    println!("\nMARGIN by the rule: {margin} thirds; EXACT_MARGIN: {exact} thirds");
+    for k in [2.0, 2.5, 3.0] {
+        println!("\nreplication at {k} standard errors beyond {margin} thirds:");
+        println!(
+            "{:8} {:>7} {:>8} {:>8} {:>9} {:>9}",
+            "skill", "clear", "sameSign", "share", "again", "share"
+        );
+        for s in Skill::ALL {
+            let (clear, same, again, pairs) = measure::replication(&split[s.index()], margin, k);
+            if clear == 0 {
+                continue;
+            }
+            println!(
+                "{:8} {:>7} {:>8} {:>8.3} {:>9} {:>9.3}",
+                s.slug(),
+                clear,
+                same,
+                same as f64 / clear as f64,
+                again,
+                again as f64 / pairs as f64
+            );
+        }
+    }
+    println!("\nbids: mean (Points per unit of doubling) across {streams} streams");
+    let sds: Vec<f64> = bid_reads
+        .iter()
+        .map(|r| measure::sd(&r.iter().map(|x| x.0).collect::<Vec<_>>()))
+        .collect();
+    let ses: Vec<f64> = bid_reads
+        .iter()
+        .map(|r| measure::mean(&r.iter().map(|x| x.1).collect::<Vec<_>>()))
+        .collect();
+    println!(
+        "spread median {:.3} p90 {:.3} p95 {:.3}; reported error median {:.3}; ratio of medians {:.2}",
+        measure::median(&sds),
+        measure::quantile(&sds, 0.9),
+        measure::quantile(&sds, 0.95),
+        measure::median(&ses),
+        measure::median(&sds) / measure::median(&ses)
+    );
+    println!(
+        "BID_MARGIN by the rule: {:.2} Points",
+        measure::bid_margin_rule(&bid_reads)
+    );
+    println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}
+
+fn m2(args: &Args) {
+    let first = args.num("--seed", 20_000_000);
+    let sittings = args.num("--sittings", 300);
+    let started = Instant::now();
+    let (mut x, mut y, mut cluster) = (Vec::new(), Vec::new(), Vec::new());
+    let mut thrown_in = 0;
+    for i in 0..sittings {
+        for rec in measure::rung4_deals(first + i, Config::default()) {
+            match measure::deal_margin_points(&rec) {
+                Some((a, b)) => {
+                    x.push(a);
+                    y.push(b);
+                    cluster.push(i as usize);
+                }
+                None => thrown_in += 1,
+            }
+        }
+    }
+    println!(
+        "M2: {} played deals ({} thrown in) from {sittings} sittings of rung 4 against rung 4 (seeds {first}..{}), {:.0}s",
+        x.len(),
+        thrown_in,
+        first + sittings - 1,
+        started.elapsed().as_secs_f64()
+    );
+    let o = measure::ols_clustered(&x, &y, &cluster);
+    let (lo, hi) = (o.slope - 1.96 * o.se_slope, o.slope + 1.96 * o.se_slope);
+    println!(
+        "net Points per third: slope {:.5} +- {:.5} (cluster), intercept {:.3}, correlation {:.3}",
+        o.slope, o.se_slope, o.intercept, o.correlation
+    );
+    println!(
+        "thirds per Point = 1/slope = {:.2} (95% interval {:.2} to {:.2}); rounded {}",
+        1.0 / o.slope,
+        1.0 / hi,
+        1.0 / lo,
+        (1.0 / o.slope).round()
+    );
+    let rev = measure::ols_clustered(&y, &x, &cluster);
+    println!(
+        "reverse regression (thirds on Points): {:.2} thirds per Point",
+        rev.slope
+    );
+    println!("\nmean net Points by decile of the margin (thirds):");
+    let mut order: Vec<usize> = (0..x.len()).collect();
+    order.sort_by(|&a, &b| x[a].total_cmp(&x[b]));
+    for d in 0..10 {
+        let part = &order[d * order.len() / 10..(d + 1) * order.len() / 10];
+        let xs: Vec<f64> = part.iter().map(|&i| x[i]).collect();
+        let ys: Vec<f64> = part.iter().map(|&i| y[i]).collect();
+        println!(
+            "  margin {:>6.1} to {:>6.1}: mean {:>6.1}, points {:>6.2}",
+            xs[0],
+            xs[xs.len() - 1],
+            measure::mean(&xs),
+            measure::mean(&ys)
+        );
+    }
+}
+
+fn m8(args: &Args) {
+    use strohmandeln_ai::tutor::{self, advice_of, play_table};
+    let first = args.num("--seed", 80_000_000);
+    let sittings = args.num("--sittings", 100);
+    let started = Instant::now();
+    let budget = Budget::default();
+    let mut rows: Vec<measure::LeadRow> = Vec::new();
+    for i in 0..sittings {
+        for rec in measure::rung4_deals(first + i, Config::default()) {
+            let (plays, _) = measure::decisions(&rec);
+            for pos in plays {
+                let k = Knowledge::from_view(&pos.view).expect("a deal");
+                let Action::Play { card, .. } = &pos.action else {
+                    continue;
+                };
+                if k.lead.is_some() {
+                    continue;
+                }
+                if let Some(table) = play_table(&k, &pos.view, budget, 0) {
+                    rows.extend(measure::lead_rows(
+                        &k,
+                        *card,
+                        &advice_of(&k, &table),
+                        i as usize,
+                    ));
+                }
+            }
+        }
+    }
+    println!(
+        "M8: {} rows (a suit of a lead decision) from {sittings} sittings of rung 4 against rung 4 (seeds {first}..{}), {:.0}s",
+        rows.len(),
+        first + sittings - 1,
+        started.elapsed().as_secs_f64()
+    );
+    let margin = tutor::MARGIN;
+    let show = |name: &str, b: &measure::Bin| {
+        println!(
+            "  {name}: n {:>5} mean gap {:>7.2} +- {:>5.2}  other clearly better {:.3}  opened {:.3}",
+            b.n, b.mean, b.se, b.other_clearly_better, b.opened
+        );
+    };
+    let share_bins = |min_total: u32| -> Vec<measure::Bin> {
+        (0..10)
+            .map(|i| {
+                let (lo, hi) = (f64::from(i) / 10.0, f64::from(i + 1) / 10.0);
+                let part: Vec<&measure::LeadRow> = rows
+                    .iter()
+                    .filter(|r| {
+                        r.total >= min_total
+                            && r.share >= lo
+                            && (r.share < hi || (i == 9 && r.share <= 1.0))
+                    })
+                    .collect();
+                measure::bin_of(&part, margin)
+            })
+            .collect()
+    };
+    println!("\nby my share of the suit, suits with at least 6 points unplayed:");
+    let bins = share_bins(6);
+    for (i, b) in bins.iter().enumerate() {
+        show(
+            &format!(
+                "share {:.1} to {:.1}",
+                i as f64 / 10.0,
+                (i + 1) as f64 / 10.0
+            ),
+            b,
+        );
+    }
+    println!("\nby my share of the suit, all suits:");
+    for (i, b) in share_bins(0).iter().enumerate() {
+        show(
+            &format!(
+                "share {:.1} to {:.1}",
+                i as f64 / 10.0,
+                (i + 1) as f64 / 10.0
+            ),
+            b,
+        );
+    }
+    let band = measure::split_band(&bins, 0.10);
+    println!("\nSPLIT_SHARE by the rule: {band:?}");
+    let Some((lo, hi)) = band else { return };
+    println!("\nrows with the share in the band, by the suit's points unplayed:");
+    let classes: Vec<measure::Bin> = measure::TOTAL_CLASSES
+        .iter()
+        .map(|&(a, b)| {
+            let part: Vec<&measure::LeadRow> = rows
+                .iter()
+                .filter(|r| r.total >= a && r.total < b && r.share >= lo && r.share < hi)
+                .collect();
+            measure::bin_of(&part, margin)
+        })
+        .collect();
+    for (c, b) in measure::TOTAL_CLASSES.iter().zip(&classes) {
+        let to = if c.1 == u32::MAX {
+            "..".to_string()
+        } else {
+            c.1.to_string()
+        };
+        show(&format!("points {} to {to}", c.0), b);
+    }
+    println!(
+        "SPLIT_MIN_POINTS by the rule: {:?}",
+        measure::min_points_rule(&classes, 30)
+    );
+    println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}
+
+/// Per skill: the chances, met and missed thirds of each sitting's deals for
+/// the player, and the deals.
+struct Sittings {
+    chances: Vec<[f64; SKILLS]>,
+    met: Vec<[f64; SKILLS]>,
+    missed: Vec<[f64; SKILLS]>,
+    deals: usize,
+}
+
+fn player_sittings(first: u64, count: u64, settings: Settings) -> Sittings {
+    let mut out = Sittings {
+        chances: Vec::new(),
+        met: Vec::new(),
+        missed: Vec::new(),
+        deals: 0,
+    };
+    for i in 0..count {
+        let (seat, recs) =
+            measure::player_sitting(first + i, settings, i % 2 == 0, Config::default());
+        let (mut c, mut m, mut x) = ([0.0; SKILLS], [0.0; SKILLS], [0.0; SKILLS]);
+        for rec in &recs {
+            let e = tutor::evidence(rec, seat, &[], Budget::default()).expect("a played deal");
+            for (s, t) in e.summary.tallies.iter().enumerate() {
+                c[s] += f64::from(t.chances);
+                m[s] += f64::from(t.met);
+                x[s] += t.missed;
+            }
+            out.deals += 1;
+        }
+        out.chances.push(c);
+        out.met.push(m);
+        out.missed.push(x);
+    }
+    out
+}
+
+impl Sittings {
+    fn column(v: &[[f64; SKILLS]], s: usize) -> Vec<f64> {
+        v.iter().map(|r| r[s]).collect()
+    }
+
+    /// Met rate with its cluster error, chances a deal, missed thirds a deal.
+    fn skill(&self, s: usize) -> (f64, f64, f64, f64) {
+        let (c, m) = (Self::column(&self.chances, s), Self::column(&self.met, s));
+        let (rate, se) = measure::ratio_estimate(&m, &c);
+        let deals = self.deals as f64;
+        (
+            rate,
+            se,
+            c.iter().sum::<f64>() / deals,
+            Self::column(&self.missed, s).iter().sum::<f64>() / deals,
+        )
+    }
+}
+
+fn m3(args: &Args) {
+    let started = Instant::now();
+    let default_n = args.num("--sittings", 200);
+    let other_n = args.num("--other-sittings", 40);
+    let sets: [(&str, u64, Settings, u64); 5] = [
+        ("default", 30_000_000, Settings::default(), default_n),
+        (
+            "values 1/2/3",
+            31_000_000,
+            Settings {
+                values: Values::V123,
+                ..Settings::default()
+            },
+            other_n,
+        ),
+        (
+            "values 1/2/4",
+            32_000_000,
+            Settings {
+                values: Values::V124,
+                ..Settings::default()
+            },
+            other_n,
+        ),
+        (
+            "both pass: throw in",
+            33_000_000,
+            Settings {
+                both_pass: BothPass::ThrowIn,
+                ..Settings::default()
+            },
+            other_n,
+        ),
+        (
+            "ultimo 2",
+            34_000_000,
+            Settings {
+                ultimo: 2,
+                ..Settings::default()
+            },
+            other_n,
+        ),
+    ];
+    let mut results = Vec::new();
+    for (name, seed, settings, n) in sets {
+        if n == 0 {
+            continue;
+        }
+        let r = player_sittings(seed, n, settings);
+        println!(
+            "{name}: {n} sittings, {} deals (seeds {seed}..{}), {:.0}s",
+            r.deals,
+            seed + n - 1,
+            started.elapsed().as_secs_f64()
+        );
+        results.push((name, r));
+    }
+    println!("\ndefault rule set: rung 4 against rung 3, evidence for rung 4");
+    println!(
+        "{:8} {:>8} {:>7} {:>8} {:>6} {:>9} {:>10} {:>6}",
+        "skill", "chances", "met", "rate", "se", "per deal", "lost/deal", "minCh"
+    );
+    let base = &results[0].1;
+    for sk in Skill::ALL {
+        let s = sk.index();
+        let (rate, se, per, lost) = base.skill(s);
+        let c: f64 = Sittings::column(&base.chances, s).iter().sum();
+        let m: f64 = Sittings::column(&base.met, s).iter().sum();
+        println!(
+            "{:8} {:>8} {:>7} {:>8.3} {:>6.3} {:>9.3} {:>10.3} {:>6}",
+            sk.slug(),
+            c,
+            m,
+            rate,
+            se,
+            per,
+            lost,
+            measure::min_chances_rule(per)
+        );
+    }
+    println!("\nthe ladder, by the rules of the plan:");
+    for sk in Skill::ALL {
+        let (rate, _, per, lost) = base.skill(sk.index());
+        println!(
+            "        spec(\"{}\", ..., {:.2}, {:.2}, {:.1}),",
+            sk.slug(),
+            (rate * 100.0).round() / 100.0,
+            (lost * 100.0).round() / 100.0,
+            measure::min_chances_rule(per)
+        );
+    }
+    println!("\nthe met rate (chances) under each rule set; * marks a difference of more than twice the larger error from the default:");
+    print!("{:8}", "skill");
+    for (name, _) in &results {
+        print!(" {:>22}", name);
+    }
+    println!();
+    for sk in Skill::ALL {
+        let s = sk.index();
+        let (r0, e0, _, _) = base.skill(s);
+        print!("{:8}", sk.slug());
+        for (i, (_, r)) in results.iter().enumerate() {
+            let (rate, se, _, _) = r.skill(s);
+            let c: f64 = Sittings::column(&r.chances, s).iter().sum();
+            let differs = i > 0 && (rate - r0).abs() > 2.0 * se.max(e0);
+            print!(
+                " {:>14.3} ({:>4}){}",
+                rate,
+                c,
+                if differs { "*" } else { " " }
+            );
+        }
+        println!();
+    }
+    println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}
+
+/// A player that is rung 4 with `lesions` knocked out (none: whole).
+fn knocked_out_factory(
+    lesions: Vec<Lesion>,
+    salt: u64,
+) -> impl Fn(u64, strohmandeln_core::types::Seat) -> Box<dyn Player> {
+    move |seed, seat| {
+        Box::new(Student::knocked_out(
+            &lesions,
+            seed ^ salt ^ ((seat.index() as u64 + 1) * 0x9e37),
+            Config::default(),
+        ))
+    }
+}
+
+/// One sequential comparison of two students over mirrored pairs; prints each
+/// look and gives the report.
+fn compare(
+    label: &str,
+    a: &[Lesion],
+    b: &[Lesion],
+    plan: Plan,
+    first_seed: u64,
+) -> strohmandeln_ai::stats::Report {
+    let (fa, fb) = (
+        knocked_out_factory(a.to_vec(), 0xA),
+        knocked_out_factory(b.to_vec(), 0xB),
+    );
+    let started = Instant::now();
+    let report = run_sequential(
+        plan,
+        |i| {
+            f64::from(strohmandeln_ai::tournament::mirrored(
+                first_seed + i as u64,
+                Settings::default(),
+                3,
+                &fa,
+                &fb,
+            ))
+        },
+        |look| {
+            println!(
+                "  {label} look {}: {} pairs, {:+.3} +- {:.3} (z {:+.2}, boundary {:.2}), {:.0}s",
+                look.look,
+                look.n,
+                look.mean,
+                look.se,
+                look.z,
+                look.boundary,
+                started.elapsed().as_secs_f64()
+            );
+        },
+    );
+    let l = report.verdict.last();
+    let how = match report.verdict {
+        Verdict::Clear(_) => "CLEAR",
+        Verdict::Negligible(_) => "NEGLIGIBLE",
+        Verdict::Inconclusive(_) => "INCONCLUSIVE",
+    };
+    println!(
+        "{label}: {how} at look {} ({} pairs): {:+.3} +- {:.3}, 95% interval {:+.3} to {:+.3}",
+        l.look,
+        l.n,
+        l.mean,
+        l.se,
+        l.low(),
+        l.high()
+    );
+    report
+}
+
+fn lesion_name(l: Lesion) -> String {
+    format!("{l:?}")
+}
+
+fn m4(args: &Args) {
+    let started = Instant::now();
+    let first = args.num("--seed", 40_000_000);
+    let batch = args.num("--batch", 40) as usize;
+    let single_looks = args.num("--looks", 4) as usize;
+    let pair_looks = args.num("--pair-looks", 3) as usize;
+    let only: Option<String> = args
+        .rest
+        .iter()
+        .position(|a| a == "--only")
+        .and_then(|i| args.rest.get(i + 1).cloned());
+    let plan = |looks| Plan {
+        batch,
+        looks,
+        negligible: 0.5,
+    };
+    let singles = [
+        Lesion::Worth,
+        Lesion::Cheap,
+        Lesion::Off,
+        Lesion::Run,
+        Lesion::Pagat,
+        Lesion::Void,
+        Lesion::Behind,
+        Lesion::Endgame,
+        Lesion::Bid,
+        Lesion::AlwaysPass,
+        Lesion::Announce,
+    ];
+    println!(
+        "M4: batches of {batch}, singles at most {single_looks} looks (boundaries {:?}), pairs at most {pair_looks} looks, negligible +-0.5, first seed {first}",
+        plan(single_looks)
+            .boundaries()
+            .iter()
+            .map(|z| (z * 100.0).round() / 100.0)
+            .collect::<Vec<_>>()
+    );
+    let mut single_effect = std::collections::HashMap::new();
+    if only.as_deref() != Some("pairs") {
+        println!("\nsingle knock-outs against rung 4 whole (Points per mirrored pair, 12 deals):");
+        for &l in &singles {
+            let r = compare(&lesion_name(l), &[l], &[], plan(single_looks), first);
+            single_effect.insert(lesion_name(l), *r.verdict.last());
+        }
+    }
+    if only.as_deref() != Some("singles") {
+        // the bid knock-out with the larger effect stands for `bid`
+        let bid_arg = args
+            .rest
+            .iter()
+            .position(|a| a == "--bid")
+            .and_then(|i| args.rest.get(i + 1).cloned());
+        let bid = if only.as_deref() == Some("pairs") {
+            // the larger single effect, from the singles run
+            match bid_arg.as_deref() {
+                Some("coin") => Lesion::Bid,
+                _ => Lesion::AlwaysPass,
+            }
+        } else {
+            let eff = |l: Lesion| single_effect[&lesion_name(l)].mean;
+            if eff(Lesion::Bid) <= eff(Lesion::AlwaysPass) {
+                Lesion::Bid
+            } else {
+                Lesion::AlwaysPass
+            }
+        };
+        let edges = [
+            (Lesion::Cheap, Lesion::Worth),
+            (Lesion::Off, Lesion::Worth),
+            (Lesion::Run, Lesion::Cheap),
+            (Lesion::Pagat, Lesion::Run),
+            (Lesion::Void, Lesion::Worth),
+            (Lesion::Behind, Lesion::Off),
+            (Lesion::Behind, Lesion::Void),
+            (Lesion::Endgame, Lesion::Cheap),
+            (Lesion::Endgame, Lesion::Void),
+            (bid, Lesion::Worth),
+        ];
+        println!("\nprerequisites: the skill's worth with its prerequisite already knocked out (both out against the prerequisite out alone):");
+        for (skill, need) in edges {
+            let label = format!("{} with {} out", lesion_name(skill), lesion_name(need));
+            compare(&label, &[need, skill], &[need], plan(pair_looks), first);
+        }
+    }
+    println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}
+
+fn setting_named(name: &str) -> Settings {
+    match name {
+        "default" => Settings::default(),
+        "v123" => Settings {
+            values: Values::V123,
+            ..Settings::default()
+        },
+        "v124" => Settings {
+            values: Values::V124,
+            ..Settings::default()
+        },
+        "throwin" => Settings {
+            both_pass: BothPass::ThrowIn,
+            ..Settings::default()
+        },
+        "ult2" => Settings {
+            ultimo: 2,
+            ..Settings::default()
+        },
+        other => panic!("unknown setting {other}"),
+    }
+}
+
+fn m5(args: &Args) {
+    use strohmandeln_ai::rules::CANDIDATES;
+    let started = Instant::now();
+    let first = args.num("--seed", 50_000_000);
+    let sittings = args.num("--sittings", 400);
+    let word = |name: &str, default: &str| -> String {
+        args.rest
+            .iter()
+            .position(|a| a == name)
+            .and_then(|i| args.rest.get(i + 1).cloned())
+            .unwrap_or_else(|| default.to_string())
+    };
+    let setting = word("--setting", "default");
+    let only = word("--only", "");
+    let rules: Vec<_> = CANDIDATES
+        .iter()
+        .copied()
+        .filter(|r| only.is_empty() || only.split(',').any(|id| id == r.id))
+        .collect();
+    let settings = setting_named(&setting);
+    let mut records = Vec::new();
+    for i in 0..sittings {
+        let (seat, recs) =
+            measure::player_sitting(first + i, settings, i % 2 == 0, Config::default());
+        records.extend(recs.into_iter().map(|r| (seat, r)));
+    }
+    let refs: Vec<_> = records.iter().map(|(s, r)| (*s, r)).collect();
+    println!(
+        "M5: {} candidates, {} deals ({sittings} sittings, seeds {first}..{}), setting {setting}, rung 4 against rung 3, {:.0}s",
+        rules.len(),
+        records.len(),
+        first + sittings - 1,
+        started.elapsed().as_secs_f64()
+    );
+    let tallies = measure::rule_tallies(&refs, &rules);
+    println!(
+        "{:15} {:>6} {:>6} {:>7} {:>7} {:>7}  rule",
+        "id", "fired", "ok", "p", "n_eff", "lower"
+    );
+    let mut best: std::collections::BTreeMap<&str, (f64, &str)> = Default::default();
+    for (r, t) in rules.iter().zip(&tallies) {
+        let fired: Vec<f64> = t.iter().map(|x| x.0).collect();
+        let ok: Vec<f64> = t.iter().map(|x| x.1).collect();
+        let p = measure::precision(&ok, &fired);
+        let pass = p.lower >= 0.80;
+        println!(
+            "{:15} {:>6} {:>6} {:>7.3} {:>7.1} {:>7.3}{} {}",
+            r.id,
+            p.fired,
+            p.satisfied,
+            p.p,
+            p.n_eff,
+            p.lower,
+            if pass { "*" } else { " " },
+            r.text
+        );
+        if pass && r.eligible() && best.get(r.family()).is_none_or(|b| p.lower > b.0) {
+            best.insert(r.family(), (p.lower, r.id));
+        }
+    }
+    println!("\nthe candidate with the best lower bound at or above 0.80, by rule:");
+    for (family, (lower, id)) in &best {
+        println!("  {family:14} {id:15} {lower:.3}");
+    }
+    println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}
+
+/// The students of M6 with the skill each lacks, the deals within which it
+/// must be named, and a short name.
+fn m6_students() -> Vec<(&'static str, Vec<Lesion>, Option<Skill>, usize)> {
+    vec![
+        ("whole", vec![], None, 0),
+        ("Worth", vec![Lesion::Worth], Some(Skill::Worth), 6),
+        ("Cheap", vec![Lesion::Cheap], Some(Skill::Cheap), 6),
+        ("Off", vec![Lesion::Off], Some(Skill::Off), 6),
+        ("Run", vec![Lesion::Run], Some(Skill::Run), 6),
+        ("Pagat", vec![Lesion::Pagat], Some(Skill::Pagat), 12),
+        // praise-only (M4): nothing to detect, the focus they get is reported
+        ("Void", vec![Lesion::Void], None, 0),
+        ("Behind", vec![Lesion::Behind], None, 0),
+        ("Endgame", vec![Lesion::Endgame], Some(Skill::Endgame), 6),
+        ("Bid", vec![Lesion::Bid], Some(Skill::Bid), 12),
+        ("AlwaysPass", vec![Lesion::AlwaysPass], Some(Skill::Bid), 12),
+        (
+            "Announce",
+            vec![Lesion::Announce],
+            Some(Skill::Announce),
+            18,
+        ),
+    ]
+}
+
+/// The windows of every student from `first` (cached in `cache` if given:
+/// each summary's text under a header line).
+fn m6_groups(first: u64, windows: u64, sittings: u64, cache: Option<&str>) -> Vec<measure::Group> {
+    use strohmandeln_ai::tutor::LADDER;
+    let students = m6_students();
+    if let Some(path) = cache {
+        if let Ok(text) = std::fs::read_to_string(path) {
+            let mut groups: Vec<measure::Group> = students
+                .iter()
+                .map(|(name, _, target, by)| measure::Group {
+                    name: (*name).to_string(),
+                    target: target.map(Skill::index),
+                    by: *by,
+                    whole: *name == "whole",
+                    windows: Vec::new(),
+                })
+                .collect();
+            for block in text.split("@@ ").skip(1) {
+                let (head, body) = block.split_once('\n').expect("a header");
+                let (g, _w) = head.split_once(' ').expect("group window");
+                let g: usize = g.parse().expect("a group");
+                let w: Vec<Summary> = body
+                    .split("%%\n")
+                    .filter(|t| !t.trim().is_empty())
+                    .map(|t| Summary::parse(&LADDER, t).expect("a cached summary"))
+                    .collect();
+                groups[g].windows.push(w);
+            }
+            return groups;
+        }
+    }
+    let mut groups = Vec::new();
+    let mut cached = String::new();
+    for (gi, (name, lesions, target, by)) in students.iter().enumerate() {
+        let mut ws = Vec::new();
+        for w in 0..windows {
+            let sums =
+                measure::student_window(lesions, first + w * sittings, sittings, Config::default());
+            cached.push_str(&format!("@@ {gi} {w}\n"));
+            for s in &sums {
+                cached.push_str(&s.to_text(&LADDER));
+                cached.push_str("%%\n");
+            }
+            ws.push(sums);
+        }
+        println!("  {name}: {windows} windows");
+        groups.push(measure::Group {
+            name: (*name).to_string(),
+            target: target.map(Skill::index),
+            by: *by,
+            whole: *name == "whole",
+            windows: ws,
+        });
+    }
+    if let Some(path) = cache {
+        std::fs::write(path, cached).expect("write the cache");
+    }
+    groups
+}
+
+fn m6(args: &Args) {
+    use strohmandeln_ai::tutor::PARAMS;
+    let started = Instant::now();
+    let windows = args.num("--windows", 8);
+    let sittings = args.num("--sittings", 3);
+    let tune_seed = args.num("--seed", 60_000_000);
+    let fresh_seed = args.num("--fresh-seed", 65_000_000);
+    let word = |name: &str| -> Option<String> {
+        args.rest
+            .iter()
+            .position(|a| a == name)
+            .and_then(|i| args.rest.get(i + 1).cloned())
+    };
+    let (tune_cache, fresh_cache) = (word("--tune-cache"), word("--fresh-cache"));
+    println!(
+        "M6: {} students, {windows} windows of {sittings} sittings (6 deals each) from {tune_seed} (tuning) and {fresh_seed} (fresh)",
+        m6_students().len()
+    );
+    let tune = m6_groups(tune_seed, windows, sittings, tune_cache.as_deref());
+    println!(
+        "tuning windows ready, {:.0}s",
+        started.elapsed().as_secs_f64()
+    );
+    let fresh = m6_groups(fresh_seed, windows, sittings, fresh_cache.as_deref());
+    println!(
+        "fresh windows ready, {:.0}s",
+        started.elapsed().as_secs_f64()
+    );
+
+    let report = |label: &str, p: &kit_learner::Params, groups: &[measure::Group]| {
+        let s = measure::score(p, groups);
+        println!(
+            "{label}: sensitivity {:.3}, false focus {:.3}, whole mastered {:.2}",
+            s.sensitivity, s.false_focus, s.whole_mastered
+        );
+        for (n, v) in &s.per_group {
+            print!(" {n} {v:.2};");
+        }
+        println!();
+        s
+    };
+    println!(
+        "\nthe provisional constants (discount {}):",
+        PARAMS.discount
+    );
+    report("tuning", &PARAMS, &tune);
+    report("fresh", &PARAMS, &fresh);
+
+    let grid = measure::m6_grid(&PARAMS);
+    let scored: Vec<(kit_learner::Params, measure::Score)> = grid
+        .iter()
+        .map(|p| (*p, measure::score(p, &tune)))
+        .collect();
+    println!(
+        "\ngrid: {} sets scored on the tuning windows, {:.0}s",
+        scored.len(),
+        started.elapsed().as_secs_f64()
+    );
+    let Some((best, _)) = measure::m6_choice(&PARAMS, &scored) else {
+        println!("no sets");
+        return;
+    };
+    println!(
+        "chosen: discount {} lower {} upper {} master_of_top {} lose_below {}",
+        best.discount, best.lower, best.upper, best.master_of_top, best.lose_below
+    );
+    println!("tuning:");
+    report("  chosen", &best, &tune);
+    println!("fresh:");
+    let f = report("  chosen", &best, &fresh);
+    for (label, groups) in [("tuning", &tune), ("fresh", &fresh)] {
+        for g in groups.iter().filter(|g| g.target.is_none() && !g.whole) {
+            let focuses: Vec<String> = g
+                .windows
+                .iter()
+                .map(|w| {
+                    let t = measure::focus_trace(&best, w);
+                    match t.last().copied().flatten() {
+                        Some(i) => strohmandeln_ai::tutor::LADDER.skills[i].slug.to_string(),
+                        None => "none".to_string(),
+                    }
+                })
+                .collect();
+            println!(
+                "praise-only student {} ({label}): the focus after the last deal, by window: {}",
+                g.name,
+                focuses.join(" ")
+            );
+        }
+    }
+    let ok = f.sensitivity >= 0.7 && f.false_focus <= 0.15 && f.whole_mastered >= 3.0;
+    println!(
+        "acceptance on the fresh windows (sensitivity >= 0.7, false focus <= 0.15, whole mastered >= 3): {}",
+        if ok { "met" } else { "NOT met" }
+    );
+    // how much the choice depends on the tuned windows: the best five
+    let mut top: Vec<&(kit_learner::Params, measure::Score)> = scored.iter().collect();
+    top.sort_by(|a, b| b.1.sensitivity.total_cmp(&a.1.sensitivity));
+    println!("\nthe five most sensitive sets with false focus <= 0.10:");
+    for (p, s) in top.iter().filter(|x| x.1.false_focus <= 0.10).take(5) {
+        println!(
+            "  d {} lo {} up {} m {} l {}: sens {:.3} false {:.3} mastered {:.2}",
+            p.discount,
+            p.lower,
+            p.upper,
+            p.master_of_top,
+            p.lose_below,
+            s.sensitivity,
+            s.false_focus,
+            s.whole_mastered
+        );
+    }
+    println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}

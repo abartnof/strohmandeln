@@ -725,6 +725,7 @@ fn a_figure_that_fell_under_a_higher_card_of_its_suit_is_found() {
 #[test]
 fn the_ladder_is_well_formed_and_matches_the_skills() {
     LADDER.check().unwrap();
+    PARAMS.check().unwrap();
     assert_eq!(LADDER.skills.len(), SKILLS);
     assert_eq!(LADDER.version, EVIDENCE_VERSION);
     for s in Skill::ALL {
@@ -983,4 +984,132 @@ fn evidence_latency() {
         q(0.95),
         ms[ms.len() - 1]
     );
+}
+
+/// M1 re-draws a position under other streams: stream 0 is the evidence's own,
+/// the others differ and are reproducible.
+#[test]
+fn the_advisor_streams_are_the_evidence_for_zero_and_independent_otherwise() {
+    let rec = &one_sitting().whole[0];
+    let mut checked = 0;
+    let mut differed = 0;
+    rec.replay(|_, d, seat, a| {
+        let view = bare_view(d, seat);
+        let Some(k) = Knowledge::from_view(&view) else {
+            return;
+        };
+        if !k.playing || k.legal.len() < 2 || k.hidden_total() == 0 {
+            return;
+        }
+        let Action::Play { card, .. } = a else {
+            return;
+        };
+        let t0 = play_table(&k, &view, small(), 0).unwrap();
+        let again = play_table(&k, &view, small(), 0).unwrap();
+        assert_eq!(t0.scores, again.scores, "a stream replays");
+        // stream 0 gives the verdicts the evidence gives
+        let via = classify_play(&k, *card, &advice_of(&k, &t0));
+        let direct: Vec<Verdict> = decision_verdicts(&view, a, small())
+            .into_iter()
+            .filter(|v| v.skill != Skill::Announce)
+            .collect();
+        assert_eq!(via, direct);
+        let t1 = play_table(&k, &view, small(), 1).unwrap();
+        differed += usize::from(t0.scores != t1.scores);
+        checked += 1;
+    })
+    .unwrap();
+    assert!(checked >= 10, "{checked}");
+    assert!(
+        differed * 2 > checked,
+        "{differed} of {checked} differ under another stream"
+    );
+}
+
+#[test]
+fn a_bid_estimate_replays_and_differs_by_stream() {
+    let rec = &one_sitting().whole[0];
+    let mut seen = 0;
+    rec.replay(|_, d, seat, a| {
+        let view = bare_view(d, seat);
+        let Some(k) = Knowledge::from_view(&view) else {
+            return;
+        };
+        if k.playing || !matches!(a, Action::Take | Action::Pass) {
+            return;
+        }
+        let e0 = bid_estimate(&k, &view, small(), 0).unwrap();
+        assert_eq!(e0, bid_estimate(&k, &view, small(), 0).unwrap());
+        assert_ne!(e0, bid_estimate(&k, &view, small(), 3).unwrap());
+        seen += 1;
+    })
+    .unwrap();
+    assert!(seen >= 1);
+}
+
+/// M4 knocks out two skills at once to check the prerequisites: a student
+/// with both lesions does what each does, and one lesion alone is the single
+/// student it always was.
+#[test]
+fn a_student_with_two_knock_outs_does_both() {
+    let one = Student::new(Lesion::Off, 77, config());
+    let same = Student::knocked_out(&[Lesion::Off], 77, config());
+    let rec = &one_sitting().whole[0];
+    rec.replay(|_, d, seat, _| {
+        let view = bare_view(d, seat);
+        if view.legal_actions.is_empty() {
+            return;
+        }
+        assert_eq!(one.decide(&view), same.decide(&view));
+    })
+    .unwrap();
+    let both = Student::knocked_out(&[Lesion::Worth, Lesion::Off], 77, config());
+    assert_eq!(both.lesions(), &[Lesion::Worth, Lesion::Off]);
+    let recs = deals_of(0, &mut { both });
+    let t = totals(&recs);
+    let (w, o) = (rate(&t, Skill::Worth), rate(&t, Skill::Off));
+    let whole = &one_sitting().whole_t;
+    assert!(t[Skill::Worth.index()].chances >= 4, "{t:?}");
+    assert!(w + 0.3 <= rate(whole, Skill::Worth), "worth {w}");
+    assert!(
+        o + 0.3 <= rate(whole, Skill::Off) || t[Skill::Off.index()].chances < 2,
+        "off {o}"
+    );
+}
+
+/// M6 (`docs/MEASUREMENTS.md`): the learner with `PARAMS` points a student who
+/// lacks `worth` or `off` at it within six deals, in every window of 18 deals
+/// (seeds 66,000,000 and on: neither M6's tuning nor its fresh windows), and
+/// names no focus for whole rung 4 beyond the false-focus rate M6 accepted.
+/// The other lessons are detected less often (the same section); this test
+/// holds what M6 found reliable.
+#[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
+fn a_student_who_lacks_worth_or_off_is_pointed_at_it_and_rung_four_whole_is_not() {
+    use crate::measure::{focus_trace, mastered_at_end, named_by, student_window};
+    const WINDOWS: u64 = 3;
+    let window =
+        |lesions: &[Lesion], w: u64| student_window(lesions, 66_000_000 + 3 * w, 3, config());
+    for (lesion, skill) in [(Lesion::Worth, Skill::Worth), (Lesion::Off, Skill::Off)] {
+        for w in 0..WINDOWS {
+            let trace = focus_trace(&PARAMS, &window(&[lesion], w));
+            assert!(
+                named_by(&trace, skill.index(), 6),
+                "{lesion:?} window {w}: {trace:?}"
+            );
+        }
+    }
+    let (mut focused, mut deals, mut mastered) = (0, 0, 0);
+    for w in 0..WINDOWS {
+        let summaries = window(&[], w);
+        let trace = focus_trace(&PARAMS, &summaries);
+        focused += trace.iter().skip(1).filter(|f| f.is_some()).count();
+        deals += trace.len() - 1;
+        mastered += mastered_at_end(&PARAMS, &summaries);
+    }
+    assert!(
+        focused as f64 / deals as f64 <= 0.15,
+        "{focused} of {deals} deals name a focus for rung 4 whole"
+    );
+    assert!(mastered >= 3 * WINDOWS as usize, "{mastered} mastered");
 }

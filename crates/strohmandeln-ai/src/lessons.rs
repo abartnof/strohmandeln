@@ -3,15 +3,15 @@
 //! (`docs/TUTOR.md` 9, `docs/MESSAGES.md` "Tutor keys"). The words are the
 //! table's; the sources of each rule are in `research/16`.
 //!
-//! **Rules are claims, and are provisional.** A rule ships only if it passes
-//! its measurement (`docs/TUTOR.md` 11, M5: how often the strongest rung's
-//! choice matches when the rule's trigger fires, a lower bound of 0.80
-//! confirmed on fresh seeds). That has not been run, so every rule is
-//! [`Gate::Provisional`] and **not told**: the skill's fact is, in its place
-//! ([`TOLD`]; decision of 15 Oct 2026, `docs/TUTOR.md` 6). M5 sets each
-//! rule's gate to [`Gate::Passed`] (told) or [`Gate::Failed`] (never told)
-//! and the settings it was confirmed under ([`Rule::under`]); until then the
-//! `bid` and `pagat` rules are bounded to the default settings.
+//! **Rules are claims.** A rule ships only if it passes its measurement
+//! (`docs/TUTOR.md` 11, M5: how often the strongest rung's choice matches when
+//! the rule's trigger fires, a lower bound of 0.80 confirmed on fresh seeds
+//! and under each other setting). The gates are M5's verdicts
+//! (`docs/MEASUREMENTS.md`): `worth.rich` and `announce` [`Gate::Passed`]
+//! (told); every other rule [`Gate::Failed`] (never told: the skill's fact is
+//! told in its place, [`TOLD`]), or cannot be measured (`endgame`, whose rule
+//! prescribes no card) or is never the focus (`void`, M4). A rule bounded to
+//! the default settings ([`Rule::under`]) stays so.
 
 use crate::tutor::{Direction, Skill, SKILLS};
 use strohmandeln_core::types::Settings;
@@ -105,6 +105,14 @@ fn passed(c: &Context) -> bool {
     toward(Direction::Passed)(c)
 }
 
+/// A rule with the verdict of its measurement (`docs/MEASUREMENTS.md`, M5).
+const fn judged(key: &'static str, applies: fn(&Context) -> bool, gate: Gate) -> Rule {
+    Rule {
+        gate,
+        ..rule(key, applies)
+    }
+}
+
 const fn rule(key: &'static str, applies: fn(&Context) -> bool) -> Rule {
     Rule {
         key,
@@ -116,10 +124,10 @@ const fn rule(key: &'static str, applies: fn(&Context) -> bool) -> Rule {
 
 /// A rule the sources state for the standard game only (`bid`, `pagat`): not
 /// told under another setting until M5 has checked it there.
-const fn standard_rule(key: &'static str, applies: fn(&Context) -> bool) -> Rule {
+const fn standard_rule(key: &'static str, applies: fn(&Context) -> bool, gate: Gate) -> Rule {
     Rule {
         under: standard,
-        ..rule(key, applies)
+        ..judged(key, applies, gate)
     }
 }
 
@@ -127,9 +135,10 @@ fn standard(s: &Settings) -> bool {
     *s == Settings::default()
 }
 
-/// The gates a rule may have to be told. A rule that has not been measured
-/// is not told: its skill's fact is (`docs/TUTOR.md` 6: "where no rule has
-/// passed its gate, one plain fact in its place"). M5 sets the gates.
+/// The gates a rule may have to be told: only one that passed its
+/// measurement; for a rule that did not, its skill's fact is told
+/// (`docs/TUTOR.md` 6: "where no rule has passed its gate, one plain fact in
+/// its place"). M5 set the gates.
 pub const TOLD: &[Gate] = &[Gate::Passed];
 
 /// The ten lessons, in ladder order.
@@ -138,8 +147,8 @@ pub const LESSONS: [Lesson; SKILLS] = [
         skill: Skill::Worth,
         name: "tutor.name.worth",
         rules: &[
-            rule("tutor.rule.worth.rich", timid),
-            rule("tutor.rule.worth.poor", greedy),
+            judged("tutor.rule.worth.rich", timid, Gate::Passed),
+            judged("tutor.rule.worth.poor", greedy, Gate::Failed),
         ],
         fact: "tutor.fact.worth",
         tries: ["tutor.try.worth.1", "tutor.try.worth.2"],
@@ -148,7 +157,7 @@ pub const LESSONS: [Lesson; SKILLS] = [
     Lesson {
         skill: Skill::Cheap,
         name: "tutor.name.cheap",
-        rules: &[rule("tutor.rule.cheap", any)],
+        rules: &[judged("tutor.rule.cheap", any, Gate::Failed)],
         fact: "tutor.fact.cheap",
         tries: ["tutor.try.cheap.1", "tutor.try.cheap.2"],
         nudge: "tutor.nudge.cheap",
@@ -157,8 +166,8 @@ pub const LESSONS: [Lesson; SKILLS] = [
         skill: Skill::Off,
         name: "tutor.name.off",
         rules: &[
-            rule("tutor.rule.off.pip", pip),
-            rule("tutor.rule.off.figure", figure),
+            judged("tutor.rule.off.pip", pip, Gate::Failed),
+            judged("tutor.rule.off.figure", figure, Gate::Failed),
         ],
         fact: "tutor.fact.off",
         tries: ["tutor.try.off.1", "tutor.try.off.2"],
@@ -167,7 +176,7 @@ pub const LESSONS: [Lesson; SKILLS] = [
     Lesson {
         skill: Skill::Run,
         name: "tutor.name.run",
-        rules: &[rule("tutor.rule.run", any)],
+        rules: &[judged("tutor.rule.run", any, Gate::Failed)],
         fact: "tutor.fact.run",
         tries: ["tutor.try.run.1", "tutor.try.run.2"],
         nudge: "tutor.nudge.run",
@@ -176,8 +185,8 @@ pub const LESSONS: [Lesson; SKILLS] = [
         skill: Skill::Pagat,
         name: "tutor.name.pagat",
         rules: &[
-            standard_rule("tutor.rule.pagat.cash", few_tarocks),
-            standard_rule("tutor.rule.pagat.keep", many_tarocks),
+            standard_rule("tutor.rule.pagat.cash", few_tarocks, Gate::Failed),
+            standard_rule("tutor.rule.pagat.keep", many_tarocks, Gate::Failed),
         ],
         fact: "tutor.fact.pagat",
         tries: ["tutor.try.pagat.1", "tutor.try.pagat.2"],
@@ -186,7 +195,7 @@ pub const LESSONS: [Lesson; SKILLS] = [
     Lesson {
         skill: Skill::Void,
         name: "tutor.name.void",
-        rules: &[rule("tutor.rule.void", any)],
+        rules: &[judged("tutor.rule.void", any, Gate::Failed)],
         fact: "tutor.fact.void",
         tries: ["tutor.try.void.1", "tutor.try.void.2"],
         nudge: "tutor.nudge.void",
@@ -204,7 +213,7 @@ pub const LESSONS: [Lesson; SKILLS] = [
     Lesson {
         skill: Skill::Endgame,
         name: "tutor.name.endgame",
-        rules: &[rule("tutor.rule.endgame", any)],
+        rules: &[judged("tutor.rule.endgame", any, Gate::Failed)],
         fact: "tutor.fact.endgame",
         tries: ["tutor.try.endgame.1", "tutor.try.endgame.2"],
         nudge: "tutor.nudge.endgame",
@@ -212,7 +221,7 @@ pub const LESSONS: [Lesson; SKILLS] = [
     Lesson {
         skill: Skill::Bid,
         name: "tutor.name.bid",
-        rules: &[standard_rule("tutor.rule.bid", passed)],
+        rules: &[standard_rule("tutor.rule.bid", passed, Gate::Failed)],
         fact: "tutor.fact.bid",
         tries: ["tutor.try.bid.1", "tutor.try.bid.2"],
         nudge: "tutor.nudge.bid",
@@ -220,7 +229,7 @@ pub const LESSONS: [Lesson; SKILLS] = [
     Lesson {
         skill: Skill::Announce,
         name: "tutor.name.announce",
-        rules: &[rule("tutor.rule.announce", any)],
+        rules: &[judged("tutor.rule.announce", any, Gate::Passed)],
         fact: "tutor.fact.announce",
         tries: ["tutor.try.announce.1", "tutor.try.announce.2"],
         nudge: "tutor.nudge.announce",
@@ -278,8 +287,17 @@ mod tests {
     }
     /// What would be told were the provisional rules admitted.
     const ADMIT: &[Gate] = &[Gate::Provisional, Gate::Passed];
+    /// The rule whose trigger the miss is in, whatever its gate: the mapping
+    /// from a miss to a rule, apart from the verdict of its measurement.
     fn told(skill: Skill, c: &Context) -> Option<&'static str> {
-        taught(skill, c, &Settings::default(), ADMIT).map(|r| r.key)
+        told_under(skill, c, &Settings::default())
+    }
+    fn told_under(skill: Skill, c: &Context, s: &Settings) -> Option<&'static str> {
+        lesson(skill)
+            .rules
+            .iter()
+            .find(|r| (r.applies)(c) && (r.under)(s))
+            .map(|r| r.key)
     }
 
     #[test]
@@ -303,16 +321,25 @@ mod tests {
     }
 
     #[test]
-    fn every_rule_is_provisional_until_the_measurement_sets_it() {
+    fn the_gates_are_the_verdicts_of_the_measurement() {
+        // docs/MEASUREMENTS.md M5: two rules passed (and were confirmed on
+        // fresh seeds and under each other setting); the rest did not, or
+        // cannot be measured (`endgame`) or are never the focus (`void`).
+        let passed = ["tutor.rule.worth.rich", "tutor.rule.announce"];
         for l in &LESSONS {
             for r in l.rules {
-                assert_eq!(r.gate, Gate::Provisional, "{}", r.key);
+                let want = if passed.contains(&r.key) {
+                    Gate::Passed
+                } else {
+                    Gate::Failed
+                };
+                assert_eq!(r.gate, want, "{}", r.key);
             }
         }
     }
 
     #[test]
-    fn until_a_rule_passes_its_measurement_its_fact_is_told() {
+    fn only_a_rule_that_passed_is_told() {
         // docs/TUTOR.md 6 and 9: only a rule that passed its gate is told.
         assert_eq!(TOLD, &[Gate::Passed]);
         let s = Settings::default();
@@ -329,11 +356,13 @@ mod tests {
             ] {
                 for tarocks in [3, 9, 14] {
                     let c = ctx(direction, tarocks);
-                    assert!(
-                        taught(l.skill, &c, &s, TOLD).is_none(),
-                        "{}",
-                        l.skill.slug()
-                    );
+                    let got = taught(l.skill, &c, &s, TOLD).map(|r| r.key);
+                    let want = match (l.skill, direction) {
+                        (Skill::Worth, Some(Direction::Timid)) => Some("tutor.rule.worth.rich"),
+                        (Skill::Announce, _) => Some("tutor.rule.announce"),
+                        _ => None,
+                    };
+                    assert_eq!(got, want, "{} {direction:?}", l.skill.slug());
                 }
             }
         }
@@ -370,12 +399,13 @@ mod tests {
         };
         let cash = ctx(Some(Direction::Cash), 5);
         let bid = ctx(Some(Direction::Passed), 6);
-        assert!(taught(Skill::Pagat, &cash, &Settings::default(), ADMIT).is_some());
-        assert!(taught(Skill::Pagat, &cash, &two, ADMIT).is_none());
-        assert!(taught(Skill::Bid, &bid, &Settings::default(), ADMIT).is_some());
-        assert!(taught(Skill::Bid, &bid, &two, ADMIT).is_none());
+        let d = Settings::default();
+        assert!(told_under(Skill::Pagat, &cash, &d).is_some());
+        assert!(told_under(Skill::Pagat, &cash, &two).is_none());
+        assert!(told_under(Skill::Bid, &bid, &d).is_some());
+        assert!(told_under(Skill::Bid, &bid, &two).is_none());
         // the rest do not depend on them
-        assert!(taught(Skill::Cheap, &ctx(None, 0), &two, ADMIT).is_some());
+        assert!(told_under(Skill::Cheap, &ctx(None, 0), &two).is_some());
     }
 
     #[test]

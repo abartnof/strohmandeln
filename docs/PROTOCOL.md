@@ -430,7 +430,7 @@ strohmandeln_brief_sitting    level 3\ndeal 1\n<detail>\n++\ndeal 2\n<detail> ..
 **Replies.**
 
 ```json
-{"protocol": 1, "summary": "strohmandeln evidence v3\nworth 7 5 9\n... announce 0 0 0",
+{"protocol": 1, "summary": "strohmandeln evidence v4\nworth 7 5 9\n... announce 0 0 0",
  "detail": {"summary": "...", "decisions": 14, "facts": {"ultimo_won": false, "mond_caught": null, "announced": ["trull"]},
             "misses": {"off": {"action": 7, "trick": 14, "played": "4h", "better": "Qh", "cost": 18.5, "direction": "figure",
                                "led": null, "trick_thirds": 0, "tarocks": 5, "sure_thirds": 0, "consequence": {"by": "Kh", "trick": 22}}},
@@ -441,7 +441,7 @@ strohmandeln_brief_sitting    level 3\ndeal 1\n<detail>\n++\ndeal 2\n<detail> ..
    {"lead": "tutor.lead.well", "key": "tutor.well.met", "params": {"chances": 3, "skill": "off"}},
    {"lead": "tutor.lead.next", "key": "tutor.rule.cheap", "params": {"skill": "cheap"}},
    {"lead": "tutor.lead.deal", "key": "tutor.miss.cheap", "params": {"trick": 9, "played": "Kh", "better": "4h"}}],
- "method": "tutor.method", "summary": "strohmandeln evidence v3\n...", "focus": "cheap"}}
+ "method": "tutor.method", "summary": "strohmandeln evidence v4\n...", "focus": "cheap"}}
 {"protocol": 1, "deal_action": 41, "nudge": {"skill": "worth", "key": "tutor.nudge.worth"}}
 ```
 

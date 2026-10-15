@@ -118,7 +118,8 @@ fn a_focus_with_a_miss_is_told_by_the_rule_of_its_direction_and_the_example() {
     assert_eq!(
         keys(&b),
         [
-            ("tutor.lead.next", "tutor.rule.worth.poor"),
+            // the rule for a greedy trick failed its measurement (M5): the fact
+            ("tutor.lead.next", "tutor.fact.worth"),
             ("tutor.lead.deal", "tutor.miss.worth.poor")
         ],
         "{b:?}"
@@ -154,21 +155,21 @@ fn a_focus_without_a_miss_this_deal_gets_a_try_and_no_rule_for_a_directional_ski
             ("tutor.lead.try", "tutor.try.worth.1")
         ]
     );
-    // a single-rule skill is told its rule with no miss at all
-    let cheap: Vec<Summary> = (0..4)
-        .map(|_| summary(&[(Skill::Worth, 6, 6, 0.0), (Skill::Cheap, 6, 1, 60.0)]))
+    // a single-rule skill that passed is told its rule with no miss at all
+    let announce: Vec<Summary> = (0..4)
+        .map(|_| summary(&[(Skill::Announce, 6, 1, 60.0)]))
         .collect();
     let b = made(
-        &cheap,
+        &announce,
         &deal_of(summary(&[]), 12, nothing(), Facts::default()),
         true,
     );
-    assert_eq!(b.bullets[0].key, "tutor.rule.cheap", "{b:?}");
+    assert_eq!(b.bullets[0].key, "tutor.rule.announce", "{b:?}");
     let mut played = deal_of(summary(&[]), 12, nothing(), Facts::default());
     played.variety = 1;
-    let b = made(&cheap, &played, true);
+    let b = made(&announce, &played, true);
     assert_eq!(
-        b.bullets[1].key, "tutor.try.cheap.2",
+        b.bullets[1].key, "tutor.try.announce.2",
         "the second try for variety"
     );
 }
