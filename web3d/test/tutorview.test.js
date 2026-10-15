@@ -20,7 +20,7 @@ test("a page is drawn as its headings, paragraphs and lists, with bold kept", ()
 test("the help list has a button for each page, the seen ones marked", () => {
   const body = helpBody(doc, pages, { intro: "Pages.", seen: ["thirds"] });
   const buttons = body.findAll((e) => e.tagName === "BUTTON");
-  assert.equal(buttons.length, 11);
+  assert.equal(buttons.length, 13);
   assert.deepEqual(buttons.map((b) => b.getAttribute("data-page")), PAGE_KEYS);
   assert.match(buttons.find((b) => b.getAttribute("data-page") === "thirds").textContent, /✓$/);
   assert.doesNotMatch(buttons[0].textContent, /✓/);
