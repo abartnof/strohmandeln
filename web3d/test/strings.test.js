@@ -25,6 +25,28 @@ test("every {slot} in en is in de and the reverse", () => {
   for (const [key, v] of Object.entries(TABLE)) assert.deepEqual(slots(v.en), slots(v.de), key);
 });
 
+test("the word the score HUD puts before a hand number has no slot", () => {
+  const main = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
+  assert.match(main, /hand: t\("hud\.hand"\)/);
+  assert.deepEqual(slots(TABLE["hud.hand"].en), []);
+  assert.deepEqual(slots(TABLE["hud.hand"].de), []);
+});
+
+test("the Kibitzer's tab and mute say what they do, and § 13 is only the flavour", () => {
+  const say = (key, lang, re) => assert.match(TABLE[key][lang], re, `${key} ${lang}`);
+  for (const key of ["tutor.tab", "tutor.mute.label", "tutor.unmute.label"]) {
+    say(key, "en", /tips/i);
+    say(key, "de", /tipps/i);
+  }
+  say("tutor.mute.label", "en", /§ 13/);
+  say("tutor.mute.title", "en", /§ 13: Kibitzer, shut your trap!.*joke/);
+  say("tutor.mute.title", "de", /§ 13: Kiebitz, halt's Maul!.*scherz/i);
+  say("tutor.tab.title", "en", /tips/i);
+  say("tutor.tab.title", "de", /tipps/i);
+  say("hint.muted", "en", /tips.*§ 13/i);
+  say("hint.muted", "de", /tipps.*§ 13/i);
+});
+
 test("keys are namespaced", () => {
   const ok = /^(ui|chip|banner|hud|slate|refusal|hint|explain|review|sr|card|settings|error|tutor|keys)\./;
   for (const key of Object.keys(TABLE)) assert.match(key, ok, key);
@@ -205,4 +227,17 @@ test("the declarer is the Aufnehmer in German, as in the books", () => {
     assert.ok(/Aufnehmer/.test(TABLE[k].de), k);
     assert.ok(!/Ich nehme auf/.test(TABLE[k].de), k);
   }
+});
+
+test("choosing a card is announced, with how to play it (there is no Play button)", () => {
+  const main = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
+  assert.equal((main.match(/t\("sr\.chosen"/g) ?? []).length, 2, "tap and keyboard both announce");
+  assert.match(TABLE["sr.chosen"].en, /again.*play/i);
+  assert.match(TABLE["sr.chosen"].de, /nochmals.*ausspielen/i);
+});
+
+test("a scrolled or resized hand forgets where the first click fell", () => {
+  const main = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
+  assert.equal((main.match(/scroll: clampScroll\([^;]*\), at: null/g) ?? []).length, 2, "drag-scroll and wheel");
+  assert.match(main, /sel = \{ \.\.\.sel, at: null \}; \/\/ cards move on a resize/);
 });

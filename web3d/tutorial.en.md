@@ -61,7 +61,7 @@ tutorialPages): bidding and draw have one for each both_pass value (RULES 3.4, 1
 
 - The leader plays one card, the other answers. The winner takes the trick and leads next.
 - A tarock beats any suit card; the higher tarock wins. Otherwise the higher card of the suit led wins.
-- Tap a lit card, then tap it again or press **Play**.
+- Tap a lit card, then tap it again to play it.
 - Lit cards are allowed; dimmed ones are not. Tap a dimmed card and I will say why.
 
 # Following

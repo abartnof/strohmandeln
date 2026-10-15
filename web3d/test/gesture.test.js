@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { dragKind, shake, shakeOffset, SHAKE } from "../src/gesture.js";
+import { dragKind, sameSpot, shake, shakeOffset, SHAKE } from "../src/gesture.js";
 
 test("a drag up toward the trick plays; a sideways drag scrolls; a touch is a tap", () => {
   assert.equal(dragKind(2, -3), "tap");
@@ -57,4 +57,11 @@ test("a second shake begun mid-shake does not move the card's resting place", ()
     frames.shift()();
   }
   assert.equal(mesh.position.x, 2);
+});
+
+test("a second click at the first one's spot is the same card again, though the card has lifted from under it", () => {
+  assert.equal(sameSpot({ x: 100, y: 200 }, { x: 100, y: 200 }), true);
+  assert.equal(sameSpot({ x: 100, y: 200 }, { x: 108, y: 205 }), true, "a hand drifts");
+  assert.equal(sameSpot({ x: 100, y: 200 }, { x: 140, y: 200 }), false, "another card");
+  assert.equal(sameSpot(null, { x: 1, y: 1 }), false, "no first click (a key chose it)");
 });

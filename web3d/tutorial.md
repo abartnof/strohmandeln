@@ -61,7 +61,7 @@ einen für beide both_pass (RULES 3.4, 14.6).
 
 - Wer ausspielt, legt eine Karte, der andere antwortet. Der Gewinner nimmt den Stich und spielt als Nächster aus.
 - Ein Tarock sticht jede Farbkarte; das höhere Tarock gewinnt. Sonst gewinnt die höhere Karte der ausgespielten Farbe.
-- Tippen Sie eine helle Karte an, dann nochmals oder drücken Sie **Ausspielen**.
+- Tippen Sie eine helle Karte an, dann nochmals, um sie auszuspielen.
 - Helle Karten sind erlaubt, abgedunkelte nicht. Tippen Sie auf eine abgedunkelte, und ich sage Ihnen, warum.
 
 # Bedienen

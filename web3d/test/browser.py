@@ -130,7 +130,7 @@ def play_one(page, take=True, extend=False, pick=None):
         a = (pick or (lambda p: p[0]))(plays)
         click_card(page, a["card"])
         still(page)
-        page.locator("[data-act=play]").click()
+        click_card(page, a["card"])
         if page.locator("[data-dialog-act^=dont]").count():
             page.locator("[data-dialog-act^=dont]").click()
     rest(page)

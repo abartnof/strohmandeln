@@ -51,7 +51,7 @@ Zone names are in `web3d/src/zones.js` (the game's own, [K]).
 
 | Zone | Contents | Cards shown |
 |---|---|---|
-| `your-hand` | the human's hand cards, incl. pulled ones | faces |
+| `your-hand` | the human's hand cards, incl. pulled ones, sorted high to low throughout: suits (alternating colours) each from its king, then the tarocks Sküs, XXI ... I | faces |
 | `your-packets` (3) | the human's packets 1, 2, 3, left to right | top (cover) face up; hidden cards beneath face down |
 | `their-hand` | the opponent's hand cards | backs; count = `opponent_hand_size` |
 | `their-packets` (3) | the opponent's packets, 1 to 3 | cover face up to the human, readable; the rest face down |
@@ -365,11 +365,14 @@ it never hides, disables or allows a card by a rule of the page. (A test fails
 if the page code contains the follow-suit rules: `must-follow`, suit
 comparisons in the table code.)
 
-3.1.2 **Tap or click** a lit card: it lifts (hand) or rises (cover) and the move
-bar offers **Play** ("Ausspielen" / "Play"); a second tap on the card, or a
-tap on Play, plays it. A double-tap or a drag of the card to the trick zone
-plays it directly. Where a card of a held, unannounced honour is chosen, the
-announce prompt appears first (3.3).
+3.1.2 **Tap or click** a lit card: it lifts (hand) or rises (cover). A second
+tap on the same card plays it, however much later; a tap on another lit card moves
+the choice. The chosen card lifts from under the pointer, so a second click within
+10 px of the first counts as the same card, whatever then lies there (`sameSpot`).
+There is no Play button: the second tap, Enter or Space on the focused card (3.10.1)
+and the drag below all play. A drag of the card up to the trick zone plays it
+directly. Where a card of a held, unannounced honour is chosen, the announce
+prompt appears first (3.3).
 
 3.1.3 **A card that is not lit**: a tap sends the card anyway only when a refusal
 is wanted (3.2); the default is a gentle shake of the card and the *reason*
@@ -772,11 +775,13 @@ named, and has no portrait: a small speech tab at the player's shoulder
 
 ### 6.1 The mute
 
-**"§ 13: Kiebitz, halt's Maul!"** is the tutor's mute button, as the research
-suggests ([05c headline 1], [PH `kibitz`, `kibitz-mute`]). It is a button in
-the speech tab with the text in German, and in English
-"§ 13: Kibitzer, shut your trap!" in the title/tooltip with the button label
-"§ 13". A tap mutes the tutor for the sitting (hints, tips, pages, review
+The tab reads "Tips (Kibitzer)" / "Tipps (Kiebitz)", with a tooltip saying it
+holds tips and the help pages. The mute button reads "Mute tips · § 13" /
+"Tipps aus · § 13" (while muted, "Tips on" / "Tipps an"), so it is plain what it
+does and "§ 13" is only the flavour. Its tooltip gives the period line and the
+joke in one phrase: "Silence the tips. § 13: Kibitzer, shut your trap! (the old
+Viennese card-table joke)" and, in German, "§ 13: Kiebitz, halt's Maul!" ([05c
+headline 1], [PH `kibitz`, `kibitz-mute`]). A tap mutes the tutor for the sitting (hints, tips, pages, review
 prompt); the tutor answers with `kibitz-mute` once, then says nothing. A tap
 again, or the setting (7.1), un-mutes. **Muted, the tutor does not speak, and
 no tutorial page opens by itself**; the Help pages remain reachable from the
@@ -852,7 +857,7 @@ line; off, the line is empty. The game's result is said whatever.
 
 6.3.4 Hints and explanations are asked only with the cards at rest (the director's
 `rested`), once per position, never in an animation. If the muted tutor is
-asked for a hint, the chip says "§ 13", unmuting only by the human's tap.
+asked for a hint, the chip says "Tips are off (§ 13)" / "Tipps sind aus (§ 13)", unmuting only by the human's tap.
 
 ### 6.4 The end-of-deal review
 
@@ -1134,6 +1139,9 @@ motion are saved to `web3d/test/out/`.
 - `announce_prompt`: selecting a held honour card prompts; Announce pays the point
   and appears on the slate; Do not announce forfeits (the engine's
   `honour-forfeited` on a later try); the prompt is absent for an unheld honour.
+- `tap_twice`: a click chooses a lit card; a second click at the same spot plays it, after
+  any pause, including at the card's foot where the lift has moved it from under the
+  pointer; the move bar offers no Play button.
 - `announce_chip`: the chip announces without playing; it is refused when not
   held (`not-held`).
 - `bid_buttons`: "Ich nehme auf" / "Weiter" in German and the English

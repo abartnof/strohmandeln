@@ -3,7 +3,12 @@
 // and a refused card shakes. Gestures only: which cards may be played is
 // `state.legal`, and nothing here knows.
 
-export const DRAG = Object.freeze({ tap: 6, up: 48, steep: 1.5 });
+export const DRAG = Object.freeze({ tap: 6, up: 48, steep: 1.5, again: 10 });
+
+// Whether a click is at the spot of the click that chose the card (within `again`
+// pixels): the chosen card has lifted from under the pointer, so the second
+// click may land on its neighbour or on nothing, and still means "this card".
+export const sameSpot = (first, now, again = DRAG.again) => Boolean(first) && Math.hypot(now.x - first.x, now.y - first.y) <= again;
 
 // What a press-move-release came to, from its distance in screen pixels:
 // "tap" (hardly moved), "play" (drawn up toward the trick, more up than aside),

@@ -671,7 +671,7 @@ def check_announce_prompt(browser, failures):
             human = state(page)["human"]
             click_card(page, card)
             still(page)
-            page.locator("[data-act=play]").click()
+            click_card(page, card)
             page.wait_for_selector(".dialog [data-dialog-act^=\"do:\"]", timeout=30_000)
             page.locator(".dialog [data-dialog-act^=\"do:\"]").click()
             rest(page)
@@ -682,7 +682,7 @@ def check_announce_prompt(browser, failures):
         card = honour_card(page, honour)
         click_card(page, card)
         still(page)
-        page.locator("[data-act=play]").click()
+        click_card(page, card)
         page.wait_for_selector(".dialog [data-dialog-act^=dont]", timeout=30_000)
         page.locator(".dialog [data-dialog-act^=dont]").click()
         rest(page)
@@ -695,9 +695,39 @@ def check_announce_prompt(browser, failures):
         plain = next((a["card"] for a in s["legal"] if a["action"] == "play" and a["card"] not in HONOUR_CARDS["trull"] + HONOUR_CARDS["kings"]), None)
         click_card(page, plain)
         still(page)
-        page.locator("[data-act=play]").click()
+        click_card(page, plain)
         rest(page)
         fail_if(page.locator(".dialog [data-dialog-act^=\"do:\"]").count(), failures, "announce_prompt: a prompt for a card of no honour")
+
+
+def check_tap_twice(browser, failures):
+    """A second click at the first one's spot plays the card, however much later, even at the card's
+    foot where the lift has moved it from under the pointer; there is no Play button."""
+    for lowest in (0, 1):
+        page = open_page(browser, "seed=7&speed=instant&human=1", nodraw=True)
+        take_if_bidding(page)
+        rest(page)
+        legal = {a["card"] for a in state(page)["legal"] if a["action"] == "play"}
+        feet = {}
+        for y in range(180, 420, 6):
+            for x in range(100, 1200, 12):
+                m = js(page, f"pickAt({x},{y})")
+                if m and m["zone"] == "your-hand" and m["code"] in legal:
+                    feet[m["code"]] = (x, y)  # the last (lowest) point that still hits it
+        fail_if(len(feet) < 2, failures, "tap_twice: no lit hand cards found by scanning")
+        if len(feet) < 2:
+            continue
+        code, (x, y) = sorted(feet.items(), key=lambda kv: -kv[1][1])[lowest]
+        before = len(js(page, "model().hand"))
+        page.mouse.click(x, y)
+        still(page)
+        fail_if(js(page, "selection()") != code, failures, f"tap_twice: a click at {x},{y} did not choose {code}")
+        fail_if(page.locator("[data-act=play]").count(), failures, "tap_twice: a Play button is offered")
+        page.wait_for_timeout(1500)  # however much later
+        page.mouse.click(x, y)
+        rest(page)
+        fail_if(len(js(page, "model().hand")) != before - 1 or js(page, "selection()"), failures, f"tap_twice: the second click at the same spot did not play {code}")
+        close_all(browser)
 
 
 def check_announce_chip(browser, failures):
@@ -892,6 +922,6 @@ CHECKS_102 = [
     check_settlement, check_farewell_once, check_motion_profile,
 ]
 CHECKS_103 = [
-    check_legal_only, check_refusal_message, check_announce_prompt, check_announce_chip, check_bid_buttons, check_length_choice,
+    check_legal_only, check_refusal_message, check_announce_prompt, check_tap_twice, check_announce_chip, check_bid_buttons, check_length_choice,
     check_keyboard_sitting, check_screen_reader, check_left_handed, check_reduced_motion, check_touch_targets,
 ]
