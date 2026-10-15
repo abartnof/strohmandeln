@@ -8,12 +8,12 @@ const SUIT_ORDER = ["h", "c", "d", "s"]; // alternating colours, as a hand is so
 const COURT_RANK = { K: 20, Q: 19, C: 18, J: 17, 10: 10, 9: 9, 8: 8, 7: 7, 4: 4, 3: 3, 2: 2, 1: 1 };
 
 // The order a hand lies in: the suits first (each from its king down), then
-// the tarocks from the Pagat up, the Sküs last.
+// the tarocks from the Sküs down to the Pagat, so the whole hand runs high to low.
 export function handSortKey(code) {
   const c = parseCode(code);
   if (c.kind === "suit") return SUIT_ORDER.indexOf(c.suit) * 100 + (100 - COURT_RANK[c.rank]);
-  if (c.kind === "tarock") return 1000 + c.n;
-  return 1100;
+  if (c.kind === "tarock") return 1000 + (21 - c.n) + 1;
+  return 1000;
 }
 
 export const sortCodes = (codes) => [...codes].sort((a, b) => handSortKey(a) - handSortKey(b));

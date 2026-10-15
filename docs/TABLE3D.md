@@ -51,7 +51,7 @@ Zone names are in `web3d/src/zones.js` (the game's own, [K]).
 
 | Zone | Contents | Cards shown |
 |---|---|---|
-| `your-hand` | the human's hand cards, incl. pulled ones | faces |
+| `your-hand` | the human's hand cards, incl. pulled ones, sorted high to low throughout: suits (alternating colours) each from its king, then the tarocks Sküs, XXI ... I | faces |
 | `your-packets` (3) | the human's packets 1, 2, 3, left to right | top (cover) face up; hidden cards beneath face down |
 | `their-hand` | the opponent's hand cards | backs; count = `opponent_hand_size` |
 | `their-packets` (3) | the opponent's packets, 1 to 3 | cover face up to the human, readable; the rest face down |
