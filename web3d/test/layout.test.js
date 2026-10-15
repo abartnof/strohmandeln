@@ -1,7 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { cardCorners } from "../../kit/js/kinematics.js";
-import { layout } from "../src/layout.js";
+import { JUMBO } from "../../kit/js/faces.js";
+import { CARD } from "../../kit/js/units.js";
+import { layout, spacingFor } from "../src/layout.js";
 import { cloneModel, emptyModel, reduce } from "../src/model.js";
 import { ZONES, ZONES_PORTRAIT, ZONES_TOUCH } from "../src/zones.js";
 import { playSitting, taker } from "./sim.js";
@@ -46,4 +48,31 @@ test("faces only where the view has them: backs for the opponent's hand, hidden 
       if (s.code) assert.equal(s.faceUp, true);
     }
   }
+});
+
+// The index is fitted to the strip a fanned hand shows (JUMBO.strip of the
+// card's 7 units): the visible strip of each card must be at least that, for
+// the fullest hand, in every arrangement; and a fan stays inside what the eye sees.
+test("a full hand of 18 shows at least the index strip of every card, in every arrangement", () => {
+  const strip = (JUMBO.strip / JUMBO.w) * CARD.width;
+  for (const [name, zones] of Object.entries(ARRANGEMENTS)) {
+    const z = zones.yourHand;
+    const shown = z.fan ? spacingFor(18, z.spacing, z.width) : z.pitch;
+    assert.ok(shown >= strip, `${name}: ${shown.toFixed(2)} cm shown, the strip is ${strip.toFixed(2)} cm`);
+  }
+});
+
+test("the desktop fan is spread, not tight: a card shows over half its width when the hand is 18", () => {
+  const z = ZONES.yourHand;
+  assert.ok(spacingFor(18, z.spacing, z.width) >= 0.5 * CARD.width);
+  // The touch and phone rows keep their pitch.
+  assert.equal(ZONES_TOUCH.yourHand.pitch, 3.2);
+  assert.equal(ZONES_PORTRAIT.yourHand.pitch, 3.2);
+});
+
+test("the desktop fan fits the width the eye keeps in view at the hand", () => {
+  const z = ZONES.yourHand;
+  const half = ((18 - 1) * spacingFor(18, z.spacing, z.width) + CARD.width) / 2;
+  const d = Math.hypot(...z.centre.map((v, i) => v - ZONES.camera.position[i]));
+  assert.ok(half <= ZONES.camera.widthTan * d, `${half.toFixed(1)} cm half-width, the eye keeps ${(ZONES.camera.widthTan * d).toFixed(1)}`);
 });
