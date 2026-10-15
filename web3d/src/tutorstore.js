@@ -19,6 +19,7 @@ export const MAX_DEALS = 60;
 export const MAX_RECORD = 20_000; // a record's length in characters (a deal is about 2,000)
 export const MAX_IMPORT = 1_000_000; // an import file's size
 const MAX_ASSISTED = 200;
+export const MAX_NUMBER = 9999; // the number the table gave a deal
 const FILE = "tutor";
 // The engine's evidence text: a header and a line a skill (10 of them); the
 // engine test checks that the engine's own output passes.
@@ -82,7 +83,7 @@ function sound(deals) {
       detail: detailOk(d.detail) ? d.detail : null,
       at: Number.isFinite(d.at) ? d.at : 0,
     };
-    if (Number.isInteger(d.n) && d.n >= 0) out.n = d.n;
+    if (Number.isInteger(d.n) && d.n >= 1 && d.n <= MAX_NUMBER) out.n = d.n;
     if (typeof d.sit === "string" && d.sit.length <= 40) out.sit = d.sit;
     return out;
   });
@@ -147,12 +148,16 @@ export function dropDeal(store, record) {
   return save(store, loadDeals(store).filter((d) => d.record !== record));
 }
 
+// What it did: "cleared", "newer" (a newer page's store is not ours to clear) or
+// "blocked" (no storage, or it would not let go).
 export function clearTutor(store) {
   try {
-    if (isNewerStore(store)) return; // a newer page's, not ours to clear
-    store?.removeItem(KEY);
+    if (!store) return "blocked";
+    if (isNewerStore(store)) return "newer";
+    store.removeItem(KEY);
+    return "cleared";
   } catch {
-    // Not cleared: it was not readable either.
+    return "blocked";
   }
 }
 
@@ -192,12 +197,16 @@ export async function refreshOne(store, engine, tried = new Set()) {
     const got = await engine.evidenceOf(record, assisted);
     if (got && validSummary(got.summary) && detailOk(got.detail)) setEvidence(store, record, got.summary, got.detail);
     else if (got && validSummary(got.summary)) setSummary(store, record, got.summary);
-    else if (!engine.stopped?.()) dropDeal(store, record);
+    else if (unrestorable(got)) dropDeal(store, record);
   } catch (error) {
     console.error(error);
   }
   return true;
 }
+
+// The engine says the record cannot be restored (and not some other trouble, a
+// stopped engine among it, which leaves the deal for another time).
+const unrestorable = (got) => got?.error === "replay" || (got?.error === "bad-input" && /^record/.test(got.why ?? ""));
 
 // The file the settings offer: what is kept, as text.
 export function exportText(store) {

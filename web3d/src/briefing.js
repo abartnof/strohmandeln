@@ -11,7 +11,7 @@
 //
 // `engine` is the page's engine (src/engine.js) and `store` an injected
 // storage; with none, the brief rests on the deals of this page alone.
-import { addDeal, historyOf, loadDeals, setEvidence, setSummary, validSummary } from "./tutorstore.js";
+import { MAX_NUMBER, addDeal, historyOf, loadDeals, setEvidence, setSummary, summaryVersion, validSummary } from "./tutorstore.js";
 
 export function createBriefing({ store, engine, level = () => 4, now = () => Math.floor(Date.now() / 1000) }) {
   let memory = []; // the deals of this page, whatever the store keeps
@@ -66,26 +66,40 @@ export function createBriefing({ store, engine, level = () => 4, now = () => Mat
 
     // The brief of the sitting `sit`: its kept deals as one game, against what
     // was kept before them. It is made of what was kept when each deal was scored
-    // and runs no advisor; a deal kept without its detail has it worked out once.
-    // null if the sitting has no deal, or the engine cannot.
+    // and runs no advisor; a deal kept without its detail, or with one of an older
+    // evidence, has it worked out once. If the engine still refuses a detail
+    // (damaged in storage) every detail is worked out again, once, and the call
+    // retried: one bad deal must not blank the sitting's brief. null if the
+    // sitting has no deal, or the engine cannot.
     sittingBrief(sit) {
       const all = kept();
       const mine = all.filter((d) => d.sit === String(sit));
       if (!mine.length) return null;
-      const deals = [];
-      for (const [i, d] of mine.entries()) {
-        let detail = d.detail;
-        if (!detail) {
-          const got = engine.evidenceOf(d.record, d.assisted);
-          if (!got?.detail || !validSummary(got.summary)) continue;
-          keepEvidence(d.record, got.summary, got.detail);
-          detail = got.detail;
+      const version = engine.learner([])?.version;
+      const compute = (d) => {
+        const got = engine.evidenceOf(d.record, d.assisted);
+        if (!got?.detail || !validSummary(got.summary)) return null;
+        keepEvidence(d.record, got.summary, got.detail);
+        return got.detail;
+      };
+      const current = (d) => d.detail && summaryVersion(d.detail.summary) === version;
+      const deals = (again) => {
+        const out = [];
+        for (const [i, d] of mine.entries()) {
+          const detail = !again && current(d) ? d.detail : compute(d);
+          if (detail) out.push({ n: Number.isInteger(d.n) && d.n >= 1 && d.n <= MAX_NUMBER ? d.n : i + 1, detail });
         }
-        deals.push({ n: d.n ?? i + 1, detail });
-      }
-      if (!deals.length) return null;
+        return out;
+      };
       const before = historyOf(all.slice(0, all.indexOf(mine[0])));
-      return engine.briefSitting(level(), deals, before)?.brief ?? null;
+      let list = deals(false);
+      if (!list.length) return null;
+      let r = engine.briefSitting(level(), list, before);
+      if (r?.error === "bad-input") {
+        list = deals(true);
+        r = list.length ? engine.briefSitting(level(), list, before) : null;
+      }
+      return r?.brief ?? null;
     },
 
     // The skill to work on, from every summary kept (a slug or null).

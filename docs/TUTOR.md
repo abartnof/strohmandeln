@@ -346,7 +346,7 @@ measured, and names no ladder. The method in force is the one in `strings.json`.
 
 The engine emits keys with parameters (`docs/MESSAGES.md`, "Tutor keys", to be
 added with the code). Cards are codes, thirds integers, honours `trull` or
-`kings`; the table names them. Rules are at most 15 words, tries at most 12,
+`kings`; the table names them. Rules are at most 15 words, tries at most 14,
 nudges at most 10, examples at most 18 (a test holds this, as for Cassino's
 nudges). The voice is the Kibitzer's (`docs/TABLE3D.md` 6.5): dry, brief, kind,
 "if I may". `tutor.lead.rule` is the prefix "If I may:" / "Wenn ich mir erlauben

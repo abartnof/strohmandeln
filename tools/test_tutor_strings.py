@@ -72,6 +72,22 @@ class TutorKindness(unittest.TestCase):
                 for text in texts(key):
                     self.assertNotIn(":", text, (key, text))
 
+    def test_the_english_that_is_lowered_after_a_colon_can_bear_it(self):
+        # The table lowers the first letter of an English body shown after a lead that
+        # ends in a colon or after "If I may:" (web3d/src/review.js `after`). That is
+        # safe only for a body that does not begin with "I", a Roman numeral, a card
+        # or a proper name of the game; a skill's name is lower case already.
+        lowered = ("tutor.well.", "tutor.miss.", "tutor.rule.", "tutor.try.", "tutor.nudge.", "tutor.name.")
+        keeps_capital = re.compile(r"^(I\b|[IVX]+\b|Pagat|Mond|Sk\u00fcs|Trull|Troule|Tarock|Kibitzer|Point|King|Queen|Jack|Cavall)")
+        for key in KEYS:
+            if key.startswith(lowered):
+                en = STRINGS[key]["en"]
+                self.assertIsNone(keeps_capital.match(en), (key, en))
+        # and the skills' names begin in lower case, as "Next: {skill}." and the praise need
+        for key in KEYS:
+            if key.startswith("tutor.name."):
+                self.assertTrue(STRINGS[key]["en"][0].islower(), key)
+
     def test_no_line_judges_the_person(self):
         bad = re.compile(r"\b(stupid|foolish|blunder|mistake|careless|lazy|bad player|dumm|blöd|Fehler|Anfänger|schlecht)", re.I)
         for key in KEYS:

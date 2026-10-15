@@ -42,7 +42,7 @@ test("a brief is a title, the count, up to three bullets with a lead each, and t
   assert.deepEqual(r.bullets.map((b) => b.text), [
     "playing your covers off – all 3 chances met.",
     "If I may: win with the lowest card that wins; otherwise give the lowest.",
-    "in trick 9, your queen of hearts won only 7⅓ points; the 4 of hearts would have kept it back.",
+    "in trick 9, your queen of hearts won only 7⅓ points; the 4 of hearts would have kept it for later.",
   ]);
   assert.match(r.method, /compared afterwards/);
   assert.equal(r.how, "How is this worked out?");
