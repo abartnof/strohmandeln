@@ -414,4 +414,5 @@ been shown in his hand or on his covers since (a packet can refill a hand);
 `best`, my highest card of the kind; `top_out`, the highest card out; `master`,
 I hold the kind and nothing out is higher. `out_count` and `out_thirds` cover
 the cards out, `unseen_count` and `unseen_thirds` the unseen ones; thirds of a
-Point, so the whole pack is 210 (70 Points, RULES 8.1).
+point, so the whole pack is 210 (70 points, RULES 8.1). `trick` stops at 27 once
+the last trick is won.

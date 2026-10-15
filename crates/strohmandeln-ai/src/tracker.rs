@@ -64,8 +64,8 @@ pub struct Tracker {
     pub cards: Vec<(Card, Place)>,
     /// The four suits in `Suit::ALL` order, then the tarocks.
     pub groups: Vec<Group>,
-    /// Cards out (not mine, not played), and their count in thirds of a Point
-    /// (RULES 8.1: 70 Points are 210 thirds).
+    /// Cards out (not mine, not played), and their count in thirds of a point
+    /// (RULES 8.1: 70 points are 210 thirds).
     pub out_count: usize,
     pub out_thirds: u32,
     /// Of those, the strictly unseen.
@@ -165,7 +165,8 @@ pub fn tracker(view: &View) -> Option<Tracker> {
     let (unseen_count, unseen_thirds) = thirds(&|p| p == Place::Unseen);
     Some(Tracker {
         me: k.me,
-        trick: open,
+        // after the 27th trick the deal is still in the view: the count stops at 27
+        trick: open.min(27),
         cards,
         groups,
         out_count,
@@ -267,7 +268,8 @@ mod tests {
                     let trick = d.tricks.len() as u32 + 1;
                     assert_eq!(place(l.card), Place::Played { by: l.seat, trick });
                 }
-                assert_eq!(t.trick, d.tricks.len() as u32 + 1);
+                assert_eq!(t.trick, (d.tricks.len() as u32 + 1).min(27));
+                assert!((1..=27).contains(&t.trick), "trick {}", t.trick);
             });
         }
         assert!(plays > 500);
