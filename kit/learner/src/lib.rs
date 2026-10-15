@@ -12,8 +12,10 @@
 //! (`kit/STAMP`).
 
 pub mod beta;
+mod brief;
 mod learn;
 mod model;
 
+pub use brief::{brief, BriefCfg, Bullet, Deal, Keys, Param, Strength, MAX_BULLETS};
 pub use learn::{learn, Learner, SkillState};
 pub use model::{stale, Chance, Ladder, Params, SkillSpec, Summary, Tally};
