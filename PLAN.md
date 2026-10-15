@@ -46,7 +46,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 8 | The table (spec: `docs/TABLE3D.md`): layout, choreography, play, slate, settings, phone. The count and score use the kit's score HUD and scoring popups (moved from Cassino), configured for counting won cards in threes against 36 | 2, 5, 7 | core done (a whole sitting plays by clicking, no face leak); gaps open |
 | 9 | Tutor: tutorial pages, the kibitzer's hints and explanations, end-of-deal review | 5, 8 | done |
 | 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | documents and Pages redirect done; publishing after the last merges |
-| 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | todo |
+| 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | built across 3, 8, 9; the language_switch browser check open |
 
 ## Open
 
