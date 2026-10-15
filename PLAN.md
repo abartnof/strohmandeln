@@ -43,7 +43,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 5 | `strohmandeln-wasm` and `strohmandeln-cli`, with `docs/PROTOCOL.md` | 4 | done |
 | 6 | Computer opponent: a ladder of rungs, each measured against the one below (`docs/OPPONENT.md`) | 4 | done |
 | 7 | Card faces: 54 large-type faces and a back, drawn at runtime (`docs/img/faces.png`) | 2 | done |
-| 8 | The table (spec: `docs/TABLE3D.md`): layout, choreography, play, slate, settings, phone. The count and score use the kit's score HUD and scoring popups (moved from Cassino), configured for counting won cards in threes against 36 | 2, 5, 7 | todo |
+| 8 | The table (spec: `docs/TABLE3D.md`): layout, choreography, play, slate, settings, phone. The count and score use the kit's score HUD and scoring popups (moved from Cassino), configured for counting won cards in threes against 36 | 2, 5, 7 | core done (a whole sitting plays by clicking, no face leak); gaps open |
 | 9 | Tutor: tutorial pages, the kibitzer's hints and explanations, end-of-deal review | 5, 8 | todo |
 | 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | todo |
 | 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | todo |
@@ -59,5 +59,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 - Opponent (review, docs/review/opponent.md): rung 4's `bid_margin` is in fixed Points, so a doubled deal clears it more easily; the step from rung 2 to 3 is thin (+1.39 ± 0.59 Points per pair, stopped on the boundary).
 
 - Tutorial (review, docs/review/tutorial.md): the `bidding` page covers only both passing to a plain game; under `both_pass = throw_in` it needs the setting passed in (TABLE3D 6.2.2). The end-of-deal review's bullets need engine message keys and their strings (6.4).
+
+- Table core (review, docs/review/table-core.md; builder's report 15 Oct 2026): browser checks not yet confirmed: draw_and_doubling, settlement, tour_end_and_extension, legal_only, keyboard_sitting (run one browser at a time, `?speed=instant`; the full suite takes hours on the software GPU, the gate runs `--quick`). Spec clauses not met: 2.4 valat fan; 2.5.5 bonuses as HUD popups; 2.5.3/2.5.4 the edge tick and beat; 2.3.1 slower trick 27; 2.1 void deal shows the opponent's backs only (the protocol carries no cards); 1.5.2 cover within 15 % of a hand card, not a tenth; 1.5.5 dialogue placement rough; 5.2.2 SLACK/LATE yielding; 3.1.2 double-tap and drag play; 3.1.3 shake; 3.10.1 Tab order and labelled lists; 7.1 face sizes; 3.5.1 new-sitting screen offers the length only; portrait phone layout first-pass; tests 10.4–10.6 unwritten. Browser seeds depend on the opponent at `?level=1`; a change to the opponent or the deal needs a rescan.
 
 - The currency on the slate (gulden and kreuzer, or krone). Note 13's dates for the krone are unsourced.
