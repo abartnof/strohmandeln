@@ -786,13 +786,16 @@ pub const LADDER: Ladder = Ladder {
     ],
 };
 
-/// The learner's constants. **Provisional** except `discount`: a window of
-/// about a sitting of six deals, 1 - 1/6 (M3; M6 tunes it); the gains are set
-/// by M4 and the quantiles and mastery by M6.
+/// The learner's constants (`docs/TUTOR.md` 5). `discount`: a window of about
+/// a sitting of six deals, 1 - 1/6 (M3). `min_gain` and `costly_gain`: half the
+/// worth of the least valuable skill whose knock-out costs rung 4 clearly
+/// (`announce`, 2.1 thirds a deal), and four times that; `costly_chances` twice
+/// the largest `min_chances` (M4). The quantiles and mastery are **provisional**
+/// until M6.
 pub const PARAMS: Params = Params {
     discount: 0.83,
-    min_gain: 1.0,
-    costly_gain: 4.0,
+    min_gain: 1.1,
+    costly_gain: 4.4,
     costly_chances: 8.0,
     lower: 0.2,
     upper: 0.9,

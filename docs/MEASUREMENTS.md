@@ -551,3 +551,73 @@ Wilson interval (z = 1.96) at `n_eff`.
 - A rule with no selected candidate, or not confirmed, is told as its fact.
 
 **Stopping.** Descriptive fixed counts, no looks.
+
+### Result (2026-10-15)
+
+Singles: the program ran as planned (batches of 40, at most 4 looks). The pairs
+ran as a second process of the same program (`--only pairs --bid coin`), to keep
+each run under half an hour; the `Bid` coin knock-out has the larger single
+effect (the `bid` edge uses it). A first launch of the program was started
+twice by mistake and killed within minutes, before any look was read; the
+results are a deterministic function of the plan (the same seeds), so nothing
+was seen twice. Singles about 25 minutes, pairs 1,073 seconds (the machine was
+shared with builds).
+
+**What a knock-out costs rung 4** (Points per mirrored pair of 12 deals, the
+student's less rung 4's; `worth` is minus this, in thirds a deal x 23 / 12):
+
+| Knock-out | Verdict (look, pairs) | Effect +- se | 95% interval | Worth, thirds a deal |
+|---|---|---|---|---|
+| Worth | clear, look 1 (40) | -6.300 +- 1.153 | -8.56 to -4.04 | 12.1 |
+| Cheap | clear, look 1 (40) | -13.675 +- 0.998 | -15.63 to -11.72 | 26.2 |
+| Off | clear, look 1 (40) | -14.025 +- 1.103 | -16.19 to -11.86 | 26.9 |
+| Run | clear, look 3 (120) | -1.300 +- 0.556 | -2.39 to -0.21 | 2.5 |
+| Pagat (coin) | clear, look 2 (80) | -2.438 +- 0.842 | -4.09 to -0.79 | 4.7 |
+| Void | inconclusive, look 4 (160) | +0.487 +- 0.446 | -0.39 to +1.36 | none shown |
+| Behind | inconclusive, look 4 (160) | -0.494 +- 0.469 | -1.41 to +0.43 | none shown |
+| Endgame | clear, look 4 (160) | -1.575 +- 0.489 | -2.53 to -0.62 | 3.0 |
+| Bid (coin) | clear, look 2 (80) | -2.650 +- 0.814 | -4.25 to -1.06 | 5.1 |
+| AlwaysPass | inconclusive, look 4 (160) | -0.062 +- 0.479 | -1.00 to +0.88 | none shown |
+| Announce | clear, look 4 (160) | -1.106 +- 0.511 | -2.11 to -0.11 | 2.1 |
+
+Two skills the tutor teaches, `void` and `behind`, have no measurable worth in
+Points against the strongest rung (a student made to lead into a shown void or
+into the split suit loses nothing it can show in 160 pairs: the interval for
+`void` includes a gain of up to 1.4 a pair). Always passing costs nothing
+either: rung 4 rarely finds taking up clearly right.
+
+**The prerequisites** (the skill's worth alone, and with its prerequisite
+already knocked out; the drop is alone less with, in Points a pair; the edge
+holds if the drop exceeds twice the standard error of the difference):
+
+| Skill | Needs | Alone | With the prerequisite out | Drop +- se | Verdict |
+|---|---|---|---|---|---|
+| Cheap | Worth | 13.68 | 14.30 (look 1) | -0.62 +- 1.42 | not shown |
+| Off | Worth | 14.03 | 8.70 (look 1) | +5.33 +- 1.48 | **holds** |
+| Run | Cheap | 1.30 | 3.01 (look 2) | -1.71 +- 0.98 | not shown |
+| Pagat | Run | 2.44 | 1.99 (look 2) | +0.45 +- 1.08 | not shown |
+| Void | Worth | -0.49 | -0.06 (look 3, inconclusive) | -0.43 +- 0.69 | not shown |
+| Behind | Off | 0.49 | -3.33 (look 1, a gain of 3.3) | +3.82 +- 0.91 | **holds** |
+| Behind | Void | 0.49 | 2.10 (look 3) | -1.61 +- 0.82 | not shown |
+| Endgame | Cheap | 1.57 | 1.38 (look 3) | +0.20 +- 0.80 | not shown |
+| Endgame | Void | 1.57 | 1.70 (look 3) | -0.12 +- 0.81 | not shown |
+| Bid | Worth | 2.65 | 4.62 (look 1) | -1.98 +- 1.43 | not shown |
+
+Two edges hold (`off` needs `worth`, `behind` needs `off`); in no pair did the
+second skill lose all its worth, and in several it was worth more with the
+first gone (the skills stand in for one another, as in Cassino). The other
+eight edges are **not shown**: the prerequisites of `docs/TUTOR.md` 2 stay as the
+logical order of the sources (`research/16`); they are not contradicted except
+that the data cannot support the claim that `void` or `behind` matter at all.
+
+**Constants set.**
+
+| Constant | Was | Now | Rule |
+|---|---|---|---|
+| `PARAMS.min_gain` | 1.0 (provisional) | **1.1** | half the least clear worth (`announce`, 2.12 thirds a deal), to 0.1 |
+| `PARAMS.costly_gain` | 4.0 (provisional) | **4.4** | four times `min_gain` |
+| `PARAMS.costly_chances` | 8 | **8** | twice the largest `min_chances` (4) |
+
+**Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m4 --only
+singles` and `... m4 --only pairs --bid coin` (defaults: `--seed 40000000
+--batch 40 --looks 4 --pair-looks 3`).
