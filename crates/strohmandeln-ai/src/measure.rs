@@ -810,6 +810,9 @@ pub struct Group {
     pub name: String,
     pub target: Option<usize>,
     pub by: usize,
+    /// Rung 4 whole (the false-focus group), not a student lacking a
+    /// praise-only skill (`target` none too: nothing to detect).
+    pub whole: bool,
     pub windows: Vec<Vec<Summary>>,
 }
 
@@ -840,7 +843,7 @@ pub fn score(params: &Params, groups: &[Group]) -> Score {
                     .count();
                 per_group.push((g.name.clone(), hits as f64 / g.windows.len() as f64));
             }
-            None => {
+            None if g.whole => {
                 for w in &g.windows {
                     let trace = focus_trace(params, w);
                     false_n += trace.iter().skip(1).filter(|f| f.is_some()).count() as f64;
@@ -848,6 +851,7 @@ pub fn score(params: &Params, groups: &[Group]) -> Score {
                     mastered.push(mastered_at_end(params, w) as f64);
                 }
             }
+            None => {}
         }
     }
     let sens: Vec<f64> = per_group.iter().map(|x| x.1).collect();
@@ -1354,12 +1358,14 @@ mod tests {
                 name: "Worth".into(),
                 target: Some(0),
                 by: 3,
+                whole: false,
                 windows: vec![bad.clone(), bad],
             },
             Group {
                 name: "whole".into(),
                 target: None,
                 by: 0,
+                whole: true,
                 windows: vec![good.clone(), good],
             },
         ];

@@ -815,8 +815,9 @@ fn m6_students() -> Vec<(&'static str, Vec<Lesion>, Option<Skill>, usize)> {
         ("Off", vec![Lesion::Off], Some(Skill::Off), 6),
         ("Run", vec![Lesion::Run], Some(Skill::Run), 6),
         ("Pagat", vec![Lesion::Pagat], Some(Skill::Pagat), 12),
-        ("Void", vec![Lesion::Void], Some(Skill::Void), 6),
-        ("Behind", vec![Lesion::Behind], Some(Skill::Behind), 6),
+        // praise-only (M4): nothing to detect, the focus they get is reported
+        ("Void", vec![Lesion::Void], None, 0),
+        ("Behind", vec![Lesion::Behind], None, 0),
         ("Endgame", vec![Lesion::Endgame], Some(Skill::Endgame), 6),
         ("Bid", vec![Lesion::Bid], Some(Skill::Bid), 12),
         ("AlwaysPass", vec![Lesion::AlwaysPass], Some(Skill::Bid), 12),
@@ -842,6 +843,7 @@ fn m6_groups(first: u64, windows: u64, sittings: u64, cache: Option<&str>) -> Ve
                     name: (*name).to_string(),
                     target: target.map(Skill::index),
                     by: *by,
+                    whole: *name == "whole",
                     windows: Vec::new(),
                 })
                 .collect();
@@ -878,6 +880,7 @@ fn m6_groups(first: u64, windows: u64, sittings: u64, cache: Option<&str>) -> Ve
             name: (*name).to_string(),
             target: target.map(Skill::index),
             by: *by,
+            whole: *name == "whole",
             windows: ws,
         });
     }
@@ -957,6 +960,26 @@ fn m6(args: &Args) {
     report("  chosen", &best, &tune);
     println!("fresh:");
     let f = report("  chosen", &best, &fresh);
+    for (label, groups) in [("tuning", &tune), ("fresh", &fresh)] {
+        for g in groups.iter().filter(|g| g.target.is_none() && !g.whole) {
+            let focuses: Vec<String> = g
+                .windows
+                .iter()
+                .map(|w| {
+                    let t = measure::focus_trace(&best, w);
+                    match t.last().copied().flatten() {
+                        Some(i) => strohmandeln_ai::tutor::LADDER.skills[i].slug.to_string(),
+                        None => "none".to_string(),
+                    }
+                })
+                .collect();
+            println!(
+                "praise-only student {} ({label}): the focus after the last deal, by window: {}",
+                g.name,
+                focuses.join(" ")
+            );
+        }
+    }
     let ok = f.sensitivity >= 0.7 && f.false_focus <= 0.15 && f.whole_mastered >= 3.0;
     println!(
         "acceptance on the fresh windows (sensitivity >= 0.7, false focus <= 0.15, whole mastered >= 3): {}",

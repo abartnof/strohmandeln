@@ -621,3 +621,97 @@ that the data cannot support the claim that `void` or `behind` matter at all.
 **Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m4 --only
 singles` and `... m4 --only pairs --bid coin` (defaults: `--seed 40000000
 --batch 40 --looks 4 --pair-looks 3`).
+
+### Decision on M4's result (15 Oct 2026, the orchestrating session)
+
+`void` and `behind` showed no worth in Points against whole rung 4 (M4), so they
+are **praise-only**: judged, counted and praised, never the focus
+(`SkillSpec::may_focus` false in `kit/learner`; `docs/TUTOR.md` 2). Only 2 of
+the 10 prerequisite edges were shown; the rest are kept as the logical order.
+M5 therefore needs no gate for their rules; they are reported below as not
+applicable.
+
+### Result (2026-10-15)
+
+**Selection**: rung 4 against rung 3, 400 sittings (2,400 deals), default
+settings, seeds from 50,000,000, 78 seconds. Firings, those satisfied, precision
+and the lower bound of the Wilson interval at the effective sample (clustered by
+deal); `*` marks a lower bound of at least 0.80.
+
+| Candidate | Fired | Satisfied | Precision | n_eff | Lower |
+|---|---|---|---|---|---|
+| worth.rich.1 (led 7 thirds or more: win) | 115 | 112 | 0.974 | 115 | **0.926** `*` |
+| worth.rich.2 (10 or more) | 29 | 29 | 1.000 | 29 | 0.883 `*` |
+| worth.rich.3 (13) | 0 | | | | |
+| worth.poor.1 (led 1 third, a king wins: no king) | 1,896 | 1,550 | 0.818 | 1,795 | 0.799 |
+| worth.poor.2 (4 thirds or less) | 1,976 | 1,589 | 0.804 | 1,879 | 0.786 |
+| cheap.1 (the cheapest of the outcome) | 20,432 | 15,027 | 0.735 | 19,224 | 0.729 |
+| cheap.2 (the cheapest winner) | 14,487 | 10,348 | 0.714 | 14,487 | 0.707 |
+| off.pip.1 (following: a cover) | 4,524 | 2,405 | 0.532 | 4,524 | 0.517 |
+| off.pip.2 (leading: a cover) | 25,212 | 6,713 | 0.266 | 25,212 | 0.261 |
+| off.figure.1 (a figure cover legal: a cover) | 11,524 | 3,564 | 0.309 | 11,524 | 0.301 |
+| off.figure.2 (that figure) | 11,524 | 2,321 | 0.201 | 11,524 | 0.194 |
+| off.figure.3 (... unless he shows two low cards) | 10,910 | 2,314 | 0.212 | 10,890 | 0.205 |
+| run.1 (top of the longest run, else lowest) | 9,533 | 416 | 0.044 | 9,382 | 0.040 |
+| run.2 (a card of any run, else lowest) | 9,533 | 7,228 | 0.758 | 8,839 | 0.749 |
+| run.part.3 (holding a run: a card of it) | 9,065 | 7,089 | 0.782 | 8,999 | 0.773 |
+| run.part.4 (no run: the lowest) | 468 | 139 | 0.297 | 468 | 0.257 |
+| pagat.cash.1 (7 tarocks or fewer: the Pagat) | 2,410 | 446 | 0.185 | 2,088 | 0.169 |
+| pagat.cash.2 (8 or fewer) | 2,888 | 510 | 0.177 | 2,681 | 0.163 |
+| pagat.keep.1 (12 or more: keep it) | 117 | 89 | 0.761 | 113 | 0.674 |
+| pagat.keep.2 (11 or more) | 269 | 214 | 0.796 | 258 | 0.742 |
+| void.1 (not into a shown void) | 12,607 | 7,594 | 0.602 | 12,070 | 0.594 |
+| behind.1 (not in a split suit) | 26,015 | 13,855 | 0.533 | 15,086 | 0.525 |
+| behind.2 (a tarock) | 25,113 | 6,146 | 0.245 | 14,163 | 0.238 |
+| behind.3 (a tarock or a suit mostly mine) | 25,850 | 12,231 | 0.473 | 13,680 | 0.465 |
+| bid.1 (60-75 thirds sure, 6-7 tarocks: take up) | 58 | 44 | 0.759 | 58 | 0.635 |
+| bid.2 (60 thirds sure, 6 or more tarocks) | 72 | 58 | 0.806 | 72 | 0.700 |
+| announce.1 (a held honour's card: announce) | 233 | 233 | 1.000 | 233 | **0.984** `*` |
+
+Two rules pass: `worth.rich` (candidate 1) and `announce`. `worth.poor.1` misses
+the gate by 0.001 (lower bound 0.799) and fails by the rule. Rung 4 plays a
+cover when it has the choice only 53% of the time when following and 27% when
+leading, and a lying figure at once only 20% of the time: the books' advice on
+`off` (and `pagat` cashing at 7 or fewer tarocks, 19%) is not what the
+strongest rung does.
+
+**Confirmation** on fresh seeds (55,000,000, 400 sittings, 81 s) of the selected
+candidate of each rule that passed: `worth.rich.1` 121 firings, 115 satisfied,
+0.950, lower bound **0.896**; `announce.1` 206 of 206, lower bound **0.982**.
+Both confirmed.
+
+**Under each other setting** (200 sittings each, 1,200 deals):
+
+| Setting (seeds) | worth.rich.1: fired, satisfied, lower | announce.1: fired, satisfied, lower |
+|---|---|---|
+| Values 1/2/3 (56,000,000) | 60, 56, 0.841 | 110, 110, 0.966 |
+| Values 1/2/4 (57,000,000) | 60, 60, 0.940 | 95, 95, 0.961 |
+| Both pass: throw in (58,000,000) | 25, 24, 0.804 | 71, 71, 0.949 |
+| Ultimo 2 Points (59,000,000) | 42, 40, 0.842 | 98, 98, 0.962 |
+
+Both rules are confirmed under every setting; they are told under any.
+
+**Verdicts and gates** (`lessons::LESSONS`):
+
+| Rule | Verdict | Gate |
+|---|---|---|
+| worth.rich | passed, confirmed, all settings | Passed |
+| announce | passed, confirmed, all settings | Passed |
+| worth.poor | failed (best 0.799) | Failed |
+| cheap | failed (0.729) | Failed |
+| off.pip, off.figure (with its exception) | failed (0.517, 0.301) | Failed |
+| run | failed (0.749) | Failed |
+| pagat.cash, pagat.keep | failed (0.169, 0.742) | Failed |
+| bid | failed (0.700) | Failed |
+| endgame | not measurable: it prescribes no card | Failed (the fact is told) |
+| void | not applicable (praise-only, M4); measured 0.594 | Failed |
+| behind | no rule exists (candidates 0.525, 0.238, 0.465); praise-only | n/a |
+
+A rule that fails is told as its fact. Coverage (the share of the skill's clear
+chances in which the trigger fires) was not measured.
+
+**Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m5`
+(selection), `... m5 --seed 55000000 --only worth.rich.1,announce.1`
+(confirmation), `... m5 --seed 56000000 --sittings 200 --setting v123 --only
+worth.rich.1,announce.1` and the same with `57000000 v124`, `58000000 throwin`,
+`59000000 ult2`.
