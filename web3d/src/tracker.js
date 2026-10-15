@@ -2,7 +2,7 @@
 // engine's payload (`strohmandeln_tracker`, docs/PROTOCOL.md) turned into a
 // grid of cells, a legend, the learner's lines and the screen reader's
 // sentences, in the current language. The engine decides the masters, the
-// voids and the Points; this holds no rule of play, only words and layout.
+// voids and the points; this holds no rule of play, only words and layout.
 import { GLYPH, courtLabels, parseCode, tarockNumeral } from "./tarockfaces.js";
 
 const SUITS = ["h", "d", "c", "s"];
@@ -15,11 +15,15 @@ const TAROCK_ROWS = [8, 8, 6];
 const TAROCKS_HIGH_TO_LOW = ["SK", ...Array.from({ length: 21 }, (_, i) => `T${21 - i}`)];
 // How many of the tarocks out the first line names.
 const NAMED = 4;
-const STATES = ["mine", "you", "opp", "out"];
+const STATES = ["mine", "played", "out"];
 
 // Shown while Hints is on, the setting is on, and the Kibitzer is not muted
 // (the mute is the tutor's, so with the tutor off it does not apply).
 export const trackerVisible = (prefs) => Boolean(prefs.hints && prefs.tracker && !(prefs.tutor && prefs.muted));
+
+// The panel is for a wide window held sideways: upright or 700 px and under it
+// is not shown, and the engine is not asked (6.6.6; tracker.css hides the same).
+export const trackerFits = ({ width, height }) => width > 700 && width / height > 0.85;
 
 // Open or folded: the person's choice; unset, open on a large window.
 export function trackerOpen(prefs, { width, height }) {
@@ -46,17 +50,19 @@ function cellLabel(code, words) {
 const lower = (lang, s) => (lang === "en" ? s.toLowerCase() : s);
 const joined = (list, { t }) => (list.length < 2 ? list.join("") : `${list.slice(0, -1).join(", ")} ${t("tracker.or")} ${list.at(-1)}`);
 
-// `words`: { t, lang, cardName, thirds }. `p` is the engine's `tracker` object
+// `words`: { t, lang, cardName, romanName, thirds }: `romanName` is for a cell's
+// title (the faces' numerals), `cardName` for the screen reader. `p` is the engine's `tracker` object
 // (`strohmandeln_tracker().tracker`), or null: no deal, no panel.
 export function trackerModel(p, words) {
   if (!p) return null;
-  const { t, lang, cardName, thirds } = words;
+  const { t, lang, cardName, romanName, thirds } = words;
   const group = (kind) => p.groups.find((g) => g.kind === kind);
   const cell = (code) => {
     const place = p.cards[code];
-    const state = place.place === "played" ? (place.by === p.human ? "you" : "opp") : place.place === "hand" || place.place === "cover" ? "mine" : "out";
-    const how = place.place === "played" ? t(`tracker.state.${state}`, { n: place.trick }) : t(`tracker.state.${place.place}`);
-    return { code, label: cellLabel(code, words), state, title: `${cardName(code)}: ${how}` };
+    const played = place.place === "played";
+    const state = played ? "played" : place.place === "hand" || place.place === "cover" ? "mine" : "out";
+    const how = played ? t(`tracker.state.${place.by === p.human ? "you" : "opp"}`, { n: place.trick }) : t(`tracker.state.${place.place}`);
+    return { code, label: cellLabel(code, words), state, title: `${romanName(code)}: ${how}` };
   };
   const rows = [
     ...SUITS.map((s) => ({
@@ -81,12 +87,17 @@ export function trackerModel(p, words) {
     lines.push({ id: "trumps", text: t("tracker.line.trumps", { n: trumps.out.length, list }) });
   }
   // Masters: the tarock first, then the suits.
+  // A suit master is rank only: he may trump it when he has shown the suit void
+  // and a tarock is still out. A tarock master is never trumped.
+  const ruffable = (g) => g.kind !== "trump" && g.void && trumps.out.length > 0;
   const masters = ["trump", ...SUITS].map(group).filter((g) => g.master);
   if (masters.length === 1) {
     const g = masters[0];
-    lines.push({ id: "masters", text: t("tracker.line.master", { card: cardLabel(g.best, words), kind: t(`tracker.kind.${g.kind}`) }) });
+    const key = ruffable(g) ? "tracker.line.master.ruff" : "tracker.line.master";
+    lines.push({ id: "masters", text: t(key, { card: cardLabel(g.best, words), kind: t(`tracker.kind.${g.kind}`) }) });
   } else if (masters.length > 1) {
-    lines.push({ id: "masters", text: t("tracker.line.masters", { cards: masters.map((g) => cardLabel(g.best, words)).join(", ") }) });
+    const cards = masters.map((g) => `${cardLabel(g.best, words)}${ruffable(g) ? ` (${t("tracker.trumpable")})` : ""}`);
+    lines.push({ id: "masters", text: t("tracker.line.masters", { cards: cards.join(", ") }) });
   }
   const voids = KINDS.map(group).filter((g) => g.void);
   if (voids.length) {
@@ -103,7 +114,6 @@ export function trackerModel(p, words) {
     rows,
     legend: STATES.map((state) => ({ state, text: t(`tracker.legend.${state}`) })),
     sr: KINDS.map(group).map((g) => t("tracker.sr.group", { kind: t(`card.suit.${g.kind}`), mine: names(g.mine), out: names(g.out) })),
-    outCount: p.out_count,
     trick: p.trick,
   };
 }

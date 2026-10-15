@@ -41,7 +41,7 @@ import { cardName, getLang, onLang, romanName, setLang, signed, suitName, t, tn,
 import { createTalk } from "./talk.js";
 import { ALL_CODES, backTexture, COURT_CODES, faceTextures } from "./tarockfaces.js";
 import { createUi } from "./ui.js";
-import { trackerModel, trackerOpen, trackerVisible } from "./tracker.js";
+import { trackerFits, trackerModel, trackerOpen, trackerVisible } from "./tracker.js";
 import { trackerPanel } from "./trackerview.js";
 import { addSitting, clearProgress, exportText, loadProgress, summaryOf } from "./progress.js";
 import { explainText, reviewBlocks } from "./review.js";
@@ -242,14 +242,18 @@ async function main() {
   // ---- the cards-out tracker (docs/TABLE3D.md 6.6) ----------------------------------
   // Drawn from the engine's payload taken with the cards at rest; redrawn when a
   // setting, the language or the fold changes.
+  // Wanted by the preferences, and a window it fits (an upright phone is not asked).
+  function trackerShown() {
+    return trackerVisible(prefs) && trackerFits({ width: window.innerWidth, height: window.innerHeight });
+  }
   function showTracker() {
-    const on = Boolean(wasm?.deal) && trackerVisible(prefs);
+    const on = Boolean(wasm?.deal) && trackerShown();
     const open = on && trackerOpen(prefs, { width: window.innerWidth, height: window.innerHeight });
     if (on && !trackerData && !director.busy() && pending === 0) trackerData = engine.tracker()?.tracker ?? null;
     const sig = JSON.stringify([on, open, trackerData, getLang()]);
     if (sig === trackerSig) return placeTracker();
     trackerSig = sig;
-    const model = open && trackerData ? trackerModel(trackerData, { t, lang: getLang(), cardName, thirds }) : null;
+    const model = open && trackerData ? trackerModel(trackerData, { t, lang: getLang(), cardName, romanName, thirds }) : null;
     const node = model ? trackerPanel(document, model, { foldLabel: t("tracker.fold"), foldTitle: t("tracker.fold.title") }) : null;
     const hadFocus = document.activeElement?.dataset?.act === "tracker-fold";
     ui.setTracker({ tab: on, open, node });
@@ -257,7 +261,7 @@ async function main() {
     if (hadFocus) ui.trackerRoot.querySelector("[data-act=tracker-fold]")?.focus();
   }
   function updateTracker() {
-    trackerData = wasm?.deal && trackerVisible(prefs) ? (engine.tracker()?.tracker ?? null) : null;
+    trackerData = wasm?.deal && trackerShown() ? (engine.tracker()?.tracker ?? null) : null;
     showTracker();
   }
   // The panel lies below the HUD and above the Kibitzer's tabs, with a height to
@@ -1287,6 +1291,7 @@ async function main() {
     fitStrips();
     sel = { ...sel, at: null }; // cards move on a resize
     if (S) director.relayout();
+    showTracker(); // a window that no longer fits it, or now does
   }).observe(document.getElementById("overlay"));
   fitStrips();
   stage.onReframe = () => S && director.relayout();

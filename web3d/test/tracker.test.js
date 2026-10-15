@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createStrings, thirds } from "../src/strings.js";
 import { ALL_CODES } from "../src/tarockfaces.js";
-import { cardLabel, trackerModel, trackerOpen, trackerVisible } from "../src/tracker.js";
+import { cardLabel, trackerFits, trackerModel, trackerOpen, trackerVisible } from "../src/tracker.js";
 import { trackerPanel } from "../src/trackerview.js";
 import { fakeRoot } from "./support/fakedom.js";
 import { playSitting, rng } from "./sim.js";
@@ -15,7 +15,7 @@ import { playSitting, rng } from "./sim.js";
 const TABLE = JSON.parse(readFileSync(new URL("../strings.json", import.meta.url), "utf8"));
 const words = (lang) => {
   const s = createStrings(TABLE, lang);
-  return { t: s.t, lang, cardName: s.cardName, thirds };
+  return { t: s.t, lang, cardName: s.cardName, romanName: s.romanName, thirds };
 };
 
 const KINDS = ["h", "d", "c", "s", "trump"];
@@ -57,6 +57,15 @@ test("the fold is the person's choice; unset, open on a large window and folded 
   assert.equal(trackerOpen({ trackerFolded: false }, { width: 390, height: 844 }), true);
 });
 
+test("the panel is for a window that is wide and not upright; otherwise it is not asked for", () => {
+  assert.equal(trackerFits({ width: 1280, height: 720 }), true);
+  assert.equal(trackerFits({ width: 1024, height: 768 }), true);
+  assert.equal(trackerFits({ width: 390, height: 844 }), false);
+  assert.equal(trackerFits({ width: 844, height: 390 }), true);
+  assert.equal(trackerFits({ width: 700, height: 400 }), false, "700 px or less is out");
+  assert.equal(trackerFits({ width: 800, height: 1000 }), false, "upright");
+});
+
 test("no payload, no panel", () => {
   assert.equal(trackerModel(null, words("en")), null);
 });
@@ -83,7 +92,7 @@ test("the labels follow the language: K D C B in German", () => {
   assert.equal(cardLabel("10s", words("en")), "♠︎10");
 });
 
-test("a cell's state is yours, played by you, played by him, or still out, with the trick in its title", () => {
+test("a cell's state is yours, played or still out; who played it and when are in its title", () => {
   const p = payload({
     human: 1,
     places: { Kh: "hand", T21: "cover", Qh: [1, 2], T5: [0, 3], Ks: "opp_cover", T9: "opp_hand" },
@@ -92,21 +101,22 @@ test("a cell's state is yours, played by you, played by him, or still out, with 
   const cell = (code) => m.rows.flatMap((r) => r.cells).find((c) => c.code === code);
   assert.equal(cell("Kh").state, "mine");
   assert.equal(cell("T21").state, "mine");
-  assert.equal(cell("Qh").state, "you", "played by seat 1, the human");
-  assert.equal(cell("T5").state, "opp");
+  assert.equal(cell("Qh").state, "played");
+  assert.equal(cell("T5").state, "played");
   assert.equal(cell("Ks").state, "out");
   assert.equal(cell("T9").state, "out");
   assert.equal(cell("Jd").state, "out", "an unseen card");
   assert.match(cell("Qh").title, /queen of hearts: played by you, trick 2/);
-  assert.match(cell("T5").title, /tarock V: played by your opponent, trick 3|tarock 5: played by your opponent, trick 3/);
+  assert.equal(cell("T5").title, "tarock V: played by your opponent, trick 3", "Roman, as the face shows it");
   assert.match(cell("Ks").title, /face up on your opponent's packet/);
   assert.match(trackerModel(p, words("de")).rows[0].cells[1].title, /Herz-Dame: von Ihnen gespielt, Stich 2/);
 });
 
-test("the legend names the four states", () => {
+test("the legend names the three states, and says still out holds your face-down packet cards", () => {
   const m = trackerModel(payload(), words("en"));
-  assert.deepEqual(m.legend.map((l) => l.state), ["mine", "you", "opp", "out"]);
-  assert.deepEqual(m.legend.map((l) => l.text), ["Yours", "You played", "Your opponent played", "Still out"]);
+  assert.deepEqual(m.legend.map((l) => l.state), ["mine", "played", "out"]);
+  assert.deepEqual(m.legend.map((l) => l.text), ["Yours", "Played", "Still out, with your face-down packet cards"]);
+  assert.deepEqual(trackerModel(payload(), words("de")).legend.map((l) => l.text), ["Ihre", "Gespielt", "Noch draußen, auch Ihre verdeckten Paketkarten"]);
 });
 
 test("tarocks out: the count and the highest four, then an ellipsis", () => {
@@ -118,12 +128,13 @@ test("tarocks out: the count and the highest four, then an ellipsis", () => {
   assert.equal(lines(few)[0], "Tarocks still out: 2 — XXI, II");
   const none = payload();
   assert.equal(lines(none)[0], "No tarock is out: every one is yours or played.");
+  assert.equal(lines(none, "de")[0], "Kein Tarock ist mehr draußen: alle sind in Ihrer Hand oder gespielt.");
 });
 
 test("a master: one is a sentence, several are one line, the tarock first", () => {
   const one = payload({ groups: { s: { mine: ["Ks"], best: "Ks", master: true, out: ["Qs"], top_out: "Qs" } } });
   assert.ok(lines(one).includes("Your ♠︎K is the highest spade left."), lines(one).join("|"));
-  assert.ok(lines(one, "de").includes("Ihr ♠︎K ist das höchste Pik im Spiel."));
+  assert.ok(lines(one, "de").includes("Höchstes Pik im Spiel: ♠︎K, es gehört Ihnen."));
   const t = payload({ groups: { trump: { mine: ["T21"], best: "T21", master: true, out: ["T5"], top_out: "T5" } } });
   assert.ok(lines(t).includes("Your XXI is the highest tarock left."));
   const several = payload({
@@ -138,26 +149,50 @@ test("a master: one is a sentence, several are one line, the tarock first", () =
   assert.ok(!lines(notMaster).some((l) => /highest/.test(l)));
 });
 
+test("a suit master that he can trump says so: he has shown the suit void and tarocks are out", () => {
+  const spade = { mine: ["Ks"], best: "Ks", master: true, out: ["Qs"], top_out: "Qs" };
+  const trumpOut = { out: ["T5"], top_out: "T5" };
+  const ruff = payload({ groups: { s: { ...spade, void: true }, trump: trumpOut } });
+  assert.ok(lines(ruff).includes("Your ♠︎K is the highest spade left, but he may trump it."), lines(ruff).join("|"));
+  assert.ok(lines(ruff, "de").includes("Höchstes Pik im Spiel: ♠︎K, aber er kann stechen."), lines(ruff, "de").join("|"));
+  // no void, or no tarock out: nothing to warn of
+  assert.ok(lines(payload({ groups: { s: spade, trump: trumpOut } })).includes("Your ♠︎K is the highest spade left."));
+  assert.ok(lines(payload({ groups: { s: { ...spade, void: true } } })).includes("Your ♠︎K is the highest spade left."));
+  // a tarock master is never trumped
+  const t = payload({ groups: { trump: { mine: ["T21"], best: "T21", master: true, out: ["T5"], top_out: "T5", void: true } } });
+  assert.ok(lines(t).includes("Your XXI is the highest tarock left."));
+  // in a list, a mark beside the card
+  const several = payload({
+    groups: {
+      s: { ...spade, void: true },
+      h: { mine: ["Qh"], best: "Qh", master: true, out: ["2h"], top_out: "2h" },
+      trump: { mine: ["T21"], best: "T21", master: true, out: ["T5"], top_out: "T5" },
+    },
+  });
+  assert.ok(lines(several).includes("Your highest cards, nothing higher out: XXI, ♥︎Q, ♠︎K (he may trump)"), lines(several).join("|"));
+  assert.ok(lines(several, "de").includes("Ihre höchsten Karten, nichts Höheres draußen: XXI, ♥︎D, ♠︎K (er kann stechen)"));
+});
+
 test("shown voids: suits and tarocks, joined", () => {
   const h = payload({ groups: { h: { void: true } } });
   assert.ok(lines(h).includes("Your opponent has shown no hearts."));
-  assert.ok(lines(h, "de").includes("Ihr Gegner hat Herz nicht bedient."));
+  assert.ok(lines(h, "de").includes("Ihr Gegner hat kein Herz mehr gezeigt."));
   const two = payload({ groups: { h: { void: true }, c: { void: true } } });
   assert.ok(lines(two).includes("Your opponent has shown no hearts or clubs."));
-  assert.ok(lines(two, "de").includes("Ihr Gegner hat Herz oder Kreuz nicht bedient."));
+  assert.ok(lines(two, "de").includes("Ihr Gegner hat kein Herz oder Kreuz mehr gezeigt."));
   const t = payload({ groups: { trump: { void: true } } });
   assert.ok(lines(t).includes("Your opponent has shown no tarocks."));
-  assert.ok(lines(t, "de").includes("Ihr Gegner hat Tarock nicht bedient."));
+  assert.ok(lines(t, "de").includes("Ihr Gegner hat kein Tarock mehr gezeigt."));
   assert.ok(!lines(payload()).some((l) => /opponent has shown/.test(l)));
 });
 
-test("the Points still out are told in thirds, of the 70", () => {
-  assert.ok(lines(payload({ out_thirds: 94 })).includes("Points still out: 31⅓ of 70"));
-  assert.ok(lines(payload({ out_thirds: 210 })).includes("Points still out: 70 of 70"));
-  assert.ok(lines(payload({ out_thirds: 94 }), "de").includes("Augen noch draußen: 31⅓ von 70"));
+test("the points still out are told in thirds, of the 70 (a point is what the count says, not what is paid)", () => {
+  assert.ok(lines(payload({ out_thirds: 94 })).includes("Still out: 31⅓ of 70 points"));
+  assert.ok(lines(payload({ out_thirds: 210 })).includes("Still out: 70 of 70 points"));
+  assert.ok(lines(payload({ out_thirds: 94 }), "de").includes("Noch draußen: 31⅓ von 70 Augen"));
 });
 
-test("two to four lines, in order: tarocks, masters, voids, Points", () => {
+test("two to four lines, in order: tarocks, masters, voids, points", () => {
   const all = payload({
     groups: {
       trump: { mine: ["T21"], best: "T21", master: true, out: ["T5"], top_out: "T5" },
@@ -190,11 +225,11 @@ test("the panel: a labelled region, the lines a list, the grid hidden from the s
   assert.equal(node.byClass("tracker-grid")[0].byClass("tracker-cell").length, 54);
   assert.equal(node.byClass("tracker-sr")[0].children.length, 5);
   const fold = node.byAttr("data-act", "tracker-fold")[0];
-  assert.equal(fold.getAttribute("title"), "Fold the slate away");
+  assert.equal(fold.getAttribute("title"), "Fold the count away");
   assert.equal(fold.textContent, "Fold");
   const mark = node.byClass("tracker-cell").find((c) => c.getAttribute("data-code") === "Kh");
   assert.equal(mark.getAttribute("data-state"), "out");
-  assert.equal(node.byClass("tracker-legend")[0].children.length, 4);
+  assert.equal(node.byClass("tracker-legend")[0].children.length, 3);
 });
 
 test("over a real sitting every payload makes a panel of two to four lines in both languages, nothing unspoken", async () => {
@@ -219,7 +254,7 @@ test("over a real sitting every payload makes a panel of two to four lines in bo
           const states = (s) => cells.filter((c) => c.state === s).length;
           const places = Object.values(p.cards);
           assert.equal(states("mine"), places.filter((x) => x.place === "hand" || x.place === "cover").length);
-          assert.equal(states("you") + states("opp"), places.filter((x) => x.place === "played").length);
+          assert.equal(states("played"), places.filter((x) => x.place === "played").length);
           assert.equal(states("out"), p.out_count);
         }
         looked++;

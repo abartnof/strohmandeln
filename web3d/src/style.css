@@ -84,7 +84,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #edeef0; col
 .loading { position: fixed; inset: 0; display: grid; place-items: center; margin: 0; color: #444; }
 button { font: inherit; }
 
-.info { position: absolute; top: 8px; left: 8px; width: min(340px, calc(100vw - 150px)); pointer-events: none; }
+.info { z-index: 13; /* an opened HUD lies over the cards-out panel (z 12), not under it */ position: absolute; top: 8px; left: 8px; width: min(340px, calc(100vw - 150px)); pointer-events: none; }
 .info .hud { pointer-events: auto; }
 .tour-line { margin: 4px 2px 0; font-size: 13px; color: #44474f; text-shadow: 0 0 3px #fff; }
 .top-right { position: absolute; top: 8px; right: 8px; display: flex; gap: 8px; pointer-events: auto; z-index: 30; }

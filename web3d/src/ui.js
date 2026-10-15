@@ -25,7 +25,6 @@ export function createUi(root, { t, onAct }) {
     el("div", { class: "tags", "aria-hidden": "true" }),
     el("div", { class: "floats", "aria-hidden": "true" }),
     el("div", { class: "info" }, el("div", { class: "hud-slot" }), el("p", { class: "tour-line" })),
-    el("div", { class: "tracker-root" }),
     el("div", { class: "slate-root" }),
     el("div", { class: "settings-root" }),
     el("div", { class: "banner", role: "status", hidden: "" }),
@@ -46,6 +45,8 @@ export function createUi(root, { t, onAct }) {
       el("button", { class: "tab slate-tab", type: "button", "data-act": "slate", "aria-expanded": "false" }),
       el("button", { class: "tab cog", type: "button", "data-act": "settings" }),
     ),
+    // The cards-out panel (6.6): after the tabs in the tab order, so its Fold button follows them.
+    el("div", { class: "tracker-root" }),
     // The Kibitzer's tab (docs/TABLE3D.md 6): Help, the mute, the review chip, his note.
     el(
       "div",
