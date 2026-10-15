@@ -715,3 +715,50 @@ chances in which the trigger fires) was not measured.
 (confirmation), `... m5 --seed 56000000 --sittings 200 --setting v123 --only
 worth.rich.1,announce.1` and the same with `57000000 v124`, `58000000 throwin`,
 `59000000 ult2`.
+
+## M6 Diagnosis
+
+### Plan (2026-10-15, before the run)
+
+**Question.** With which constants does the learner name the skill a lesioned
+student lacks within a few deals, and name none for rung 4 whole? This sets
+`PARAMS.discount`, `lower`, `upper`, `master_of_top` and `lose_below`
+(`docs/TUTOR.md` 5; the gains and `costly_chances` are M4's).
+
+**Students and windows.** Twelve students play against rung 3 (as in M3, in seat A
+in the even sittings and in seat B in the odd ones): rung 4 whole; the knock-outs
+`Worth`, `Cheap`, `Off`, `Run`, `Pagat` (coin), `Void`, `Behind`, `Endgame`,
+`Bid` (coin), `AlwaysPass`, `Announce`. `Void` and `Behind` are praise-only after M4
+(`may_focus` false): nothing is to be detected in them, and the focus their students
+get after the last deal is reported. A **window** is 3 consecutive sittings
+(18 deals) from consecutive seeds, the same seeds for every student; each deal's
+evidence (no assisted decision) is one summary; the learner is run on each
+prefix (after 1 deal, 2 deals, ...). Tuning windows: 6, from seed 60,000,000.
+Fresh windows: 6, from seed 65,000,000. Fixed counts.
+
+**Measures.** For a knock-out other than those two, its **detection**: the share of windows in which
+the skill it lacks is the learner's focus after some deal up to the limit (6
+deals for the total knock-outs, 12 for the coin ones `Pagat`, `Bid`,
+`AlwaysPass`, and 18 for `Announce`, whose chances come once in about twelve
+deals). The **sensitivity** is the mean detection over the nine knock-outs that can be detected.
+For rung 4 whole: the **false-focus rate**, the share of (window, prefix from
+the second deal) at which any focus is named, and the skills mastered after the
+last deal.
+
+**Grid and choice, fixed now.** `discount` in {0.75, 0.80, 0.83, 0.88, 0.92},
+`lower` in {0.1, 0.2, 0.3}, `upper` in {0.8, 0.9, 0.95}, `master_of_top` in
+{0.75, 0.80, 0.85, 0.90}, `lose_below` in {0.1, 0.2, 0.3} (540 sets), with the
+ladder of M3 and the gains of M4. On the tuning windows: among the sets with a
+false-focus rate of at most 0.10 and at least 3 skills mastered by rung 4 whole,
+the highest sensitivity; ties go to the lower false-focus rate, then to the set
+nearest the provisional constants. If none qualifies, the highest sensitivity
+less the false-focus rate.
+
+**Acceptance, on the fresh windows with the chosen set.** Sensitivity at least
+0.7, false-focus rate at most 0.15, at least 3 skills mastered by rung 4
+whole. Reported as met or not met; the set is kept either way and the result
+says which.
+
+**Stopping.** Descriptive fixed counts, no looks. `lose_below` shows only when
+a mastered skill is lost, which 18 deals seldom do; the grid reports whether it
+moved the scores, and if not the Cassino value 0.2 is kept.
