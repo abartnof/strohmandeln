@@ -255,3 +255,18 @@ test("the HUD's words can be the game's own (a deal, not a hand)", () => {
   assert.match(text(all(hud.node, "hud-total")[0]), /Sum/);
   done();
 });
+
+test("an `apart` popup is shown and booked in the ledger but leaves the totals and the numbers alone", () => {
+  const { c, hud } = setup({ ...counting, apart: ["bonus"], format: (u, cat) => (cat === "bonus" ? String(u) : counting.format(u)) });
+  hud.dealt(1);
+  hud.score({ side: "you", cat: "count", label: "Three cards", pts: 107, hand: 1 });
+  c.run(5000);
+  hud.score({ side: "you", cat: "bonus", label: "Trull", pts: 2, hand: 1 });
+  assert.match(text(all(hud.node, "hud-pop-pts")[1]), /\+2$/, "the popup says Points");
+  c.run(5000);
+  assert.deepEqual(hud.totals(), { you: 107, opp: 0 });
+  assert.deepEqual(hud.shown(), { you: 107, opp: 0 });
+  assert.deepEqual(hud.ledger().hands[0].lines.bonus, { you: 2, opp: 0 });
+  assert.ok(hud.idle());
+  done();
+});

@@ -230,7 +230,8 @@ export function createHud(root, game, { later = (ms, fn) => setTimeout(fn, ms), 
     const hand = e.hand ?? current ?? 1;
     if (!ledger.has(hand)) ledger.set(hand, blank(game));
     ledger.get(hand)[e.cat][side] += e.pts;
-    totals = { ...totals, [side]: totals[side] + e.pts };
+    const counts = !game.apart.includes(e.cat); // an apart category is paid beside the count
+    if (counts) totals = { ...totals, [side]: totals[side] + e.pts };
     flash = { cat: e.cat, side };
     drawList();
     const b = blocks[side];
@@ -238,7 +239,7 @@ export function createHud(root, game, { later = (ms, fn) => setTimeout(fn, ms), 
     b.popPts.textContent = `+${format(e.pts, e.cat)}`;
     b.node.classList.add("popped");
     const ticks = reduced() ? 1 : Math.max(1, Math.ceil(e.pts / scale));
-    for (let k = 1; k <= ticks; k++) {
+    for (let k = 1; counts && k <= ticks; k++) {
       later((k - 1) * TICK_MS + TICK_FROM, () => {
         if (mine !== epoch) return;
         shown = { ...shown, [side]: from + Math.round((e.pts * k) / ticks) };
@@ -250,7 +251,7 @@ export function createHud(root, game, { later = (ms, fn) => setTimeout(fn, ms), 
       b.node.classList.remove("popped");
       drawSegments(side, from); // the new segments ripple as the row comes back
     });
-    later(POP_AT, () => mine === epoch && replay(b.num, "pop"));
+    later(POP_AT, () => mine === epoch && counts && replay(b.num, "pop"));
     busyUntil[side] = true;
     later(POPUP_BUSY, () => {
       if (mine !== epoch) return;
