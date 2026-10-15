@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createStrings, thirds } from "../src/strings.js";
-import { hintLines, hintParams, hintSpoken } from "../src/hinttext.js";
+import { hintLines, hintParams, hintSpoken, romanCardName } from "../src/hinttext.js";
 
 const TABLE = JSON.parse(readFileSync(new URL("../strings.json", import.meta.url), "utf8"));
 const doc = readFileSync(new URL("../../docs/MESSAGES.md", import.meta.url), "utf8");
@@ -79,4 +79,12 @@ test("no hint key is left in the strings that MESSAGES.md does not give", () => 
     const m = /^hint\.reason\.(.+)$/.exec(k);
     if (m) assert.ok(given.has(m[1]), k);
   }
+});
+
+test("shown tarocks use the faces' Roman numerals; Pagat, Mond, Sküs keep their names; zero is plural", () => {
+  const w = words("en");
+  const name = romanCardName(w.cardName, w.t);
+  assert.deepEqual(["T12", "T4", "T1", "T21", "SK", "Jh"].map(name), ["tarock XII", "tarock IIII", "Pagat", "Mond", "Sküs", "jack of hearts"]);
+  assert.equal(hintParams({ n_thirds: 0 }, w).n_thirds, "0 points");
+  assert.equal(hintLines({ hint: { action: "play", card: "T12" }, reason: "only-card", params: { card: "T12" } }, { ...w, cardName: name }).lead, "Play tarock XII.");
 });

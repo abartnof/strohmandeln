@@ -1,3 +1,4 @@
+import { tarockNumeral } from "./tarockfaces.js";
 // The tutor's hint as words (docs/MESSAGES.md "Hint reasons"): the engine sends
 // a key with parameters, a rule key and the search's odds; this names the
 // cards, formats the thirds and returns the lines the table shows under the
@@ -5,10 +6,19 @@
 
 // A parameter's value as it is told: a card code by name, a `_thirds` count
 // as points with their unit ("4⅔ points", "⅔ point"), anything else as it is.
+// Shown names follow the faces: a tarock by its Roman numeral ("tarock XII"),
+// the Pagat, Mond and Sküs by name. The screen reader keeps the plain name.
+export function romanCardName(cardName, t) {
+  return (code) => {
+    const m = /^T(\d+)$/.exec(code);
+    return m && m[1] !== "1" && m[1] !== "21" ? t("card.tarock", { n: tarockNumeral(+m[1]) }) : cardName(code);
+  };
+}
+
 export function hintParams(params, { t, cardName, thirds }) {
   const out = {};
   for (const [name, v] of Object.entries(params ?? {})) {
-    out[name] = typeof v === "string" ? cardName(v) : name.endsWith("_thirds") ? `${thirds(v)} ${t(v <= 3 ? "hint.unit.one" : "hint.unit.other")}` : v;
+    out[name] = typeof v === "string" ? cardName(v) : name.endsWith("_thirds") ? `${thirds(v)} ${t(v >= 1 && v <= 3 ? "hint.unit.one" : "hint.unit.other")}` : v;
   }
   return out;
 }
