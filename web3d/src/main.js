@@ -25,7 +25,7 @@ import { choreograph, initialPlacement, LAST_TRICK, opening } from "./choreograp
 import { dragKind, sameSpot, shake } from "./gesture.js";
 import { handRange } from "./layout.js";
 import { TRULL, KINGS } from "./cardinfo.js";
-import { bonusLines, countGame, countLines, edgeOf } from "./counting.js";
+import { bonusLines, countGame, countLines, edgeOf, runningTally } from "./counting.js";
 import { loadEngine } from "./engine.js";
 import { createMirror } from "./mirror.js";
 import { createNewSitting } from "./newsitting.js";
@@ -449,6 +449,7 @@ async function main() {
   function schedulePopups(count, lines, at, scored) {
     if (!count) return;
     const events = countEvents(game, lines, { at, hand: 1 });
+    if (count.lines.length) later(Math.max(0, count.lines[0] - 1), () => hud.reset({ hands: [], live: countLedger(game, []) })); // the count begins from nothing
     for (const ev of events) {
       later(ev.end ? count.end : (count.lines[ev.line] ?? count.end), () => (ev.end ? hud.endHand(1) : hud.score(ev)));
     }
@@ -459,6 +460,14 @@ async function main() {
     });
     const paid = bonusLines(scored?.credits ?? [], human, (cause) => t(`slate.cause.${cause}`));
     for (const ev of countEvents(game, paid, { at, hand: 1 })) if (!ev.end) later(count.end + 700, () => hud.score(ev));
+  }
+
+  // The running tally (2.5.3): the HUD's lines hold the take so far, counted as the count
+  // will count it. The count starts again from nothing and lands on the same numbers.
+  function showTally(events = log) {
+    const ledger = countLedger(game, []);
+    ledger.count = runningTally(events, human);
+    hud.reset({ hands: [], live: ledger });
   }
 
   // ---- what is shown at an event's moment ------------------------------------------
@@ -485,6 +494,7 @@ async function main() {
         showTutor();
         break;
       case "trick_won":
+        showTally(log.slice(0, index + 1));
         // The line under the prompt, from the module's own deduction (6.3.3).
         if (prefs.explain && !prefs.muted) {
           const line = explainText(engine.explain()?.explain, tutorWords());
@@ -968,7 +978,7 @@ async function main() {
     restModel = model;
     trickShown = r.state.deal?.playing ? r.state.deal.trick_number : 0;
     showTour();
-    hud.reset({ hands: [], live: null });
+    showTally(); // a deal under way shows its take so far
     ui.root.classList.toggle("left", prefs.leftHanded);
     if (r.state.over) {
       const end = [...log].reverse().find((e) => e.type === "sitting_end");

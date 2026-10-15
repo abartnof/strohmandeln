@@ -34,6 +34,19 @@ export function countLines(counted, human) {
   return out;
 }
 
+// The running tally (2.5.3): the cards each side has won so far in the deal
+// (the events' `trick_won`, since the last `deal_start`), counted in exact
+// thirds as the count will count them. After trick 27 it is the `count`
+// event's own numbers. `human` is the human's seat; "you" is that seat's line.
+export function runningTally(events, human) {
+  const tally = { you: 0, opp: 0 };
+  for (const e of events) {
+    if (e.type === "deal_start") tally.you = tally.opp = 0;
+    else if (e.type === "trick_won") tally[e.winner === human ? "you" : "opp"] += e.cards.reduce((n, c) => n + thirdsOf(c), 0);
+  }
+  return tally;
+}
+
 // The edge of the count (2.5.3, 2.5.4): once a side has 107 thirds the target
 // is joined by a tick on both lines; a side on 106 (35 1/3) is one short.
 export const edgeOf = (totals) => ({
