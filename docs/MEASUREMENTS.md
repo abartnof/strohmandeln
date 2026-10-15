@@ -486,3 +486,68 @@ found for its own.
 
 **Stopping.** As above; the maximum is 160 pairs for a single knock-out and 120
 for an edge.
+
+## M5 Rule precision
+
+### Plan (2026-10-15, before the selection run)
+
+**Question.** Which of the rules of `docs/TUTOR.md` 9 may the tutor tell as a
+rule? A rule is a **trigger** (a position) and a **prescription** (what to do
+there), each a test of the mover's own view and the move made
+(`crates/strohmandeln-ai/src/rules.rs`, `CANDIDATES`). Its **precision** is how
+often rung 4 does what the rule prescribes when the trigger fires. The gate
+(`docs/TUTOR.md` 11) is a clustered Wilson lower bound of at least 0.80,
+confirmed on fresh seeds, and each shipped rule confirmed under each other
+setting; a rule that fails is told as its fact.
+
+**Candidates (27, written before the first run; the ids are the ones in
+`rules.rs`).** Each rule of the table has one to five candidates, which differ
+in the number in the trigger or in how much the prescription asks:
+`worth.rich.1-3` (led card worth 7, 10, 13 thirds or more: win),
+`worth.poor.1-2` (led card worth 1 or at most 4 thirds, a king wins: no king),
+`cheap.1-2` (the cheapest card of the outcome played; the cheapest winner),
+`off.pip.1-2` (a cover and a hand card legal: a cover, following or leading),
+`off.figure.1-3` (a Dame or Cavall cover legal: a cover; that figure (the higher)
+played; the same unless he shows two low cards of its suit),
+`run.1-2` (a tarock led from two or more: the top of the longest solid run,
+else the lowest; a card of any solid run, else the lowest) and the diagnostics
+`run.part.3-4` (the two halves, never shipped), `pagat.cash.1-2` (following
+with the Pagat and another card, 7 or 8 tarocks or fewer: the Pagat),
+`pagat.keep.1-2` (12 or 11 tarocks or more: keep it), `void.1` (a lead into a
+shown void and another lead: not into it), `behind.1-3` (a lead in a split suit
+and another: not in a split suit; a tarock; a tarock or a suit mostly mine),
+`bid.1-2` (60 to 75 thirds of sure winners and 6 or 7 tarocks; 60 thirds and 6
+tarocks or more: take up), `announce.1` (about to play a card of a held honour:
+announce). A "solid run" is a block of my tarocks that are neighbours among the
+tarocks not yet played. `endgame` is not tested: its rule ("count what you still
+need") prescribes no card, so it has no precision; it is told as written, as a
+prompt, and the verdict is "not measurable".
+
+**Data.** Rung 4 (the player, default budget) against rung 3, both seats
+(alternating by sitting), 3 Touren, every deal's decisions of the player.
+- Selection: 400 sittings (2,400 deals), default settings, seeds from 50,000,000.
+- Confirmation: the candidate of each rule with the best lower bound at or above
+  0.80 in the selection, 400 sittings from 55,000,000 (fresh seeds).
+- Settings: each confirmed rule under each other setting alone (values 1/2/3,
+  values 1/2/4, both pass: throw in, ultimo 2), 200 sittings each, seeds from
+  56,000,000, 57,000,000, 58,000,000, 59,000,000.
+A trial of the program on 6 sittings from seed 95,000,000 checked that it runs;
+its numbers are not used.
+
+**Estimate.** Per rule: firings, firings satisfied, precision = satisfied /
+firings, with the ratio estimator clustered by deal giving an effective sample
+`n_eff` = p (1 - p) / variance (at most the firings), and the lower end of the
+Wilson interval (z = 1.96) at `n_eff`.
+
+**Decision rules (fixed now).**
+- A candidate **passes** if its lower bound is at least 0.80. Per rule (the id
+  up to its last dot) the candidate with the best lower bound among those that
+  pass is **selected** (`run.part.*` are not eligible).
+- A selected candidate is **confirmed** if its lower bound on the fresh seeds is
+  at least 0.80. Only the selected candidate of each rule is confirmed.
+- A confirmed rule is told **under a setting** if its lower bound there is at
+  least 0.80; otherwise under that setting its fact is told (`docs/TUTOR.md` 2,
+  `lessons::taught`).
+- A rule with no selected candidate, or not confirmed, is told as its fact.
+
+**Stopping.** Descriptive fixed counts, no looks.
