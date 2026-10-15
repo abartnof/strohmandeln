@@ -159,6 +159,60 @@ pub struct Params {
 }
 
 impl Params {
+    /// Whether the constants can work: all finite; `discount` in (0, 1];
+    /// `lower` and `upper` quantile levels in (0, 1) with `lower < upper`;
+    /// `master_of_top` in (0, 1]; the gains, chances and `lose_below` at
+    /// least 0. [`crate::learn`] asserts it in debug builds; a game also
+    /// calls it once at start.
+    pub fn check(&self) -> Result<(), String> {
+        let finite = [
+            ("discount", self.discount),
+            ("min_gain", self.min_gain),
+            ("costly_gain", self.costly_gain),
+            ("costly_chances", self.costly_chances),
+            ("lower", self.lower),
+            ("upper", self.upper),
+            ("master_of_top", self.master_of_top),
+            ("lose_below", self.lose_below),
+        ];
+        for (name, v) in finite {
+            if !v.is_finite() {
+                return Err(format!("{name} is not finite: {v}"));
+            }
+        }
+        if !(self.discount > 0.0 && self.discount <= 1.0) {
+            return Err(format!("discount must be in (0, 1]: {}", self.discount));
+        }
+        for (name, v) in [("lower", self.lower), ("upper", self.upper)] {
+            if !(v > 0.0 && v < 1.0) {
+                return Err(format!("{name} must be a quantile level in (0, 1): {v}"));
+            }
+        }
+        if self.lower >= self.upper {
+            return Err(format!(
+                "lower ({}) must be below upper ({})",
+                self.lower, self.upper
+            ));
+        }
+        if !(self.master_of_top > 0.0 && self.master_of_top <= 1.0) {
+            return Err(format!(
+                "master_of_top must be in (0, 1]: {}",
+                self.master_of_top
+            ));
+        }
+        for (name, v) in [
+            ("min_gain", self.min_gain),
+            ("costly_gain", self.costly_gain),
+            ("costly_chances", self.costly_chances),
+            ("lose_below", self.lose_below),
+        ] {
+            if v < 0.0 {
+                return Err(format!("{name} must be at least 0: {v}"));
+            }
+        }
+        Ok(())
+    }
+
     /// The met rate that makes `skill` mastered.
     pub fn master(&self, skill: &SkillSpec) -> f64 {
         self.master_of_top * skill.top_rate

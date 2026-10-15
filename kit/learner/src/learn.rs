@@ -42,7 +42,9 @@ impl Learner {
 
 /// The learner after `games`, oldest first. Summaries of another version of
 /// the evidence (see [`crate::stale`]) are skipped: a client recomputes them
-/// first. The ladder should pass [`Ladder::check`].
+/// first. The ladder and the constants must pass [`Ladder::check`] and
+/// [`Params::check`]: this asserts both in debug builds (and does not in
+/// release, where a game calls them once at start).
 ///
 /// **Mastery.** Each deal's counts are weighed `discount` times as much as
 /// the deal after it. The met rate has a Beta(1, 1) prior, so after
@@ -62,6 +64,8 @@ impl Learner {
 /// (discounted) less its `top_cost`. Exact ties go to the earlier skill
 /// in the ladder. `None` when no skill gains `min_gain`.
 pub fn learn(ladder: &Ladder, p: &Params, games: &[Summary]) -> Learner {
+    debug_assert!(ladder.check().is_ok(), "{:?}", ladder.check());
+    debug_assert!(p.check().is_ok(), "{:?}", p.check());
     let n = ladder.skills.len();
     let mut mastered = vec![false; n];
     let mut before = vec![false; n];

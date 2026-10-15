@@ -514,7 +514,8 @@ impl Ladder { pub fn check(&self) -> Result<(), String>;      // slugs, needs, r
 pub struct Params { pub discount: f64, pub min_gain: f64, pub costly_gain: f64,
                     pub costly_chances: f64, pub lower: f64, pub upper: f64,
                     pub master_of_top: f64, pub lose_below: f64 }
-impl Params { pub fn master(&self, s: &SkillSpec) -> f64;      // master_of_top * top_rate
+impl Params { pub fn check(&self) -> Result<(), String>;      // finite, discount in (0, 1], lower < upper ...
+              pub fn master(&self, s: &SkillSpec) -> f64;      // master_of_top * top_rate
               pub fn lose(&self, s: &SkillSpec) -> f64; }      // master - lose_below, at least 0
 // Evidence
 pub struct Tally { pub chances: u32, pub met: u32, pub missed: f64 }
