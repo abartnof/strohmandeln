@@ -6,7 +6,7 @@
 #   bin/browser-full a,b,c                only those (names as in browser.py --only)
 #   CHECK_TIMEOUT=900 bin/browser-full    per-check timeout in seconds (default 600)
 #
-# Exits non-zero if any check failed or timed out. Logs go to $TMPDIR (or /tmp)
+# Exits non-zero if any check failed or timed out, or if none ran or passed. Logs go to $TMPDIR (or /tmp)
 # as browser-full-<check>.log. Run one at a time: the software GPU is slow and
 # parallel browsers distort the timings.
 set -uo pipefail
@@ -31,10 +31,16 @@ start=$SECONDS
 pass=0
 failed=()
 IFS=',' read -ra list <<< "$names"
+# Zero checks must never read as success.
+[ ${#list[@]} -gt 0 ] && [ -n "${list[0]}" ] || { echo "browser-full: no checks to run" >&2; exit 2; }
 for c in "${list[@]}"; do
   t0=$SECONDS
-  timeout "$timeout_s" "$py" web3d/test/browser.py --only="$c" >"$logs/browser-full-$c.log" 2>&1
+  # Own process group: whatever the check leaves behind (Chromium, Playwright's driver) dies with it.
+  setsid timeout -k 10 "$timeout_s" "$py" web3d/test/browser.py --only="$c" >"$logs/browser-full-$c.log" 2>&1 &
+  pgid=$!
+  wait "$pgid"
   rc=$?
+  kill -KILL -- "-$pgid" 2>/dev/null || true
   dt=$((SECONDS - t0))
   if [ $rc -eq 0 ]; then
     pass=$((pass + 1))
@@ -45,10 +51,12 @@ for c in "${list[@]}"; do
     failed+=("$c:$why")
     echo "FAIL $c (${dt}s, $why)"
     grep -E "^(FAIL|  )" "$logs/browser-full-$c.log" | head -5
+    # A crash outside the check's own try (an unknown name, an import error) prints no FAIL line: show the tail.
+    grep -qE "^FAIL" "$logs/browser-full-$c.log" || tail -5 "$logs/browser-full-$c.log"
   fi
 done
 total=$((SECONDS - start))
-if [ ${#failed[@]} -eq 0 ]; then
+if [ ${#failed[@]} -eq 0 ] && [ "$pass" -gt 0 ]; then
   echo "browser-full: ok ($pass checks, ${total}s)"
   exit 0
 fi
