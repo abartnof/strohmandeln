@@ -115,8 +115,10 @@ tutorialPages): bidding and draw have one for each both_pass value (RULES 3.4, 1
 - With a throw-in, only a declared game is played, and a declared game always has a winner. Draws do not arise.
 <!-- end -->
 - Honours and the Pagat are still paid.
+<!-- if both_pass=play -->
 - The next deal played counts double, with everything in it. A deal thrown in does not use it up.
 - The table shows **×2** when it applies.
+<!-- end -->
 
 # Touren and the slate
 

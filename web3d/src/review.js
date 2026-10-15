@@ -21,6 +21,17 @@ export function words(bullet, { t, cardName, thirds, signed }) {
   return t(`review.say.${bullet.key}`, p);
 }
 
+// The line under the prompt after a trick (docs/PROTOCOL.md `strohmandeln_explain`):
+// the suit and the cards named in the language. `suitName` gives a suit letter's
+// name as it stands in the sentence.
+export function explainText(bullet, { t, cardName, suitName }) {
+  if (!bullet?.key) return "";
+  const p = { ...bullet.params };
+  if (typeof p.suit === "string") p.suit = suitName(p.suit);
+  for (const k of ["winner", "loser"]) if (typeof p[k] === "string") p[k] = cardName(p[k]);
+  return t("explain." + bullet.key.slice("explain-".length), p);
+}
+
 // { title, bullets: [{ lead, text }], method } for a review, or null when the
 // module had nothing to say. `whole` is the sitting's review.
 export function reviewBlocks(review, fmt, { whole = false } = {}) {

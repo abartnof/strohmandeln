@@ -41,6 +41,11 @@ export function helpBody(doc, pages, { intro, seen = [], seenMark = "✓" }) {
   );
 }
 
+// The earlier sittings kept for trends, a title and a line each (6.4.4).
+export function trendBody(doc, title, lines) {
+  return h(doc, "div", { class: "tutor-trend" }, h(doc, "b", {}, title), h(doc, "ul", {}, lines.map((l) => h(doc, "li", {}, l))));
+}
+
 // The review dialog's body (web3d/src/review.js reviewBlocks): bullets with a
 // bold lead, and the folded method.
 export function reviewBody(doc, blocks) {

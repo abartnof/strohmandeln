@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { helpBody, pageBody, reviewBody } from "../src/tutorview.js";
+import { helpBody, pageBody, reviewBody, trendBody } from "../src/tutorview.js";
 import { tutorialPages, PAGE_KEYS } from "../src/tutor.js";
 import { fakeDocument } from "./support/fakedom.js";
 
@@ -24,6 +24,12 @@ test("the help list has a button for each page, the seen ones marked", () => {
   assert.deepEqual(buttons.map((b) => b.getAttribute("data-page")), PAGE_KEYS);
   assert.match(buttons.find((b) => b.getAttribute("data-page") === "thirds").textContent, /✓$/);
   assert.doesNotMatch(buttons[0].textContent, /✓/);
+});
+
+test("the earlier sittings are a titled list of their tallies", () => {
+  const body = trendBody(doc, "Your sittings", ["Deals: 2 won.", "Deals: 1 won."]);
+  assert.equal(body.findAll((e) => e.tagName === "LI").length, 2);
+  assert.equal(body.textContent.startsWith("Your sittings"), true);
 });
 
 test("a review is bullets with a bold lead, and a folded method", () => {

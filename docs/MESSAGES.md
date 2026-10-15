@@ -77,8 +77,8 @@ English and German text each is shown with.
 ## Review keys
 
 The end-of-deal review (`strohmandeln_review`, `docs/PROTOCOL.md`) is up to
-three bullets, each `{lead, key, params}`: `lead` is `count`, `decided` or
-`try`. Cards in `params` are codes and `thirds` are integer thirds; the table
+three bullets, each `{lead, key, params}`: `lead` is `count`, `decided`,
+`try` or `sitting`. Cards in `params` are codes and `thirds` are integer thirds; the table
 names the cards, formats the thirds (107 is "35⅔") and the honour
 (`card.honour.*`). Each text is the English and German the table shows.
 
@@ -96,7 +96,7 @@ names the cards, formats the thirds (107 is "35⅔") and the honour
 | `trick-won-rich` | `trick`, `mine`, `theirs` (cards), `thirds` | Trick {trick} was your best: {mine} beat {theirs}, {thirds} between them. | Der {trick}. Stich war Ihr bester: {mine} schlug {theirs}, zusammen {thirds}. | RULES 8.1 |
 | `level` | none | Nothing stood out: the cards ran evenly. | Nichts fiel auf: die Karten liefen gleichmäßig. | |
 | `try-pagat` | none | If I may: the Pagat is the lowest tarock; kept for the last trick it wins or loses a Point. | Wenn ich mir erlauben darf: der Pagat ist das niedrigste Tarock; für den letzten Stich aufgehoben gewinnt oder verliert er einen Point. | RULES 1.4, 5.3, 12.2 |
-| `try-announce` | `honour` | If I may: you held {honour} and did not announce it; announced, it is paid. | Wenn ich mir erlauben darf: Sie hielten {honour} und sagten nicht an; angesagt, wird er bezahlt. | RULES 11.1, 11.5 |
+| `try-announce` | `honour` | If I may: you held {honour} and did not announce it; announced, the honour is paid. | Wenn ich mir erlauben darf: Sie hielten {honour} und sagten nicht an; angesagt, wird der Honneur bezahlt. | RULES 11.1, 11.5 |
 | `try-count` | none | If I may: count the tarocks out as they fall; there are 22, the Sküs among them. | Wenn ich mir erlauben darf: Zählen Sie die Tarock mit, die fallen; es sind 22, der Sküs darunter. | RULES 1.3, 13.6 |
 
 The `decided` bullet is the first of: the Pagat ultimo, a Mond caught by the

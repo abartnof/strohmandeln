@@ -2,7 +2,7 @@
 // review") put into the current language with cards named and thirds written.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { reviewBlocks, words } from "../src/review.js";
+import { explainText, reviewBlocks, words } from "../src/review.js";
 import { createStrings, thirds, signed } from "../src/strings.js";
 import TABLE from "../strings.json" with { type: "json" };
 
@@ -42,6 +42,20 @@ test("a review is a title, up to three bullets with a lead each, and the method"
   assert.equal(r.how, "How is this worked out?");
   assert.equal(reviewBlocks({ bullets }, fmt("de"), { whole: true }).title, "Wie der Abend verlief");
   assert.equal(reviewBlocks({ bullets: [...bullets, ...bullets] }, fmt("en")).bullets.length, 3);
+});
+
+test("an explanation names the suit and the cards in the language", () => {
+  const s = (lang) => {
+    const x = createStrings(TABLE, lang);
+    return { t: x.t, cardName: x.cardName, suitName: (c) => (lang === "en" ? x.suitName(c).toLowerCase() : x.suitName(c)) };
+  };
+  const trump = { lead: "explain", key: "explain-trump-opp", params: { suit: "h" } };
+  assert.equal(explainText(trump, s("en")), "Trump: your opponent has no hearts in hand or showing.");
+  assert.equal(explainText(trump, s("de")), "Tarock: Ihr Gegner hat kein Herz in der Hand oder offen.");
+  const won = { lead: "explain", key: "explain-won-you", params: { winner: "T21", loser: "Qd" } };
+  assert.equal(explainText(won, s("en")), "Your trick: Mond beat queen of diamonds.");
+  assert.equal(explainText({ lead: "explain", key: "explain-notarock-you", params: {} }, s("en")), "You had no tarock in hand or showing, so any card went.");
+  assert.equal(explainText(null, s("en")), "");
 });
 
 test("a review with nothing to say is null", () => {

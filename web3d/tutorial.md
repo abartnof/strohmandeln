@@ -115,8 +115,10 @@ if-Zeile auf eine Einstellung gekennzeichnete Blöcke gelten nur für diese
 - Beim Einwerfen wird nur eine angesagte Partie gespielt, und die hat immer einen Sieger. Unentschieden gibt es nicht.
 <!-- end -->
 - Honneurs und der Pagat werden trotzdem bezahlt.
+<!-- if both_pass=play -->
 - Die nächste gespielte Partie zählt doppelt, mit allem darin. Eine eingeworfene Partie verbraucht es nicht.
 - Der Tisch zeigt **×2**, wenn es gilt.
+<!-- end -->
 
 # Touren und die Tafel
 

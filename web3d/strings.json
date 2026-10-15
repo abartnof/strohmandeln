@@ -176,7 +176,7 @@
   "review.say.trick-won-rich": {"en": "Trick {trick} was your best: {mine} beat {theirs}, {thirds} between them.", "de": "Der {trick}. Stich war Ihr bester: {mine} schlug {theirs}, zusammen {thirds}."},
   "review.say.level": {"en": "Nothing stood out: the cards ran evenly.", "de": "Nichts fiel auf: die Karten liefen gleichmäßig."},
   "review.say.try-pagat": {"en": "If I may: the Pagat is the lowest tarock; kept for the last trick it wins or loses a Point.", "de": "Wenn ich mir erlauben darf: der Pagat ist das niedrigste Tarock; für den letzten Stich aufgehoben gewinnt oder verliert er einen Point."},
-  "review.say.try-announce": {"en": "If I may: you held {honour} and did not announce it; announced, it is paid.", "de": "Wenn ich mir erlauben darf: Sie hielten {honour} und sagten nicht an; angesagt, wird er bezahlt."},
+  "review.say.try-announce": {"en": "If I may: you held {honour} and did not announce it; announced, the honour is paid.", "de": "Wenn ich mir erlauben darf: Sie hielten {honour} und sagten nicht an; angesagt, wird der Honneur bezahlt."},
   "review.say.try-count": {"en": "If I may: count the tarocks out as they fall; there are 22, the Sküs among them.", "de": "Wenn ich mir erlauben darf: Zählen Sie die Tarock mit, die fallen; es sind 22, der Sküs darunter."},
   "explain.trump-you": {"en": "Trump: you had no {suit} in hand or showing, so a tarock was needed.", "de": "Tarock: Sie hatten kein {suit} in der Hand oder offen, also musste gestochen werden."},
   "explain.trump-opp": {"en": "Trump: your opponent has no {suit} in hand or showing.", "de": "Tarock: Ihr Gegner hat kein {suit} in der Hand oder offen."},
