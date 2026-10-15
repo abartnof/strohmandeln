@@ -4,13 +4,12 @@
 use super::*;
 use crate::know::Knowledge;
 use crate::opponent::{Config, Level, Opponent};
-use crate::rung2::play_card;
+use crate::students::{Lesion, Student};
 use crate::testutil::{blind_check_values, c};
 use kit_learner::Tally;
 use std::sync::OnceLock;
 use strohmandeln_core::agents::{Player, RandomPlayer};
 use strohmandeln_core::deal::TrickRecord;
-use strohmandeln_core::rng::Rng;
 use strohmandeln_core::session::Sitting;
 use strohmandeln_core::types::Settings;
 use strohmandeln_core::types::Source;
@@ -25,57 +24,6 @@ fn config() -> Config {
     Config {
         budget: small(),
         ..Config::default()
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-enum Lesion {
-    /// Rung 4 whole.
-    None,
-    /// Never plays a cover while a hand card is legal.
-    NoCover,
-    /// Never announces.
-    Silent,
-    /// Takes up every hand.
-    AlwaysTake,
-}
-
-/// Rung 4 with one skill knocked out; the seat is the human's.
-struct Student {
-    opp: Opponent,
-    lesion: Lesion,
-}
-
-impl Player for Student {
-    fn choose(&mut self, view: &View) -> Option<Action> {
-        if view.legal_actions.is_empty() {
-            return None;
-        }
-        let a = self.opp.decide(view);
-        Some(match (self.lesion, a) {
-            (Lesion::NoCover, Action::Play { card, .. }) => {
-                let k = Knowledge::from_view(view)?;
-                if !k.is_cover(card) || k.legal.iter().all(|&c| k.is_cover(c)) {
-                    return Some(play_card(&k, card));
-                }
-                let mut rng = Rng::stream(5, crate::seed::view_seed(view));
-                let (scores, _) = rung4::move_scores(
-                    &k,
-                    &mut rng,
-                    self.opp.config.budget,
-                    &self.opp.config.weights,
-                );
-                let pick = scores
-                    .iter()
-                    .find(|(c, _)| !k.is_cover(*c))
-                    .map(|&(c, _)| c)
-                    .expect("a hand card is legal");
-                play_card(&k, pick)
-            }
-            (Lesion::Silent, Action::Play { card, .. }) => Action::play(card),
-            (Lesion::AlwaysTake, Action::Pass) => Action::Take,
-            (_, a) => a,
-        })
     }
 }
 
@@ -120,13 +68,10 @@ fn totals(records: &[DealRecord]) -> [Tally; SKILLS] {
 }
 
 fn student(lesion: Lesion, seed: u64) -> Student {
-    Student {
-        opp: Opponent::new(Level::from_halves(8), seed).with_config(config()),
-        lesion,
-    }
+    Student::new(lesion, seed, config())
 }
 
-const SEEDS: std::ops::Range<u64> = 0..3;
+const SEEDS: std::ops::Range<u64> = 0..4;
 
 fn play(lesion: Lesion) -> Vec<DealRecord> {
     SEEDS
@@ -151,8 +96,6 @@ struct Students {
     whole_t: [Tally; SKILLS],
     no_cover: Vec<DealRecord>,
     no_cover_t: [Tally; SKILLS],
-    silent_t: [Tally; SKILLS],
-    taker_t: [Tally; SKILLS],
     random_t: [Tally; SKILLS],
 }
 
@@ -161,15 +104,13 @@ fn students() -> &'static Students {
     static S: OnceLock<Students> = OnceLock::new();
     S.get_or_init(|| {
         let whole = play(Lesion::None);
-        let no_cover = play(Lesion::NoCover);
+        let no_cover = play(Lesion::Off);
         let random: Vec<DealRecord> = SEEDS
             .flat_map(|seed| deals_of(seed, &mut RandomPlayer::new(seed, HUMAN)))
             .collect();
         Students {
             whole_t: totals(&whole),
             no_cover_t: totals(&no_cover),
-            silent_t: totals(&play(Lesion::Silent)),
-            taker_t: totals(&play(Lesion::AlwaysTake)),
             random_t: totals(&random),
             whole,
             no_cover,
@@ -237,13 +178,55 @@ fn print_pagat_variants() {
 
 #[test]
 #[ignore = "calibration output"]
+fn print_lesions() {
+    let seeds = 0..6u64;
+    let run = |lesion: Lesion| -> [Tally; SKILLS] {
+        let recs: Vec<DealRecord> = seeds
+            .clone()
+            .flat_map(|seed| deals_of(seed, &mut student(lesion, seed + 77)))
+            .collect();
+        totals(&recs)
+    };
+    let whole = run(Lesion::None);
+    for l in [
+        Lesion::Worth,
+        Lesion::Cheap,
+        Lesion::Off,
+        Lesion::Run,
+        Lesion::Pagat,
+        Lesion::Void,
+        Lesion::Behind,
+        Lesion::Endgame,
+        Lesion::Bid,
+        Lesion::AlwaysPass,
+        Lesion::AlwaysTake,
+        Lesion::Announce,
+    ] {
+        let t = run(l);
+        let sk = l.skill().unwrap();
+        let (a, w) = (t[sk.index()], whole[sk.index()]);
+        println!(
+            "{:12} {:8} lesioned {:3}/{:3} missed {:7.1} | whole {:3}/{:3} missed {:6.1} | overall {:.2}",
+            format!("{l:?}"),
+            sk.slug(),
+            a.met,
+            a.chances,
+            a.missed,
+            w.met,
+            w.chances,
+            w.missed,
+            overall(&t)
+        );
+    }
+}
+
+#[test]
+#[ignore = "calibration output"]
 fn print_students() {
     let s = students();
     for (name, t) in [
         ("whole", &s.whole_t),
         ("no cover", &s.no_cover_t),
-        ("silent", &s.silent_t),
-        ("taker", &s.taker_t),
         ("random", &s.random_t),
     ] {
         println!("{name} overall {:.2}", overall(t));
@@ -276,26 +259,90 @@ fn a_student_who_never_plays_a_cover_off_misses_every_off_chance() {
     );
 }
 
-#[test]
-fn a_student_who_never_announces_misses_the_honours_he_holds() {
-    let s = students();
-    let silent = s.silent_t[Skill::Announce.index()];
-    assert!(silent.chances >= 1 && silent.met == 0, "{silent:?}");
-    assert_eq!(silent.missed, THIRDS_PER_POINT * f64::from(silent.chances));
-    let whole = s.whole_t[Skill::Announce.index()];
+/// A student with `lesion` over the fixture's sittings: how its target
+/// skill's met rate compares with rung 4 whole on the same deals. Total
+/// lesions only (partial ones show in tens of deals, M6).
+fn lesion_shows(lesion: Lesion, at_least_chances: u32, rate_below_by: f64) {
+    lesion_shows_missing(lesion, at_least_chances, rate_below_by, 3.0);
+}
+
+fn lesion_shows_missing(lesion: Lesion, at_least_chances: u32, rate_below_by: f64, times: f64) {
+    let whole = &students().whole_t;
+    let skill = lesion.skill().unwrap();
+    let t = totals(&play(lesion));
+    let (l, w) = (t[skill.index()], whole[skill.index()]);
     assert!(
-        whole.chances >= 1 && whole.met == whole.chances,
-        "{whole:?}"
+        l.chances >= at_least_chances,
+        "{lesion:?}: {} chances of {}",
+        l.chances,
+        skill.slug()
+    );
+    assert!(
+        rate(&t, skill) + rate_below_by <= rate(whole, skill),
+        "{lesion:?}: lesioned {l:?} against whole {w:?}"
+    );
+    assert!(
+        l.missed > times * w.missed,
+        "{lesion:?}: {l:?} against {w:?}"
     );
 }
 
+// The numbers in the comments are from 6 sittings at the default budget
+// (`print_lesions`): the target skill's met chances, lesioned and whole.
+
 #[test]
-fn a_student_who_takes_up_every_hand_misses_the_bids_that_should_pass() {
-    let s = students();
-    let taker = s.taker_t[Skill::Bid.index()];
-    assert!(taker.chances >= 3 && taker.met == 0, "{taker:?}");
-    let whole = s.whole_t[Skill::Bid.index()];
-    assert!(whole.met * 10 >= whole.chances * 8, "{whole:?}");
+fn a_student_who_lets_every_trick_go_misses_worth() {
+    lesion_shows(Lesion::Worth, 20, 0.5); // 0/56 and 54/57
+}
+
+#[test]
+fn a_student_who_plays_the_dearest_card_misses_cheap() {
+    lesion_shows(Lesion::Cheap, 20, 0.5); // 11/65 and 91/92
+}
+
+#[test]
+fn a_student_who_never_plays_a_cover_off_misses_off() {
+    lesion_shows(Lesion::Off, 10, 0.5); // 0/48 and 17/18
+}
+
+#[test]
+fn a_student_who_leads_a_random_tarock_misses_run() {
+    lesion_shows(Lesion::Run, 10, 0.1); // 27/38 and 44/48
+}
+
+#[test]
+fn a_student_who_tosses_a_coin_for_the_pagat_misses_pagat() {
+    lesion_shows(Lesion::Pagat, 4, 0.25); // 10/20 and 18/18
+}
+
+#[test]
+fn a_student_who_leads_into_his_void_misses_void() {
+    lesion_shows(Lesion::Void, 3, 0.5); // 0/17 and 25/25
+}
+
+#[test]
+fn a_student_who_opens_the_split_suit_misses_behind() {
+    lesion_shows(Lesion::Behind, 10, 0.5); // 0/39 and 31/34
+}
+
+#[test]
+fn a_student_who_stops_counting_in_the_endgame_misses_endgame() {
+    lesion_shows_missing(Lesion::Endgame, 10, 0.1, 2.0); // 37/52 and 50/54
+}
+
+#[test]
+fn a_student_who_bids_by_a_coin_misses_bid() {
+    lesion_shows(Lesion::Bid, 5, 0.25); // 9/17 and 17/17
+}
+
+#[test]
+fn a_student_who_takes_up_every_hand_misses_bid() {
+    lesion_shows(Lesion::AlwaysTake, 5, 0.5); // 1/17 and 17/17
+}
+
+#[test]
+fn a_student_who_never_announces_misses_announce() {
+    lesion_shows(Lesion::Announce, 1, 0.5); // 0/4 and 4/4
 }
 
 /// The fixture's values at the margin as set (3 sittings, default budget):

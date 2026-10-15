@@ -324,7 +324,7 @@ fn points_in(cards: impl IntoIterator<Item = Card>, suit: Suit) -> u32 {
 /// "his": his hand, his packets and my own face-down packet cards, which I
 /// cannot tell from his (so the share is biased low by about my hidden
 /// fraction of the suit).
-fn is_split(k: &Knowledge, suit: Suit) -> bool {
+pub(crate) fn is_split(k: &Knowledge, suit: Suit) -> bool {
     let mine = points_in(k.playable().iter(), suit);
     let theirs = points_in(k.opp_possible().iter(), suit);
     let total = mine + theirs;
@@ -338,7 +338,7 @@ fn is_split(k: &Knowledge, suit: Suit) -> bool {
 /// A suit he has shown he is out of: he could not follow, and no cover of his
 /// and no card of his known from a pull is of it (the counter rung's own
 /// inference, `Knowledge::opp_void`).
-fn shown_void(k: &Knowledge, suit: Suit) -> bool {
+pub(crate) fn shown_void(k: &Knowledge, suit: Suit) -> bool {
     let kind = Kind::Suit(suit);
     k.opp_void[kind.index()]
         && !k

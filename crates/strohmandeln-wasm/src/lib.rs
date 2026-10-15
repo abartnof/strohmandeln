@@ -281,7 +281,10 @@ impl Table {
             m.insert("level".into(), json!(self.level));
             // The actions made in this deal, both seats': the number the next
             // action will have in the deal's record (`docs/TUTOR.md` 3).
-            m.insert("deal_actions".into(), json!(self.sitting.deal_action_count()));
+            m.insert(
+                "deal_actions".into(),
+                json!(self.sitting.deal_action_count()),
+            );
             // `legal` replaces the view's own list: the same actions, with the
             // source of each playable card.
             m.remove("legal_actions");

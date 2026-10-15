@@ -19,6 +19,7 @@ pub mod seed;
 pub mod sim;
 pub mod solver;
 pub mod stats;
+pub mod students;
 #[cfg(test)]
 mod testutil;
 pub mod tournament;
