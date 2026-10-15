@@ -16,9 +16,9 @@ const words = (lang) => {
   return { t: s.t, cardName: s.cardName, romanName: s.romanName, thirds, count: s.count };
 };
 
-test("a card parameter is named, a _thirds parameter is told in points, a count stays", () => {
+test("a card parameter is named, a _thirds parameter is told in points, a count is told by the language", () => {
   const p = hintParams({ card: "T19", led: "Jh", trick_thirds: 14, given_thirds: 1, tarocks: 8 }, words("en"));
-  assert.deepEqual(p, { card: "tarock 19", led: "jack of hearts", trick_thirds: "4⅔ points", given_thirds: "⅓ point", tarocks: 8 });
+  assert.deepEqual(p, { card: "tarock 19", led: "jack of hearts", trick_thirds: "4⅔ points", given_thirds: "⅓ point", tarocks: "8" });
   assert.equal(hintParams({ n_thirds: 3 }, words("en")).n_thirds, "1 point");
   assert.equal(hintParams({ n_thirds: 6 }, words("de")).n_thirds, "2 Augen");
 });
@@ -108,8 +108,14 @@ test("a count of a thousand or more is grouped as the language writes it", () =>
   const odds = hintLines({ ...part, odds: { alt: "T21", better: 31, worlds: 50, gain_thirds: 4 } }, words("en"));
   assert.equal(odds.more[0], "Against Mond: ahead in 31 of 50 sampled deals, by 1⅓ points on average.");
   assert.equal(hintParams({ out: 999, wins: 10000 }, words("en")).wins, "10,000");
-  assert.equal(hintParams({ out: 999 }, words("en")).out, 999);
+  assert.equal(hintParams({ out: 999 }, words("en")).out, "999");
   // A caller that passes no count gets the plain number.
   const { count, ...plain } = words("en");
   assert.equal(hintParams({ wins: 1000 }, plain).wins, 1000);
+});
+
+test("the spoken hint says the counts in the language's grouping", () => {
+  const rate = { hint: { action: "play", card: "Kh" }, reason: "lead-rate", params: { card: "Kh", wins: 848, worlds: 1000 }, rule: null, odds: null };
+  assert.equal(hintSpoken(hintLines(rate, words("en"))), "Play king of hearts. King of hearts takes the trick in 848 of 1,000 sampled deals.");
+  assert.equal(hintSpoken(hintLines(rate, words("de"))), "Herz-König spielen. Herz-König gewinnt den Stich in 848 von 1.000 durchgespielten Austeilungen.");
 });

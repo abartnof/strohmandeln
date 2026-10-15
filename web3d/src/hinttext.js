@@ -10,7 +10,7 @@
 export function hintParams(params, { t, cardName, thirds, count }) {
   const out = {};
   for (const [name, v] of Object.entries(params ?? {})) {
-    out[name] = typeof v === "string" ? cardName(v) : name.endsWith("_thirds") ? `${thirds(v)} ${t(v >= 1 && v <= 3 ? "hint.unit.one" : "hint.unit.other")}` : count && v >= 1000 ? count(v) : v;
+    out[name] = typeof v === "string" ? cardName(v) : name.endsWith("_thirds") ? `${thirds(v)} ${t(v >= 1 && v <= 3 ? "hint.unit.one" : "hint.unit.other")}` : count && typeof v === "number" ? count(v) : v;
   }
   return out;
 }

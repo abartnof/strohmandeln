@@ -54,8 +54,10 @@ export function createStrings(table, initial = "en") {
   }
 
   // A whole count as the language writes it: 1,000 in English, 1.000 in
-  // German (four digits and more are grouped; a smaller count is as it is).
-  const count = (n) => (Math.abs(n) < 1000 ? String(n) : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, lang === "de" ? "." : ","));
+  // German (four digits and more are grouped, a smaller count is as it is);
+  // anything that is not a whole number is left as it is.
+  const GROUPING = { en: new Intl.NumberFormat("en-US"), de: new Intl.NumberFormat("de-DE") };
+  const count = (n) => (Number.isInteger(n) ? GROUPING[lang].format(n + 0) : String(n));
 
   return { t, tn, getLang: () => lang, setLang, onLang, suitName, cardName, romanName, count };
 }
