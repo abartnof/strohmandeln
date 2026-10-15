@@ -70,6 +70,9 @@ pub struct Keys {
     pub well_lead: &'static str,
     /// A skill just mastered, with the parameter `skill`.
     pub well_mastered: &'static str,
+    /// Two skills just mastered, with the parameters `skill` and `skill2`
+    /// (the first two of the ladder when more came at once).
+    pub well_mastered_two: &'static str,
     /// No focus, too few skills seen to say that nothing stands out.
     pub none_early: &'static str,
     /// No focus, and no next opponent to suggest.
@@ -111,8 +114,9 @@ pub struct Deal<'a> {
 ///
 /// `focus` is the game's bullets for the skill to work on (its rule and
 /// example), called at most once, only when `after` has a focus; the ones
-/// that do not fit are dropped, and if it gives none the brief says there is
-/// no focus.
+/// that do not fit are dropped. It must give at least one bullet for a focus;
+/// if it gives none the brief says there is no focus, which can contradict
+/// the learner.
 pub fn brief(
     ladder: &Ladder,
     cfg: &BriefCfg,
@@ -124,15 +128,23 @@ pub fn brief(
         return vec![Bullet::new("", keys.short)];
     }
     let mut bullets = Vec::new();
-    // What went well: a skill just mastered (the first of the ladder, when
-    // two came at once), else the best strength that praises nothing the
+    // What went well: skills just mastered (the first two of the ladder, as
+    // Cassino names two), else the best strength that praises nothing the
     // focus is.
-    let mastered = (0..ladder.skills.len())
-        .find(|&i| deal.after.mastered(i) && !deal.before.mastered(i))
-        .filter(|_| deal.before.games >= cfg.min_history);
-    if let Some(skill) = mastered {
+    let mastered: Vec<usize> = (0..ladder.skills.len())
+        .filter(|&i| deal.after.mastered(i) && !deal.before.mastered(i))
+        .filter(|_| deal.before.games >= cfg.min_history)
+        .take(2)
+        .collect();
+    if let [skill] = mastered[..] {
         bullets.push(
             Bullet::new(keys.well_lead, keys.well_mastered).with("skill", Param::Skill(skill)),
+        );
+    } else if let [skill, skill2] = mastered[..] {
+        bullets.push(
+            Bullet::new(keys.well_lead, keys.well_mastered_two)
+                .with("skill", Param::Skill(skill))
+                .with("skill2", Param::Skill(skill2)),
         );
     } else if let Some(s) = deal
         .strengths

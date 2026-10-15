@@ -18,6 +18,7 @@ const CFG: BriefCfg = BriefCfg {
         short: "t.short",
         well_lead: "t.lead.well",
         well_mastered: "t.well.mastered",
+        well_mastered_two: "t.well.mastered_two",
         none_early: "t.none.early",
         none_clean: "t.none.clean",
         none_up: "t.none.up",
@@ -121,6 +122,42 @@ fn a_mastery_is_announced_only_after_earlier_deals() {
     let b = made(40, &hist[..1], &g, &strengths, false);
     assert!(learner(&[hist[0].clone(), g.clone()]).mastered(PAIRS));
     assert_eq!(keys(&b)[0], "t.s.cards");
+}
+
+#[test]
+fn two_skills_mastered_in_one_deal_are_announced_together_and_no_more_than_two() {
+    let both = |skills: &[usize]| {
+        let hist: Vec<Summary> = (0..2)
+            .map(|_| summary(&skills.iter().map(|&s| (s, 3, 3, 0.0)).collect::<Vec<_>>()))
+            .collect();
+        let g = summary(&skills.iter().map(|&s| (s, 6, 6, 0.0)).collect::<Vec<_>>());
+        let b = made(40, &hist, &g, &[strength("t.s.cards", &[])], false);
+        let newly = learner(&[hist.clone(), vec![g]].concat()).just_mastered;
+        (b, newly)
+    };
+    let (b, newly) = both(&[PAIRS, NO_SWEEP]);
+    assert_eq!(newly, [PAIRS, NO_SWEEP]);
+    assert_eq!(b[0].key, "t.well.mastered_two");
+    assert_eq!(b[0].lead, "t.lead.well");
+    assert_eq!(
+        b[0].params,
+        [
+            ("skill".to_string(), Param::Skill(PAIRS)),
+            ("skill2".to_string(), Param::Skill(NO_SWEEP))
+        ]
+    );
+    // Three at once: the first two of the ladder, as Cassino names two.
+    let (b, newly) = both(&[PAIRS, NO_SWEEP, VALUABLES]);
+    assert_eq!(newly.len(), 3);
+    assert_eq!(b[0].key, "t.well.mastered_two");
+    assert_eq!(
+        b[0].params[1],
+        ("skill2".to_string(), Param::Skill(NO_SWEEP))
+    );
+    // One alone keeps the single key.
+    let (b, _) = both(&[PAIRS]);
+    assert_eq!(b[0].key, "t.well.mastered");
+    assert_eq!(b[0].params.len(), 1);
 }
 
 #[test]

@@ -540,7 +540,7 @@ pub const MAX_BULLETS: usize = 3;
 pub enum Param { Int(i64), Num(f64), Text(String), Skill(usize) }
 pub struct Bullet { pub lead: String, pub key: String, pub params: Vec<(String, Param)> }
 pub struct Strength { pub bullet: Bullet, pub praises: Vec<usize> }
-pub struct Keys { pub short: &'static str, pub well_lead: &'static str, pub well_mastered: &'static str,
+pub struct Keys { pub short: &'static str, pub well_lead: &'static str, pub well_mastered: &'static str, pub well_mastered_two: &'static str,
                   pub none_early: &'static str, pub none_clean: &'static str, pub none_up: &'static str }
 pub struct BriefCfg { pub few: u32, pub min_history: usize, pub enough_skills: usize, pub keys: Keys }
 pub struct Deal<'a> { pub decisions: u32, pub before: &'a Learner, pub after: &'a Learner,
@@ -562,9 +562,12 @@ game keeps its enum and maps it. Where the build departs from the sketch of
 - `brief` decides which bullets there are and in what order; the game supplies the
   words: its strengths (best first, each with the skills it praises), a closure
   from the focus to its bullets (rule, this deal's example; the crate keeps as many
-  as fit in three), and the six keys of `Keys`. A mastery is announced for the
-  first skill of the ladder that became mastered, after `min_history` earlier
-  deals. A focus that yields no bullets is treated as no focus.
+  as fit in three), and the seven keys of `Keys`. Skills newly mastered are
+  announced after `min_history` earlier deals: one with `well_mastered` (param
+  `skill`), two with `well_mastered_two` (`skill`, `skill2`), the first two of
+  the ladder when more came at once, as Cassino names two. The closure must give
+  at least one bullet for a focus; if it gives none the brief treats the deal as
+  having no focus.
 - Exact ties in gain go to the earlier skill in the ladder (section 1);
   Cassino's `max_by` took the later.
 - A summary of another version or size than the ladder's is stale: `learn` skips
