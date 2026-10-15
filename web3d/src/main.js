@@ -17,7 +17,7 @@ import { createHud } from "../../kit/js/hud.js";
 import { cardCorners } from "../../kit/js/kinematics.js";
 import { createScene } from "../../kit/js/scene.js";
 import { chooseSurface, PATTERNS } from "../../kit/js/surfaces.js";
-import { largeTextHere } from "../../kit/js/faces.js";
+import { facesFor, largeTextHere } from "../../kit/js/faces.js";
 import { decodeBase64 } from "../../kit/js/engine.js";
 import { CARD } from "../../kit/js/units.js";
 import { sentence, where } from "./a11y.js";
@@ -36,7 +36,7 @@ import { createSettings } from "./settings.js";
 import { createSlate } from "./slate.js";
 import { cardName, getLang, onLang, setLang, t, tn, thirds } from "./strings.js";
 import { createTalk } from "./talk.js";
-import { backTexture, COURT_CODES, faceTextures } from "./tarockfaces.js";
+import { ALL_CODES, backTexture, COURT_CODES, faceTextures } from "./tarockfaces.js";
 import { createUi } from "./ui.js";
 import { EYE, EYE_PORTRAIT, EYE_TOUCH, ZONES, ZONES_PORTRAIT, ZONES_TOUCH } from "./zones.js";
 
@@ -85,7 +85,8 @@ async function main() {
   const stage = createScene(canvas, { table: chooseSurface({ chosen: prefs.surface === "random" ? null : prefs.surface, saved: null }), touch, ...(params.has("lowfx") ? { shadow: "pcf", shadowMap: 256 } : {}), eyes: { across: touch ? EYE_TOUCH : EYE, portrait: EYE_PORTRAIT } });
   const anisotropy = stage.renderer.capabilities.getMaxAnisotropy();
   const width = Math.round(512 * Math.min(Math.max(stage.renderer.getPixelRatio(), 1), 1.5));
-  const textures = { faces: faceTextures({ width, anisotropy, lang: getLang() }), back: backTexture({ width, anisotropy }) };
+  const faceSize = () => facesFor(prefs.faces, touch); // "jumbo" or "classic" (7.1, 7.6)
+  const textures = { faces: faceTextures({ width, anisotropy, lang: getLang(), size: faceSize() }), back: backTexture({ width, anisotropy }) };
   const deck = createDeck(stage, textures);
   const zonesNow = () => (stage.portrait ? ZONES_PORTRAIT : touch ? ZONES_TOUCH : ZONES);
 
@@ -848,6 +849,10 @@ async function main() {
       case "speed":
         director.setSpeed(dirSpeed());
         break;
+      case "faces":
+        redrawFaces(ALL_CODES);
+        stage.render();
+        break;
       case "talk":
         talk.setMode(value);
         break;
@@ -863,6 +868,15 @@ async function main() {
     if (wasm) refresh();
   }
 
+  // Faces drawn again (a size chosen; the courts when the language changes).
+  function redrawFaces(codes) {
+    const fresh = faceTextures({ width, anisotropy, codes, lang: getLang(), size: faceSize() });
+    const old = Object.keys(fresh).map((c) => textures.faces[c]);
+    deck.setFaces(fresh);
+    Object.assign(textures.faces, fresh);
+    old.forEach((x) => x?.dispose?.());
+  }
+
   // The language: every drawn string again, the faces' courts, the HUD rebuilt
   // with its numbers kept (7.5.2).
   onLang((lang) => {
@@ -871,11 +885,7 @@ async function main() {
     canvas.setAttribute("aria-label", t("ui.stage"));
     ui.relabel();
     mirror.relabel();
-    const fresh = faceTextures({ width, anisotropy, codes: COURT_CODES, lang });
-    const old = Object.keys(fresh).map((c) => textures.faces[c]);
-    deck.setFaces(fresh);
-    Object.assign(textures.faces, fresh);
-    old.forEach((x) => x?.dispose?.());
+    redrawFaces(COURT_CODES);
     const totals = hud.totals();
     ui.hudSlot.replaceChildren();
     game = countGame(hudWords());
