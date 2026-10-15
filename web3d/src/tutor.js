@@ -58,6 +58,11 @@ export function pagesDue({ events = [], state = null, human = 0, slate = false }
   return PAGE_KEYS.filter((k) => due.has(k));
 }
 
+// The extension prompt is asked when it is the human's turn at the extend
+// phase, nothing is moving, and neither it nor a tutorial page is already open
+// (a page that is due opens first, 6.2.2; closing the last one asks it).
+export const extendPromptDue = ({ mine, busy, phase, extendOpen, pageOpen }) => Boolean(mine && !busy && phase === "extend" && !extendOpen && !pageOpen);
+
 // The tutor's bookkeeping. `prefs()` is the current preferences, `patch(p)`
 // keeps a change of them, `open(key)` shows a page and `speak(group)` says a
 // line of the phrase bank's kibitzer groups ("kibitz", "kibitz-mute").

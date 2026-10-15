@@ -3,7 +3,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { createTutor, pagesDue, PAGE_KEYS } from "../src/tutor.js";
+import { createTutor, pagesDue, extendPromptDue, PAGE_KEYS } from "../src/tutor.js";
 
 const spec = readFileSync(new URL("../../docs/TABLE3D.md", import.meta.url), "utf8");
 
@@ -178,9 +178,22 @@ test("pacing: the pages of one moment come in the order they are needed", () => 
   assert.ok(i("bidding") < i("playing"));
 });
 
-test("pacing: the page opens before the bar and the extension prompt are drawn", () => {
-  const src = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
-  const rested = src.slice(src.indexOf("function rested()"), src.indexOf("let stepping"));
-  assert.ok(rested.indexOf("tutorStep()") < rested.indexOf("refresh()"), "tutorStep before refresh in rested");
-  assert.match(src, /wasm\.phase === "extend" && !ui\.dialogOpen\("extend"\) && !ui\.dialogOpen\("page"\)/);
+test("pacing: the extension prompt waits for every due page, then is asked", () => {
+  const { tutor, opened } = make();
+  const extend = state({ prompt: "you", phase: "extend", legal: [{ action: "extend", accept: true }] });
+  const asked = () => extendPromptDue({ mine: true, busy: false, phase: "extend", extendOpen: false, pageOpen: Boolean(tutor.current()) });
+  // At rest: the page first (as rested() does), then the prompt.
+  tutor.rest(extend, [ev("extension_offered"), ev("count")], { human: 1 });
+  assert.equal(asked(), false, "a page is open: the prompt waits");
+  let guard = 0;
+  while (tutor.current() && guard++ < 10) {
+    tutor.close(tutor.current());
+    tutor.rest(extend, [], { human: 1 });
+  }
+  assert.deepEqual(opened.map((o) => o[0]), ["thirds", "scoring", "extension"]);
+  assert.equal(asked(), true, "all closed: the prompt is asked");
+  const off = make({ tutor: false });
+  off.tutor.rest(extend, [ev("extension_offered")], { human: 1 });
+  assert.equal(extendPromptDue({ mine: true, busy: false, phase: "extend", extendOpen: false, pageOpen: Boolean(off.tutor.current()) }), true, "tutor off: never held back");
+  assert.equal(extendPromptDue({ mine: true, busy: true, phase: "extend", extendOpen: false, pageOpen: false }), false, "not while cards move");
 });

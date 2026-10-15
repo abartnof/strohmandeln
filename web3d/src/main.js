@@ -42,7 +42,7 @@ import { ALL_CODES, backTexture, COURT_CODES, faceTextures } from "./tarockfaces
 import { createUi } from "./ui.js";
 import { addSitting, clearProgress, exportText, loadProgress, summaryOf } from "./progress.js";
 import { explainText, reviewBlocks } from "./review.js";
-import { createTutor, PAGE_KEYS, tutorialPages } from "./tutor.js";
+import { createTutor, extendPromptDue, PAGE_KEYS, tutorialPages } from "./tutor.js";
 import { helpBody, pageBody, reviewBody, trendBody } from "./tutorview.js";
 import TUTORIAL_DE from "../tutorial.md";
 import TUTORIAL_EN from "../tutorial.en.md";
@@ -265,9 +265,10 @@ async function main() {
     if (!key) return;
     if (pageHelp) tutor.helpClosed(key);
     else tutor.close(key, remind);
-    // A second page of the same moment follows; then the bar and the prompts.
-    if (S && !pageHelp) {
-      tutorStep();
+    // A second page of the same moment follows (not after a Help page); then
+    // the bar and the prompts a page was holding back.
+    if (S) {
+      if (!pageHelp) tutorStep();
       refresh();
     }
   }
@@ -669,7 +670,7 @@ async function main() {
     if (mine && !busy && prefs.hints && wasm.phase !== "extend") groups.push({ kind: "hint", buttons: [{ act: "hint", label: t("ui.hint"), enabled: true }] });
     ui.setBar(groups, { left: prefs.leftHanded });
     // The extension prompt.
-    if (mine && !busy && wasm.phase === "extend" && !ui.dialogOpen("extend") && !ui.dialogOpen("page")) {
+    if (extendPromptDue({ mine, busy, phase: wasm.phase, extendOpen: ui.dialogOpen("extend"), pageOpen: ui.dialogOpen("page") })) {
       askedExtend = true;
       const yes = { label: t("ui.ext.yes"), act: "yes", primary: true, focus: true };
       const no = { label: t("ui.ext.no"), act: "no" };

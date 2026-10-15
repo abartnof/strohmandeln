@@ -77,7 +77,6 @@ tutorialPages): bidding and draw have one for each both_pass value (RULES 3.4, 1
 ## Using a cover
 
 - When the trick is gathered, the card beneath is turned. A tarock or king goes into your hand; a low card is the new cover.
-- Neither you nor your opponent knows the card beneath until it is turned.
 
 # The Trull and the four kings
 
@@ -103,7 +102,8 @@ tutorialPages): bidding and draw have one for each both_pass value (RULES 3.4, 1
 ## The last trick
 
 - The Pagat (I) is the lowest tarock.
-- Play it in the last trick, the 27th, and win: one Point from your opponent. Lose: you pay your opponent one Point.
+- Play it in the last trick, the 27th, and win: your opponent pays you the ultimo, one Point in the standard values.
+- Lose it there: you pay the ultimo.
 - It is never announced; it is simply paid when it happens, on top of the game and the honours.
 - If I may: a Point won or lost at the last card. Mind your nerves.
 
@@ -111,8 +111,8 @@ tutorialPages): bidding and draw have one for each both_pass value (RULES 3.4, 1
 
 ## The reckoning
 
-- The game is paid between the two of you: the declarer wins 3 or pays 4; a plain game pays its winner 2.
-- Each honour and the Pagat pay a Point on top.
+- The game is paid between the two of you. Standard values: the declarer wins 3 or pays 4; a plain game pays its winner 2.
+- Each honour pays a Point on top; the Pagat does too, in the standard values.
 - Every payment goes onto the **slate**, with its cause. Tap **Slate** to see it.
 - At the end of the evening the difference is settled at 2 kreuzer a Point.
 
@@ -122,14 +122,12 @@ tutorialPages): bidding and draw have one for each both_pass value (RULES 3.4, 1
 
 <!-- if both_pass=play -->
 - In a plain game, if neither of you reaches 35⅔, the game is undecided. Nobody wins it.
+- Honours and the Pagat are still paid.
+- The next deal played counts double, with everything in it. A deal thrown in does not use it up.
+- The table shows **×2** when it applies.
 <!-- end -->
 <!-- if both_pass=throw_in -->
 - With a throw-in, only a declared game is played, and a declared game always has a winner. Draws do not arise.
-<!-- end -->
-- Honours and the Pagat are still paid.
-<!-- if both_pass=play -->
-- The next deal played counts double, with everything in it. A deal thrown in does not use it up.
-- The table shows **×2** when it applies.
 <!-- end -->
 
 # Touren

@@ -22,10 +22,10 @@ einen für beide both_pass (RULES 3.4, 14.6).
 
 - Sie halten 15 Karten und haben verdeckt vor sich **drei Pakete** zu vier Karten. Ihr Gegner hat dasselbe.
 - Die verdeckten Karten kennt niemand, auch ihr Besitzer nicht.
-- Gleich wird die oberste Karte jedes Pakets aufgedeckt. Eine Karte, die offen liegen bleibt, heißt **Deckkarte**.
-- Eine Deckkarte dürfen Sie ausspielen wie eine Karte aus der Hand.
+- Gleich wird die oberste Karte jedes Pakets aufgedeckt. Eine Karte, die offen liegen bleibt, heißt **Decke**.
+- Eine Decke dürfen Sie ausspielen wie eine Karte aus der Hand.
 - Die kleine Zahl am Paket zählt die Karten, die darunter noch verdeckt liegen.
-- Wenn ich mir erlauben darf: Sehen Sie auch die Deckkarten Ihres Gegners an. Sie sind kein Geheimnis.
+- Wenn ich mir erlauben darf: Sehen Sie auch die Decken Ihres Gegners an. Sie sind kein Geheimnis.
 
 # Das Aufnehmen
 
@@ -51,7 +51,7 @@ einen für beide both_pass (RULES 3.4, 14.6).
 
 - Die Pakete werden der Reihe nach aufgedeckt, von links nach rechts. Tippen Sie, um fortzufahren.
 - Ein **Tarock** (auch der Sküs) oder ein **König** wird gezeigt und kommt in die Hand. Dann wird die nächste Karte aufgedeckt.
-- Jede andere Karte bleibt als Deckkarte offen liegen. Damit ist das Paket fertig.
+- Jede andere Karte bleibt als Decke offen liegen. Damit ist das Paket fertig.
 - Die letzte Karte eines Pakets kommt immer in die Hand, was sie auch sei.
 - Nichts zu entscheiden: das Aufdecken geschieht für Sie.
 
@@ -69,15 +69,14 @@ einen für beide both_pass (RULES 3.4, 14.6).
 ## Welche Karte darf ich spielen?
 
 - Haben Sie die Farbe? Dann müssen Sie bedienen. Sonst müssen Sie stechen, mit einem Tarock. Haben Sie auch keines, dürfen Sie irgendeine Karte spielen.
-- Deckkarten gelten hier wie Handkarten.
+- Decken gelten hier wie Handkarten.
 - Sie müssen nicht höher spielen.
 
 # Aus einem Paket spielen
 
-## Eine Deckkarte spielen
+## Eine Decke spielen
 
-- Ist der Stich eingezogen, wird die Karte darunter aufgedeckt. Ein Tarock oder König kommt in Ihre Hand, eine niedrige Karte wird die neue Deckkarte.
-- Die Karte darunter kennen weder Sie noch Ihr Gegner, bis sie aufgedeckt wird.
+- Ist der Stich eingezogen, wird die Karte darunter aufgedeckt. Ein Tarock oder König kommt in Ihre Hand, eine niedrige Karte wird die neue Decke.
 
 # Troule und vier Könige
 
@@ -85,7 +84,7 @@ einen für beide both_pass (RULES 3.4, 14.6).
 
 - Die **Troule** sind der Sküs, der Mond (XXI) und der Pagat (I). Alle drei zugleich in der Hand: ein Point.
 - Die **vier Könige** zugleich in der Hand: ein Point.
-- Aus den Paketen gezogene Karten zählen. Deckkarten nicht.
+- Aus den Paketen gezogene Karten zählen. Decken nicht.
 - Sagen Sie es an, ehe die erste dieser Karten gespielt wird.
 - Drücken Sie **Troule ansagen** oder **Vier Könige ansagen**, oder antworten Sie auf die Frage beim Wählen der Karte.
 - Angesagt wird es bezahlt, auch wenn die Karten später verloren gehen. Verschwiegen wird es nicht bezahlt.
@@ -103,7 +102,8 @@ einen für beide both_pass (RULES 3.4, 14.6).
 ## Der letzte Stich
 
 - Der Pagat (I) ist das niedrigste Tarock.
-- Spielen Sie ihn im letzten, dem 27. Stich aus und gewinnen: ein Point von Ihrem Gegner. Verlieren Sie: Sie zahlen Ihrem Gegner einen Point.
+- Spielen Sie ihn im letzten, dem 27. Stich aus und gewinnen: Ihr Gegner zahlt Ihnen das Ultimo, mit den Standardwerten einen Point.
+- Verlieren Sie dabei: Sie zahlen das Ultimo.
 - Er wird nie angesagt; er wird einfach bezahlt, wenn es so kommt, zusätzlich zur Partie und zu den Honneurs.
 - Wenn ich mir erlauben darf: Ein Point, der an der letzten Karte hängt. Schonen Sie Ihre Nerven.
 
@@ -111,8 +111,8 @@ einen für beide both_pass (RULES 3.4, 14.6).
 
 ## Die Abrechnung
 
-- Die Partie wird zwischen Ihnen beiden bezahlt: der Aufnehmer gewinnt 3 oder zahlt 4; eine einfache Partie zahlt ihrem Sieger 2.
-- Jeder Honneur und der Pagat zahlen zusätzlich einen Point.
+- Die Partie wird zwischen Ihnen beiden bezahlt; mit den Standardwerten gewinnt der Aufnehmer 3 oder zahlt 4, eine einfache Partie zahlt ihrem Sieger 2.
+- Jeder Honneur zahlt zusätzlich einen Point, der Pagat mit den Standardwerten ebenso.
 - Jede Zahlung kommt mit ihrem Grund auf die **Tafel**. Tippen Sie auf **Tafel**, um sie zu sehen.
 - Am Ende des Abends wird der Unterschied zu 2 Kreuzer der Point beglichen.
 
@@ -122,14 +122,12 @@ einen für beide both_pass (RULES 3.4, 14.6).
 
 <!-- if both_pass=play -->
 - In einer einfachen Partie ist das Spiel unentschieden, wenn keiner von Ihnen 35⅔ erreicht. Niemand gewinnt es.
+- Honneurs und der Pagat werden trotzdem bezahlt.
+- Die nächste gespielte Partie zählt doppelt, mit allem darin. Eine eingeworfene Partie verbraucht es nicht.
+- Der Tisch zeigt **×2**, wenn es gilt.
 <!-- end -->
 <!-- if both_pass=throw_in -->
 - Beim Einwerfen wird nur eine angesagte Partie gespielt, und die hat immer einen Sieger. Unentschieden gibt es nicht.
-<!-- end -->
-- Honneurs und der Pagat werden trotzdem bezahlt.
-<!-- if both_pass=play -->
-- Die nächste gespielte Partie zählt doppelt, mit allem darin. Eine eingeworfene Partie verbraucht es nicht.
-- Der Tisch zeigt **×2**, wenn es gilt.
 <!-- end -->
 
 # Touren
