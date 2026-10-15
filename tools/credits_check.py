@@ -19,11 +19,15 @@ def dependencies(root):
     pkg = json.loads((root / "web3d" / "package.json").read_text())
     for table in ("dependencies", "devDependencies"):
         found |= set(pkg.get(table, {}))
+    # [workspace.dependencies] entries that are our own crates (path) need no credit
+    ws = tomllib.loads((root / "Cargo.toml").read_text()) if (root / "Cargo.toml").exists() else {}
+    own = {n for n, s in ws.get("workspace", {}).get("dependencies", {}).items()
+           if isinstance(s, dict) and "path" in s}
     for manifest in sorted(root.glob("crates/*/Cargo.toml")):
         data = tomllib.loads(manifest.read_text())
         for table in CARGO_TABLES:
             for name, spec in data.get(table, {}).items():
-                if not (isinstance(spec, dict) and "path" in spec):
+                if name not in own and not (isinstance(spec, dict) and "path" in spec):
                     found.add(name)
     return found
 
