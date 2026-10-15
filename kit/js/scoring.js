@@ -13,6 +13,8 @@
 //     cards?(l, i, lines) -> [code, ...],      // the cards it turns up
 //     scale?: 1,                               // units to a point (3: thirds)
 //     format?(units, cat?) -> string,          // how a value reads ("35⅔")
+//     lit?(units) -> n,                        // segments lit by a score (default: whole points;
+//                                              // 107 thirds, 35 2/3, reaches the finish of 36: units+1)
 //     total?: 70,                              // points in play, for the goal text
 //     goal?: "to 21",                          // the target as the HUD says it
 //     names?: { you, opp },
@@ -42,6 +44,10 @@ export function defineGame(def) {
     total: def.total ?? null,
     scale,
     format: def.format ?? ((units) => String(units / scale)),
+    // Strohmandeln kit change: how many segments a score lights. Whole points
+    // by default; a game whose finish is reached part-way through a point
+    // (36 of 70 is 35 2/3) says so.
+    lit: def.lit ?? ((units) => Math.floor(units / scale)),
     goal: def.goal ?? `to ${def.target}`,
     names: Object.freeze({ ...defaultNames, ...def.names }),
     words: Object.freeze({ ...def.words }),
@@ -85,8 +91,8 @@ export function ledgerTotals(game, { hands, live }) {
 // Where a segment (1-based) stands against a score: reached, the cursor
 // ("where I am"), or unreached. A score in units of 1/`scale` of a point
 // lights its whole points. Past `end` the line stops: the finish is the cursor.
-export function segmentState(n, score, end = 21, scale = 1) {
-  const s = Math.min(end, Math.floor(score / scale));
+export function segmentState(n, score, end = 21, scale = 1, lit = null) {
+  const s = Math.min(end, lit ? lit(score) : Math.floor(score / scale));
   return n < s ? "reached" : n === s ? "cursor" : "unreached";
 }
 
