@@ -1004,6 +1004,16 @@ fn the_advisor_streams_are_the_evidence_for_zero_and_independent_otherwise() {
         let Action::Play { card, .. } = a else {
             return;
         };
+        // stream 0 is the evidence's own draw, as it was before streams
+        // existed: the same first words as `Rng::stream(EVIDENCE_SEED, ...)`
+        for purpose in [0x7001, 0x7002] {
+            let mut own = Rng::stream(EVIDENCE_SEED, view_seed(&view) ^ purpose);
+            let mut zero = advisor_rng(&view, 0, purpose);
+            let mut one = advisor_rng(&view, 1, purpose);
+            let (a, b) = (own.next_u64(), zero.next_u64());
+            assert_eq!(a, b);
+            assert_ne!(a, one.next_u64());
+        }
         let t0 = play_table(&k, &view, small(), 0).unwrap();
         let again = play_table(&k, &view, small(), 0).unwrap();
         assert_eq!(t0.scores, again.scores, "a stream replays");

@@ -1,9 +1,21 @@
-//! The tutor's measurements, M1 to M8 (`docs/MEASUREMENTS.md`). Each prints
-//! its plan's numbers; the computations are in `strohmandeln_ai::measure`.
+//! The tutor's measurements (`docs/MEASUREMENTS.md`). Each command prints the
+//! numbers of its plan; the computations are in `strohmandeln_ai::measure`.
 //!
 //! ```text
-//! measure m1 [--seed S] [--plays N] [--bids N] [--streams K]
+//! measure m1 [--seed S] [--plays N] [--bids N] [--streams K]   advisor noise
+//! measure m2 [--seed S] [--sittings N]                           thirds per Point
+//! measure m3 [--sittings N] [--other-sittings N]                 what rung 4 meets
+//! measure m4 [--only singles|pairs] [--bid coin|pass] [--batch N] [--looks K]
+//!            [--pair-looks K] [--seed S]                         what a skill is worth
+//! measure m4report SINGLES PAIRS                                 M4's derived numbers from its logs
+//! measure m5 [--seed S] [--sittings N] [--setting NAME] [--only IDS]   rule precision
+//! measure m6 [--windows N] [--sittings N] [--seed S] [--fresh-seed S]
+//!            [--tune-cache FILE] [--fresh-cache FILE]            diagnosis
+//! measure m8 [--seed S] [--sittings N]                           the split suit
 //! ```
+//!
+//! M7 (latency) is timed in the module and natively by
+//! `strohmandeln-wasm/tests/evidencebench.mjs` and `examples/evidencebench.rs`.
 
 use kit_learner::Summary;
 use std::time::Instant;

@@ -57,8 +57,9 @@ impl Learner {
 ///
 /// **Focus.** Of the skills not mastered that may be the focus
 /// ([`crate::SkillSpec::may_focus`]), whose prerequisites are *cleared*
-/// (mastered, a skill that may not be the focus, or gaining less than `min_gain`, which covers a skill whose
-/// chances do not come up, or not shown to be short), and whose met rate is
+/// (mastered, a skill that may not be the focus, or gaining less than
+/// `min_gain`, which covers a skill whose chances do not come up, or not shown
+/// to be short), and whose met rate is
 /// surely short of mastery (the `upper` quantile below [`Params::master`]),
 /// or which costs a great deal (a gain of `costly_gain` over `costly_chances`
 /// chances), the one with the largest gain: what a deal its misses cost
