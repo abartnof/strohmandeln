@@ -14,7 +14,6 @@ const NOT_YET = new Set([
   "opponent_unnamed",
   "tutor_mute",
   "hint_and_explain",
-  "deal_review",
   "strings_complete",
   "single_file",
   "full_sitting_3",
