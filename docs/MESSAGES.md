@@ -240,7 +240,7 @@ in the Kibitzer's tab at the first clear chance at the focus
 | `tutor.rule.pagat.keep` | none | With 12+ tarocks and a long suit, the Pagat may wait for the last trick. | Mit 12+ Tarock und langer Farbe kann der Pagat auf den letzten Stich warten. | U 74; MS; W 133 |
 | `tutor.rule.void` | none | Think twice before leading a suit your opponent could not follow. | Überlegen Sie, ehe Sie eine Farbe anspielen, die Ihr Gegner nicht bedienen konnte. | MS; Be 150; U 75-76 |
 | `tutor.rule.endgame` | none | Late in the deal, count what you still need to reach 35⅔. | Gegen Ende zählen und prüfen, was noch auf 35⅔ fehlt. | U 77; Be 147, 150 |
-| `tutor.rule.bid` | none | Take up with at least 20-25 points of sure winners and 6-7 tarocks. | Aufnehmen mit mindestens 20 bis 25 Augen sicherer Stecher und 6 bis 7 Tarock. | W 131; U 77-78; Be 145-146; MS |
+| `tutor.rule.bid` | none | Take up with about 25 points of sure winners and at least six tarocks. | Aufnehmen mit etwa 25 Augen sicherer Stecher und mindestens sechs Tarock. | W 131; U 77-78; Be 145-146; MS |
 | `tutor.rule.announce` | none | Announce the Trull or the four kings before you play their first card. | Die Troule oder die vier Könige ansagen, ehe deren erste Karte gespielt wird. | W 133, 135; U 71; Be 146; MS |
 
 ### Facts
@@ -302,9 +302,9 @@ in the Kibitzer's tab at the first clear chance at the focus
 
 | Key | Parameters | English | Deutsch | Basis |
 |---|---|---|---|---|
-| `tutor.miss.worth.poor` | `trick`, `played`, `better` (cards), `thirds` | In trick {trick}, your {played} won only {thirds} points; the {better} would have kept it back. | Im {trick}. Stich holte {played} nur {thirds} Augen; mit {better} wäre die Karte für einen größeren Stich geblieben. | TUTOR 2 (`worth`, greedy) |
+| `tutor.miss.worth.poor` | `trick`, `played`, `better` (cards), `thirds` | In trick {trick}, your {played} won only {thirds} points; the {better} would have kept it for later. | Im {trick}. Stich holte {played} nur {thirds} Augen; mit {better} wäre die Karte für einen größeren Stich geblieben. | TUTOR 2 (`worth`, greedy) |
 | `tutor.miss.worth.rich` | `trick`, `led`, `better` (cards), `thirds` | In trick {trick}, your opponent led the {led}; the {better} would have taken its {thirds} points. | Im {trick}. Stich spielte Ihr Gegner {led} an; mit {better} hätten Sie die {thirds} Augen geholt. | TUTOR 2 (`worth`, timid) |
-| `tutor.miss.cheap` | `trick`, `played`, `better` (cards) | In trick {trick}, the {better} would have done the {played}'s job and left you better off. | Im {trick}. Stich hätte {better} dasselbe geleistet wie {played} und Sie besser gestellt. | TUTOR 2 (`cheap`) |
+| `tutor.miss.cheap` | `trick`, `played`, `better` (cards) | In trick {trick}, the {better} would have done what the {played} did and left you better off. | Im {trick}. Stich hätte {better} dasselbe geleistet wie {played} und Sie besser gestellt. | TUTOR 2 (`cheap`) |
 | `tutor.miss.off.pip` | `trick`, `better` (card) | In trick {trick}, playing the {better} from its packet would have shown you what lies beneath. | Im {trick}. Stich hätte {better} vom Paket gezeigt, was darunter liegt. | TUTOR 2 (`off`, pip) |
 | `tutor.miss.off.figure` | `card`, `king` (cards), `late` (trick) | Your {card} fell under your opponent's {king} in trick {late}; play it at once next time. | Im {late}. Stich nahm Ihr Gegner {card} mit {king}; spielen Sie die Figur das nächste Mal gleich. | TUTOR 2 (`off`, figure); only where the log shows the figure lost to a higher card of its suit |
 | `tutor.miss.off.figure-plain` | `trick`, `better` (card) | In trick {trick}, your {better}, lying on its packet, could have gone at once. | Im {trick}. Stich hätte {better} vom Paket gleich gehen können. | TUTOR 2 (`off`, figure) |
