@@ -1082,7 +1082,7 @@ async function main() {
   // A row of cards wider than the screen scrolls.
   let dragFrom = null;
   const clampScroll = (v) => {
-    const range = handRange(S ? S.model.hand.length : 0, zonesNow().yourHand);
+    const range = handRange(S ? S.model.hand.length : 0, zonesNow().yourHand, view().fill);
     return Math.max(-range, Math.min(range, v));
   };
   canvas.addEventListener("pointerdown", (e) => {
