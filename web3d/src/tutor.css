@@ -1,0 +1,62 @@
+/* The Kibitzer (docs/TABLE3D.md 6): a small tab at the player's shoulder, bottom
+   left beside the hand, with a mute button "§ 13", a review chip and his note,
+   a ruled paper note unlike the opponent's white speech box. */
+
+.tutor {
+  position: absolute;
+  left: 8px;
+  bottom: 108px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: min(260px, 60vw);
+  pointer-events: none;
+  z-index: 15;
+}
+.left .tutor { left: auto; right: 8px; align-items: flex-end; }
+.tutor > * { pointer-events: auto; }
+.tutor-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tutor-btn,
+.tutor-mute,
+.tutor-review {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px 8px 8px 2px;
+  background: #f3ecd2;
+  color: #3b2f12;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.tutor-mute[aria-pressed="true"] { background: #d9d2b8; text-decoration: line-through; }
+.tutor-review { background: #fff8d6; }
+.tutor-btn:focus-visible,
+.tutor-mute:focus-visible,
+.tutor-review:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.tutor-note {
+  margin: 0;
+  padding: 8px 12px 8px 14px;
+  border-left: 3px solid #b6453a;
+  background: repeating-linear-gradient(#fbf6e3 0, #fbf6e3 19px, #cfe0ee 19px, #cfe0ee 20px);
+  color: #3b2f12;
+  font-size: 14px;
+  line-height: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transform: rotate(-0.8deg);
+}
+.tutor-note[hidden] { display: none; }
+
+.tutor-page h3 { margin: 10px 0 4px; font-size: 16px; }
+.tutor-page ul, .tutor-page ol, .tutor-review-body ul { margin: 0; padding-left: 20px; }
+.tutor-page li, .tutor-review-body li { margin: 4px 0; line-height: 1.35; }
+.tutor-pages { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.tutor-pages .big { width: 100%; text-align: left; }
+.tutor-review-body details { margin-top: 10px; font-size: 14px; }
+.tutor-trend { margin: 10px 0 0; font-size: 14px; }
+
+@media (max-width: 520px) {
+  .tutor { bottom: 112px; }
+}

@@ -36,10 +36,16 @@ import { loadPrefsInfo, savePrefs, sittingConfig, speedScale, urlOverrides, with
 import { createSettings } from "./settings.js";
 import { createSpeaker } from "./speaker.js";
 import { createSlate } from "./slate.js";
-import { cardName, getLang, onLang, setLang, t, tn, thirds } from "./strings.js";
+import { cardName, getLang, onLang, setLang, signed, suitName, t, tn, thirds } from "./strings.js";
 import { createTalk } from "./talk.js";
 import { ALL_CODES, backTexture, COURT_CODES, faceTextures } from "./tarockfaces.js";
 import { createUi } from "./ui.js";
+import { addSitting, clearProgress, exportText, loadProgress, summaryOf } from "./progress.js";
+import { explainText, reviewBlocks } from "./review.js";
+import { createTutor, PAGE_KEYS, tutorialPages } from "./tutor.js";
+import { helpBody, pageBody, reviewBody, trendBody } from "./tutorview.js";
+import TUTORIAL_DE from "../tutorial.md";
+import TUTORIAL_EN from "../tutorial.en.md";
 import { EYE, EYE_PORTRAIT, EYE_TOUCH, ZONES, ZONES_PORTRAIT, ZONES_TOUCH } from "./zones.js";
 
 /* global WASM_BASE64, WORDS */
@@ -202,9 +208,87 @@ async function main() {
     words: WORDS,
     getLang,
     rng: Math.random,
-    say: ({ text, call }) => speaker.offer({ text, call }),
+    say: ({ text, call, who }) => (who === "kibitz" ? kibitzNote(text) : speaker.offer({ text, call })),
   });
   talk.setMode(prefs.talk);
+
+  // ---- the tutor (docs/TABLE3D.md 6) ------------------------------------------------
+  const tutorAuto = !TEST || params.has("tutor"); // a test run is not interrupted by a page
+  const tutor = createTutor({
+    prefs: () => prefs,
+    patch: (p) => {
+      save(p);
+      showTutor();
+    },
+    open: (key, how) => openPage(key, how),
+    speak: (group) => talk.onEvent({ type: group === "kibitz" ? "kibitz" : "kibitz_mute" }, { human }),
+  });
+  let tutorBuf = []; // events the tutor has not yet reckoned with
+  let reviewChip = null; // null, "deal" or "sitting"
+  let pageHelp = false; // the page open now came from the Help list
+  let pastSittings = []; // the sittings kept before this one, for the sitting's review
+  const showTutor = () => ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip });
+  const tutorWords = () => ({ t, cardName, thirds, signed, suitName: (c) => (getLang() === "en" ? suitName(c).toLowerCase() : suitName(c)) });
+  showTutor();
+
+  // The Kibitzer's note, in his tab and not in the opponent's box (6.5).
+  function kibitzNote(text) {
+    ui.kibitzNote(text);
+    director.at(Math.max(4000, 250 + 70 * text.length), () => ui.kibitzNote(null), "linger");
+  }
+
+  // The pages, for the sitting's both-pass rule (6.2.2).
+  function pagesNow() {
+    const begun = log.find((e) => e.type === "sitting_start");
+    const both_pass = begun?.settings?.both_pass ?? prefs.both_pass;
+    return tutorialPages(getLang() === "de" ? TUTORIAL_DE : TUTORIAL_EN, PAGE_KEYS, { both_pass });
+  }
+  function openPage(key, { help }) {
+    const page = pagesNow().find((p) => p.key === key);
+    if (!page) return tutor.helpClosed(key);
+    pageHelp = help;
+    ui.dialog({
+      id: "page",
+      title: page.title,
+      body: pageBody(document, page),
+      wide: true,
+      buttons: help
+        ? [{ label: t("ui.close"), act: "close", primary: true, focus: true }]
+        : [{ label: t("tutor.page.notnow"), act: "notnow", primary: true, focus: true }, { label: t("tutor.page.remind"), act: "remind" }],
+      onClose: () => dismissPage(true),
+    });
+  }
+  // "Not now" marks the page seen, "Remind me" leaves it for the next time (6.2.2).
+  function dismissPage(remind) {
+    ui.closeDialog("page");
+    const key = tutor.current();
+    if (!key) return;
+    if (pageHelp) tutor.helpClosed(key);
+    else tutor.close(key, remind);
+  }
+  function openHelp() {
+    tutor.intro();
+    ui.dialog({ id: "help", title: t("tutor.help.title"), body: helpBody(document, pagesNow(), { intro: t("tutor.help.intro"), seen: prefs.seen }), buttons: [{ label: t("ui.close"), act: "close", primary: true, focus: true }] });
+  }
+  // The review of the deal, or of the sitting once it is over (6.4).
+  function openReview() {
+    if (!wasm) return;
+    const whole = sittingOver;
+    const r = whole ? engine.reviewSitting() : engine.review();
+    const blocks = reviewBlocks(r?.review, tutorWords(), { whole });
+    if (!blocks) return ui.setAid(t("review.empty"));
+    const body = reviewBody(document, blocks);
+    if (whole && pastSittings.length) {
+      body.append(trendBody(document, t("tutor.progress.title"), pastSittings.slice(-5).map((s) => t("review.say.sitting-tally", { ...s, net: signed(s.net) }))));
+    }
+    ui.dialog({ id: "review", title: blocks.title, body, wide: true, buttons: [{ label: t("ui.close"), act: "close", primary: true, focus: true }] });
+  }
+  // At rest the tutor may open the page that is due.
+  function tutorStep() {
+    const events = tutorBuf;
+    tutorBuf = [];
+    if (tutorAuto && wasm) tutor.rest(wasm, events, { human, blocked: ui.dialogOpen() });
+  }
 
   // A line in a box by the opponent's hand, clear of the cards and the controls.
   function showLine(text) {
@@ -310,6 +394,7 @@ async function main() {
     const events = reply.events ?? [];
     const since = log.length;
     log = [...log, ...events];
+    tutorBuf.push(...events);
     wasm = reply.state;
     const { model, counted } = events.length || first ? fold(events) : { model: S.model, counted: null };
     const next = { model, events: log };
@@ -383,6 +468,16 @@ async function main() {
         hud.dealt(1);
         showTour();
         ui.hideBanner();
+        reviewChip = null;
+        showTutor();
+        break;
+      case "trick_won":
+        // The line under the prompt, from the module's own deduction (6.3.3).
+        if (prefs.explain && !prefs.muted) {
+          const line = explainText(engine.explain()?.explain, tutorWords());
+          ui.setAid(line);
+          if (line) ui.live(line);
+        }
         break;
       case "card_played":
         trickShown = e.trick;
@@ -426,6 +521,8 @@ async function main() {
         break;
       case "game_scored":
         showResult(e);
+        reviewChip = "deal";
+        showTutor();
         break;
       case "tour_end":
         if (prefs.slateAuto) slate.open({ ms: 3000 });
@@ -471,10 +568,18 @@ async function main() {
     director.at(3000, () => ui.hideBanner(), "linger");
   }
 
-  function endSitting(e) {
+  function endSitting(e, { live = true } = {}) {
     sittingOver = true;
     slate.settle(e);
     clearSitting();
+    // The sitting's review, offered by the chip; its tally is kept for trends (6.4.2, 6.4.4).
+    reviewChip = "sitting";
+    showTutor();
+    if (live) {
+      pastSittings = loadProgress(storage());
+      const summary = summaryOf(engine.reviewSitting()?.review);
+      if (summary) addSitting(storage(), summary);
+    }
     stage.reveal({ instant: calm() || prefs.speed === "instant" });
     ui.dialog({
       id: "over",
@@ -491,6 +596,7 @@ async function main() {
     placeTags();
     refresh();
     armIdle();
+    tutorStep();
     if (wasm.prompt === "opponent" && !sittingOver && !stepping) {
       stepping = true;
       director.at(350, () => {
@@ -666,6 +772,7 @@ async function main() {
   // card it names and one sentence from its reason's key. It never plays.
   function askHint() {
     if (!wasm || wasm.prompt !== "you" || director.busy() || pending > 0 || !prefs.hints) return;
+    if (prefs.tutor && prefs.muted) return ui.setAid(t("hint.muted")); // "§ 13": only his tap un-mutes (6.3.4)
     const r = engine.hint();
     if (!r?.hint) return ui.setAid(t("hint.none"));
     hintCard = r.hint.action === "play" ? r.hint.card : null;
@@ -696,11 +803,22 @@ async function main() {
         return;
       case "hint":
         return askHint();
+      case "tutor":
+        return openHelp();
+      case "mute":
+        return tutor.toggleMute();
+      case "review":
+        return openReview();
+      case "page":
+        return tutor.help(data.page);
       default:
     }
   }
   function toggleSlate() {
-    if (ui.slateRoot.hidden) slate.open();
+    if (ui.slateRoot.hidden) {
+      tutor.slateOpened();
+      slate.open();
+    }
     else slate.close();
     ui.setSlateOpen(!ui.slateRoot.hidden);
   }
@@ -731,7 +849,8 @@ async function main() {
     } else if (id === "over") {
       ui.closeDialog("over");
       askNew();
-    } else if (id === "keys") ui.closeDialog("keys");
+    } else if (id === "page") dismissPage(rest[0] === "remind");
+    else if (id === "keys") ui.closeDialog("keys");
     else ui.closeDialog(id);
   }
 
@@ -748,6 +867,12 @@ async function main() {
     ui.clearChips();
     ui.hideBanner();
     ui.closeDialog("over");
+    for (const id of ["page", "help", "review"]) ui.closeDialog(id);
+    ui.kibitzNote(null);
+    tutor.reset();
+    tutorBuf = [];
+    reviewChip = null;
+    showTutor();
     stage.unreveal();
     sittingOver = false;
     sel = { chosen: null, scroll: -1e9 };
@@ -826,7 +951,7 @@ async function main() {
     ui.root.classList.toggle("left", prefs.leftHanded);
     if (r.state.over) {
       const end = [...log].reverse().find((e) => e.type === "sitting_end");
-      if (end) endSitting(end);
+      if (end) endSitting(end, { live: false });
       else {
         sittingOver = true;
         askNew();
@@ -846,6 +971,16 @@ async function main() {
       link.click();
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } else if (name === "progress-export") {
+      const url = URL.createObjectURL(new Blob([exportText(storage())], { type: "application/json" }));
+      const link = Object.assign(document.createElement("a"), { href: url, download: "strohmandeln-progress.json" });
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } else if (name === "progress-clear") {
+      clearProgress(storage());
+      pastSittings = [];
     } else if (name === "load") {
       const input = Object.assign(document.createElement("input"), { type: "file", accept: "application/json" });
       input.addEventListener("change", async () => {
@@ -875,6 +1010,10 @@ async function main() {
         break;
       case "talk":
         talk.setMode(value);
+        break;
+      case "tutor":
+        if (value && prefs.muted) tutor.unmute(); // the setting un-mutes (6.1)
+        showTutor();
         break;
       case "surface":
         stage.setSurface(chooseSurface({ chosen: value === "random" ? null : value, saved: null }));
@@ -920,6 +1059,10 @@ async function main() {
       ui.closeDialog("extend"); // asked again, in the new language, by refresh
       ui.closeDialog("announce");
     }
+    // An open page is drawn again in the new language; the lists are closed.
+    ui.closeDialog("help");
+    ui.closeDialog("review");
+    if (tutor.current() && ui.dialogOpen("page")) openPage(tutor.current(), { help: pageHelp });
     stage.render();
   });
   document.documentElement.lang = getLang();
@@ -1018,7 +1161,11 @@ async function main() {
   window.addEventListener("keydown", (e) => {
     if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === "Escape") {
-      if (ui.dialogOpen("announce")) ui.closeDialog("announce");
+      if (ui.dialogOpen("page")) dismissPage(true);
+      else if (ui.dialogOpen("help") || ui.dialogOpen("review")) {
+        ui.closeDialog("help");
+        ui.closeDialog("review");
+      } else if (ui.dialogOpen("announce")) ui.closeDialog("announce");
       else if (ui.dialogOpen("keys")) ui.closeDialog("keys");
       else if (!ui.slateRoot.hidden) toggleSlate();
       else if (sel.chosen) {
@@ -1032,13 +1179,14 @@ async function main() {
     const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
     if ((key === "Enter" || key === " ") && e.target instanceof Element && e.target.closest("button")) return; // the button's own press
     if (key === "?") {
-      ui.dialog({ id: "keys", title: t("keys.title"), body: ui.el("ul", { class: "keys" }, ...["play", "arrows", "packets", "announce", "take", "weiter", "slate", "hint", "where", "help", "esc"].map((k) => ui.el("li", {}, t(`keys.${k}`)))), buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
+      ui.dialog({ id: "keys", title: t("keys.title"), body: ui.el("ul", { class: "keys" }, ...["play", "arrows", "packets", "announce", "take", "weiter", "slate", "hint", "mute", "where", "help", "esc"].map((k) => ui.el("li", {}, t(`keys.${k}`)))), buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
       return;
     }
     if (ui.dialogOpen()) return;
     if (!wasm) return;
     if (key === "s") return toggleSlate();
     if (key === "h") return askHint();
+    if (key === "m") return tutor.toggleMute();
     if (key === "i") return ui.live(where(wasm));
     const calm_ = director.busy() || pending > 0;
     if (key === "t" && !calm_ && wasm.legal.some((a) => a.action === "take")) return send({ action: "take" });
@@ -1108,6 +1256,8 @@ async function main() {
     timing: () => lastTiming,
     debug: () => ({ pending, dbusy: director.busy(), reframing: stage.reframing(), held: director.held(), stepping, prompt: wasm?.prompt, events: log.length }),
     said: () => ui.said(),
+    tutor: () => ({ page: tutor.current(), muted: prefs.muted, seen: prefs.seen, note: ui.root.querySelector(".tutor-note")?.dataset.text ?? "", chip: reviewChip }),
+    openPage: (key) => tutor.help(key),
     live: () => ui.lived(),
     hud: () => ({ totals: hud.totals(), shown: hud.shown(), idle: hud.idle() }),
     zoneRects,

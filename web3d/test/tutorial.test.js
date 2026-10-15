@@ -3,14 +3,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parseTutorial } from "../../kit/js/tutorial.js";
+import { tutorialPages } from "../src/tutor.js";
 
 const read = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
 const STRINGS = JSON.parse(read("../strings.json"));
 // The page keys are the table of docs/TABLE3D.md 6.2.2, in its order.
 const KEYS = [...read("../../docs/TABLE3D.md").split("### 6.2 Tutorial pages")[1].split("### 6.3")[0].matchAll(/^\| `([a-z-]+)` \|/gm)].map((m) => m[1]);
 const FILES = { en: "../tutorial.en.md", de: "../tutorial.md" };
-const pages = (lang) => parseTutorial(read(FILES[lang]), KEYS);
+// The pages for the game's `both_pass` setting (TABLE3D 6.2.2); the default plays a simple game.
+const pages = (lang, both_pass = "play") => tutorialPages(read(FILES[lang]), KEYS, { both_pass });
 const lines = (page) => page.blocks.flatMap((b) => (b.spans ? [b.spans] : b.items)).map((spans) => spans.map((x) => x.text).join(""));
 const words = (s) => s.split(/\s+/).filter(Boolean).length;
 
@@ -36,8 +37,8 @@ for (const lang of ["en", "de"]) {
     }
   });
 
-  test(`${lang}: no page exceeds ${PAGE_WORDS} words, no line ${LINE_WORDS}`, () => {
-    for (const p of pages(lang)) {
+  test(`${lang}: no page exceeds ${PAGE_WORDS} words, no line ${LINE_WORDS}, under either both-pass setting`, () => {
+    for (const p of [...pages(lang), ...pages(lang, "throw_in")]) {
       const ls = lines(p);
       const total = words(p.title) + ls.reduce((n, l) => n + words(l), 0);
       assert.ok(total <= PAGE_WORDS, `${p.key}: ${total} words`);
@@ -47,7 +48,7 @@ for (const lang of ["en", "de"]) {
 
   test(`${lang}: no jargon a newcomer would not know`, () => {
     const JARGON = ["Stichzwang", "Bummerl", "Valat", "Mondfang", "Stecher", "Impassiren", "finesse", "ruff", "void", "Kontra", "Hinterhand", "Vorhand"];
-    const text = pages(lang).flatMap((p) => [p.title, ...lines(p)]).join("\n");
+    const text = [...pages(lang), ...pages(lang, "throw_in")].flatMap((p) => [p.title, ...lines(p)]).join("\n");
     assert.deepEqual(JARGON.filter((j) => new RegExp(`\\b${j}`, "i").test(text)), []);
   });
 }
@@ -94,4 +95,31 @@ test("the pages hold to RULES 5.4, 6.1, 7.1 and 12.1: trump beats suit, the last
   assert.match(page("de", "from-a-packet"), /letzte des Pakets/);
   for (const l of ["en", "de"]) assert.doesNotMatch(page(l, "from-a-packet"), /before it is shown|ehe sie gezeigt/);
   assert.doesNotMatch(page("en", "pagat-ultimo"), /turn up higher/);
+});
+
+test("the bidding page tells what happens when both pass, by the setting (RULES 3.4)", () => {
+  const page = (lang, setting) => lines(pages(lang, setting).find((p) => p.key === "bidding")).join("\n");
+  assert.match(page("en", "play"), /plain game is played/);
+  assert.doesNotMatch(page("en", "play"), /thrown in/);
+  assert.match(page("en", "throw_in"), /thrown in: nothing is scored/);
+  assert.doesNotMatch(page("en", "throw_in"), /plain game/);
+  assert.match(page("de", "play"), /einfache Partie/);
+  assert.match(page("de", "throw_in"), /eingeworfen: nichts wird gezählt/);
+  assert.doesNotMatch(page("de", "throw_in"), /einfache Partie/);
+});
+
+test("the two both-pass variants have the same shape in both languages", () => {
+  const shape = (p) => p.blocks.map((b) => (b.items ? b.type + b.items.length : b.type)).join(",");
+  for (const setting of ["play", "throw_in"]) {
+    const en = pages("en", setting);
+    const de = pages("de", setting);
+    en.forEach((p, i) => assert.equal(shape(de[i]), shape(p), setting + " " + p.key));
+  }
+});
+
+test("a variant block is dropped, whole, when its setting is not the game's", () => {
+  const md = "# P\n\n## H\n\n- one\n<!-- if both_pass=play -->\n- plain\n<!-- end -->\n<!-- if both_pass=throw_in -->\n- thrown\n<!-- end -->\n- last\n";
+  const items = (setting) => tutorialPages(md, ["p"], { both_pass: setting })[0].blocks[1].items.map((s) => s[0].text);
+  assert.deepEqual(items("play"), ["one", "plain", "last"]);
+  assert.deepEqual(items("throw_in"), ["one", "thrown", "last"]);
 });

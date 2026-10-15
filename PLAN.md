@@ -44,9 +44,9 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 6 | Computer opponent: a ladder of rungs, each measured against the one below (`docs/OPPONENT.md`) | 4 | done |
 | 7 | Card faces: 54 large-type faces and a back, drawn at runtime (`docs/img/faces.png`) | 2 | done |
 | 8 | The table (spec: `docs/TABLE3D.md`): layout, choreography, play, slate, settings, phone. The count and score use the kit's score HUD and scoring popups (moved from Cassino), configured for counting won cards in threes against 36 | 2, 5, 7 | core done (a whole sitting plays by clicking, no face leak); gaps open |
-| 9 | Tutor: tutorial pages, the kibitzer's hints and explanations, end-of-deal review | 5, 8 | todo |
-| 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | todo |
-| 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | todo |
+| 9 | Tutor: tutorial pages, the kibitzer's hints and explanations, end-of-deal review | 5, 8 | done |
+| 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | documents and Pages redirect done; publishing after the last merges |
+| 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | built across 3, 8, 9; the language_switch browser check open |
 
 ## Open
 
@@ -58,10 +58,10 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 
 - Opponent (review, docs/review/opponent.md): rung 4's `bid_margin` is in fixed Points, so a doubled deal clears it more easily; the step from rung 2 to 3 is thin (+1.39 ± 0.59 Points per pair, stopped on the boundary).
 
-- Tutorial (review, docs/review/tutorial.md): the `bidding` page covers only both passing to a plain game; under `both_pass = throw_in` it needs the setting passed in (TABLE3D 6.2.2). The end-of-deal review's bullets need engine message keys and their strings (6.4).
+- Tutor (review, docs/review/tutor.md): a valat is invisible to the review (needs `valat-won-you`/`valat-lost-you`); TABLE3D 6.2.3 (pages opened from the review) and 6.4.3 (a Worker, `?noworker`) not built — the review takes milliseconds and the slowest hint ~160 ms on the main thread; the sitting review's `deal` parameter is not shown; unused strings tutor.muted, tutor.page.close, tutor.speech, tutor.off; on a tie `try-count` beats a specific tip; test runs write to the real `strohmandeln.progress`; the `kibitz` group's lines read as said to a kibitzer, not by him; the tutor tab's placement on phones is unchecked in a browser.
 
 - Table (reviews docs/review/table-core.md, table-gaps.md): browser checks not yet confirmed: draw_and_doubling, settlement, tour_end_and_extension, legal_only, keyboard_sitting (one browser at a time, `?speed=instant`; the full suite takes hours on the software GPU, the gate runs `--quick`); drag, shake and the card lists are covered by unit tests and `--quick` only. Spec clauses not met: 2.3.1 the human's last two cards shown singly; 2.4 the valat chip lacks its value; 2.1 void deal shows the opponent's backs only (the protocol carries no cards); 1.5.5 dialogue placement rough; 3.1.2 the dragged card does not follow the finger; review item 16 (an open dialog closes on a language switch; scheduled popups and the HUD's bonus lines keep or lose the old language); the card lists keep the last focus highlighted after Tab leaves; portrait phone layout first-pass; tests 10.4–10.6. Desktop "Auto" faces are now Classic, Jumbo on touch. Browser seeds depend on the opponent at `?level=1`; a change to the opponent or the deal needs a rescan.
 
-- Release docs (review, docs/review/release-docs.md): Ulmann's title "Tarockbuch" (PHRASES) vs "Tarokbuch" (research/03 S14) and Werner's title (research/13 S2 vs 03 S12) to be settled from the title pages; the VM home path appears in kit/STAMP and research notes (strip before publishing); Playwright and Pillow are unpinned.
+- Gate: on a fresh checkout it needs `npm ci --prefix web3d` and a wasm build before the Node tests (they run before the gate's own wasm step); `cargo` must be on PATH. Werner is dated only "by 1891" (no year on the title page).
 
 - The currency on the slate (gulden and kreuzer, or krone). Note 13's dates for the krone are unsourced.

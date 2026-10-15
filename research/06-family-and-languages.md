@@ -200,7 +200,7 @@ Sources addendum: **06-S17** `research/sources/anno/strohmandl.jsonl` (harvest v
 
 ## Sources
 
-(All paths relative to `/home/andrewbartnof/strohmandeln/research/sources/06/`.)
+(All paths relative to `research/sources/06/`.)
 
 - **06-S1** Michael Dummett, *The Game of Tarot*, Duckworth, London 1980. Internet Archive scans, OCR: `other/dummett/p4.txt` (identifier `game_of_tarot_part_4`; lines 1540-1570, 1845-1860, 2840-3050, 6660-6700, 12105-12135, 14095-14125), `other/dummett/p2.txt` (`game_of_tarot_part_2`; lines 4425-4640 de Gébelin two-hand and reconstruction; 4808-4935 German two-hand Tarok, printed pp. 235-236; 7750-7765 PE/RI; 8066-8160 Venticinque/Morto/Baronetti; 8255-8290 Mitigati with the Morto), `other/dummett/p1.txt`. Strohmandeln pp. 457-459 (Part IV, ch. 22; printed page headers "458 Part IV: Games with 54 or Fewer Cards" and "Tapp-Tarock 459"). [OCR]
 - **06-S2** K. Werner, *Das moderne Tarokspiel. Eine Anleitung zur gründlichen Erlernung desselben nebst zahlreichen erläuternden Beispielen*, 2nd enlarged and improved ed., Hartleben, Vienna/Pest/Leipzig, n.d. (Wienbibliothek digital). "Das Strohmann-Tarok", §§ 1-2, pp. 129-135: `wb/3752218.pdf` (the saved `.txt` named here does not exist; the same pages 129-135 are in the full-book text `wb/3724659.txt`, lines ~4245-4450, checked in review). https://digital.wienbibliothek.at/download/pdf/3752218.pdf [OCR]

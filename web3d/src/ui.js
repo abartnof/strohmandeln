@@ -44,6 +44,19 @@ export function createUi(root, { t, onAct }) {
       el("button", { class: "tab slate-tab", type: "button", "data-act": "slate", "aria-expanded": "false" }),
       el("button", { class: "tab cog", type: "button", "data-act": "settings" }),
     ),
+    // The Kibitzer's tab (docs/TABLE3D.md 6): Help, the mute, the review chip, his note.
+    el(
+      "div",
+      { class: "tutor" },
+      el("p", { class: "tutor-note", role: "status", hidden: "" }),
+      el(
+        "div",
+        { class: "tutor-row" },
+        el("button", { class: "tutor-btn", type: "button", "data-act": "tutor" }),
+        el("button", { class: "tutor-mute", type: "button", "data-act": "mute", "aria-pressed": "false" }),
+        el("button", { class: "tutor-review", type: "button", "data-act": "review", hidden: "" }),
+      ),
+    ),
     el("p", { class: "sr-live", "aria-live": "polite", "aria-atomic": "true" }),
     el("div", { class: "dialogs" }),
   );
@@ -70,6 +83,25 @@ export function createUi(root, { t, onAct }) {
     for (const node of root.querySelectorAll("[data-i18n]")) node.textContent = t(node.dataset.i18n);
     q(".slate-tab").textContent = t("ui.menu.slate");
     q(".cog").textContent = t("ui.menu.settings");
+    drawTutor();
+  }
+  // The Kibitzer's tab, in the language: the tab opens Help, "§ 13" mutes him,
+  // the chip offers the review of the deal or of the sitting.
+  let tutor = { on: true, muted: false, review: null };
+  function drawTutor() {
+    const tab = q(".tutor-btn");
+    tab.textContent = `✎ ${t("tutor.tab")}`;
+    tab.title = t("tutor.tab.title");
+    const mute = q(".tutor-mute");
+    mute.hidden = !tutor.on;
+    mute.textContent = t("tutor.mute.label");
+    mute.title = t(tutor.muted ? "tutor.unmute.title" : "tutor.mute.title");
+    mute.setAttribute("aria-label", mute.title);
+    mute.setAttribute("aria-pressed", String(tutor.muted));
+    const chip = q(".tutor-review");
+    chip.hidden = !(tutor.on && !tutor.muted && tutor.review);
+    chip.textContent = t(tutor.review === "sitting" ? "review.chip.sitting" : "review.chip");
+    chip.title = t("review.offer");
   }
   relabel();
 
@@ -91,6 +123,20 @@ export function createUi(root, { t, onAct }) {
     setRefusal(text) {
       refusal.textContent = text ?? "";
       refusal.hidden = !text;
+    },
+    // The tutor's tab: `on` (the setting), `muted`, and the review chip,
+    // `review`: null, "deal" or "sitting".
+    setTutor(next) {
+      tutor = { ...tutor, ...next };
+      drawTutor();
+    },
+    // The Kibitzer's note by his tab: a ruled paper note, not the opponent's box.
+    kibitzNote(text) {
+      const note = q(".tutor-note");
+      note.hidden = !text;
+      note.textContent = text ?? "";
+      note.dataset.text = text ?? "";
+      return note;
     },
     setAid(text) {
       aid.hidden = !text;

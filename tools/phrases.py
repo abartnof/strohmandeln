@@ -45,7 +45,7 @@ SOURCES = {
            "\"Weiter!\", \"Ich passe!\" are inflections of Werner's \"aufnehmen\", \"weiter\", \"Paßt\"; the "
            "exact sentences are as Mayr and Sedlaczek (2007) quote them [05-S5]", True),
     "Ul": (1899, "[03-S14][13-S1]",
-           "Ulmann, Illustrirtes Wiener Tarockbuch, 2nd ed. (1899): \"Es ist üblich, ehe die "
+           "Ulmann, Illustrirtes Wiener Tarokbuch, 2nd ed. (1899): \"Es ist üblich, ehe die "
            "Spielgesellschaft auseinandergeht, drei oder sechs Touren anzusagen\" (p. 19); two players, "
            "\"stets selbst seines eigenen Glückes Schmied\" (p. 69); the honours \"nur die Cadres der "
            "Kartenarmee\" (p. 78); a 35:35 draw \"zählt nicht\"; Vorhand \"hat die nächste Donne\"", False),
