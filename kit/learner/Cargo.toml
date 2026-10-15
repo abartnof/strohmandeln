@@ -1,0 +1,9 @@
+[package]
+name = "kit-learner"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "The game-independent learner of the series: a discounted Beta fold over per-deal summaries, mastery with hysteresis, the focus over a prerequisite graph, and the shape of the brief. Vendored from Cassino (see kit/STAMP)."
+
+[dependencies]
