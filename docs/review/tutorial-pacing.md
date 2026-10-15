@@ -48,3 +48,15 @@ either, if both are lit"; "You may stay silent. The choice is yours"; "If I may:
 a cover played is a card turned"; "If the card beneath is the last of its
 packet..." (the-pull says it); "All 70 are divided..."; "Missing it loses";
 the second sentence of the Pagat page's pay line merged. No rule was dropped.
+
+## Code review
+
+Scope: `web3d/src/tutor.js`, `web3d/src/main.js` (`rested`, `dismissPage`, the extend prompt), `web3d/test/tutor.test.js`, TABLE3D 6.2.2 (wording of the pages not reviewed).
+
+Checked, no defect: the extension prompt cannot wait forever on a tutorial page (each close runs `tutorStep` and `refresh`; a page opens at most once a deal via `shown`, and once ever when "Not now" marks it seen, so the chain ends); pages do not stack (`current` guards `rest`, the dialog id is shared); tutor off or muted: `rest` returns null, nothing holds the prompt; `reset` clears owed, shown and current on a new sitting; `onClose` fires only on a shade click, so `dismissPage` cannot run twice for one close; Escape and the buttons reach `dismissPage`, and the next page or the prompt takes focus via `ui.dialog`. The review chip is independent of the pages. Reduced motion is unaffected (the page opens at rest, as before). TABLE3D 6.2.2 matches `PAGE_KEYS`, `pagesDue` and the order of `rested`.
+
+Fixed:
+- A Help page closed while the extension prompt (or the action bar) had been held back left them undrawn until the next event. `dismissPage` now refreshes after a Help page too (it still opens no further page).
+- The "source check" that grepped `main.js` for call order and a regexp is replaced by a behavioural test: the gate is the exported `extendPromptDue` (tutor.js), used by `refresh`, and the test walks a rest with several due pages through closing each and asserts the prompt is held, then asked; tutor off never holds it.
+
+Open: none. Note: `tutorial.test.js` word-limit test failed once while another reviewer was editing `web3d/tutorial*.md` in the same worktree; it passes on the committed wording.
