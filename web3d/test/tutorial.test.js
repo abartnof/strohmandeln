@@ -124,3 +124,11 @@ test("a variant block is dropped, whole, when its setting is not the game's", ()
   assert.deepEqual(items("play"), ["one", "plain", "last"]);
   assert.deepEqual(items("throw_in"), ["one", "thrown", "last"]);
 });
+
+test("a block may name several settings, and is kept only when all of them hold", () => {
+  const md = "# P\n\n## H\n\n<!-- if values=2/3/4 both_pass=play -->\n- both\n<!-- end -->\n<!-- if values=2/3/4 -->\n- values only\n<!-- end -->\n- last\n";
+  const items = (settings) => tutorialPages(md, ["p"], settings)[0].blocks[1].items.map((x) => x[0].text);
+  assert.deepEqual(items({ values: "2/3/4", both_pass: "play" }), ["both", "values only", "last"]);
+  assert.deepEqual(items({ values: "2/3/4", both_pass: "throw_in" }), ["values only", "last"]);
+  assert.deepEqual(items({ values: "1/2/3", both_pass: "play" }), ["last"]);
+});

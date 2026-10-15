@@ -16,13 +16,14 @@ export const PAGE_KEYS = ["packets", "bidding", "the-pull", "playing", "followin
 // The pages of a tutorial file for the sitting's rule settings. A block of
 // lines between `<!-- if name=value -->` and `<!-- end -->` is kept when the
 // setting `name` is `value`, and dropped, markers and all, when it is not
-// (the bidding page says what happens when both pass, by `both_pass`).
+// (the bidding page says what happens when both pass, by `both_pass`). Several
+// settings may be named, `<!-- if values=2/3/4 both_pass=play -->`: all must hold.
 export function tutorialPages(markdown, keys, settings = {}) {
   let keep = true;
   const lines = [];
   for (const line of markdown.split("\n")) {
-    const open = /^<!-- if (\w+)=(\S+) -->$/.exec(line.trim());
-    if (open) keep = String(settings[open[1]]) === open[2];
+    const open = /^<!-- if ((?:\w+=\S+ ?)+) -->$/.exec(line.trim());
+    if (open) keep = open[1].trim().split(" ").every((c) => String(settings[c.slice(0, c.indexOf("="))]) === c.slice(c.indexOf("=") + 1));
     else if (line.trim() === "<!-- end -->") keep = true;
     else if (keep) lines.push(line);
   }
