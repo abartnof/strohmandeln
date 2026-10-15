@@ -41,8 +41,8 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - Zuerst spricht, wer nicht gegeben hat.
 - **Ich nehme auf** heißt: Sie spielen auf Gewinn. Sie sind der Aufnehmer.
 - **Weiter** heißt: Sie lassen es sein.
-- Die Karten gelten: Könige (K), Sküs, Mond und Pagat 5; Damen (D) 4; Cavalle (C) 3; Buben (B) 2; jede andere Karte 1.
-- In Dreiergruppen gezählt, machen die 54 Karten 70. Der Aufnehmer braucht 36 der 70.
+- Die Karten zählen: Könige (K), Sküs, Mond und Pagat 5; Damen (D) 4; Cavalle (C) 3; Buben (B) 2; jede andere Karte 1.
+- In Dreiergruppen gezählt, machen die 54 Karten 70 Augen. Der Aufnehmer braucht 36 davon.
 - [Kartenwerte und Zählung](#thirds)
 <!-- if values=2/3/4 -->
 - Der Aufnehmer, der gewinnt, erhält 3 Points; wer verliert, zahlt 4.
@@ -54,16 +54,16 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - Der Aufnehmer, der gewinnt, erhält 2 Points; wer verliert, zahlt 4.
 <!-- end -->
 <!-- if both_pass=play -->
-- Sagen beide weiter, wird eine einfache Partie gespielt.
+- Sagen beide weiter, wird ein einfaches Spiel gespielt.
 <!-- end -->
 <!-- if values=2/3/4 both_pass=play -->
-- Eine einfache Partie zahlt ihrem Sieger 2.
+- Ein einfaches Spiel zahlt seinem Sieger 2.
 <!-- end -->
 <!-- if values=1/2/3 both_pass=play -->
-- Eine einfache Partie zahlt ihrem Sieger 1.
+- Ein einfaches Spiel zahlt seinem Sieger 1.
 <!-- end -->
 <!-- if values=1/2/4 both_pass=play -->
-- Eine einfache Partie zahlt ihrem Sieger 1.
+- Ein einfaches Spiel zahlt seinem Sieger 1.
 <!-- end -->
 <!-- if both_pass=throw_in -->
 - Sagen beide weiter, wird eingeworfen: nichts wird gezählt, und kein Paket wird aufgedeckt.
@@ -114,7 +114,7 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - Drücken Sie **Troule ansagen** oder **Vier Könige ansagen**, oder antworten Sie auf die Frage beim Wählen der Karte.
 - Angesagt wird es bezahlt, auch wenn die Karten später verloren gehen. Verschwiegen wird es nicht bezahlt.
 
-# Das Zählen in Dritteln
+# Kartenwerte und Zählung
 
 ## Was jede Karte wert ist
 
@@ -126,11 +126,11 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 
 ## So wird gezählt
 
-- Jede Karte zählt ihren Wert weniger zwei Drittel. Bei drei Karten zählen Sie die Summe weniger 2.
+- Jede Karte zählt ihren Wert weniger zwei Drittel. Bei drei Karten zählen Sie die Summe weniger 2: dieselbe Regel, für drei zugleich.
 - Beispiel: ein König, ein Bube und eine Sieben sind 5 + 2 + 1 = 8, weniger 2 = 6.
 - Bleiben eine oder zwei Karten übrig, verliert jede zwei Drittel.
-- Zusammen zählen Ihre Stiche und die Ihres Gegners 70. Der Aufnehmer braucht 36: **35⅔** genügt, **35⅓** nicht.
-- Gezählt wird nach dem letzten Stich. Der Stand oben füllt sich, während die Dreiergruppen aufgedeckt werden.
+- Ihre gewonnenen Karten und die Ihres Gegners machen zusammen 70 Augen. Der Aufnehmer braucht 36: **35⅔** genügt, **35⅓** nicht.
+- Der Stand oben läuft mit, während Sie Stiche machen.
 - [Mehr zur Abrechnung](#scoring-full)
 
 # Pagat ultimo
@@ -147,7 +147,7 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 
 ## Die Abrechnung
 
-- Ein **Point** ist, was bezahlt wird. Die Zählung bis 36 entscheidet nur, wer die Partie gewinnt.
+- Ein **Point** ist, was bezahlt wird. Die 36 Augen der Zählung entscheiden nur, wer das Spiel gewinnt.
 <!-- if values=2/3/4 -->
 - Der Aufnehmer, der gewinnt, erhält 3 Points; wer verliert, zahlt 4.
 - Mit angesagter Troule dazu zahlt ein Gewinn 3 + 1 = 4.
@@ -161,13 +161,13 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - Mit angesagter Troule dazu zahlt ein Gewinn 2 + 1 = 3.
 <!-- end -->
 <!-- if values=2/3/4 both_pass=play -->
-- Eine einfache Partie zahlt ihrem Sieger 2.
+- Ein einfaches Spiel zahlt seinem Sieger 2.
 <!-- end -->
 <!-- if values=1/2/3 both_pass=play -->
-- Eine einfache Partie zahlt ihrem Sieger 1.
+- Ein einfaches Spiel zahlt seinem Sieger 1.
 <!-- end -->
 <!-- if values=1/2/4 both_pass=play -->
-- Eine einfache Partie zahlt ihrem Sieger 1.
+- Ein einfaches Spiel zahlt seinem Sieger 1.
 <!-- end -->
 - Jeder Honneur, den Sie ansagen, zahlt zusätzlich 1 Point.
 <!-- if ultimo=1 -->
@@ -185,9 +185,9 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 ## Wenn keiner 36 erreicht
 
 <!-- if both_pass=play -->
-- In einer einfachen Partie ist das Spiel unentschieden, wenn keiner von Ihnen 35⅔ erreicht. Niemand gewinnt es.
+- In einem einfachen Spiel ist die Partie unentschieden, wenn keiner von Ihnen 35⅔ erreicht. Niemand gewinnt das Spiel.
 - Honneurs und der Pagat werden trotzdem bezahlt.
-- Die nächste gespielte Partie zählt doppelt, mit allem darin. Eine eingeworfene Partie verbraucht es nicht.
+- Die nächste gespielte Partie zählt doppelt, mit allem darin. Eine Partie, die mangels Tarock neu gegeben wird, verbraucht es nicht.
 - Der Tisch zeigt **×2**, wenn es gilt.
 <!-- end -->
 <!-- if both_pass=throw_in -->
@@ -220,62 +220,62 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - **1** je Karte: jede andere Karte, also die Tarocks II bis XX und die Zahlkarten der Farben.
 
 - Die Karten zeigen die Buchstaben K, D, C und B, die Tarocks in römischen Ziffern. Der Sküs ist das höchste Tarock, der Mond ist XXI, der Pagat ist I.
-- Alle 54 Karten mit diesen Werten zusammen ergeben 106. Gespielt wird nicht um 106; der nächste Abschnitt zeigt, warum.
+- Alle 54 Karten mit diesen Werten zusammen ergeben 106. Die Zählung in Dreiergruppen macht daraus 70.
 
 ## Zählen in Dreiergruppen
 
-- Die gewonnenen Karten jeder Seite werden in Dreiergruppen gezählt. Zählen Sie die drei Werte zusammen und ziehen Sie 2 ab.
+- Die gewonnenen Karten eines Spielers werden in Dreiergruppen gezählt. Zählen Sie die drei Werte zusammen und ziehen Sie 2 ab.
 - Ein König, ein Bube und eine Sieben sind 5 + 2 + 1 = 8, weniger 2 = 6. Drei niedrige Karten sind 1 + 1 + 1 = 3, weniger 2 = 1.
 - Bleiben eine oder zwei Karten übrig, verliert jede zwei Drittel. Ein letzter König und Bube sind 5 + 2 = 7, weniger 1⅓ = 5⅔.
-- 2 von einer Dreiergruppe abzuziehen heißt, von jeder Karte zwei Drittel abzuziehen. So zählt jede Karte ihren Wert weniger zwei Drittel: ein König 4⅓, eine Dame 3⅓, ein Cavall 2⅓, ein Bube 1⅓, jede andere Karte ⅓. Darum spricht die Seite von Dritteln.
-- Das ist die überlieferte Zählung in Dreiergruppen, 2 von jeder Gruppe. Der Tisch führt sie genau: nichts wird gerundet.
+- 2 von einer Dreiergruppe abzuziehen heißt, von jeder Karte zwei Drittel abzuziehen. So zählt jede Karte ihren Wert weniger zwei Drittel: ein König 4⅓, eine Dame 3⅓, ein Cavall 2⅓, ein Bube 1⅓, jede andere Karte ⅓. Darum ist hier von Dritteln die Rede.
+- Das ist die überlieferte Zählung in Dreiergruppen, genau geführt: nichts wird gerundet.
 - Das Spiel hat 54 Karten, also 18 Dreiergruppen. Die Werte ergeben 106, und die 18 Gruppen verlieren je 2: 106 − 36 = 70.
 
 ## 36 von 70
 
-- Die beiden Seiten ergeben immer zusammen 70, und 36 ist mehr als die Hälfte von 70.
-- Die Zählung behält Drittel, also kann eine Seite 35⅔ haben. Auf den nächsten ganzen Point gerundet ist das 36; 35⅓ wären 35. Die Regel: 35⅔ gewinnt, 35⅓ nicht.
-- Hat eine Seite 35⅔, hat die andere 34⅓.
-- In einer angesagten Partie braucht der Aufnehmer 35⅔ oder mehr. Mit weniger verliert er, auch mit 35⅓. Unentschieden gibt es nicht.
+- Die gewonnenen Karten beider Spieler ergeben immer zusammen 70 Augen, und 36 ist mehr als die Hälfte von 70.
+- Die Zählung behält Drittel, also kann ein Spieler 35⅔ zählen. Auf die nächste ganze Zahl gerundet ist das 36; 35⅓ wären 35. Die Regel: 35⅔ gewinnt, 35⅓ nicht.
+- Hat ein Spieler 35⅔, hat der andere 34⅓.
+- In einem angesagten Spiel braucht der Aufnehmer 35⅔ oder mehr. Mit weniger verliert er, auch mit 35⅓. Unentschieden gibt es nicht.
 <!-- if both_pass=play -->
-- In einer einfachen Partie gewinnt, wer 35⅔ oder mehr hat. Hat keiner so viel, ist sie unentschieden: 35 : 35 oder 35⅓ : 34⅔.
+- In einem einfachen Spiel gewinnt, wer 35⅔ oder mehr hat. Hat keiner so viel, ist es unentschieden: 35 : 35 oder 35⅓ : 34⅔.
 <!-- end -->
 
 ## Was der Stand oben zeigt
 
-- Solange Sie spielen, nennt die Zeile oben die Tour, die Partie und den Stich, etwa Stich 14 / 27. Gezählt wird noch nichts.
-- Die gewonnenen Karten liegen verdeckt vor Ihnen. Nach dem 27. Stich werden die Karten jeder Seite aufgedeckt, drei auf einmal.
-- Über jeder Gruppe steigt eine Zahl auf: der Wert der Gruppe, etwa +6 für König, Bube und Sieben.
-- Die Zahl neben der Stand-Linie ist der laufende Stand in genauen Dritteln. Die Linie füllt je einen Abschnitt für jeden ganzen Point, bis 36.
-- Erreicht eine Seite 35⅔, leuchtet das Ziel. Endet eine auf 35⅓, steht dabei „35⅓ ist nicht 36“.
-- Honneurs und Ultimo kommen nach der Zählung, in Points. Sie haben eine eigene Zeile und werden nicht zu den 36 gerechnet.
-- Der Pfeil neben dem Stand öffnet die Liste je Partie: die Zählung, dazu Honneurs und Ultimo. Eine Anzeige nennt dann das Ergebnis und die bezahlten Points.
+- Solange Sie spielen, nennt die Zeile oben die Tour, die Partie und den Stich, etwa Stich 14 / 27.
+- Der Stand läuft mit, während Sie Stiche machen. Nach jedem Stich zeigt jede Linie die bisher gewonnenen Karten, so gezählt, wie die Zählung sie zählen wird.
+- Die Zahl neben der Stand-Linie ist der laufende Stand in genauen Dritteln. Die Linie füllt je einen Abschnitt für jedes ganze Auge, bis 36.
+- Nach dem 27. Stich beginnt die Zählung von vorn. Die gewonnenen Karten jedes Spielers werden aufgedeckt, drei auf einmal, und über jeder Gruppe steigt eine Zahl auf: ihr Wert, etwa +6 für König, Bube und Sieben.
+- Sie endet bei denselben Zahlen wie der laufende Stand. Wer 35⅔ erreicht, lässt das Ziel leuchten; wer auf 35⅓ endet, bekommt „35⅓ ist nicht 36“.
+- Die Ansagen und das Ultimo kommen nach der Zählung, in Points. Sie haben eine eigene Zeile, „Ansagen und Ultimo“, und werden nicht zu den 36 gerechnet.
+- Der Pfeil neben dem Stand öffnet die Liste je Partie: die Zählung, dazu die Ansagen und das Ultimo. Eine Anzeige nennt dann das Ergebnis und die bezahlten Points.
 
-## Was die Partie wert ist
+## Was das Spiel wert ist
 
-- Die Zählung entscheidet, wer gewinnt. Die Partie wird dann zwischen Ihnen beiden in Points bezahlt. Ein Point ist eine Zahlungseinheit, kein Zählpunkt.
+- Die Zählung entscheidet, wer gewinnt. Das Spiel wird dann zwischen Ihnen beiden in Points bezahlt. Ein Point ist eine Zahlungseinheit, kein Auge der Zählung.
 <!-- if values=2/3/4 -->
-- Der Aufnehmer, der gewinnt, erhält 3 Points; wer verliert, zahlt 4. Wie hoch die Zählung ist, spielt keine Rolle: 36 und 45 zahlen gleich.
+- Der Aufnehmer, der gewinnt, erhält 3 Points; wer verliert, zahlt 4. Wie hoch die Zählung ist, spielt keine Rolle: 36 Augen und 45 Augen zahlen gleich.
 <!-- end -->
 <!-- if values=1/2/3 -->
-- Der Aufnehmer, der gewinnt, erhält 2 Points; wer verliert, zahlt 3. Wie hoch die Zählung ist, spielt keine Rolle: 36 und 45 zahlen gleich.
+- Der Aufnehmer, der gewinnt, erhält 2 Points; wer verliert, zahlt 3. Wie hoch die Zählung ist, spielt keine Rolle: 36 Augen und 45 Augen zahlen gleich.
 <!-- end -->
 <!-- if values=1/2/4 -->
-- Der Aufnehmer, der gewinnt, erhält 2 Points; wer verliert, zahlt 4. Wie hoch die Zählung ist, spielt keine Rolle: 36 und 45 zahlen gleich.
+- Der Aufnehmer, der gewinnt, erhält 2 Points; wer verliert, zahlt 4. Wie hoch die Zählung ist, spielt keine Rolle: 36 Augen und 45 Augen zahlen gleich.
 <!-- end -->
 <!-- if values=2/3/4 both_pass=play -->
-- Eine einfache Partie zahlt ihrem Sieger 2. Ein Unentschieden zahlt für die Partie nichts.
+- Ein einfaches Spiel zahlt seinem Sieger 2. Ein Unentschieden zahlt für das Spiel nichts.
 <!-- end -->
 <!-- if values=1/2/3 both_pass=play -->
-- Eine einfache Partie zahlt ihrem Sieger 1. Ein Unentschieden zahlt für die Partie nichts.
+- Ein einfaches Spiel zahlt seinem Sieger 1. Ein Unentschieden zahlt für das Spiel nichts.
 <!-- end -->
 <!-- if values=1/2/4 both_pass=play -->
-- Eine einfache Partie zahlt ihrem Sieger 1. Ein Unentschieden zahlt für die Partie nichts.
+- Ein einfaches Spiel zahlt seinem Sieger 1. Ein Unentschieden zahlt für das Spiel nichts.
 <!-- end -->
 <!-- if both_pass=throw_in -->
 - Sagen beide weiter, wird eingeworfen: nichts wird gezählt und nichts bezahlt.
 <!-- end -->
-- Gewinnt ein Spieler alle 27 Stiche, ist das ein Valat. Er zahlt 12 Points anstelle des Wertes der Partie.
+- Gewinnt ein Spieler alle 27 Stiche, ist das ein Valat. Der andere Spieler zahlt 12 Points anstelle des Wertes des Spiels, und Ansagen und Ultimo werden zusätzlich bezahlt.
 
 ## Honneurs
 
@@ -287,7 +287,7 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 ## Der Pagat ultimo
 
 - Ultimo ist der letzte, der 27. Stich. Spielen Sie darin den Pagat (I) aus und gewinnen: Ihr Gegner zahlt Ihnen das Ultimo. Verlieren Sie: Sie zahlen.
-- Er wird nie angesagt. Er wird bezahlt, wenn es so kommt, in jeder Partie, zusätzlich zur Partie und zu den Honneurs.
+- Er wird nie angesagt. Er wird bezahlt, wenn es so kommt, in jeder Partie, zusätzlich zum Spiel und zu den Honneurs.
 <!-- if ultimo=1 -->
 - Ein Pagat ultimo ist, gewonnen wie verloren, 1 Point wert.
 <!-- end -->
@@ -298,9 +298,9 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 ## Unentschieden und doppelt
 
 <!-- if both_pass=play -->
-- Eine einfache Partie, in der keine Seite 35⅔ erreicht, ist unentschieden. Niemand gewinnt die Partie. Honneurs und Ultimo werden trotzdem bezahlt.
-- Die nächste gespielte Partie zählt doppelt: Partie, Honneurs und Ultimo je zweimal. Der Tisch zeigt **×2**.
-- Eine eingeworfene Partie verbraucht es nicht. Mehr als doppelt wird es nie, und wenn der Abend endet, verfällt es.
+- Ein einfaches Spiel, in dem kein Spieler 35⅔ erreicht, ist unentschieden. Niemand gewinnt das Spiel. Honneurs und Ultimo werden trotzdem bezahlt.
+- Die nächste gespielte Partie zählt doppelt: Spiel, Honneurs und Ultimo je zweimal. Der Tisch zeigt **×2**.
+- Eine Partie, die mangels Tarock neu gegeben wird, verbraucht es nicht. Mehr als doppelt wird es nie, und wenn der Abend endet, verfällt es.
 <!-- end -->
 <!-- if both_pass=throw_in -->
 - Beim Einwerfen wird nur eine angesagte Partie gespielt, und die hat immer einen Sieger. Unentschieden gibt es nicht, also auch kein Doppelt.
@@ -308,10 +308,10 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 
 ## Eine Partie von Anfang bis Ende
 
-- Sie nehmen auf und gewinnen 14 der 27 Stiche. Ihre Stiche sind 28 Karten, die Ihres Gegners 26.
-- Ihre 28 Karten haben zusammen die Werte 55. Zwei Drittel von jeder Karte sind 28 × ⅔ = 18⅔, also zählen Sie 55 − 18⅔ = 36⅓.
-- Die 26 Karten Ihres Gegners gelten 106 − 55 = 51. Weniger 17⅓ sind das 33⅔. Beide zusammen machen 70.
-- 36⅓ sind 36 oder mehr, also gewinnen Sie die Partie.
+- Sie nehmen auf und gewinnen 14 der 27 Stiche. Sie haben 28 Karten gewonnen, Ihr Gegner 26.
+- Ihre 28 Karten sind zusammen 55 wert. Zwei Drittel je Karte sind bei 28 Karten 28 × ⅔ = 18⅔, also zählen Sie 55 − 18⅔ = 36⅓.
+- Die 26 Karten Ihres Gegners sind 106 − 55 = 51 wert. Weniger 17⅓ sind das 33⅔. Beide zusammen machen 70.
+- 36⅓ sind 36 oder mehr, also gewinnen Sie das Spiel.
 - Sie hielten den Sküs, den Mond und den Pagat in der Hand und sagten die Troule an, also wird sie bezahlt.
 - Im letzten Stich spielen Sie den Pagat aus, und Ihr Gegner legt ein höheres Tarock. Sie verlieren das Ultimo.
 <!-- if values=2/3/4 -->

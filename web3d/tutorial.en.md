@@ -41,7 +41,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 - **I take it up** (*Ich nehme auf*) means you will play for the win. You are the declarer.
 - **Pass** (*Weiter*) means you let it go.
 - Cards are worth: kings (K), Sküs, Mond and Pagat 5; queens (Q) 4; cavalls (C) 3; jacks (J) 2; every other card 1.
-- Counted in threes, the 54 cards make 70. A declarer needs 36 of the 70.
+- Counted in threes, the 54 cards make 70 points. A declarer needs 36 of them.
 - [Card values and the count](#thirds)
 <!-- if values=2/3/4 -->
 - The declarer who wins gets 3 Points; one who loses pays 4.
@@ -113,7 +113,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 - Press **Announce Trull** or **Announce four kings**, or answer the question when you pick a card.
 - Announced, it is paid, even if the cards are lost later. Silent, it is not paid.
 
-# Counting in thirds
+# Card values and the count
 
 ## What each card is worth
 
@@ -125,11 +125,11 @@ when both pass have one block for each value of `values`, `ultimo` and
 
 ## How to count
 
-- Each card counts its value less two-thirds. In a group of three cards, count the sum less 2.
+- Each card counts its value less two-thirds. In a group of three cards, count the sum less 2: the same rule, for three at once.
 - Example: a king, a jack and a seven are 5 + 2 + 1 = 8, less 2 = 6.
 - One or two cards left over lose two-thirds each.
-- Together the two takes count 70. A declarer needs 36: **35⅔** is enough, **35⅓** is not.
-- The count is made after the last trick. The score at the top fills as the groups of three are turned up.
+- Your take is the cards you have won. The two takes make 70 points. A declarer needs 36: **35⅔** is enough, **35⅓** is not.
+- The score at the top runs as you take tricks.
 - [More on scoring](#scoring-full)
 
 # Pagat ultimo
@@ -146,7 +146,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 
 ## The reckoning
 
-- A **Point** is what is paid. The count of 36 only decides who wins the game.
+- A **Point** is what is paid. The count of 36 points only decides who wins the game.
 <!-- if values=2/3/4 -->
 - The declarer who wins gets 3 Points; one who loses pays 4.
 - With the Trull announced as well, a win pays 3 + 1 = 4.
@@ -186,7 +186,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 <!-- if both_pass=play -->
 - In a plain game, if neither of you reaches 35⅔, the game is undecided. Nobody wins it.
 - Honours and the Pagat are still paid.
-- The next deal played counts double, with everything in it. A deal thrown in does not use it up.
+- The next deal played counts double, with everything in it. A deal dealt again for want of a tarock does not use it up.
 - The table shows **×2** when it applies.
 <!-- end -->
 <!-- if both_pass=throw_in -->
@@ -219,21 +219,21 @@ when both pass have one block for each value of `values`, `ultimo` and
 - **1** each: every other card, that is the tarocks II to XX and the numbered suit cards.
 
 - The faces show the letters K, Q, C and J, and the tarocks in Roman numerals. The Sküs is the highest tarock, the Mond is XXI, the Pagat is I.
-- Add all 54 cards at these values and you get 106. The game is not played to 106; the next section shows why.
+- Add all 54 cards at these values and you get 106. The count in threes brings that down to 70.
 
 ## Counting in threes
 
-- The cards of each take are counted in groups of three. Add the three values and take away 2.
+- A take, the cards a player has won, is counted in groups of three. Add the three values and take away 2.
 - A king, a jack and a seven are 5 + 2 + 1 = 8, less 2 = 6. Three low cards are 1 + 1 + 1 = 3, less 2 = 1.
 - One or two cards left over lose two-thirds each. A last king and jack are 5 + 2 = 7, less 1⅓ = 5⅔.
 - Taking 2 off a group of three is taking two-thirds off each card. So every card counts its value less two-thirds: a king 4⅓, a queen 3⅓, a cavall 2⅓, a jack 1⅓, any other card ⅓. That is why the page speaks of thirds.
-- This is the traditional count in threes, 2 off each group. The table keeps it exact: nothing is rounded.
+- This is the traditional count in threes, kept exact: nothing is rounded.
 - The pack is 54 cards, 18 groups of three. The values add up to 106, and the 18 groups lose 2 each: 106 − 36 = 70.
 
 ## 36 of 70
 
-- The two takes always add up to 70, and 36 is more than half of 70.
-- The count keeps thirds, so a take can be 35⅔. Rounded to the nearest whole Point that is 36; 35⅓ would be 35. The rule: 35⅔ wins, 35⅓ does not.
+- The two takes always add up to 70 points, and 36 is more than half of 70.
+- The count keeps thirds, so a take can be 35⅔. Rounded to the nearest whole number that is 36; 35⅓ would be 35. The rule: 35⅔ wins, 35⅓ does not.
 - When one take has 35⅔, the other has 34⅓.
 - In a declared game the declarer needs 35⅔ or more. With less he loses, even with 35⅓. There is no draw.
 <!-- if both_pass=play -->
@@ -242,25 +242,25 @@ when both pass have one block for each value of `values`, `ultimo` and
 
 ## What the score at the top shows
 
-- While you play, the line at the top gives the Tour, the deal and the trick, such as Trick 14 / 27. Nothing is counted yet.
-- The cards you win lie face down in your pile. After the 27th trick each take is turned up, three cards at a time.
-- Over each group a figure rises: the group's count, such as +6 for the king, jack and seven.
-- The number beside the score line is the running tally, in exact thirds. The line fills one segment for each whole Point, up to 36.
-- A take that reaches 35⅔ lights the finish. A take that ends on 35⅓ is marked "35⅓ is not 36".
-- Honours and ultimo come after the count, in Points. They have their own row and are not added to the 36.
+- While you play, the line at the top gives the Tour, the deal and the trick, such as Trick 14 / 27.
+- The score runs as you take tricks. After each trick every line holds the cards won so far, counted as the count will count them.
+- The number beside the score line is the tally in exact thirds. The line fills one segment for each whole point, up to 36.
+- After the 27th trick the count begins again from nothing. Each take is turned up, three cards at a time, and over each group a figure rises: the group's count, such as +6 for the king, jack and seven.
+- It ends on the same numbers the tally had. A take that reaches 35⅔ lights the finish; one that ends on 35⅓ is marked "35⅓ is not 36".
+- Honours and ultimo come after the count, in Points. They have their own row, "Honours and ultimo", and are not added to the 36.
 - The arrow beside the score opens the list by deal: the count, and the honours and ultimo. A banner then names the result and the Points paid.
 
 ## What the game is worth
 
 - The count decides who wins. The game is then paid between the two of you, in Points. A Point is a unit of payment, not a point of the count.
 <!-- if values=2/3/4 -->
-- The declarer who wins gets 3 Points; one who loses pays 4. The size of the count does not matter: 36 and 45 pay the same.
+- The declarer who wins gets 3 Points; one who loses pays 4. The size of the count does not matter: 36 points and 45 points pay the same.
 <!-- end -->
 <!-- if values=1/2/3 -->
-- The declarer who wins gets 2 Points; one who loses pays 3. The size of the count does not matter: 36 and 45 pay the same.
+- The declarer who wins gets 2 Points; one who loses pays 3. The size of the count does not matter: 36 points and 45 points pay the same.
 <!-- end -->
 <!-- if values=1/2/4 -->
-- The declarer who wins gets 2 Points; one who loses pays 4. The size of the count does not matter: 36 and 45 pay the same.
+- The declarer who wins gets 2 Points; one who loses pays 4. The size of the count does not matter: 36 points and 45 points pay the same.
 <!-- end -->
 <!-- if values=2/3/4 both_pass=play -->
 - A plain game pays its winner 2. A draw pays nothing for the game.
@@ -274,7 +274,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 <!-- if both_pass=throw_in -->
 - If both pass, the deal is thrown in: nothing is counted and nothing is paid.
 <!-- end -->
-- If one player wins all 27 tricks, that is a Valat. It pays 12 Points in place of the game's value.
+- If one player wins all 27 tricks, that is a Valat. The other player pays 12 Points in place of the game's value, and honours and ultimo are paid as well.
 
 ## Honours
 
@@ -299,7 +299,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 <!-- if both_pass=play -->
 - A plain game in which neither take reaches 35⅔ is a draw. Nobody wins the game. Honours and ultimo are still paid.
 - The next deal played counts double: game, honours and ultimo all twice. The table shows **×2**.
-- A deal thrown in does not use the double up. It is never more than twice, and one still waiting when the evening ends is dropped.
+- A deal dealt again for want of a tarock does not use it up. It is never more than twice, and one still waiting when the evening ends is dropped.
 <!-- end -->
 <!-- if both_pass=throw_in -->
 - With a throw-in only a declared game is played, and it always has a winner. There is no draw, so there is no double.
@@ -308,7 +308,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 ## One deal from start to finish
 
 - You take it up and win 14 of the 27 tricks. Your take is 28 cards, your opponent's 26.
-- Your 28 cards have the values 55 in all. Two-thirds off each card is 28 × ⅔ = 18⅔, so you count 55 − 18⅔ = 36⅓.
+- Your 28 cards are worth 55 in all. Two-thirds off each card is 28 × ⅔ = 18⅔, so you count 55 − 18⅔ = 36⅓.
 - Your opponent's 26 cards are worth 106 − 55 = 51. Less 17⅓, that is 33⅔. The two takes make 70.
 - 36⅓ is 36 or more, so you win the game.
 - You held the Sküs, the Mond and the Pagat in your hand and announced the Trull, so it is paid.

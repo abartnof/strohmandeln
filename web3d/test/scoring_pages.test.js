@@ -6,6 +6,7 @@
 // the_pages_worked_evening_settles_3_points_as_6_kreuzer).
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { PAGE_KEYS } from "../src/tutor.js";
 import { valueOf, thirdsOf } from "../src/cardinfo.js";
 import { COURT_LABELS } from "../src/tarockfaces.js";
@@ -21,6 +22,17 @@ const PACK = [
   "SK",
 ];
 const LANGS = ["en", "de"];
+// Every card's value as the Rust engine has it: the core test rules_1_7_every_card_value_is_the_tables
+// holds this file to Card::value() for all 54 codes, so the pages are held to the engine through it.
+const ENGINE_VALUES = JSON.parse(readFileSync(new URL("./fixtures/card-values.json", import.meta.url), "utf8"));
+
+test("the table's card values (cardinfo.js) are the engine's for all 54 cards", () => {
+  assert.deepEqual(Object.keys(ENGINE_VALUES).sort(), [...PACK].sort());
+  for (const c of PACK) {
+    assert.equal(valueOf(c), ENGINE_VALUES[c], c);
+    assert.equal(thirdsOf(c), 3 * ENGINE_VALUES[c] - 2, c);
+  }
+});
 
 test("the pack the tests count is 54 cards, worth 106 before the count in threes and 70 after it", () => {
   assert.equal(PACK.length, 54);
@@ -48,7 +60,9 @@ for (const lang of LANGS) {
       const line = (v) => rows.find((r) => r.value === v).line;
       const labels = COURT_LABELS[lang];
       const named = { 5: ["Kh", "Kd", "Kc", "Ks", "SK", "T21", "T1"], 4: ["Qh", "Qd", "Qc", "Qs"], 3: ["Ch", "Cd", "Cc", "Cs"], 2: ["Jh", "Jd", "Jc", "Js"] };
-      for (const [v, codes] of Object.entries(named)) for (const c of codes) assert.equal(valueOf(c), Number(v), c);
+      for (const [v, codes] of Object.entries(named)) for (const c of codes) assert.equal(ENGINE_VALUES[c], Number(v), c);
+      // no other card is worth more than 1: the five rows are all the table there is
+      assert.deepEqual(PACK.filter((c) => ENGINE_VALUES[c] > 1).sort(), Object.values(named).flat().sort());
       // the letters the faces show, on the row of the value their cards have
       for (const [v, label] of [[5, labels.K], [4, labels.Q], [3, labels.C], [2, labels.J]]) assert.ok(mentions(line(v), label), `${v}: ${label}`);
       for (const c of ["SK", "T21", "T1"]) assert.ok(line(5).includes(NAMES[c]), `${c}`);
@@ -56,7 +70,7 @@ for (const lang of LANGS) {
       // every other card is worth 1, and the row says tarocks II to XX
       const rest = PACK.filter((c) => !Object.values(named).flat().includes(c));
       assert.equal(rest.length, 54 - 7 - 12);
-      assert.ok(rest.every((c) => valueOf(c) === 1));
+      assert.ok(rest.every((c) => ENGINE_VALUES[c] === 1));
       assert.ok(mentions(line(1), "II") && mentions(line(1), "XX"));
       for (const n of [2, 20]) assert.equal(valueOf(`T${n}`), 1);
     });
@@ -85,7 +99,7 @@ test("the thirds and scoring pop-ups link to the long page, and the long page to
   }
 });
 
-test("the count: the worked groups, each card's own count, and no tally that runs while the tricks are played", () => {
+test("the count: the worked groups, each card's own count, and the tally that runs while the tricks are played", () => {
   for (const lang of LANGS) {
     // K, J and 7: 5 + 2 + 1 = 8, less 2 = 6 -- three cards of the table's counting code
     assert.equal(["Kh", "Js", "7c"].reduce((n, c) => n + thirdsOf(c), 0), 18);
@@ -100,7 +114,7 @@ test("the count: the worked groups, each card's own count, and no tally that run
       assert.equal(thirds(thirdsOf(c)), shown);
       assert.ok(text(lang, "scoring-full").includes(shown), `${lang} ${shown}`);
     }
-    assert.doesNotMatch(text(lang, "thirds"), /as you take tricks|während Sie Stiche machen/);
+    assert.match(text(lang, "thirds"), /runs as you take tricks|läuft mit, während Sie Stiche machen/);
   }
 });
 
@@ -148,7 +162,7 @@ test("the worked deal: 28 cards worth 55 count 36⅓, the other 26 worth 51 coun
 for (const lang of LANGS) {
   test(`${lang}: the game's value on the pages is what the engine pays, for each values setting (RULES 9.1, 9.2)`, async () => {
     const WINS = { en: /wins gets (\d+) Points?; one who loses pays (\d+)/, de: /gewinnt, erhält (\d+) Points?; wer verliert, zahlt (\d+)/ }[lang];
-    const PLAIN = { en: /pays its winner (\d+)/, de: /ihrem Sieger (\d+)/ }[lang];
+    const PLAIN = { en: /pays its winner (\d+)/, de: /seinem Sieger (\d+)/ }[lang];
     for (const [values, [wins, loses, simple]] of Object.entries(VALUES)) {
       // what the engine paid for the game, in sittings played by a declarer and by two passers
       const paid = {};
@@ -196,8 +210,13 @@ test("the worked evening: 12 and 9 is a difference of 3 Points, 6 kreuzer at 2 a
   assert.equal((12 - 9) * 2, 6);
   for (const lang of LANGS) {
     const t = text(lang, "scoring-full");
-    const kr = lang === "en" ? "kreuzer" : "Kreuzer";
-    for (const x of ["12", "9", "3 Points", `6 ${kr}`, `2 ${kr}`]) assert.ok(t.includes(x), `${lang} ${x}`);
+    // the sentences, with the numbers the core test settles: accounts [12, 9], balance 3, 6 kreuzer, the smaller account pays
+    const example = {
+      en: /your account reads 12 and your opponent's 9\. The difference is 3 Points, so 6 kreuzer, and your opponent pays you\./,
+      de: /Ihr Conto auf 12, das Ihres Gegners auf 9\. Der Unterschied ist 3 Points, also 6 Kreuzer, und Ihr Gegner zahlt Ihnen\./,
+    }[lang];
+    assert.match(t, example);
+    assert.match(t, lang === "en" ? /settled at 2 kreuzer a Point/ : /zu 2 Kreuzer der Point beglichen/);
   }
 });
 
@@ -206,11 +225,29 @@ test("a draw and the double (RULES 14) are said under play and absent under thro
   assert.doesNotMatch(text("en", "scoring-full", { both_pass: "throw_in" }), /counts double/);
   assert.match(text("de", "scoring-full", { both_pass: "play" }), /zählt doppelt/);
   assert.doesNotMatch(text("de", "scoring-full", { both_pass: "throw_in" }), /zählt doppelt/);
-  for (const lang of LANGS) assert.match(text(lang, "scoring-full"), /12 Points/);
+  // 12 Points from the other player, in place of the game's value (core test rules_10_1_and_10_2_valat_is_12_and_replaces_the_game_value_only)
+  assert.match(text("en", "scoring-full"), /Valat\. The other player pays 12 Points in place of the game's value, and honours and ultimo are paid as well\./);
+  assert.match(text("de", "scoring-full"), /Valat\. Der andere Spieler zahlt 12 Points anstelle des Wertes des Spiels, und Ansagen und Ultimo werden zusätzlich bezahlt\./);
 });
 
 test("the long page is titled by its string and listed in the spec's table", () => {
   assert.equal(STRINGS["tutor.page.scoring-full"].en, "Scoring in full");
   assert.equal(STRINGS["tutor.page.scoring-full"].de, "Die Abrechnung im Ganzen");
   assert.ok(KEYS.includes("scoring-full"));
+});
+
+test("the long page names the HUD's row as the HUD does, and the count's unit is never a Point (payment only)", () => {
+  for (const lang of LANGS) {
+    const label = STRINGS["hud.bonus"][lang];
+    const t = text(lang, "scoring-full");
+    assert.ok(t.includes(`"${label}"`) || t.includes(`„${label}“`), `${lang}: the row label ${label}`);
+  }
+  for (const key of ["bidding", "thirds", "scoring", "scoring-full"])
+    for (const lang of LANGS) assert.doesNotMatch(text(lang, key), /\b(36|35⅔|70|106) Points\b/, `${lang} ${key}`);
+});
+
+test("the long page's dialog keeps its Close button in view (a sticky action bar), and the link buttons have a hit area", () => {
+  const css = readFileSync(new URL("../src/tutor.css", import.meta.url), "utf8");
+  assert.match(css, /\.tutor-page\[data-page="scoring-full"\]\) \.actions \{[^}]*position: sticky/);
+  assert.match(css, /\.tutor-link \{[^}]*padding: [1-9]\d*px/);
 });

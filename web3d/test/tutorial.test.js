@@ -113,9 +113,9 @@ test("the bidding page tells what happens when both pass, by the setting (RULES 
   assert.doesNotMatch(page("en", "play"), /thrown in/);
   assert.match(page("en", "throw_in"), /thrown in: nothing is scored/);
   assert.doesNotMatch(page("en", "throw_in"), /plain game/);
-  assert.match(page("de", "play"), /einfache Partie/);
+  assert.match(page("de", "play"), /einfaches Spiel/);
   assert.match(page("de", "throw_in"), /eingeworfen: nichts wird gezählt/);
-  assert.doesNotMatch(page("de", "throw_in"), /einfache Partie/);
+  assert.doesNotMatch(page("de", "throw_in"), /einfaches Spiel/);
 });
 
 test("every combination of the settings has the same shape in both languages", () => {
