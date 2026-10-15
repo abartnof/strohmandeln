@@ -64,6 +64,28 @@ test("each eye keeps the whole table in view: its reach is at least what the lay
   assert.ok(EYE_PORTRAIT.reach.across >= portrait.across - 0.02, `portrait across ${EYE_PORTRAIT.reach.across} vs ${portrait.across.toFixed(3)}`);
 });
 
+test("the portrait hand's reach across, as framing.js assumes it, covers every hand length and fill", () => {
+  const pos = new Vector3(...EYE_PORTRAIT.position);
+  const f = new Vector3(...EYE_PORTRAIT.target).sub(pos).normalize();
+  const r = new Vector3().crossVectors(f, new Vector3(0, 1, 0)).normalize();
+  const across = (fill) => {
+    let out = 0;
+    for (let n = 1; n <= 18; n++) {
+      const m = emptyModel(1);
+      m.hand = Array.from({ length: n }, (_, i) => ({ code: `c${i}` }));
+      for (const s of layout(m, { zones: ZONES_PORTRAIT, fill }).filter((x) => x.zone === "your-hand"))
+        for (const c of cardCorners(s.pose)) {
+          const v = c.clone().sub(pos);
+          out = Math.max(out, Math.abs(v.dot(r)) / v.dot(f));
+        }
+    }
+    return out;
+  };
+  const { still, perFill } = EYE_PORTRAIT.hand;
+  assert.ok(across(1) <= still, `${across(1).toFixed(3)} at fill 1`);
+  for (const fill of [1.5, 2, 2.4]) assert.ok(across(fill) <= still + (fill - 1) * perFill, `${across(fill).toFixed(3)} at fill ${fill}`);
+});
+
 const screen = (cam, w, h) => (p) => {
   const v = p.clone().project(cam);
   return { x: ((v.x + 1) / 2) * w, y: ((1 - v.y) / 2) * h };
