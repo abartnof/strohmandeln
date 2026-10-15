@@ -864,7 +864,11 @@ def check_reduced_motion(browser, failures):
 def check_touch_targets(browser, failures):
     page = open_page(browser, "seed=7&speed=instant&human=1&touch=1", {"width": 768, "height": 1024})
     small = []
-    for b in page.locator("button:visible").all():
+    # The mirror's lists (3.10.1) are a visually hidden 1 px box for the keyboard and a screen reader;
+    # a finger taps the cards on the canvas, so they are exempt (TABLE3D 3.10.4) -- but only while hidden.
+    box = page.locator(".mirror").bounding_box()
+    fail_if(not box or box["width"] > 2 or box["height"] > 2, failures, f"touch_targets: the mirror is not visually hidden ({box})")
+    for b in page.locator("button:visible:not(.mirror button)").all():
         box = b.bounding_box()
         if box and (box["width"] < 44 or box["height"] < 44):
             small.append((b.inner_text()[:20], round(box["width"]), round(box["height"])))

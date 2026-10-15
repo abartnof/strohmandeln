@@ -512,7 +512,10 @@ code by language (en: "king of hearts"; de: "Herz-König"; Sküs, "Sküs").
 stays on the refused card.
 
 3.10.4 Targets are at least 44 × 44 CSS px on touch; text contrasts at 4.5:1 or
-better; no information is carried by color alone (lit cards also lift).
+better; no information is carried by color alone (lit cards also lift). The
+accessible card lists (3.10.1) are a visually hidden 1 px box, reached by key or
+by a screen reader's own gestures, never by a finger on them; they are exempt from
+the 44 px rule as long as they stay hidden. A finger taps the cards on the canvas.
 
 ## 4. The slate
 
@@ -1123,7 +1126,8 @@ motion are saved to `web3d/test/out/`.
   to right.
 - `reduced_motion`: with the setting, no card in flight at any frame; the same
   sentences and results.
-- `touch_targets`: every control on touch is at least 44 px.
+- `touch_targets`: every visible control on touch is at least 44 px; the visually
+  hidden accessible card lists (3.10.4) are exempt, and the check asserts they are hidden.
 
 ### 10.4 Slate, talk, tutor
 
