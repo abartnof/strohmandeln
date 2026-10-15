@@ -167,3 +167,32 @@ chances need more deals).
 
 **Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m1`
 (defaults: `--seed 10000000 --plays 600 --bids 200 --streams 8`).
+
+## M2 Thirds per Point
+
+### Plan (2026-10-15, before the first deal)
+
+**Question.** How many thirds of the count margin is one Point of the payment?
+`tutor::THIRDS_PER_POINT` prices a bid's expected gap (Points) and a forfeited
+honour (one Point) in the unit of every other cost (thirds); it is the solver's
+ultimo weight (`sim::ULTIMO_THIRDS` = 12), which has no basis in the payment.
+
+**Data.** Rung 4 against rung 4 (default budget, default settings), sittings of 3
+Touren, 300 sittings from seed 20,000,000 (up to 1,800 deals). Every deal that
+was played (not thrown in). Fixed count.
+
+**Observation.** For each deal, seat A's count margin `x` = thirds taken by A
+less thirds taken by B (the ultimo excluded), and `y` = A's credited Points
+less B's, divided by the deal's multiplier (the cost is not scaled by the
+doubling, `docs/TUTOR.md` 4).
+
+**Estimate.** Ordinary least squares of `y` on `x` with an intercept; the
+slope `s` is the Points per third on average over the margins rung 4 meets;
+cluster-robust standard error by sitting. Reported also: the mean `y` by
+decile of `x` (the payment is a step at the threshold, so the slope is an
+average), the correlation, and the reverse regression's thirds per Point.
+
+**Decision rule (fixed now).** `THIRDS_PER_POINT` = `1 / s`, rounded to the
+nearest whole third (delta-method 95% interval reported).
+
+**Stopping.** A descriptive count, no looks.
