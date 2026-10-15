@@ -311,6 +311,7 @@ fn focus_bullets(skill: usize, played: &Played) -> Vec<Bullet> {
     let ctx = Context {
         direction: found.and_then(|(m, _)| m.direction),
         tarocks: found.map_or(0, |(m, _)| m.tarocks),
+        led_thirds: found.and_then(|(m, _)| m.led).map_or(0, |c| c.thirds()),
     };
     let said =
         lessons::taught(skill_, &ctx, &played.settings, played.told).map_or(lesson.fact, |r| r.key);

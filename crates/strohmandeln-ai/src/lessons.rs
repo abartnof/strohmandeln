@@ -35,6 +35,9 @@ pub struct Context {
     pub direction: Option<Direction>,
     /// The tarocks the player held at that miss (`pagat`, `bid`).
     pub tarocks: u32,
+    /// The thirds of the card led at that miss, when the player followed
+    /// (`worth`: the rich-trick rule was measured for 7 or more).
+    pub led_thirds: u32,
 }
 
 /// One rule of a skill.
@@ -79,8 +82,13 @@ fn toward(d: Direction) -> impl Fn(&Context) -> bool {
     move |c| c.direction == Some(d)
 }
 // `fn` pointers, not closures, so that the table can be a constant.
+/// The thirds of a led card from which M5 measured the rich-trick rule
+/// (`rules.rs`, `worth.rich.1`: a Cavall or better).
+pub const RICH_LED_THIRDS: u32 = 7;
+/// `worth.rich`: a trick let go that was led with a rich card, the trigger
+/// that passed M5. A timid miss on a poorer lead is outside it.
 fn timid(c: &Context) -> bool {
-    toward(Direction::Timid)(c)
+    toward(Direction::Timid)(c) && c.led_thirds >= RICH_LED_THIRDS
 }
 fn greedy(c: &Context) -> bool {
     toward(Direction::Greedy)(c)
@@ -283,7 +291,18 @@ mod tests {
     use crate::tutor::Skill;
 
     fn ctx(direction: Option<Direction>, tarocks: u32) -> Context {
-        Context { direction, tarocks }
+        Context {
+            direction,
+            tarocks,
+            led_thirds: 0,
+        }
+    }
+    fn led(direction: Option<Direction>, led_thirds: u32) -> Context {
+        Context {
+            direction,
+            tarocks: 0,
+            led_thirds,
+        }
     }
     /// What would be told were the provisional rules admitted.
     const ADMIT: &[Gate] = &[Gate::Provisional, Gate::Passed];
@@ -355,7 +374,10 @@ mod tests {
                 Some(Direction::Passed),
             ] {
                 for tarocks in [3, 9, 14] {
-                    let c = ctx(direction, tarocks);
+                    let c = Context {
+                        led_thirds: 13,
+                        ..ctx(direction, tarocks)
+                    };
                     let got = taught(l.skill, &c, &s, TOLD).map(|r| r.key);
                     let want = match (l.skill, direction) {
                         (Skill::Worth, Some(Direction::Timid)) => Some("tutor.rule.worth.rich"),
@@ -427,8 +449,13 @@ mod tests {
 
     #[test]
     fn worth_is_told_by_the_direction_of_the_miss_and_not_without_one() {
+        // the rich-trick rule passed M5 for a card led worth 7 thirds or more
         assert_eq!(
-            told(Skill::Worth, &ctx(Some(Direction::Timid), 0)),
+            told(Skill::Worth, &led(Some(Direction::Timid), 7)),
+            Some("tutor.rule.worth.rich")
+        );
+        assert_eq!(
+            told(Skill::Worth, &led(Some(Direction::Timid), 13)),
             Some("tutor.rule.worth.rich")
         );
         assert_eq!(
@@ -436,6 +463,26 @@ mod tests {
             Some("tutor.rule.worth.poor")
         );
         assert_eq!(told(Skill::Worth, &ctx(None, 0)), None);
+    }
+
+    #[test]
+    fn the_rich_trick_rule_is_told_only_where_it_was_measured() {
+        // a timid miss on a trick led with less than 7 thirds is outside the
+        // trigger M5 measured (docs/MEASUREMENTS.md): the fact is told
+        for thirds in [0, 1, 4, 6] {
+            let c = led(Some(Direction::Timid), thirds);
+            assert_eq!(told(Skill::Worth, &c), None, "{thirds}");
+            assert!(taught(Skill::Worth, &c, &Settings::default(), TOLD).is_none());
+        }
+        let rich = led(Some(Direction::Timid), 7);
+        let said = taught(Skill::Worth, &rich, &Settings::default(), TOLD);
+        assert_eq!(said.map(|r| r.key), Some("tutor.rule.worth.rich"));
+        // a rich lead alone, with no timid miss, is no trigger
+        assert_eq!(told(Skill::Worth, &led(None, 13)), None);
+        assert_eq!(
+            told(Skill::Worth, &led(Some(Direction::Greedy), 13)),
+            Some("tutor.rule.worth.poor")
+        );
     }
 
     #[test]
