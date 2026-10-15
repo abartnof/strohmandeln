@@ -34,6 +34,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 - 15 Oct 2026: the phone layout is on hold until the maintainer has looked at the game on a phone (the table may hold too many cards for one). New features are built for desktop and only must not break on a narrow screen.
 - 15 Oct 2026: the tutor (docs/TUTOR.md 15): a rule is shipped for a skill only if it passes the 0.80 precision gate (M5), else its fact; the brief keeps one example from the deal; the count is the dialog's header; the learner's game-independent parts go to `kit/learner` now, with an equivalence test against Cassino's; a hint "is not counted as evidence" (TABLE3D 6.3.2).
 - 15 Oct 2026: the tutor's measurements (docs/TUTOR.md 11, M1-M8) run when the code is ready, without a further check with the maintainer: each planned before its first batch, stopped early on the boundary, results recorded with the commands that reproduce them.
+- 15 Oct 2026: terms: a **Point** is only what is paid on the slate; the count's units are "points" in English and "Augen" in German (as `hint.unit.*`). The raw card values total 106; counted in threes they make 70.
 
 ## Work packages
 
