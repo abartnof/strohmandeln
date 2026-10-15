@@ -25,11 +25,11 @@ use crate::rung4::{self, Budget};
 use crate::seed::view_seed;
 use crate::sim::ULTIMO_THIRDS;
 use kit_learner::{Chance, Ladder, SkillSpec, Summary};
-use strohmandeln_core::cards::{Card, Suit};
-use strohmandeln_core::deal::TrickRecord;
+use strohmandeln_core::cards::{Card, Honour, Suit};
+use strohmandeln_core::deal::{Deal, DealEnd, HonourState, TrickRecord};
 use strohmandeln_core::dealrec::{DealRecord, ReplayError};
 use strohmandeln_core::rng::Rng;
-use strohmandeln_core::types::{Action, Seat};
+use strohmandeln_core::types::{Action, Seat, UltimoResult};
 use strohmandeln_core::view::{bare_view, View};
 
 /// The version of what [`evidence`] computes. Bump it whenever a classifier,
@@ -738,6 +738,45 @@ pub struct Miss {
     pub consequence: Option<Consequence>,
 }
 
+/// What a finished deal shows of the human besides the skills, for the
+/// brief's praise. Luck as much as skill: only ever praise.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Facts {
+    /// The human's Pagat took the last trick and the ultimo.
+    pub ultimo_won: bool,
+    /// The trick (1 to 27) in which the human's Sküs caught the Mond.
+    pub mond_caught: Option<u32>,
+    /// The honours the human announced.
+    pub announced: Vec<Honour>,
+}
+
+impl Facts {
+    fn of(deal: &Deal, human: Seat) -> Facts {
+        let ultimo_won = matches!(
+            deal.end(),
+            Some(DealEnd::Played(s)) if s.ultimo == Some((human, UltimoResult::Won))
+        );
+        let mond_caught = deal
+            .tricks()
+            .iter()
+            .position(|t| {
+                t.winner == human
+                    && t.cards.contains(&Card::MOND)
+                    && t.cards[usize::from(t.leader != human)] == Card::SKUS
+            })
+            .map(|i| i as u32 + 1);
+        let announced = [Honour::Trull, Honour::Kings]
+            .into_iter()
+            .filter(|&h| deal.honour_state(human, h) == HonourState::Announced)
+            .collect();
+        Facts {
+            ultimo_won,
+            mond_caught,
+            announced,
+        }
+    }
+}
+
 /// One deal's evidence: the summary and, for each skill, its costliest miss.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Evidence {
@@ -745,6 +784,10 @@ pub struct Evidence {
     pub chances: Vec<Chance>,
     pub summary: Summary,
     pub costliest: [Option<Miss>; SKILLS],
+    /// The human's unassisted decisions with a choice (two or more legal
+    /// actions): what a short deal is measured by.
+    pub decisions: u32,
+    pub facts: Facts,
 }
 
 /// Whether `figure`, played in the deal's tricks by `human`, was taken by a
@@ -797,12 +840,14 @@ pub fn evidence(
 ) -> Result<Evidence, ReplayError> {
     let mut chances = Vec::new();
     let mut costliest: [Option<Miss>; SKILLS] = Default::default();
+    let mut decisions = 0;
     let covered = assisted_actions(record, assisted);
     let deal = record.replay_to_end(|index, deal, seat, action| {
         if seat != human || covered[index] {
             return;
         }
         let view = bare_view(deal, seat);
+        decisions += u32::from(view.legal_actions.len() >= 2);
         for ch in decision_verdicts(&view, action, budget) {
             chances.push(ch.chance());
             if ch.met {
@@ -842,6 +887,8 @@ pub fn evidence(
         chances,
         summary,
         costliest,
+        decisions,
+        facts: Facts::of(&deal, human),
     })
 }
 

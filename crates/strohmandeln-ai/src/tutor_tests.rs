@@ -9,7 +9,8 @@ use crate::testutil::{blind_check_values, c};
 use kit_learner::Tally;
 use std::sync::OnceLock;
 use strohmandeln_core::agents::{Player, RandomPlayer};
-use strohmandeln_core::deal::TrickRecord;
+use strohmandeln_core::cards::Honour;
+use strohmandeln_core::deal::{HonourState, TrickRecord};
 use strohmandeln_core::session::Sitting;
 use strohmandeln_core::types::Settings;
 use strohmandeln_core::types::Source;
@@ -710,6 +711,101 @@ fn a_view_with_no_move_to_make_opens_nothing() {
     let view = bare_view(&done, HUMAN);
     assert!(open_skills(&view, small()).is_empty());
     assert!(!nudge(Skill::Worth, &view, small()));
+}
+
+/// What the brief needs besides the tallies: the unassisted decisions with a
+/// choice, and the lucky or praiseworthy things of the deal (`docs/TUTOR.md` 6).
+#[test]
+fn the_evidence_counts_the_decisions_with_a_choice_and_reads_the_deals_facts() {
+    use strohmandeln_core::deal::DealEnd;
+    use strohmandeln_core::types::UltimoResult;
+    let (mut ultimo, mut announced, mut mond) = (0, 0, 0);
+    for rec in students().whole.iter().chain(&students().no_cover) {
+        let mut choices = 0;
+        let deal = rec
+            .replay_to_end(|_, d, seat, _| {
+                if seat == HUMAN && bare_view(d, seat).legal_actions.len() >= 2 {
+                    choices += 1;
+                }
+            })
+            .unwrap();
+        let e = evidence(rec, HUMAN, &[], small()).unwrap();
+        assert_eq!(e.decisions, choices);
+        let won = matches!(deal.end(), Some(DealEnd::Played(s)) if s.ultimo == Some((HUMAN, UltimoResult::Won)));
+        assert_eq!(e.facts.ultimo_won, won);
+        ultimo += usize::from(won);
+        let said: Vec<Honour> = [Honour::Trull, Honour::Kings]
+            .into_iter()
+            .filter(|&h| deal.honour_state(HUMAN, h) == HonourState::Announced)
+            .collect();
+        assert_eq!(e.facts.announced, said);
+        announced += said.len();
+        if let Some(t) = e.facts.mond_caught {
+            mond += 1;
+            let trick = deal.tricks()[t as usize - 1];
+            assert!(trick.cards.contains(&Card::MOND) && trick.cards.contains(&Card::SKUS));
+            assert_eq!(trick.winner, HUMAN);
+            assert_eq!(trick.cards[usize::from(trick.leader != HUMAN)], Card::SKUS);
+        }
+    }
+    eprintln!("ultimo {ultimo}, announced {announced}, mond {mond}");
+}
+
+/// The Mond caught and the ultimo won are found in the tricks and the score,
+/// for either seat, over deals played by random legal actions.
+#[test]
+fn the_facts_of_a_deal_follow_its_tricks_from_either_seat() {
+    let (mut mond, mut ultimo) = (0, 0);
+    for seed in 0..40u64 {
+        let mut last = None;
+        let mut deals = Vec::new();
+        crate::testutil::walk(seed, |s, _| {
+            if s.last_deal() != last.as_ref() {
+                last = s.last_deal().cloned();
+                deals.extend(last.clone());
+            }
+        });
+        for rec in deals {
+            let deal = rec.replay_to_end(|_, _, _, _| {}).unwrap();
+            for human in Seat::BOTH {
+                let f = Facts::of(&deal, human);
+                let by_hand = deal.tricks().iter().position(|t| {
+                    let mine = |c: Card| {
+                        let at = t.cards.iter().position(|&x| x == c).unwrap();
+                        (at == 0) == (t.leader == human)
+                    };
+                    t.cards.contains(&Card::SKUS)
+                        && t.cards.contains(&Card::MOND)
+                        && mine(Card::SKUS)
+                        && t.winner == human
+                });
+                assert_eq!(f.mond_caught, by_hand.map(|i| i as u32 + 1));
+                mond += usize::from(f.mond_caught.is_some());
+                let last_trick = deal.tricks().last().unwrap();
+                let pagat_won = last_trick.winner == human
+                    && last_trick.cards.contains(&Card::PAGAT)
+                    && last_trick.cards[usize::from(last_trick.leader != human)] == Card::PAGAT;
+                if f.ultimo_won {
+                    assert!(
+                        pagat_won,
+                        "the ultimo won is the Pagat winning the last trick"
+                    );
+                    ultimo += 1;
+                }
+            }
+        }
+    }
+    assert!(mond > 0 && ultimo > 0, "mond {mond}, ultimo {ultimo}");
+}
+
+#[test]
+fn an_assisted_decision_is_not_counted_as_a_decision() {
+    let rec = &students().whole[0];
+    let all = evidence(rec, HUMAN, &[], small()).unwrap();
+    let every: Vec<usize> = (0..rec.actions.len()).collect();
+    let none = evidence(rec, HUMAN, &every, small()).unwrap();
+    assert!(all.decisions >= 4, "{}", all.decisions);
+    assert_eq!(none.decisions, 0);
 }
 
 /// The evidence over whole deals, native:
