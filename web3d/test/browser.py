@@ -218,7 +218,7 @@ def check_cover_legibility(browser, failures):
 
 
 def check_no_face_leak(browser, failures):
-    page = open_page(browser, "seed=7&speed=instant&human=1", {"width": 800, "height": 450})
+    page = open_page(browser, "seed=7&speed=instant&human=1", {"width": 800, "height": 450}, nodraw=True)  # reads meshes, not pixels
     made = 0
     while True:
         bad = secret(page)

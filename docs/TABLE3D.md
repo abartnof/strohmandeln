@@ -1186,6 +1186,26 @@ motion are saved to `web3d/test/out/`.
 - `watch_reload`: a sitting reloaded after each phase (bid, reveal, play, count,
   extension) restores to the same state.
 
+### 10.7 Running the suite
+
+`bin/browser-full [a,b,c]` runs the checks one per browser process, each under
+`CHECK_TIMEOUT` (default 600 s), and prints one summary line; `browser.py --only=a,b`
+runs named checks in one process; the gate runs `--quick`. Checks live in
+`browser.py` (10.1), `browser_scenarios.py` (10.2, 10.3) and `browser_aids.py`
+(10.4, 10.5).
+
+The software GPU spends about a second a frame, so the checks that read state and
+the DOM, not pixels, turn the draw calls into no-ops (`NO_DRAW`), and the drivers
+`drive` and `legal_only` loop inside the page, one round trip a sitting. Talk checks
+run at Normal speed on the test's clock (`?manual`): the Instant speed leaves the
+talk out (2.8). `keyboard_sitting` plays the first deal and the extension prompt by
+keys, the rest by the engine's first legal action. `talk_repeat` bounds the repeats
+rather than forbidding them: the talk's record also holds lines the speaker dropped,
+which the page never shows (the exact rule is in `talk.test.js`).
+
+Wall time of the whole suite on the 2-core VM, load from other work included:
+53 checks took 3057 s (51 minutes) on 15 Oct 2026, of which 1200 s were two checks that timed out (no_face_leak, since sped up to 103 s, and keyboard_sitting, open); the rest ran in 1857 s. Open: keyboard_sitting (over 600 s), announce_prompt (no `[data-act=play]` after the spec-gap merge), touch_targets (the accessible card lists are 28 px high).
+
 ## 11. Order of work
 
 Not a plan of days; the dependencies. Each step ends with its tests and a commit,
