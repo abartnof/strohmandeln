@@ -595,6 +595,11 @@
 .left .tutor { left: auto; right: 8px; align-items: flex-end; }
 .tutor > * { pointer-events: auto; }
 .tutor-row { display: flex; flex-wrap: wrap; gap: 6px; }
+/* A small landscape window (a phone on its side): the tabs stack, so the row is as narrow as one tab and clear of the hand. */
+@media (orientation: landscape) and (max-width: 900px) {
+  .tutor-row { flex-direction: column; align-items: flex-start; }
+  .left .tutor-row { align-items: flex-end; }
+}
 .tutor-btn,
 .tutor-mute,
 .tutor-review {

@@ -243,6 +243,21 @@ def check_no_face_leak(browser, failures):
     check_offline(page, failures, "no_face_leak: ")
 
 
+def check_small_landscape_tabs(browser, failures):
+    """A small landscape window (a phone on its side): the Kibitzer's tabs lie clear of the
+    hand once the pull has made it 21 cards, so no tap on a card lands on a tab."""
+    for size in ({"width": 800, "height": 450}, {"width": 667, "height": 375}):
+        page = open_page(browser, "seed=7&speed=instant&human=1", size, nodraw=True)
+        play_one(page)  # take; the pull follows
+        tabs = page.evaluate("[...document.querySelectorAll('.tutor-row > button:not([hidden])')].map(b => { const r = b.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; })")
+        hand = js(page, "cardRects('your-hand')")
+        fail_if(len(hand) < 20, failures, f"small_landscape_tabs {size['width']}: only {len(hand)} cards in the hand")
+        for tab in tabs:
+            for card in hand:
+                fail_if(intersects(tab, card), failures, f"small_landscape_tabs {size['width']}: a tab {tab} covers a card {card}")
+        close_all(browser)
+
+
 def check_phone_row(browser, failures):
     """The whole hand of 15 shows at once on a phone: two overlapped rows, every
     card inside the window, none under the Kibitzer's tabs, nothing to scroll."""
@@ -276,7 +291,7 @@ def check_window_resize(browser, failures):
     check_offline(page, failures, "window_resize: ")
 
 
-CHECKS_101 = [check_offline_opens, check_layout_landscape, check_layout_portrait, check_layout_touch, check_cover_legibility, check_no_face_leak, check_phone_row, check_window_resize]
+CHECKS_101 = [check_offline_opens, check_layout_landscape, check_layout_portrait, check_layout_touch, check_cover_legibility, check_no_face_leak, check_small_landscape_tabs, check_phone_row, check_window_resize]
 ALL = list(CHECKS_101)
 
 
