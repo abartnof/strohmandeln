@@ -1,5 +1,5 @@
 //! What the tutor's evidence costs, and how noisy it is, over a spread of
-//! positions (`docs/OPPONENT.md`, "The tutor"). Native; run with `--release`.
+//! positions (`docs/OPPONENT.md`, "Hint evidence"). Native; run with `--release`.
 //!
 //! ```text
 //! hintbench [--sittings N] [--cap-lead N] [--cap-follow N] [--cap-bid N]
@@ -203,7 +203,8 @@ fn binomial_tails(n: usize, p: f64, k: usize, lf: &[f64]) -> (f64, f64) {
     };
     let low: f64 = (0..=k).map(pmf).sum();
     let half: f64 = (0..=n).filter(|i| 2 * i > n).map(pmf).sum();
-    (low, half)
+    // The sum of a whole range can round to just above 1.
+    (low.min(1.0), half.min(1.0))
 }
 
 fn main() {
@@ -391,6 +392,18 @@ mod tests {
         // p = 0 never wins, p = 1 always does.
         assert_eq!(binomial_tails(4, 0.0, 0, &lf), (1.0, 0.0));
         assert_eq!(binomial_tails(4, 1.0, 0, &lf), (0.0, 1.0));
+    }
+
+    #[test]
+    fn a_tail_is_a_probability_even_when_the_sum_rounds_up() {
+        // The whole range sums to 1 + rounding; a flip chance 2q(1 - q) must
+        // not come out negative (it printed -0.0%).
+        let lf = ln_fact(1000);
+        for p in [0.1, 0.3, 0.5, 0.7, 0.9, 0.123_456] {
+            let (low, half) = binomial_tails(1000, p, 1000, &lf);
+            assert!(low <= 1.0 && half <= 1.0, "{p}: {low} {half}");
+            assert!(low * (1.0 - low) >= 0.0);
+        }
     }
 
     #[test]
