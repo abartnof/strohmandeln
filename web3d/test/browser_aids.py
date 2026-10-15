@@ -4,6 +4,7 @@ the tutor's own. Imported by browser.py."""
 
 import json
 import re
+import tempfile
 from pathlib import Path
 
 from browser import NO_DRAW, PAGE, ROOT, WORDS, STRINGS, check_offline, close_all, fail_if, intersects, js, rest, state, still
@@ -626,7 +627,8 @@ def check_export_import_file(browser, failures):
     saved = json.loads(text)
     fail_if(saved.get("v") != 1 or "export" not in saved or "extras" not in saved, failures, "export_import_file: the file lacks v, export or extras")
     # A bad file is refused and changes nothing.
-    bad = Path("/tmp/sb/bad-sitting.json")
+    files = Path(tempfile.mkdtemp(prefix="sitting-"))
+    bad = files / "bad-sitting.json"
     bad.write_text("{ not json")
     with page.expect_file_chooser() as chooser:
         page.locator("[data-action=load]").click()
@@ -635,7 +637,7 @@ def check_export_import_file(browser, failures):
     fail_if(t("error.load-bad") != page.locator(".refusal").inner_text(), failures, f"export_import_file: a bad file gave {page.locator('.refusal').inner_text()!r}")
     fail_if(state(page)["deal"]["own_hand"] != before["deal"]["own_hand"], failures, "export_import_file: a bad file changed the sitting")
     # The good file loads in a fresh page.
-    good = Path("/tmp/sb/good-sitting.json")
+    good = files / "good-sitting.json"
     good.write_text(text)
     close_all(browser)
     page = open_page(browser, "seed=3&speed=instant&human=1")
