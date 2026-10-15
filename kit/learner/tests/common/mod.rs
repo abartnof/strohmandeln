@@ -47,8 +47,7 @@ pub static LADDER: Ladder = Ladder {
     skills: &SKILLS,
 };
 
-/// Written out, not taken from `Params::CASSINO`, so that a change to the
-/// crate's defaults cannot move the fixture.
+/// Cassino's `learner.rs` constants (the crate has no defaults).
 pub const PARAMS: Params = Params {
     discount: 0.8,
     min_gain: 0.5,

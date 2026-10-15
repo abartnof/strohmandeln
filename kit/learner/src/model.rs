@@ -10,7 +10,8 @@ pub struct SkillSpec {
     pub needs: &'static [usize],
     /// The met rate the strongest player reaches at this skill (measured).
     pub top_rate: f64,
-    /// The points a game the strongest player itself loses to this skill.
+    /// What the strongest player itself loses to this skill in a deal, in the
+    /// game's score unit.
     /// A student's cost beyond it is what mastering the skill would gain.
     pub top_cost: f64,
     /// The discounted chances the skill needs before its rate counts. Below
@@ -22,7 +23,7 @@ pub struct SkillSpec {
 /// earlier skill), and the version of the evidence that tallies them.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Ladder {
-    /// The first word of a summary's text form ("cassino evidence v1").
+    /// The first word of a summary's text form ("<name> evidence v1").
     pub name: &'static str,
     /// Bump it whenever the clear chances change (the advisor, the margin,
     /// the classifier of what a move shows), so that a stored summary made
@@ -129,14 +130,14 @@ impl Ladder {
     }
 }
 
-/// The constants of the learner. [`Params::CASSINO`] has Cassino's values,
-/// a starting point; a game sets its own from its strongest player's deals
-/// and lesioned students (`docs/TUTOR.md` section 11).
+/// The constants of the learner. A game sets its own from its strongest
+/// player's deals and lesioned students (`docs/TUTOR.md` section 11); the
+/// crate has no defaults. Costs and gains are in the game's score unit.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Params {
     /// The weight of each deal relative to the one after it.
     pub discount: f64,
-    /// The least a skill must cost, in points, to be worth working on.
+    /// The least a skill must cost per deal to be worth working on.
     pub min_gain: f64,
     /// The gain at which an unmastered skill is the focus although its rate
     /// is not shown to be short ([`Params::upper`]).
@@ -158,18 +159,6 @@ pub struct Params {
 }
 
 impl Params {
-    /// Cassino's constants (`learner.rs` @ 73f0cd7).
-    pub const CASSINO: Params = Params {
-        discount: 0.8,
-        min_gain: 0.5,
-        costly_gain: 2.0,
-        costly_chances: 8.0,
-        lower: 0.2,
-        upper: 0.9,
-        master_of_top: 0.85,
-        lose_below: 0.2,
-    };
-
     /// The met rate that makes `skill` mastered.
     pub fn master(&self, skill: &SkillSpec) -> f64 {
         self.master_of_top * skill.top_rate
@@ -262,7 +251,7 @@ impl Summary {
     }
 
     /// The text form: a header, then a line a skill, `<slug> <chances>
-    /// <met> <missed points>`.
+    /// <met> <missed>`.
     pub fn to_text(&self, ladder: &Ladder) -> String {
         let mut lines = vec![format!("{} evidence v{}", ladder.name, self.version)];
         for (spec, t) in ladder.skills.iter().zip(&self.tallies) {

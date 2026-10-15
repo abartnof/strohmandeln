@@ -10,7 +10,7 @@ pub struct SkillState {
     /// Discounted chances and chances met.
     pub chances: f64,
     pub met: f64,
-    /// Discounted points a deal this skill costs.
+    /// Discounted loss a deal to this skill, in the game's score unit.
     pub cost: f64,
     /// What mastering it would gain: the cost less the skill's `top_cost`,
     /// at least nothing. What the focus is chosen on.
@@ -58,8 +58,8 @@ impl Learner {
 /// chances do not come up, or not shown to be short), and whose met rate is
 /// surely short of mastery (the `upper` quantile below [`Params::master`]),
 /// or which costs a great deal (a gain of `costly_gain` over `costly_chances`
-/// chances), the one with the largest gain: the points a deal its misses
-/// cost (discounted) less its `top_cost`. Exact ties go to the earlier skill
+/// chances), the one with the largest gain: what a deal its misses cost
+/// (discounted) less its `top_cost`. Exact ties go to the earlier skill
 /// in the ladder. `None` when no skill gains `min_gain`.
 pub fn learn(ladder: &Ladder, p: &Params, games: &[Summary]) -> Learner {
     let n = ladder.skills.len();
@@ -126,7 +126,7 @@ pub fn learn(ladder: &Ladder, p: &Params, games: &[Summary]) -> Learner {
     };
     // Eligible: surely short by rate, or costing a great deal over enough
     // chances although the rate is not shown short (a rate of 0.8 at a
-    // skill that costs six points a miss).
+    // skill that costs a great deal a miss).
     let eligible = |i: usize| {
         open(i)
             && (short(i)
