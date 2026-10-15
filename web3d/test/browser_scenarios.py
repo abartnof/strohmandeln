@@ -73,7 +73,7 @@ DRIVE_JS = """async (o) => {
       const s = h.state();
       if (s && !h.busy() && s.prompt !== 'opponent') break;
       if (spins > 40000) throw new Error('the table did not come to rest');
-      await sleep(5);
+      if (o.manual) { h.tick(o.step); await sleep(0); } else await sleep(5);
     }
     const s = h.state();
     if (met(s, h.log())) return true;
@@ -88,8 +88,8 @@ def drive(page, until, policy="first", extend=False, limit=3000, manual=False, s
     """Play by the engine's own first legal action (or weiter) until `until(state, log)`.
     An `until` made by has() or until_over() runs inside the page, in one round trip."""
     spec = getattr(until, "spec", None)
-    if spec and not manual:
-        return page.evaluate(DRIVE_JS, {**spec, "policy": policy, "extend": extend, "limit": limit})
+    if spec:
+        return page.evaluate(DRIVE_JS, {**spec, "policy": policy, "extend": extend, "limit": limit, "manual": manual, "step": step})
     for _ in range(limit):
         (mrest(page, step) if manual else rest(page))
         s = state(page)
@@ -516,11 +516,15 @@ def check_settlement(browser, failures):
 
 
 def check_farewell_once(browser, failures):
-    page = open_page(browser, "seed=7&speed=instant&human=1")
-    page.evaluate("window.__said = new Set(); setInterval(() => window.strohmandeln3d.said().forEach(t => window.__said.add(t)), 40)")
-    drive(page, until_over())
+    # At Normal speed on the test's clock: the instant speed leaves the talk out.
+    page = open_page(browser, "seed=7&speed=normal&human=1&manual", wait=False)
+    page.evaluate("window.__said = new Set(); new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => n.dataset && n.dataset.text && window.__said.add(n.dataset.text)))).observe(document.querySelector('.say-layer'), { childList: true })")
+    mrest(page, step=400)
+    drive(page, until_over(), manual=True, step=400)
+    for _ in range(40):
+        page.evaluate("window.strohmandeln3d.tick(250)")
+        page.wait_for_timeout(5)
     page.wait_for_selector("[data-dialog-act=new]", timeout=60_000)
-    page.wait_for_timeout(1500)
     heard = set(page.evaluate("[...window.__said]"))
     farewells = {WORDS["texts"][k]["en"] for k in WORDS["groups"]["farewell"]}
     said = heard & farewells
