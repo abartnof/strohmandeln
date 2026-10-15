@@ -708,6 +708,8 @@ def check_tracker_clear(browser, failures):
             first = page.locator(".tracker-lines li").first.inner_text()
             fail_if(not first.startswith(("Tarocks still out", "No tarock is out")), failures, f"{where}the first line is {first!r}")
             fail_if(page.locator("[data-act=tracker]").get_attribute("aria-expanded") != "true", failures, f"{where}the tab does not say it is open")
+            scroll = page.evaluate("(() => { const p = document.querySelector('.tracker'); return p.scrollHeight - p.clientHeight; })()")
+            fail_if(scroll > 1, failures, f"{where}the panel scrolls by {scroll} px: the legend is cut off")
         check_offline(page, failures, where)
         close_all(browser)
 
@@ -760,10 +762,14 @@ def check_tracker_languages(browser, failures):
     fail_if(not first.startswith(("Tarock noch draußen", "Kein Tarock")), failures, f"{where}the first German line is {first!r}")
     labels = page.locator("[data-row=h] .tracker-cell").all_inner_texts()[:4]
     fail_if(labels != ["K", "D", "C", "B"], failures, f"{where}the German court labels are {labels}")
+    scroll = page.evaluate("(() => { const p = document.querySelector('.tracker'); return p.scrollHeight - p.clientHeight; })()")
+    fail_if(scroll > 1, failures, f"{where}the German panel scrolls by {scroll} px: the legend is cut off at 1280x720")
+    fail_if(page.locator(".tracker-legend li").count() != 3, failures, f"{where}the legend has not three entries")
     close_all(browser)
     # Upright, the tracker is not there at all (deferred, 6.6.6): it cannot break the page.
     upright = tracker_page(browser, {"width": 390, "height": 844})
     fail_if(upright.locator(".tracker-root").is_visible() or upright.locator("[data-act=tracker]").is_visible(), failures, f"{where}the tracker shows on a phone")
+    fail_if(js(upright, "tracker()")["data"] is not None, failures, f"{where}the engine was asked for a tracker nobody sees")
     check_offline(upright, failures, f"{where}upright: ")
 
 
