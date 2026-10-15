@@ -56,7 +56,7 @@ if [ -f kit/STAMP ]; then
   while read -r file; do
     awk '/^files:/ {on = 1; next} on && NF {print $1}' kit/STAMP | grep -qxF "${file#kit/}" \
       || fail "$file is in the kit but not listed in kit/STAMP"
-  done < <(find kit/js kit/css kit/test -type f ! -path '*/__pycache__/*' | sort; ls kit/build.py kit/package.json)
+  done < <(find kit/js kit/css kit/test kit/learner -type f ! -path '*/__pycache__/*' | sort; ls kit/build.py kit/package.json)
   # ...and what STAMP calls verbatim still carries its origin header
   while read -r file; do
     head -1 "kit/$file" | grep -q '^// From cassino ' || fail "kit/$file is listed as verbatim but lacks its '// From cassino' header"

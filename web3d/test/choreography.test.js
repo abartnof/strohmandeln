@@ -75,6 +75,14 @@ async function walk(config, policy, extend = false, zones = ZONES) {
     // Every new event has a moment, in order.
     const idx = Object.keys(result.beats).map(Number).sort((a, b) => a - b);
     assert.equal(idx.length, state.events.length - prev.events.length, "a beat for every event");
+    // A trick won is heard as the trick is complete, and its cards land on the pile later (TABLE3D 2.1: the tally moves then).
+    fresh.forEach((e, k) => {
+      const at = prev.events.length + k;
+      if (e.type === "trick_won") {
+        assert.ok(result.landed[at] >= result.beats[at] + 1000, `trick ${e.trick}: lands ${result.landed[at]} after it is won ${result.beats[at]}`);
+        assert.ok(result.landed[at] <= result.duration, "inside the stage");
+      } else assert.equal(result.landed[at], undefined, `${e.type} has no landing`);
+    });
     placement = result.placement;
     prev = state;
   }

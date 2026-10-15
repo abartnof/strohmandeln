@@ -794,6 +794,45 @@ mod tests {
         );
     }
 
+    /// The slate of the table's "Scoring in full" page (web3d/tutorial*.md):
+    /// six deals, the human's column 12 and the opponent's 9, a difference of
+    /// 3 Points, 6 kreuzer from the one with the smaller column.
+    #[test]
+    fn the_pages_worked_evening_settles_3_points_as_6_kreuzer() {
+        let mut s = Sitting::with_decks(5, Settings::default(), 3, vec![ok_deck(); 6]).unwrap();
+        let cause = |seat, cause, points| Credit {
+            seat,
+            cause,
+            points,
+        };
+        let (a, b) = (Seat::A, Seat::B);
+        let deals = [
+            vec![cause(a, Cause::Game, 3), cause(a, Cause::Trull, 1)],
+            vec![cause(b, Cause::Game, 4)],
+            vec![cause(b, Cause::Game, 2), cause(b, Cause::Kings, 1)],
+            vec![cause(a, Cause::Game, 3)],
+            vec![cause(a, Cause::Game, 4), cause(a, Cause::UltimoWon, 1)],
+            vec![cause(b, Cause::Game, 2)],
+        ];
+        for credits in deals {
+            s.settle_for_test(&score(GameResult::DeclarerWin, credits));
+        }
+        s.apply(Seat::A, Action::Extend { accept: false }).unwrap();
+        let Some(Event::SittingEnd {
+            contos,
+            balance,
+            payer,
+            kreuzer,
+        }) = s.events().last().cloned()
+        else {
+            panic!("sitting should have ended");
+        };
+        assert_eq!(
+            (contos, balance, payer, kreuzer),
+            ([12, 9], 3, Some(Seat::B), 6)
+        );
+    }
+
     #[test]
     fn rules_15_8_a_zero_balance_owes_nothing() {
         let mut s = Sitting::with_decks(5, Settings::default(), 3, vec![ok_deck(); 6]).unwrap();

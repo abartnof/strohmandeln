@@ -1,0 +1,8267 @@
+case mastered-0
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 6.0 6.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case mastered-1
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=2 focus=- just=pairs
+state pairs 1 10.8 10.8 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case mastered-2
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=3 focus=- just=-
+state pairs 1 14.64 14.64 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case hysteresis
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 3 3
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=4 focus=- just=-
+state pairs 1 17.712000000000003 14.712000000000002 1.0162601626016259 0.9162601626016259
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case lost
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 3 3
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 1 5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 1 5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 1 5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 6 1 5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=8 focus=pairs just=-
+state pairs 0 24.966835200000002 8.978035200000003 3.8424093094506424 3.7424093094506423
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case past-up
+deal
+cassino evidence v1
+pairs 30 30 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 30 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 30 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=33 focus=- just=-
+state pairs 1 149.9049262049829 124.93587470596503 2.498488755286938 2.398488755286938
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case past-down
+deal
+cassino evidence v1
+pairs 30 15 7.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 15 7.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 15 7.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 30 25 2.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=33 focus=pairs just=-
+state pairs 0 149.9049262049829 124.8905661005272 2.5030224894261237 2.4030224894261236
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case pairs-first
+deal
+cassino evidence v1
+pairs 10 4 3
+sums 10 2 16
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 3 1
+trailing 0 0 0
+expect games=1 focus=pairs just=-
+state pairs 0 10.0 4.0 3.0 2.9
+state sums 0 10.0 2.0 16.0 15.93
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 5.0 3.0 1.0 0.96
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case sums-next
+deal
+cassino evidence v1
+pairs 20 20 0
+sums 10 2 16
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 3 1
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 20 20 0
+sums 10 2 16
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 3 1
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 20 20 0
+sums 10 2 16
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 3 1
+trailing 0 0 0
+expect games=3 focus=sums just=-
+state pairs 1 48.8 48.8 0.0 0.0
+state sums 0 24.4 4.880000000000001 16.0 15.93
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 12.2 7.32 1.0 0.96
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case sums-alone
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 10 2 16
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=sums just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 10.0 2.0 16.0 15.93
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case few-misses-few-chances
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 4 3
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 5.0 4.0 3.0 2.96
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case surely-short-valuables
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 2 3
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 2 3
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 2 3
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 2 3
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 2 3
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 2 3
+trailing 0 0 0
+expect games=6 focus=valuables just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 18.4464 7.378560000000001 3.0 2.96
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case one-missed-chance
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 1 0 3
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 1.0 0.0 3.0 2.96
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case prerequisite-not-short
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 2
+sums 6 1 25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=20 focus=sums just=-
+state pairs 0 39.53883139815727 34.59647747338761 2.0 1.9
+state sums 0 29.654123548617953 4.942353924769659 24.999999999999996 24.929999999999996
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case costly-middling
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 12 10 14
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 12 10 14
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 12 10 14
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 12 10 14
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 12 10 14
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 12 10 14
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 12 10 14
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 12 10 14
+trailing 0 0 0
+expect games=8 focus=valuables just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 49.933670400000004 41.611392 13.999999999999998 13.959999999999999
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case costly-not-surely-short
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 6 5 12
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 6 5 12
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 6 5 12
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 6 5 12
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 6 5 12
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 6 5 12
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 6 5 12
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 6 5 12
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 6 5 12
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 6 5 12
+trailing 0 0 0
+expect games=10 focus=valuables just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 26.778774528000003 22.31564544 12.0 11.96
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case nothing-costs-enough
+deal
+cassino evidence v1
+pairs 10 9 0.2
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 5 4 0.1
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 10.0 9.0 0.2 0.1
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 5.0 4.0 0.1 0.060000000000000005
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case no-games
+expect games=0 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case older-count-less
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 10 10 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 10 0 10
+trailing 0 0 0
+expect games=2 focus=valuables just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 18.0 8.0 5.555555555555555 5.515555555555555
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case older-count-less-reversed
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 10 0 10
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 10 10 0
+trailing 0 0 0
+expect games=2 focus=valuables just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 18.0 10.0 4.444444444444445 4.404444444444445
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case edge-min-gain-at
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 4 0 0.5
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=answering-builds just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 4.0 0.0 0.5 0.5
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case edge-min-gain-below
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 4 0 0.499
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 4.0 0.0 0.499 0.499
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case edge-min-chances-below
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 3 0 0.5
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 3.0 0.0 0.5 0.5
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case edge-costly-at
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 8 7 2
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=answering-builds just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 8.0 7.0 2.0 2.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case edge-costly-chances-below
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 7 6 2
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 7.0 6.0 2.0 2.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case edge-costly-gain-below
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 8 7 1.999
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 8.0 7.0 1.999 1.999
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case stale
+deal
+cassino evidence v2
+pairs 20 0 40
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=0 focus=- just=-
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case random-0
+deal
+cassino evidence v1
+pairs 9 8 3.75
+sums 10 2 38
+building 2 1 1.75
+safe-builds 2 2 0
+answering-builds 2 0 7.5
+sweeps 0 0 0
+valuables 1 1 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 3.75
+sums 11 0 52.25
+building 3 1 3.5
+safe-builds 3 2 5
+answering-builds 1 0 3.75
+sweeps 1 1 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 12 10 7.5
+sums 7 1 28.5
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 7 2 18.75
+sweeps 3 3 0
+valuables 2 2 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 10 8 7.5
+sums 7 2 23.75
+building 2 1 1.75
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 2 2 0
+trailing 2 1 2.25
+deal
+cassino evidence v1
+pairs 5 5 0
+sums 3 1 9.5
+building 2 2 0
+safe-builds 3 3 0
+answering-builds 15 5 37.5
+sweeps 2 2 0
+valuables 0 0 0
+trailing 3 3 0
+expect games=5 focus=sums just=-
+state pairs 0 28.462400000000002 24.660800000000002 4.240837696335078 4.140837696335078
+state sums 0 22.808000000000003 4.059200000000001 26.49238457877201 26.42238457877201
+state building 0 5.9552 3.7216000000000005 1.1627796287482153 0.9427796287482153
+state safe-builds 0 5.3552 4.8432 0.7615421227986673 0.6615421227986673
+state answering-builds 0 20.8112 6.28 16.210138029509757 16.210138029509757
+state sweeps 0 4.432 4.432 0.0 0.0
+state valuables 0 3.2896 3.2896 0.0 0.0
+state trailing 0 5.880000000000001 5.08 0.5354593050928129 0.0754593050928129
+end
+case random-1
+deal
+cassino evidence v1
+pairs 1 0 6
+sums 3 2 0
+building 0 0 0
+safe-builds 15 6 20.25
+answering-builds 8 0 8
+sweeps 1 1 0
+valuables 6 5 1.5
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 3 2 6
+sums 2 2 0
+building 0 0 0
+safe-builds 7 3 9
+answering-builds 0 0 0
+sweeps 14 12 8
+valuables 15 14 1.5
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 2 1 6
+sums 0 0 0
+building 2 2 0
+safe-builds 0 0 0
+answering-builds 8 1 7
+sweeps 3 2 4
+valuables 2 2 0
+trailing 3 2 5.25
+deal
+cassino evidence v1
+pairs 2 1 6
+sums 2 1 0
+building 1 0 2
+safe-builds 2 1 2.25
+answering-builds 10 1 9
+sweeps 14 12 8
+valuables 12 11 1.5
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 2 0 0
+building 2 2 0
+safe-builds 0 0 0
+answering-builds 3 1 2
+sweeps 10 8 8
+valuables 10 9 1.5
+trailing 1 0 5.25
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 1 1 0
+building 0 0 0
+safe-builds 7 2 11.25
+answering-builds 13 2 11
+sweeps 6 6 0
+valuables 2 2 0
+trailing 3 2 5.25
+deal
+cassino evidence v1
+pairs 3 1 12
+sums 3 2 0
+building 3 2 2
+safe-builds 6 4 4.5
+answering-builds 5 1 4
+sweeps 6 6 0
+valuables 15 12 4.5
+trailing 0 0 0
+expect games=7 focus=answering-builds just=sweeps
+state pairs 0 6.088384000000001 2.5769600000000006 5.331886428791241 5.231886428791241
+state sums 0 7.5457920000000005 4.4916480000000005 0.0 0.0
+state building 0 5.6112 4.099200000000001 0.7652937270209422 0.5452937270209423
+state safe-builds 0 18.849920000000004 8.667904 5.797792390793799 5.6977923907938
+state answering-builds 0 27.813952 4.1616 5.985779303866151 5.985779303866151
+state sweeps 1 30.446464000000006 27.077504000000005 3.4103756013022144 3.3203756013022145
+state valuables 0 36.45126400000001 31.70944 1.8000437310701152 1.7600437310701151
+state trailing 0 6.472448 4.622848 2.457443190100581 1.9974431901005811
+end
+case random-2
+deal
+cassino evidence v1
+pairs 1 0 0.25
+sums 6 1 30
+building 2 2 0
+safe-builds 8 8 0
+answering-builds 2 2 0
+sweeps 8 7 3.25
+valuables 0 0 0
+trailing 11 9 4.5
+expect games=1 focus=sums just=safe-builds
+state pairs 0 1.0 0.0 0.25 0.15
+state sums 0 6.0 1.0 30.0 29.93
+state building 0 2.0 2.0 0.0 0.0
+state safe-builds 1 8.0 8.0 0.0 0.0
+state answering-builds 0 2.0 2.0 0.0 0.0
+state sweeps 0 8.0 7.0 3.25 3.16
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 11.0 9.0 4.5 4.04
+end
+case random-3
+deal
+cassino evidence v1
+pairs 2 1 5
+sums 8 4 13
+building 9 6 10.5
+safe-builds 1 0 2
+answering-builds 1 0 4.5
+sweeps 0 0 0
+valuables 2 2 0
+trailing 2 1 2
+expect games=1 focus=sums just=-
+state pairs 0 2.0 1.0 5.0 4.9
+state sums 0 8.0 4.0 13.0 12.93
+state building 0 9.0 6.0 10.5 10.28
+state safe-builds 0 1.0 0.0 2.0 1.9
+state answering-builds 0 1.0 0.0 4.5 4.5
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 2.0 2.0 0.0 0.0
+state trailing 0 2.0 1.0 2.0 1.54
+end
+case random-4
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 1 0 0.75
+building 8 5 8.25
+safe-builds 14 14 0
+answering-builds 10 10 0
+sweeps 3 2 5.5
+valuables 5 5 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 2 2 0
+building 1 1 0
+safe-builds 0 0 0
+answering-builds 5 5 0
+sweeps 1 1 0
+valuables 7 7 0
+trailing 2 1 4.5
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 1 0 0.75
+building 15 9 16.5
+safe-builds 8 7 4.5
+answering-builds 5 5 0
+sweeps 0 0 0
+valuables 2 2 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 0 0 0
+building 9 8 2.75
+safe-builds 3 3 0
+answering-builds 6 6 0
+sweeps 0 0 0
+valuables 10 10 0
+trailing 3 0 13.5
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 0 0 0
+building 15 10 13.75
+safe-builds 0 0 0
+answering-builds 6 6 0
+sweeps 0 0 0
+valuables 4 4 0
+trailing 2 0 9
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 1 1 0
+building 10 8 5.5
+safe-builds 14 14 0
+answering-builds 1 1 0
+sweeps 1 1 0
+valuables 7 7 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 2 2 0
+building 4 4 0
+safe-builds 2 2 0
+answering-builds 11 11 0
+sweeps 0 0 0
+valuables 11 11 0
+trailing 3 2 4.5
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 2 2 0
+building 3 3 0
+safe-builds 15 15 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 11 11 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 2 1 0.75
+building 1 0 2.75
+safe-builds 1 1 0
+answering-builds 0 0 0
+sweeps 1 1 0
+valuables 11 11 0
+trailing 1 1 0
+expect games=9 focus=building just=-
+state pairs 1 8.906214400000003 8.906214400000003 0.0 0.0
+state sums 0 6.241346560000001 4.811430400000001 0.24773829510798756 0.17773829510798755
+state building 0 25.65717248 19.181312000000002 4.113878718921146 3.893878718921146
+state safe-builds 1 26.877002240000003 26.614858240000004 0.27250454026390597 0.17250454026390596
+state answering-builds 1 16.012697600000003 16.012697600000003 0.0 0.0
+state sweeps 0 2.2250316800000007 2.0572595200000006 0.21315910705087757 0.12315910705087757
+state valuables 1 38.1703552 38.1703552 0.0 0.0
+state trailing 0 6.741670400000001 4.0897152000000006 2.7567666342791544 2.2967666342791544
+end
+case random-5
+deal
+cassino evidence v1
+pairs 10 8 8.5
+sums 1 1 0
+building 0 0 0
+safe-builds 4 4 0
+answering-builds 1 1 0
+sweeps 14 4 5
+valuables 2 0 11
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 7 4 12.75
+sums 15 13 0
+building 11 4 40.25
+safe-builds 11 9 12
+answering-builds 2 2 0
+sweeps 8 1 3.5
+valuables 0 0 0
+trailing 2 0 12
+deal
+cassino evidence v1
+pairs 11 8 12.75
+sums 1 1 0
+building 8 0 46
+safe-builds 4 4 0
+answering-builds 1 1 0
+sweeps 4 2 1
+valuables 8 0 44
+trailing 2 0 12
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 6 5 0
+building 6 3 17.25
+safe-builds 3 3 0
+answering-builds 0 0 0
+sweeps 11 2 4.5
+valuables 6 1 27.5
+trailing 1 0 6
+deal
+cassino evidence v1
+pairs 14 7 29.75
+sums 1 1 0
+building 10 2 46
+safe-builds 13 11 12
+answering-builds 0 0 0
+sweeps 8 2 3
+valuables 7 0 38.5
+trailing 1 0 6
+deal
+cassino evidence v1
+pairs 8 4 17
+sums 4 4 0
+building 0 0 0
+safe-builds 3 1 12
+answering-builds 1 1 0
+sweeps 6 2 2
+valuables 5 1 22
+trailing 2 0 12
+deal
+cassino evidence v1
+pairs 1 0 4.25
+sums 9 8 0
+building 11 0 63.25
+safe-builds 12 11 6
+answering-builds 0 0 0
+sweeps 14 6 4
+valuables 7 1 33
+trailing 2 0 12
+deal
+cassino evidence v1
+pairs 4 3 4.25
+sums 5 4 0
+building 4 2 11.5
+safe-builds 3 3 0
+answering-builds 0 0 0
+sweeps 1 0 0.5
+valuables 7 0 38.5
+trailing 0 0 0
+expect games=8 focus=valuables just=-
+state pairs 0 25.853440000000003 15.7205376 10.349289732965433 10.249289732965433
+state sums 0 22.199155200000003 19.465267200000003 0.0 0.0
+state building 0 25.882624000000003 5.301376000000001 28.43985031791294 28.21985031791294
+state safe-builds 0 27.437964800000003 23.809676800000005 5.231675018225777 5.131675018225778
+state answering-builds 0 1.7016832000000006 1.7016832000000006 0.0 0.0
+state sweeps 0 30.98548480000001 9.679564800000001 2.5601066169572024 2.4701066169572026
+state valuables 0 24.882470400000003 1.8496000000000004 30.443775396891308 30.40377539689131
+state trailing 0 4.981248000000001 0.0 7.182525400736414 6.722525400736414
+end
+case random-6
+deal
+cassino evidence v1
+pairs 6 0 27
+sums 12 12 0
+building 9 0 47.25
+safe-builds 0 0 0
+answering-builds 3 0 9
+sweeps 3 2 0.5
+valuables 2 2 0
+trailing 2 0 7.5
+deal
+cassino evidence v1
+pairs 2 0 9
+sums 11 11 0
+building 4 0 21
+safe-builds 3 2 1.25
+answering-builds 14 6 24
+sweeps 0 0 0
+valuables 0 0 0
+trailing 1 0 3.75
+deal
+cassino evidence v1
+pairs 1 0 4.5
+sums 0 0 0
+building 9 1 42
+safe-builds 0 0 0
+answering-builds 8 1 21
+sweeps 5 2 1.5
+valuables 3 1 6.5
+trailing 1 0 3.75
+deal
+cassino evidence v1
+pairs 13 0 58.5
+sums 2 2 0
+building 7 0 36.75
+safe-builds 2 1 1.25
+answering-builds 15 5 30
+sweeps 11 6 2.5
+valuables 2 0 6.5
+trailing 2 1 3.75
+expect games=4 focus=building just=-
+state pairs 0 18.152 0.0 27.670731707317067 27.570731707317066
+state sums 1 15.184000000000001 15.184000000000001 0.0 0.0
+state building 0 21.368000000000002 0.8 36.579268292682926 36.35926829268293
+state safe-builds 0 3.9200000000000004 2.2800000000000002 0.6944444444444443 0.5944444444444443
+state answering-builds 0 31.895999999999997 9.64 22.617886178861784 22.617886178861784
+state sweeps 0 16.536 8.624 1.3401084010840107 1.2501084010840107
+state valuables 0 5.424 1.8240000000000003 3.9634146341463405 3.9234146341463405
+state trailing 0 4.464 1.0 4.40040650406504 3.94040650406504
+end
+case random-7
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 2 2 0
+building 4 0 14
+safe-builds 3 3 0
+answering-builds 7 7 0
+sweeps 0 0 0
+valuables 3 3 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 3 3 0
+building 14 3 38.5
+safe-builds 3 3 0
+answering-builds 1 1 0
+sweeps 2 2 0
+valuables 0 0 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 2 2 0
+building 2 1 3.5
+safe-builds 14 14 0
+answering-builds 1 1 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 8 8 0
+expect games=3 focus=building just=safe-builds,trailing
+state pairs 0 3.2399999999999998 3.2399999999999998 0.0 0.0
+state sums 0 5.68 5.68 0.0 0.0
+state building 0 15.76 3.4000000000000004 17.729508196721312 17.509508196721313
+state safe-builds 1 18.32 18.32 0.0 0.0
+state answering-builds 0 6.280000000000001 6.280000000000001 0.0 0.0
+state sweeps 0 1.6 1.6 0.0 0.0
+state valuables 0 1.9200000000000004 1.9200000000000004 0.0 0.0
+state trailing 1 10.08 10.08 0.0 0.0
+end
+case random-8
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 2 1 2
+building 10 9 3.75
+safe-builds 7 6 1.75
+answering-builds 2 2 0
+sweeps 8 0 18
+valuables 5 5 0
+trailing 11 3 14
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 0 0 0
+building 0 0 0
+safe-builds 4 4 0
+answering-builds 8 5 16.5
+sweeps 3 1 4.5
+valuables 15 15 0
+trailing 4 0 7
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 3 3 0
+building 8 8 0
+safe-builds 15 15 0
+answering-builds 12 6 33
+sweeps 8 2 13.5
+valuables 8 8 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 11 11 0
+safe-builds 5 5 0
+answering-builds 5 3 11
+sweeps 11 2 20.25
+valuables 14 14 0
+trailing 14 6 14
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 1 1 0
+building 7 7 0
+safe-builds 7 6 1.75
+answering-builds 3 1 11
+sweeps 10 0 22.5
+valuables 13 13 0
+trailing 4 0 7
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 1 0 2
+building 9 8 3.75
+safe-builds 9 8 1.75
+answering-builds 14 10 22
+sweeps 6 1 11.25
+valuables 7 7 0
+trailing 14 8 10.5
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 5 5 0
+safe-builds 6 5 1.75
+answering-builds 1 1 0
+sweeps 15 3 27
+valuables 6 6 0
+trailing 10 4 10.5
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 10 10 0
+safe-builds 6 6 0
+answering-builds 7 5 11
+sweeps 12 2 22.5
+valuables 11 11 0
+trailing 9 0 15.75
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 0 0 0
+building 2 2 0
+safe-builds 14 13 1.75
+answering-builds 6 5 5.5
+sweeps 15 3 27
+valuables 1 1 0
+trailing 12 2 17.5
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 3 3 0
+building 1 1 0
+safe-builds 5 5 0
+answering-builds 2 1 5.5
+sweeps 3 1 4.5
+valuables 9 9 0
+trailing 11 3 14
+expect games=10 focus=sweeps just=-
+state pairs 0 3.5631805440000006 3.5631805440000006 0.0 0.0
+state sums 0 4.634861056 4.0910433280000005 0.24369347929557358 0.17369347929557358
+state building 1 23.443642880000006 22.899825152000005 0.45692527367920055 0.23692527367920055
+state safe-builds 1 35.15922073600001 32.975723008 0.8561529251470308 0.7561529251470308
+state answering-builds 0 23.947355136000006 16.287699456000002 9.439141330971069 9.439141330971069
+state sweeps 0 42.23276390400001 7.737090560000002 17.390324925327366 17.300324925327367
+state valuables 1 35.57444864 35.57444864 0.0 0.0
+state trailing 0 44.342619648 11.900317184 12.720678293766618 12.260678293766617
+end
+case random-9
+deal
+cassino evidence v1
+pairs 13 13 0
+sums 2 2 0
+building 4 4 0
+safe-builds 0 0 0
+answering-builds 6 6 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 1 0 0
+expect games=1 focus=- just=pairs
+state pairs 1 13.0 13.0 0.0 0.0
+state sums 0 2.0 2.0 0.0 0.0
+state building 0 4.0 4.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 6.0 6.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 1.0 0.0 0.0 0.0
+end
+case random-10
+deal
+cassino evidence v1
+pairs 1 0 1.75
+sums 0 0 0
+building 4 4 0
+safe-builds 4 4 0
+answering-builds 14 13 1.5
+sweeps 1 1 0
+valuables 11 11 0
+trailing 3 3 0
+expect games=1 focus=- just=valuables
+state pairs 0 1.0 0.0 1.75 1.65
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 4.0 4.0 0.0 0.0
+state safe-builds 0 4.0 4.0 0.0 0.0
+state answering-builds 0 14.0 13.0 1.5 1.5
+state sweeps 0 1.0 1.0 0.0 0.0
+state valuables 1 11.0 11.0 0.0 0.0
+state trailing 0 3.0 3.0 0.0 0.0
+end
+case random-11
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 15 7 44
+building 5 4 2.25
+safe-builds 2 0 5.5
+answering-builds 8 8 0
+sweeps 10 1 51.75
+valuables 4 4 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 10 0 55
+building 10 9 2.25
+safe-builds 3 1 5.5
+answering-builds 6 6 0
+sweeps 5 1 23
+valuables 9 9 0
+trailing 9 8 2.25
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 4 2 11
+building 6 6 0
+safe-builds 3 1 5.5
+answering-builds 13 11 9
+sweeps 14 6 46
+valuables 15 15 0
+trailing 9 9 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 12 3 49.5
+building 8 8 0
+safe-builds 0 0 0
+answering-builds 5 4 4.5
+sweeps 12 7 28.75
+valuables 14 13 4.5
+trailing 4 4 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 10 5 27.5
+building 2 2 0
+safe-builds 2 0 5.5
+answering-builds 12 10 9
+sweeps 1 0 5.75
+valuables 3 3 0
+trailing 10 10 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 10 4 33
+building 14 13 2.25
+safe-builds 0 0 0
+answering-builds 14 12 9
+sweeps 12 5 40.25
+valuables 10 9 4.5
+trailing 13 12 2.25
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 8 6 11
+building 5 5 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 7 4 17.25
+valuables 8 8 0
+trailing 11 11 0
+expect games=7 focus=sums just=-
+state pairs 0 5.043968 5.043968 0.0 0.0
+state sums 0 37.391360000000006 16.590208 28.953191558283795 28.883191558283794
+state building 1 28.621120000000005 27.231296 0.7913865988565135 0.5713865988565136
+state safe-builds 0 4.016128000000001 0.7372800000000002 2.2819196320111437 2.1819196320111436
+state answering-builds 1 30.828032000000004 26.616832000000002 4.795840689331238 4.795840689331238
+state sweeps 0 33.378240000000005 14.631424000000003 27.27983430783434 27.18983430783434
+state valuables 1 35.229696000000004 33.91769600000001 1.494144895612316 1.454144895612316
+state trailing 1 36.48352 35.35584 0.6421178795290001 0.1821178795290001
+end
+case random-12
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 12 9 4.5
+building 2 2 0
+safe-builds 6 5 3.25
+answering-builds 1 1 0
+sweeps 14 12 9
+valuables 1 1 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 11 11 0
+sums 7 6 1.5
+building 14 14 0
+safe-builds 6 5 3.25
+answering-builds 10 10 0
+sweeps 14 12 9
+valuables 1 1 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 0 0 0
+building 8 7 4
+safe-builds 11 7 13
+answering-builds 0 0 0
+sweeps 3 3 0
+valuables 3 3 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 4 4 0
+sums 7 5 3
+building 12 10 8
+safe-builds 15 11 13
+answering-builds 2 2 0
+sweeps 13 12 4.5
+valuables 2 1 2.75
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 8 8 0
+sums 7 5 3
+building 2 2 0
+safe-builds 8 7 3.25
+answering-builds 2 1 5.75
+sweeps 11 10 4.5
+valuables 2 1 2.75
+trailing 1 0 2.5
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 1 0 1.5
+building 11 11 0
+safe-builds 8 7 3.25
+answering-builds 3 3 0
+sweeps 13 12 4.5
+valuables 3 3 0
+trailing 1 1 0
+expect games=6 focus=safe-builds just=-
+state pairs 1 17.81728 17.81728 0.0 0.0
+state sums 0 17.879360000000002 12.606720000000003 2.1437678896695287 2.073767889669529
+state building 1 30.76576 28.973760000000006 1.942926533090467 1.722926533090467
+state safe-builds 0 34.05568000000001 26.910400000000003 6.294496487119438 6.194496487119438
+state answering-builds 1 10.30368 9.50368 1.2468557550524764 1.2468557550524764
+state sweeps 1 41.97792000000001 38.06336 4.774785323965652 4.684785323965652
+state valuables 0 8.15328 6.713280000000001 1.0733801717408273 1.0333801717408273
+state trailing 0 4.744 3.944 0.5421111978489027 0.0821111978489027
+end
+case random-13
+deal
+cassino evidence v1
+pairs 11 7 16
+sums 9 8 5.25
+building 2 1 3.75
+safe-builds 3 1 8
+answering-builds 13 8 6.25
+sweeps 11 9 6
+valuables 0 0 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 10 9 4
+sums 2 2 0
+building 0 0 0
+safe-builds 2 1 4
+answering-builds 15 7 10
+sweeps 15 14 3
+valuables 2 2 0
+trailing 1 1 0
+expect games=2 focus=pairs just=-
+state pairs 0 18.8 14.600000000000001 9.333333333333334 9.233333333333334
+state sums 0 9.2 8.4 2.3333333333333335 2.2633333333333336
+state building 0 1.6 0.8 1.6666666666666665 1.4466666666666665
+state safe-builds 0 4.4 1.8 5.777777777777778 5.677777777777778
+state answering-builds 0 25.4 13.4 8.333333333333334 8.333333333333334
+state sweeps 0 23.8 21.2 4.333333333333334 4.243333333333334
+state valuables 0 2.0 2.0 0.0 0.0
+state trailing 0 2.6 2.6 0.0 0.0
+end
+case random-14
+deal
+cassino evidence v1
+pairs 13 12 4.5
+sums 5 5 0
+building 12 10 4
+safe-builds 0 0 0
+answering-builds 11 11 0
+sweeps 2 2 0
+valuables 3 3 0
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 4 4 0
+sums 6 6 0
+building 6 4 4
+safe-builds 2 0 11.5
+answering-builds 8 8 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 13 13 0
+sums 15 14 4.25
+building 7 7 0
+safe-builds 3 0 17.25
+answering-builds 15 15 0
+sweeps 7 7 0
+valuables 3 3 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 8 6 9
+sums 10 6 17
+building 9 8 2
+safe-builds 3 1 11.5
+answering-builds 0 0 0
+sweeps 13 13 0
+valuables 1 1 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 14 13 4.5
+sums 10 10 0
+building 11 11 0
+safe-builds 2 0 11.5
+answering-builds 4 4 0
+sweeps 3 3 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 2 2 0
+building 13 12 2
+safe-builds 3 0 17.25
+answering-builds 3 3 0
+sweeps 4 4 0
+valuables 1 1 0
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 10 10 0
+sums 1 1 0
+building 9 9 0
+safe-builds 3 1 11.5
+answering-builds 3 3 0
+sweeps 11 11 0
+valuables 2 1 1.75
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 5 4 4.5
+sums 11 10 4.25
+building 5 4 2
+safe-builds 0 0 0
+answering-builds 3 3 0
+sweeps 1 1 0
+valuables 3 3 0
+trailing 0 0 0
+expect games=8 focus=safe-builds just=-
+state pairs 1 31.479513600000008 28.938598400000004 2.7478336701641703 2.6478336701641703
+state sums 1 29.832640000000005 26.866560000000003 3.0294204048737416 2.959420404873742
+state building 1 36.2216064 33.228288000000006 1.4387014017699769 1.2187014017699769
+state safe-builds 0 8.080128 1.2096 9.493923202569142 9.393923202569143
+state answering-builds 1 18.6872192 18.6872192 0.0 0.0
+state sweeps 1 21.933990400000006 21.933990400000006 0.0 0.0
+state valuables 0 7.2617856000000005 6.461785600000001 0.33644632700583527 0.2964463270058353
+state trailing 1 5.738393600000001 5.738393600000001 0.0 0.0
+end
+case random-15
+deal
+cassino evidence v1
+pairs 3 0 9.75
+sums 5 1 21
+building 15 13 0
+safe-builds 0 0 0
+answering-builds 13 5 8
+sweeps 0 0 0
+valuables 0 0 0
+trailing 7 7 0
+expect games=1 focus=sums just=trailing
+state pairs 0 3.0 0.0 9.75 9.65
+state sums 0 5.0 1.0 21.0 20.93
+state building 0 15.0 13.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 13.0 5.0 8.0 8.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 1 7.0 7.0 0.0 0.0
+end
+case random-16
+deal
+cassino evidence v1
+pairs 13 12 0.5
+sums 9 4 10
+building 3 3 0
+safe-builds 12 10 8
+answering-builds 13 12 2.25
+sweeps 7 7 0
+valuables 11 9 7
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 15 14 0.5
+sums 6 6 0
+building 0 0 0
+safe-builds 12 12 0
+answering-builds 8 7 2.25
+sweeps 3 3 0
+valuables 3 3 0
+trailing 7 7 0
+deal
+cassino evidence v1
+pairs 12 11 0.5
+sums 0 0 0
+building 2 2 0
+safe-builds 12 11 4
+answering-builds 5 5 0
+sweeps 1 1 0
+valuables 0 0 0
+trailing 5 5 0
+deal
+cassino evidence v1
+pairs 7 6 0.5
+sums 0 0 0
+building 3 3 0
+safe-builds 11 10 4
+answering-builds 13 13 0
+sweeps 2 2 0
+valuables 4 3 3.5
+trailing 15 15 0
+deal
+cassino evidence v1
+pairs 14 13 0.5
+sums 14 12 4
+building 1 1 0
+safe-builds 3 3 0
+answering-builds 9 8 2.25
+sweeps 7 7 0
+valuables 3 3 0
+trailing 14 13 0.75
+deal
+cassino evidence v1
+pairs 9 7 1
+sums 7 5 4
+building 2 2 0
+safe-builds 11 11 0
+answering-builds 9 8 2.25
+sweeps 2 2 0
+valuables 4 4 0
+trailing 4 4 0
+deal
+cassino evidence v1
+pairs 14 14 0
+sums 8 6 4
+building 0 0 0
+safe-builds 13 13 0
+answering-builds 13 13 0
+sweeps 7 6 2.25
+valuables 6 6 0
+trailing 12 12 0
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 4 4 0
+building 3 3 0
+safe-builds 7 6 4
+answering-builds 10 9 2.25
+sweeps 3 3 0
+valuables 6 6 0
+trailing 8 8 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 13 12 2
+building 3 3 0
+safe-builds 9 8 4
+answering-builds 1 0 2.25
+sweeps 1 1 0
+valuables 1 1 0
+trailing 13 13 0
+expect games=9 focus=sums just=-
+state pairs 1 34.868654080000006 32.46774272000001 0.27731121757133875 0.17731121757133875
+state sums 0 33.406640640000006 28.444579840000003 2.292521323421138 2.2225213234211383
+state building 1 8.84424448 8.84424448 0.0 0.0
+state safe-builds 1 41.06085632000001 38.33548800000001 2.518294410167825 2.418294410167825
+state answering-builds 1 35.04371968 31.944632320000007 1.610785248326267 1.610785248326267
+state sweeps 1 14.49225472 13.852254720000003 0.3326471438768383 0.2426471438768383
+state valuables 1 16.702159360000003 16.038935040000002 0.536228378674864 0.49622837867486397
+state trailing 1 42.89187072 42.48227072 0.07096472402705886 0.0
+end
+case random-17
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 9 7 1
+building 0 0 0
+safe-builds 9 8 3
+answering-builds 15 1 73.5
+sweeps 1 0 2.25
+valuables 0 0 0
+trailing 5 4 0.75
+expect games=1 focus=answering-builds just=pairs
+state pairs 1 9.0 9.0 0.0 0.0
+state sums 0 9.0 7.0 1.0 0.9299999999999999
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 9.0 8.0 3.0 2.9
+state answering-builds 0 15.0 1.0 73.5 73.5
+state sweeps 0 1.0 0.0 2.25 2.16
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 5.0 4.0 0.75 0.29
+end
+case random-18
+deal
+cassino evidence v1
+pairs 3 2 5
+sums 13 4 36
+building 8 8 0
+safe-builds 12 4 26
+answering-builds 8 4 9
+sweeps 5 5 0
+valuables 10 10 0
+trailing 4 4 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 2 1 4
+building 9 8 5.75
+safe-builds 13 3 32.5
+answering-builds 13 3 22.5
+sweeps 7 7 0
+valuables 13 13 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 11 9 10
+sums 8 3 20
+building 14 12 11.5
+safe-builds 13 2 35.75
+answering-builds 7 2 11.25
+sweeps 8 8 0
+valuables 11 10 6
+trailing 5 5 0
+deal
+cassino evidence v1
+pairs 12 10 10
+sums 1 0 4
+building 11 11 0
+safe-builds 6 3 9.75
+answering-builds 7 2 11.25
+sweeps 3 3 0
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 13 11 10
+sums 1 1 0
+building 7 7 0
+safe-builds 10 2 26
+answering-builds 9 4 11.25
+sweeps 14 14 0
+valuables 15 15 0
+trailing 12 11 4.5
+deal
+cassino evidence v1
+pairs 8 6 10
+sums 14 7 28
+building 7 7 0
+safe-builds 14 2 39
+answering-builds 7 2 11.25
+sweeps 6 6 0
+valuables 1 1 0
+trailing 5 4 4.5
+deal
+cassino evidence v1
+pairs 3 2 5
+sums 7 2 20
+building 7 7 0
+safe-builds 11 3 26
+answering-builds 7 2 11.25
+sweeps 5 5 0
+valuables 4 4 0
+trailing 13 9 18
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 5 1 16
+building 15 14 5.75
+safe-builds 11 6 16.25
+answering-builds 3 0 6.75
+sweeps 5 5 0
+valuables 1 0 6
+trailing 5 5 0
+deal
+cassino evidence v1
+pairs 4 2 10
+sums 6 2 16
+building 11 11 0
+safe-builds 1 0 3.25
+answering-builds 4 1 6.75
+sweeps 15 15 0
+valuables 6 6 0
+trailing 15 14 4.5
+expect games=9 focus=safe-builds just=-
+state pairs 0 24.88900608 19.058385920000003 6.734510914078868 6.634510914078868
+state sums 0 27.082900480000003 9.740835840000003 16.024411865065307 15.954411865065307
+state building 1 44.43531008000001 42.90130688000001 2.03758350921743 1.8175835092174302
+state safe-builds 0 38.217515520000006 11.370762240000003 20.155632884106918 20.055632884106917
+state answering-builds 0 26.347642880000006 7.422282240000001 9.836667443336145 9.836667443336145
+state sweeps 1 36.39345920000001 36.39345920000001 0.0 0.0
+state valuables 1 23.303603200000005 22.241459200000005 1.4721631999413356 1.4321631999413356
+state trailing 1 36.98672384 32.50512384 4.65872324999512 4.19872324999512
+end
+case random-19
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 1 1 0
+building 12 0 9
+safe-builds 1 0 5.25
+answering-builds 8 8 0
+sweeps 0 0 0
+valuables 7 4 16.5
+trailing 10 1 29.25
+deal
+cassino evidence v1
+pairs 7 7 0
+sums 1 1 0
+building 4 2 1.5
+safe-builds 11 11 0
+answering-builds 11 11 0
+sweeps 5 3 6.5
+valuables 3 0 16.5
+trailing 13 2 35.75
+deal
+cassino evidence v1
+pairs 4 4 0
+sums 3 3 0
+building 3 0 2.25
+safe-builds 9 9 0
+answering-builds 11 11 0
+sweeps 7 2 16.25
+valuables 3 2 5.5
+trailing 13 3 32.5
+deal
+cassino evidence v1
+pairs 11 11 0
+sums 3 3 0
+building 10 4 4.5
+safe-builds 3 3 0
+answering-builds 0 0 0
+sweeps 5 4 3.25
+valuables 0 0 0
+trailing 14 2 39
+deal
+cassino evidence v1
+pairs 7 7 0
+sums 1 1 0
+building 12 3 6.75
+safe-builds 12 10 10.5
+answering-builds 8 8 0
+sweeps 12 5 22.75
+valuables 10 5 27.5
+trailing 1 0 3.25
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 0 0 0
+building 12 1 8.25
+safe-builds 6 6 0
+answering-builds 4 4 0
+sweeps 2 2 0
+valuables 12 4 44
+trailing 10 2 26
+deal
+cassino evidence v1
+pairs 11 11 0
+sums 3 3 0
+building 15 3 9
+safe-builds 11 10 5.25
+answering-builds 10 10 0
+sweeps 4 3 3.25
+valuables 2 1 5.5
+trailing 3 1 6.5
+deal
+cassino evidence v1
+pairs 6 5 4.25
+sums 1 1 0
+building 12 4 6
+safe-builds 8 7 5.25
+answering-builds 6 6 0
+sweeps 3 2 3.25
+valuables 0 0 0
+trailing 11 0 35.75
+expect games=8 focus=trailing just=-
+state pairs 1 28.1650432 27.1650432 1.0213549212677142 0.9213549212677142
+state sums 0 6.595699200000002 6.595699200000002 0.0 0.0
+state building 0 46.468198400000006 10.738688 6.439854932033996 6.219854932033996
+state safe-builds 1 34.055219199999996 31.021504000000007 3.827558760831649 3.727558760831649
+state answering-builds 1 28.821785600000005 28.821785600000005 0.0 0.0
+state sweeps 0 19.276480000000003 11.320192000000002 6.214148279394259 6.124148279394259
+state valuables 0 17.637478400000003 7.414220800000002 13.512625773249784 13.472625773249785
+state trailing 0 35.81126400000001 4.6162432 24.364437892392544 23.904437892392544
+end
+case random-20
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 5 3 2
+safe-builds 0 0 0
+answering-builds 3 3 0
+sweeps 4 4 0
+valuables 6 0 30
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 7 4 18
+sums 12 12 0
+building 8 8 0
+safe-builds 0 0 0
+answering-builds 3 2 2.25
+sweeps 1 1 0
+valuables 7 1 30
+trailing 3 2 2.5
+deal
+cassino evidence v1
+pairs 13 7 36
+sums 4 4 0
+building 14 13 1
+safe-builds 2 2 0
+answering-builds 2 2 0
+sweeps 1 1 0
+valuables 1 0 5
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 14 7 42
+sums 10 9 3.5
+building 5 5 0
+safe-builds 2 2 0
+answering-builds 0 0 0
+sweeps 8 8 0
+valuables 9 2 35
+trailing 3 2 2.5
+deal
+cassino evidence v1
+pairs 13 9 24
+sums 13 13 0
+building 6 6 0
+safe-builds 0 0 0
+answering-builds 3 3 0
+sweeps 0 0 0
+valuables 14 4 50
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 15 11 24
+sums 1 1 0
+building 9 8 1
+safe-builds 3 3 0
+answering-builds 1 1 0
+sweeps 10 8 6
+valuables 7 1 30
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 11 7 24
+sums 2 2 0
+building 10 10 0
+safe-builds 0 0 0
+answering-builds 1 1 0
+sweeps 14 12 6
+valuables 3 1 10
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 4 3 6
+sums 5 5 0
+building 14 12 2
+safe-builds 2 2 0
+answering-builds 0 0 0
+sweeps 11 10 3
+valuables 8 2 30
+trailing 2 2 0
+expect games=8 focus=valuables just=-
+state pairs 0 40.885248000000004 26.457536000000005 20.803503040705774 20.703503040705773
+state sums 1 22.448448000000006 22.038848000000005 0.34452103885397534 0.27452103885397533
+state building 1 40.613248000000006 37.2261376 0.8139863237451896 0.5939863237451897
+state safe-builds 0 5.39456 5.39456 0.0 0.0
+state answering-builds 0 5.0469376000000015 4.7847936 0.14174579884277844 0.14174579884277844
+state sweeps 1 33.3054848 29.425484800000003 2.797310890248516 2.7073108902485163
+state valuables 0 29.155379200000006 6.569344 27.13924494523038 27.09924494523038
+state trailing 0 5.0646272 4.3928832 0.4035817883717997 0.0
+end
+case random-21
+deal
+cassino evidence v1
+pairs 10 8 10
+sums 2 1 4
+building 10 10 0
+safe-builds 3 3 0
+answering-builds 3 1 9
+sweeps 0 0 0
+valuables 3 2 6
+trailing 9 2 19.25
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 2 2 0
+building 9 8 1.5
+safe-builds 3 3 0
+answering-builds 3 0 13.5
+sweeps 1 0 3
+valuables 2 2 0
+trailing 8 4 11
+deal
+cassino evidence v1
+pairs 4 4 0
+sums 1 1 0
+building 9 9 0
+safe-builds 0 0 0
+answering-builds 2 0 9
+sweeps 3 0 9
+valuables 0 0 0
+trailing 12 3 24.75
+deal
+cassino evidence v1
+pairs 7 6 5
+sums 2 2 0
+building 13 13 0
+safe-builds 3 3 0
+answering-builds 1 0 4.5
+sweeps 1 0 3
+valuables 2 2 0
+trailing 3 2 2.75
+expect games=4 focus=trailing just=-
+state pairs 0 15.32 13.296000000000001 3.4281842818428183 3.3281842818428182
+state sums 0 5.104000000000001 4.5920000000000005 0.6937669376693768 0.6237669376693769
+state building 1 31.080000000000002 30.44 0.3252032520325203 0.10520325203252032
+state safe-builds 0 6.456 6.456 0.0 0.0
+state answering-builds 0 6.056000000000001 0.5120000000000001 8.45121951219512 8.45121951219512
+state sweeps 0 4.04 0.0 4.105691056910569 4.015691056910569
+state valuables 0 4.816000000000001 4.304 1.0406504065040652 1.0006504065040651
+state trailing 0 22.328000000000003 7.984 13.362466124661246 12.902466124661245
+end
+case random-22
+deal
+cassino evidence v1
+pairs 13 12 0.25
+sums 9 1 22
+building 14 14 0
+safe-builds 7 7 0
+answering-builds 9 4 16.25
+sweeps 3 3 0
+valuables 3 2 3.5
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 11 10 0.25
+sums 6 2 11
+building 1 1 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 3 3 0
+valuables 2 2 0
+trailing 1 1 0
+expect games=2 focus=sums just=pairs
+state pairs 1 21.4 19.6 0.25 0.15
+state sums 0 13.2 2.8 15.88888888888889 15.818888888888889
+state building 1 12.200000000000001 12.200000000000001 0.0 0.0
+state safe-builds 0 5.6000000000000005 5.6000000000000005 0.0 0.0
+state answering-builds 0 7.2 3.2 7.222222222222222 7.222222222222222
+state sweeps 0 5.4 5.4 0.0 0.0
+state valuables 0 4.4 3.6 1.5555555555555556 1.5155555555555555
+state trailing 0 2.6 2.6 0.0 0.0
+end
+case random-23
+deal
+cassino evidence v1
+pairs 13 2 30.25
+sums 10 8 8.5
+building 3 2 6
+safe-builds 0 0 0
+answering-builds 3 3 0
+sweeps 9 9 0
+valuables 12 12 0
+trailing 15 15 0
+expect games=1 focus=pairs just=sweeps,valuables,trailing
+state pairs 0 13.0 2.0 30.25 30.15
+state sums 0 10.0 8.0 8.5 8.43
+state building 0 3.0 2.0 6.0 5.78
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 3.0 3.0 0.0 0.0
+state sweeps 1 9.0 9.0 0.0 0.0
+state valuables 1 12.0 12.0 0.0 0.0
+state trailing 1 15.0 15.0 0.0 0.0
+end
+case random-24
+deal
+cassino evidence v1
+pairs 6 4 3
+sums 6 5 2.5
+building 1 1 0
+safe-builds 12 12 0
+answering-builds 4 3 1
+sweeps 8 7 0.5
+valuables 0 0 0
+trailing 11 2 42.75
+deal
+cassino evidence v1
+pairs 9 6 4.5
+sums 7 5 5
+building 3 2 0.25
+safe-builds 9 9 0
+answering-builds 14 12 2
+sweeps 7 6 0.5
+valuables 4 3 0.5
+trailing 3 0 14.25
+deal
+cassino evidence v1
+pairs 13 5 12
+sums 2 2 0
+building 11 11 0
+safe-builds 1 1 0
+answering-builds 14 12 2
+sweeps 12 11 0.5
+valuables 12 10 1
+trailing 14 2 57
+deal
+cassino evidence v1
+pairs 10 2 12
+sums 3 2 2.5
+building 11 11 0
+safe-builds 8 7 3.25
+answering-builds 5 5 0
+sweeps 5 4 0.5
+valuables 13 11 1
+trailing 14 0 66.5
+deal
+cassino evidence v1
+pairs 4 0 6
+sums 7 5 5
+building 3 3 0
+safe-builds 9 9 0
+answering-builds 13 11 2
+sweeps 8 6 1
+valuables 11 9 1
+trailing 3 0 14.25
+deal
+cassino evidence v1
+pairs 7 2 7.5
+sums 5 5 0
+building 3 3 0
+safe-builds 12 12 0
+answering-builds 3 1 2
+sweeps 6 5 0.5
+valuables 0 0 0
+trailing 3 0 14.25
+deal
+cassino evidence v1
+pairs 9 3 9
+sums 1 1 0
+building 5 4 0.25
+safe-builds 0 0 0
+answering-builds 12 11 1
+sweeps 9 6 1.5
+valuables 0 0 0
+trailing 5 0 23.75
+expect games=7 focus=trailing just=-
+state pairs 0 32.126784 10.686656000000001 8.138886639348245 8.038886639348245
+state sums 0 15.701824000000002 12.992320000000001 1.7142579485269105 1.6442579485269104
+state building 1 20.702784 19.375104 0.0840000971801558 0.0
+state safe-builds 1 25.960448000000003 25.448448000000003 0.4211140085194603 0.32111400851946026
+state answering-builds 0 36.650496000000004 31.033792000000005 1.4214379423721675 1.4214379423721675
+state sweeps 0 30.786112000000003 24.194688000000003 0.8340567856043796 0.7440567856043796
+state valuables 0 19.92192 16.471040000000002 0.4366628334494096 0.3966628334494096
+state trailing 0 26.089024000000006 1.3434880000000007 29.7465663011613 29.2865663011613
+end
+case random-25
+deal
+cassino evidence v1
+pairs 5 5 0
+sums 2 2 0
+building 0 0 0
+safe-builds 13 13 0
+answering-builds 2 0 7.5
+sweeps 3 0 2.25
+valuables 11 5 10.5
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 5 4 5.75
+building 6 4 7
+safe-builds 10 10 0
+answering-builds 0 0 0
+sweeps 9 3 4.5
+valuables 12 6 10.5
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 14 13 5.75
+building 15 7 28
+safe-builds 1 1 0
+answering-builds 3 0 11.25
+sweeps 7 3 3
+valuables 14 6 14
+trailing 4 0 20
+deal
+cassino evidence v1
+pairs 8 8 0
+sums 15 13 11.5
+building 9 3 21
+safe-builds 8 7 4
+answering-builds 1 0 3.75
+sweeps 1 0 0.75
+valuables 2 0 3.5
+trailing 11 2 45
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 14 13 5.75
+building 6 2 14
+safe-builds 1 1 0
+answering-builds 2 1 3.75
+sweeps 7 6 0.75
+valuables 4 1 5.25
+trailing 0 0 0
+expect games=5 focus=building just=sums
+state pairs 1 16.368000000000002 16.368000000000002 0.0 0.0
+state sums 1 38.339200000000005 34.5872 6.417777248929081 6.347777248929081
+state building 0 25.872000000000003 10.928 15.55925749643027 15.33925749643027
+state safe-builds 1 18.484800000000003 17.684800000000003 0.951927653498334 0.851927653498334
+state answering-builds 0 5.539200000000001 1.0 5.063660161827702 5.063660161827702
+state sweeps 0 18.1168 9.456 1.9322941456449305 1.8422941456449304
+state valuables 0 25.209600000000002 9.96 7.938719657306044 7.898719657306044
+state trailing 0 11.36 1.6 14.516896715849594 14.056896715849593
+end
+case random-26
+deal
+cassino evidence v1
+pairs 15 2 6.5
+sums 12 0 51
+building 1 0 1.5
+safe-builds 6 1 1.25
+answering-builds 8 6 8.5
+sweeps 3 3 0
+valuables 15 1 70
+trailing 2 0 8
+deal
+cassino evidence v1
+pairs 5 1 2
+sums 4 0 17
+building 1 0 1.5
+safe-builds 7 3 1
+answering-builds 9 9 0
+sweeps 2 2 0
+valuables 5 0 25
+trailing 5 0 20
+deal
+cassino evidence v1
+pairs 11 0 5.5
+sums 7 0 29.75
+building 0 0 0
+safe-builds 1 0 0.25
+answering-builds 5 5 0
+sweeps 2 2 0
+valuables 3 1 10
+trailing 8 2 24
+deal
+cassino evidence v1
+pairs 4 1 1.5
+sums 6 0 25.5
+building 2 2 0
+safe-builds 2 0 0.5
+answering-builds 7 7 0
+sweeps 0 0 0
+valuables 13 2 55
+trailing 10 5 20
+deal
+cassino evidence v1
+pairs 14 0 7
+sums 15 0 63.75
+building 1 0 1.5
+safe-builds 4 3 0.25
+answering-builds 4 4 0
+sweeps 3 3 0
+valuables 0 0 0
+trailing 3 1 8
+deal
+cassino evidence v1
+pairs 5 2 1.5
+sums 6 0 25.5
+building 2 0 3
+safe-builds 15 4 2.75
+answering-builds 3 3 0
+sweeps 2 2 0
+valuables 4 1 15
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 10 1 4.5
+sums 5 0 21.25
+building 1 0 1.5
+safe-builds 11 6 1.25
+answering-builds 2 2 0
+sweeps 0 0 0
+valuables 10 1 45
+trailing 10 4 24
+deal
+cassino evidence v1
+pairs 4 1 1.5
+sums 10 0 42.5
+building 1 0 1.5
+safe-builds 9 2 1.75
+answering-builds 7 5 8.5
+sweeps 2 2 0
+valuables 14 1 65
+trailing 7 2 20
+deal
+cassino evidence v1
+pairs 3 0 1.5
+sums 10 1 38.25
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 6 4 8.5
+sweeps 3 3 0
+valuables 12 1 55
+trailing 4 2 8
+deal
+cassino evidence v1
+pairs 2 0 1
+sums 0 0 0
+building 2 1 1.5
+safe-builds 15 6 2.25
+answering-builds 3 3 0
+sweeps 2 2 0
+valuables 3 2 5
+trailing 2 1 4
+expect games=10 focus=valuables just=-
+state pairs 0 24.923089920000006 2.669551616 2.4930421981108517 2.3930421981108516
+state sums 0 29.655371776000006 0.8 27.477432901891454 27.407432901891454
+state building 0 5.125157888 1.5242880000000003 1.2102058276831988 0.9902058276831989
+state safe-builds 0 36.56043468800001 13.610974208000002 1.2855028404681446 1.1855028404681445
+state answering-builds 1 21.310795264000003 18.162359808000005 2.9980873114284434 2.9980873114284434
+state sweeps 1 8.639867904000003 8.639867904000003 0.0 0.0
+state valuables 0 35.207544320000004 5.2298209280000005 33.58375122131354 33.54375122131354
+state trailing 0 21.599097856000004 8.395430400000002 11.833551927951767 11.373551927951766
+end
+case random-27
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 2 0 6
+building 3 0 6
+safe-builds 5 4 4.5
+answering-builds 8 7 3.75
+sweeps 12 12 0
+valuables 0 0 0
+trailing 14 13 3.25
+deal
+cassino evidence v1
+pairs 1 0 4
+sums 1 1 0
+building 6 2 8
+safe-builds 14 12 9
+answering-builds 8 8 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 15 13 6.5
+deal
+cassino evidence v1
+pairs 7 6 4
+sums 0 0 0
+building 5 3 4
+safe-builds 6 6 0
+answering-builds 5 5 0
+sweeps 12 12 0
+valuables 2 2 0
+trailing 6 6 0
+deal
+cassino evidence v1
+pairs 2 0 8
+sums 3 0 9
+building 3 2 2
+safe-builds 5 4 4.5
+answering-builds 12 12 0
+sweeps 8 8 0
+valuables 0 0 0
+trailing 15 14 3.25
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 0 0 0
+building 15 10 10
+safe-builds 0 0 0
+answering-builds 13 11 7.5
+sweeps 11 11 0
+valuables 0 0 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 10 9 4
+sums 0 0 0
+building 9 6 6
+safe-builds 13 9 18
+answering-builds 12 11 3.75
+sweeps 0 0 0
+valuables 0 0 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 12 7 20
+sums 3 1 6
+building 5 2 6
+safe-builds 3 2 4.5
+answering-builds 8 8 0
+sweeps 6 6 0
+valuables 1 0 1.5
+trailing 7 6 3.25
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 1 0 3
+building 7 4 6
+safe-builds 6 5 4.5
+answering-builds 4 3 3.75
+sweeps 15 15 0
+valuables 0 0 0
+trailing 14 13 3.25
+deal
+cassino evidence v1
+pairs 7 6 4
+sums 2 0 6
+building 9 5 8
+safe-builds 1 1 0
+answering-builds 6 4 7.5
+sweeps 3 3 0
+valuables 1 1 0
+trailing 13 10 9.75
+deal
+cassino evidence v1
+pairs 4 3 4
+sums 1 0 3
+building 13 7 12
+safe-builds 1 1 0
+answering-builds 14 14 0
+sweeps 3 3 0
+valuables 3 1 3
+trailing 8 6 6.5
+expect games=10 focus=pairs just=-
+state pairs 0 24.709644288000003 19.038268928000004 5.082869214111335 4.982869214111336
+state sums 0 5.998639616000001 0.6797721600000002 3.5752052099282685 3.5052052099282687
+state building 0 39.08589414400001 21.80737792 7.742781301332595 7.5227813013325955
+state safe-builds 0 18.089710080000007 14.567404032000002 3.551404609518658 3.451404609518658
+state answering-builds 1 41.241263104 37.80208537600001 2.8896579564942217 2.8896579564942217
+state sweeps 1 27.900827136000004 27.900827136000004 0.0 0.0
+state valuables 0 4.731430400000001 2.2194304000000002 0.8442507320998195 0.8042507320998195
+state trailing 1 42.00464179200001 35.720735744 4.575869138741792 4.115869138741792
+end
+case random-28
+deal
+cassino evidence v1
+pairs 3 1 12
+sums 3 3 0
+building 1 1 0
+safe-builds 4 3 3.5
+answering-builds 13 11 6
+sweeps 8 8 0
+valuables 3 1 6
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 1 1 0
+building 0 0 0
+safe-builds 12 12 0
+answering-builds 14 12 6
+sweeps 6 6 0
+valuables 2 0 6
+trailing 2 0 9
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 1 1 0
+building 1 1 0
+safe-builds 15 15 0
+answering-builds 9 8 3
+sweeps 9 7 1.5
+valuables 2 0 6
+trailing 4 3 4.5
+deal
+cassino evidence v1
+pairs 2 1 6
+sums 3 3 0
+building 1 1 0
+safe-builds 12 11 3.5
+answering-builds 5 4 3
+sweeps 13 12 0.75
+valuables 3 0 9
+trailing 6 4 9
+expect games=4 focus=valuables just=-
+state pairs 0 4.176 2.152 4.1138211382113825 4.013821138211383
+state sums 0 5.976000000000001 5.976000000000001 0.0 0.0
+state building 0 2.3120000000000003 2.3120000000000003 0.0 0.0
+state safe-builds 1 33.728 32.21600000000001 1.7926829268292679 1.6926829268292678
+state answering-builds 0 27.816000000000003 23.712000000000003 4.170731707317073 4.170731707317073
+state sweeps 1 28.136000000000003 25.536 0.6605691056910569 0.5705691056910569
+state valuables 0 7.416 0.5120000000000001 7.016260162601626 6.976260162601626
+state trailing 0 10.48 6.4 6.2195121951219505 5.759512195121951
+end
+case random-29
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 3 2 0.25
+building 8 6 7
+safe-builds 4 4 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 13 7 1.5
+building 7 6 3.5
+safe-builds 5 5 0
+answering-builds 0 0 0
+sweeps 10 9 4.5
+valuables 3 3 0
+trailing 13 11 2
+expect games=2 focus=sweeps just=safe-builds
+state pairs 0 1.6 1.6 0.0 0.0
+state sums 0 15.4 8.6 0.9444444444444444 0.8744444444444444
+state building 0 13.4 10.8 5.055555555555556 4.8355555555555565
+state safe-builds 1 8.2 8.2 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 10.0 9.0 2.5 2.41
+state valuables 0 3.0 3.0 0.0 0.0
+state trailing 0 14.6 12.6 1.1111111111111112 0.6511111111111112
+end
+case random-30
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 2 0 5
+building 11 1 15
+safe-builds 5 5 0
+answering-builds 8 4 13
+sweeps 13 12 3.5
+valuables 2 2 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 0 0 0
+building 10 1 13.5
+safe-builds 0 0 0
+answering-builds 12 3 29.25
+sweeps 5 2 10.5
+valuables 0 0 0
+trailing 2 2 0
+expect games=2 focus=answering-builds just=-
+state pairs 0 3.6 3.6 0.0 0.0
+state sums 0 1.6 0.0 2.2222222222222223 2.1522222222222225
+state building 0 18.8 1.8 14.166666666666666 13.946666666666665
+state safe-builds 0 4.0 4.0 0.0 0.0
+state answering-builds 0 18.4 6.2 22.027777777777775 22.027777777777775
+state sweeps 0 15.4 11.600000000000001 7.388888888888889 7.298888888888889
+state valuables 0 1.6 1.6 0.0 0.0
+state trailing 0 2.8 2.8 0.0 0.0
+end
+case random-31
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 2 2 0
+sweeps 5 0 2.5
+valuables 6 5 1.5
+trailing 15 2 61.75
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 0 0 0
+building 1 1 0
+safe-builds 2 2 0
+answering-builds 3 3 0
+sweeps 2 2 0
+valuables 12 11 1.5
+trailing 13 0 61.75
+expect games=2 focus=trailing just=-
+state pairs 0 3.6 3.6 0.0 0.0
+state sums 0 0.0 0.0 0.0 0.0
+state building 0 1.0 1.0 0.0 0.0
+state safe-builds 0 2.0 2.0 0.0 0.0
+state answering-builds 0 4.6 4.6 0.0 0.0
+state sweeps 0 6.0 2.0 1.1111111111111112 1.021111111111111
+state valuables 0 16.8 15.0 1.5 1.46
+state trailing 0 25.0 1.6 61.75 61.29
+end
+case random-32
+deal
+cassino evidence v1
+pairs 9 4 13.75
+sums 15 8 7
+building 10 9 3.75
+safe-builds 5 4 4
+answering-builds 10 10 0
+sweeps 1 0 2.5
+valuables 7 6 2
+trailing 6 6 0
+deal
+cassino evidence v1
+pairs 6 4 5.5
+sums 1 0 1
+building 5 3 7.5
+safe-builds 3 3 0
+answering-builds 1 1 0
+sweeps 11 7 10
+valuables 9 8 2
+trailing 10 8 4
+deal
+cassino evidence v1
+pairs 4 2 5.5
+sums 4 3 1
+building 1 1 0
+safe-builds 3 3 0
+answering-builds 1 1 0
+sweeps 0 0 0
+valuables 15 15 0
+trailing 7 6 2
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 12 9 3
+building 7 7 0
+safe-builds 2 1 4
+answering-builds 10 10 0
+sweeps 14 14 0
+valuables 11 9 4
+trailing 8 7 2
+deal
+cassino evidence v1
+pairs 1 0 2.75
+sums 12 8 4
+building 12 11 3.75
+safe-builds 10 8 8
+answering-builds 1 1 0
+sweeps 15 10 12.5
+valuables 0 0 0
+trailing 6 5 2
+expect games=5 focus=sweeps just=building
+state pairs 0 11.118400000000001 5.766400000000001 4.378272251308901 4.278272251308901
+state sums 0 30.816000000000003 20.396800000000002 3.099476439790575 3.0294764397905753
+state building 1 24.896 22.462400000000002 2.7147786768205617 2.4947786768205615
+state safe-builds 0 17.104000000000003 13.894400000000001 3.819133745835316 3.719133745835316
+state answering-builds 1 14.248 14.248 0.0 0.0
+state sweeps 0 32.241600000000005 24.784 5.546168491194669 5.456168491194669
+state valuables 1 25.875200000000003 23.353600000000004 1.5002379819133744 1.4602379819133744
+state trailing 0 24.457600000000003 20.993600000000004 2.060923369823893 1.6009233698238932
+end
+case random-33
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 5 4 1
+building 2 0 3
+safe-builds 7 0 28
+answering-builds 1 1 0
+sweeps 11 9 11
+valuables 1 0 0
+trailing 1 1 0
+expect games=1 focus=safe-builds just=-
+state pairs 0 2.0 2.0 0.0 0.0
+state sums 0 5.0 4.0 1.0 0.9299999999999999
+state building 0 2.0 0.0 3.0 2.78
+state safe-builds 0 7.0 0.0 28.0 27.9
+state answering-builds 0 1.0 1.0 0.0 0.0
+state sweeps 0 11.0 9.0 11.0 10.91
+state valuables 0 1.0 0.0 0.0 0.0
+state trailing 0 1.0 1.0 0.0 0.0
+end
+case random-34
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 3 3 0
+building 7 7 0
+safe-builds 2 2 0
+answering-builds 15 1 21
+sweeps 11 11 0
+valuables 1 1 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 3 3 0
+building 15 15 0
+safe-builds 2 2 0
+answering-builds 9 1 12
+sweeps 4 4 0
+valuables 1 1 0
+trailing 9 9 0
+deal
+cassino evidence v1
+pairs 13 13 0
+sums 2 2 0
+building 15 11 17
+safe-builds 0 0 0
+answering-builds 4 0 6
+sweeps 2 2 0
+valuables 3 0 14.25
+trailing 6 6 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 2 2 0
+building 12 10 8.5
+safe-builds 1 1 0
+answering-builds 0 0 0
+sweeps 15 15 0
+valuables 0 0 0
+trailing 10 9 0.25
+deal
+cassino evidence v1
+pairs 5 5 0
+sums 2 1 3.25
+building 4 4 0
+safe-builds 2 2 0
+answering-builds 14 1 19.5
+sweeps 1 1 0
+valuables 3 1 9.5
+trailing 13 9 1
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 0 0 0
+building 5 5 0
+safe-builds 3 3 0
+answering-builds 0 0 0
+sweeps 8 8 0
+valuables 3 0 14.25
+trailing 9 8 0.25
+expect games=6 focus=answering-builds just=-
+state pairs 1 17.72128 17.72128 0.0 0.0
+state sums 0 6.115840000000001 5.3158400000000015 0.7047445572035735 0.6347445572035735
+state building 1 31.99776 28.669760000000004 3.833810391187441 3.6138103911874406
+state safe-builds 0 6.7145600000000005 6.7145600000000005 0.0 0.0
+state answering-builds 0 21.849600000000002 1.5372800000000002 8.258652094717666 8.258652094717666
+state sweeps 1 24.666880000000003 24.666880000000003 0.0 0.0
+state valuables 0 7.673280000000001 1.5372800000000002 7.900186486252059 7.860186486252059
+state trailing 1 33.21376000000001 28.373760000000004 0.3279772746985861 0.0
+end
+case random-35
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 10 10 0
+building 2 2 0
+safe-builds 10 0 17.5
+answering-builds 9 7 7.5
+sweeps 0 0 0
+valuables 8 5 6.75
+trailing 11 10 2.5
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 8 8 0
+building 6 6 0
+safe-builds 15 2 22.75
+answering-builds 8 7 3.75
+sweeps 3 3 0
+valuables 12 10 4.5
+trailing 12 7 12.5
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 15 15 0
+building 6 6 0
+safe-builds 3 0 5.25
+answering-builds 8 6 7.5
+sweeps 1 1 0
+valuables 5 5 0
+trailing 11 10 2.5
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 15 14 3
+building 15 15 0
+safe-builds 2 0 3.5
+answering-builds 6 5 3.75
+sweeps 3 3 0
+valuables 7 6 2.25
+trailing 10 6 10
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 9 9 0
+building 0 0 0
+safe-builds 14 0 24.5
+answering-builds 14 14 0
+sweeps 0 0 0
+valuables 6 6 0
+trailing 6 3 7.5
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 12 12 0
+building 6 6 0
+safe-builds 14 0 24.5
+answering-builds 1 1 0
+sweeps 0 0 0
+valuables 1 0 2.25
+trailing 9 9 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 7 7 0
+building 5 5 0
+safe-builds 8 1 12.25
+answering-builds 7 7 0
+sweeps 2 2 0
+valuables 3 2 2.25
+trailing 13 11 5
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 7 7 0
+building 1 1 0
+safe-builds 6 0 10.5
+answering-builds 0 0 0
+sweeps 2 2 0
+valuables 10 9 2.25
+trailing 13 8 12.5
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 2 2 0
+building 0 0 0
+safe-builds 1 0 1.75
+answering-builds 0 0 0
+sweeps 2 2 0
+valuables 6 6 0
+trailing 8 8 0
+expect games=9 focus=safe-builds just=-
+state pairs 0 3.441786880000001 3.441786880000001 0.0 0.0
+state sums 1 34.11320320000001 33.78552320000001 0.22708711688658836 0.15708711688658836
+state building 1 15.153899520000003 15.153899520000003 0.0 0.0
+state safe-builds 0 30.08764160000001 1.0594304000000003 11.734906394572144 11.634906394572145
+state answering-builds 1 17.977303040000006 16.580075520000005 1.210374333005516 1.210374333005516
+state sweeps 0 6.754329600000001 6.754329600000001 0.0 0.0
+state valuables 0 26.352839680000002 23.1504128 1.664497117353773 1.624497117353773
+state trailing 0 44.30806016000001 35.01004800000001 5.369717341590473 4.909717341590473
+end
+case random-36
+deal
+cassino evidence v1
+pairs 1 0 0.75
+sums 9 7 2.5
+building 9 7 4.5
+safe-builds 8 8 0
+answering-builds 0 0 0
+sweeps 6 6 0
+valuables 13 13 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 11 10 2.25
+safe-builds 6 6 0
+answering-builds 9 8 4.5
+sweeps 15 15 0
+valuables 2 1 5.5
+trailing 3 2 5.25
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 3 3 0
+building 3 2 2.25
+safe-builds 14 14 0
+answering-builds 1 1 0
+sweeps 10 9 0.75
+valuables 13 13 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 2 0 1.5
+sums 5 4 1.25
+building 13 11 4.5
+safe-builds 0 0 0
+answering-builds 3 3 0
+sweeps 14 13 0.75
+valuables 7 5 11
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 2 0 1.5
+sums 6 5 1.25
+building 3 2 2.25
+safe-builds 11 11 0
+answering-builds 14 11 13.5
+sweeps 6 6 0
+valuables 11 10 5.5
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 1 1 0
+building 3 3 0
+safe-builds 12 12 0
+answering-builds 13 12 4.5
+sweeps 15 14 0.75
+valuables 0 0 0
+trailing 3 2 5.25
+deal
+cassino evidence v1
+pairs 3 0 2.25
+sums 4 4 0
+building 13 10 6.75
+safe-builds 11 11 0
+answering-builds 5 5 0
+sweeps 2 1 0.75
+valuables 10 8 11
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 3 0 2.25
+sums 8 7 1.25
+building 2 2 0
+safe-builds 7 7 0
+answering-builds 8 8 0
+sweeps 10 9 0.75
+valuables 5 5 0
+trailing 2 2 0
+expect games=8 focus=building just=answering-builds
+state pairs 0 7.452915200000001 0.0 1.3433067559960499 1.2433067559960498
+state sums 0 19.830476800000003 17.489446400000002 0.703242035258037 0.633242035258037
+state building 0 26.934860800000006 22.194406400000005 2.5632457573156886 2.3432457573156884
+state safe-builds 1 36.95010560000001 36.95010560000001 0.0 0.0
+state answering-builds 1 31.403776000000004 28.965632000000003 2.6366933362863705 2.6366933362863705
+state sweeps 1 38.473651200000006 35.29637120000001 0.5726700995727322 0.4826700995727322
+state valuables 1 29.009625600000007 25.816281600000003 4.220813377259765 4.180813377259765
+state trailing 0 9.424307200000001 8.522163200000001 1.1382113821138211 0.6782113821138211
+end
+case random-37
+deal
+cassino evidence v1
+pairs 8 7 3.25
+sums 11 11 0
+building 6 1 30
+safe-builds 6 0 25.5
+answering-builds 0 0 0
+sweeps 1 1 0
+valuables 0 0 0
+trailing 4 3 5
+deal
+cassino evidence v1
+pairs 10 9 3.25
+sums 14 14 0
+building 7 2 30
+safe-builds 7 0 29.75
+answering-builds 0 0 0
+sweeps 2 2 0
+valuables 0 0 0
+trailing 14 6 40
+deal
+cassino evidence v1
+pairs 13 13 0
+sums 7 6 2.25
+building 4 0 24
+safe-builds 1 0 4.25
+answering-builds 3 0 9
+sweeps 1 1 0
+valuables 1 1 0
+trailing 12 6 30
+deal
+cassino evidence v1
+pairs 14 12 6.5
+sums 9 8 2.25
+building 11 0 66
+safe-builds 9 0 38.25
+answering-builds 1 0 3
+sweeps 0 0 0
+valuables 3 3 0
+trailing 1 0 5
+deal
+cassino evidence v1
+pairs 6 5 3.25
+sums 14 14 0
+building 15 0 90
+safe-builds 12 0 51
+answering-builds 0 0 0
+sweeps 3 3 0
+valuables 0 0 0
+trailing 3 2 5
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 14 13 2.25
+building 6 0 36
+safe-builds 15 0 63.75
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 2 2 0
+trailing 1 0 5
+deal
+cassino evidence v1
+pairs 8 7 3.25
+sums 7 7 0
+building 0 0 0
+safe-builds 1 0 4.25
+answering-builds 2 0 6
+sweeps 3 2 4
+valuables 1 1 0
+trailing 10 5 25
+expect games=7 focus=building just=-
+state pairs 1 30.506752000000006 27.252928000000004 2.6762321633922346 2.5762321633922345
+state sums 1 42.106304 40.384704 0.9803048217553976 0.9103048217553975
+state building 0 25.537024000000002 0.9175040000000001 37.38326233783061 37.16326233783061
+state safe-builds 0 29.564224000000003 0.0 31.79814466885862 31.698144668858617
+state answering-builds 0 3.7408000000000006 0.0 2.840090053611052 2.840090053611052
+state sweeps 0 6.247104000000001 5.247104000000001 1.012293289710241 0.922293289710241
+state valuables 0 4.5456 4.5456 0.0 0.0
+state trailing 0 23.783296 11.490112000000003 15.555384590466625 15.095384590466624
+end
+case random-38
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 11 2 24.75
+building 0 0 0
+safe-builds 12 12 0
+answering-builds 10 3 40.25
+sweeps 8 8 0
+valuables 11 9 12
+trailing 6 5 4.5
+expect games=1 focus=sums just=safe-builds,sweeps
+state pairs 0 0.0 0.0 0.0 0.0
+state sums 0 11.0 2.0 24.75 24.68
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 1 12.0 12.0 0.0 0.0
+state answering-builds 0 10.0 3.0 40.25 40.25
+state sweeps 1 8.0 8.0 0.0 0.0
+state valuables 0 11.0 9.0 12.0 11.96
+state trailing 0 6.0 5.0 4.5 4.04
+end
+case random-39
+deal
+cassino evidence v1
+pairs 2 0 6
+sums 2 2 0
+building 9 7 1.5
+safe-builds 6 6 0
+answering-builds 6 0 30
+sweeps 2 2 0
+valuables 3 3 0
+trailing 10 7 0.75
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 12 10 1.5
+safe-builds 14 13 0.25
+answering-builds 0 0 0
+sweeps 2 2 0
+valuables 0 0 0
+trailing 12 11 0.25
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 9 9 0
+answering-builds 6 1 25
+sweeps 3 1 11.5
+valuables 1 1 0
+trailing 7 5 0.5
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 3 3 0
+building 5 4 0.75
+safe-builds 4 4 0
+answering-builds 10 1 45
+sweeps 0 0 0
+valuables 2 1 0.75
+trailing 13 11 0.5
+deal
+cassino evidence v1
+pairs 2 0 6
+sums 2 2 0
+building 11 8 2.25
+safe-builds 3 3 0
+answering-builds 11 0 55
+sweeps 2 1 5.75
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 1 1 0
+building 15 11 3
+safe-builds 10 8 0.5
+answering-builds 6 0 30
+sweeps 1 0 5.75
+valuables 1 1 0
+trailing 4 3 0.25
+deal
+cassino evidence v1
+pairs 1 0 3
+sums 2 2 0
+building 13 11 1.5
+safe-builds 3 3 0
+answering-builds 7 0 35
+sweeps 3 1 11.5
+valuables 1 1 0
+trailing 2 1 0.25
+deal
+cassino evidence v1
+pairs 3 0 9
+sums 0 0 0
+building 2 1 0.75
+safe-builds 0 0 0
+answering-builds 12 2 50
+sweeps 1 1 0
+valuables 2 2 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 1 0 3
+sums 0 0 0
+building 9 6 2.25
+safe-builds 3 2 0.25
+answering-builds 8 0 40
+sweeps 3 3 0
+valuables 2 2 0
+trailing 4 3 0.25
+expect games=9 focus=answering-builds just=-
+state pairs 0 5.522424320000001 0.32768000000000014 3.6000351275383933 3.500035127538393
+state sums 0 3.9297843200000013 3.9297843200000013 0.0 0.0
+state building 0 36.770531840000004 27.331077120000003 1.6354206522722605 1.4154206522722605
+state safe-builds 1 18.88146176 16.647746560000005 0.12899982317956263 0.028999823179562623
+state answering-builds 0 35.51389696 2.189824 38.49013087669228 38.49013087669228
+state sweeps 0 8.592606720000001 5.866718720000001 3.620738494400587 3.530738494400587
+state valuables 0 6.17282048 5.845140480000001 0.05677177922164709 0.01677177922164709
+state trailing 0 18.417152000000005 14.372472320000004 0.23358526795984105 0.0
+end
+case random-40
+deal
+cassino evidence v1
+pairs 5 3 8
+sums 3 0 17.25
+building 1 1 0
+safe-builds 2 1 1.5
+answering-builds 2 2 0
+sweeps 0 0 0
+valuables 12 6 6
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 4
+sums 1 0 5.75
+building 3 3 0
+safe-builds 3 2 1.5
+answering-builds 3 2 0
+sweeps 13 0 71.5
+valuables 9 2 7
+trailing 11 10 4.25
+expect games=2 focus=sweeps just=-
+state pairs 0 12.0 9.4 5.777777777777778 5.677777777777778
+state sums 0 3.4000000000000004 0.0 10.86111111111111 10.79111111111111
+state building 0 3.8 3.8 0.0 0.0
+state safe-builds 0 4.6 2.8 1.5 1.4
+state answering-builds 0 4.6 3.6 0.0 0.0
+state sweeps 0 13.0 0.0 39.72222222222222 39.63222222222222
+state valuables 0 18.6 6.800000000000001 6.555555555555555 6.515555555555555
+state trailing 0 11.0 10.0 2.361111111111111 1.9011111111111112
+end
+case random-41
+deal
+cassino evidence v1
+pairs 15 10 23.75
+sums 10 10 0
+building 5 4 6
+safe-builds 10 10 0
+answering-builds 14 11 14.25
+sweeps 0 0 0
+valuables 12 12 0
+trailing 10 9 2.5
+deal
+cassino evidence v1
+pairs 3 1 9.5
+sums 13 12 1
+building 7 6 6
+safe-builds 12 12 0
+answering-builds 2 1 4.75
+sweeps 1 1 0
+valuables 3 3 0
+trailing 14 12 5
+expect games=2 focus=pairs just=-
+state pairs 0 15.0 9.0 15.833333333333332 15.733333333333333
+state sums 1 21.0 20.0 0.5555555555555556 0.4855555555555556
+state building 0 11.0 9.2 6.0 5.78
+state safe-builds 1 20.0 20.0 0.0 0.0
+state answering-builds 0 13.200000000000001 9.8 8.972222222222221 8.972222222222221
+state sweeps 0 1.0 1.0 0.0 0.0
+state valuables 1 12.600000000000001 12.600000000000001 0.0 0.0
+state trailing 0 22.0 19.2 3.888888888888889 3.428888888888889
+end
+case random-42
+deal
+cassino evidence v1
+pairs 10 9 2
+sums 5 5 0
+building 1 1 0
+safe-builds 12 9 6
+answering-builds 9 9 0
+sweeps 6 5 2.25
+valuables 13 10 3
+trailing 13 12 1.25
+expect games=1 focus=safe-builds just=answering-builds
+state pairs 0 10.0 9.0 2.0 1.9
+state sums 0 5.0 5.0 0.0 0.0
+state building 0 1.0 1.0 0.0 0.0
+state safe-builds 0 12.0 9.0 6.0 5.9
+state answering-builds 1 9.0 9.0 0.0 0.0
+state sweeps 0 6.0 5.0 2.25 2.16
+state valuables 0 13.0 10.0 3.0 2.96
+state trailing 0 13.0 12.0 1.25 0.79
+end
+case random-43
+deal
+cassino evidence v1
+pairs 9 0 24.75
+sums 6 4 6
+building 3 3 0
+safe-builds 1 1 0
+answering-builds 9 9 0
+sweeps 5 0 18.75
+valuables 7 4 6.75
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 10 0 27.5
+sums 5 1 12
+building 1 1 0
+safe-builds 9 9 0
+answering-builds 13 13 0
+sweeps 11 0 41.25
+valuables 12 5 15.75
+trailing 6 6 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 12 1 33
+building 3 3 0
+safe-builds 4 3 1.25
+answering-builds 14 14 0
+sweeps 7 0 26.25
+valuables 9 6 6.75
+trailing 7 7 0
+deal
+cassino evidence v1
+pairs 9 0 24.75
+sums 13 2 33
+building 0 0 0
+safe-builds 10 8 2.5
+answering-builds 5 5 0
+sweeps 6 0 22.5
+valuables 11 5 13.5
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 4 0 11
+sums 1 0 3
+building 0 0 0
+safe-builds 6 6 0
+answering-builds 11 11 0
+sweeps 8 0 30
+valuables 7 4 6.75
+trailing 11 10 3
+deal
+cassino evidence v1
+pairs 6 0 16.5
+sums 6 0 18
+building 3 2 3.25
+safe-builds 3 3 0
+answering-builds 15 15 0
+sweeps 12 0 45
+valuables 2 2 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 10 0 27.5
+sums 13 3 30
+building 1 1 0
+safe-builds 1 1 0
+answering-builds 9 8 4
+sweeps 0 0 0
+valuables 7 5 4.5
+trailing 9 9 0
+expect games=7 focus=sweeps just=-
+state pairs 0 27.604096000000002 0.0 19.211115790155652 19.11111579015565
+state sums 0 33.222464 5.809856000000001 20.812199348892953 20.742199348892953
+state building 0 5.7429120000000005 4.942912000000001 0.6579906383116567 0.43799063831165674
+state safe-builds 1 17.209664000000004 15.776064000000003 0.453507393790188 0.35350739379018803
+state answering-builds 1 42.95353600000001 41.95353600000001 1.012293289710241 1.012293289710241
+state sweeps 0 25.574400000000004 0.0 24.270743914092737 24.180743914092737
+state valuables 0 28.165568000000007 16.864576000000003 6.434954082376379 6.394954082376379
+state trailing 1 22.197568000000004 21.557568000000003 0.4859007790609158 0.025900779060915757
+end
+case random-44
+deal
+cassino evidence v1
+pairs 10 3 38.5
+sums 14 0 66.5
+building 1 1 0
+safe-builds 3 2 5
+answering-builds 8 8 0
+sweeps 1 1 0
+valuables 15 0 45
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 4 0 22
+sums 0 0 0
+building 1 1 0
+safe-builds 12 9 15
+answering-builds 12 12 0
+sweeps 1 1 0
+valuables 9 0 27
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 15 2 71.5
+sums 9 0 42.75
+building 0 0 0
+safe-builds 1 1 0
+answering-builds 8 7 3.5
+sweeps 2 2 0
+valuables 5 0 15
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 5 1 22
+sums 15 0 71.25
+building 2 1 0.25
+safe-builds 4 3 5
+answering-builds 7 7 0
+sweeps 2 1 1.5
+valuables 8 0 24
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 10 2 44
+sums 10 0 47.5
+building 3 3 0
+safe-builds 15 14 5
+answering-builds 4 4 0
+sweeps 1 1 0
+valuables 11 0 33
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 10 2 44
+sums 3 0 14.25
+building 3 3 0
+safe-builds 5 5 0
+answering-builds 2 2 0
+sweeps 3 3 0
+valuables 12 0 36
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 9 1 44
+sums 1 0 4.75
+building 2 2 0
+safe-builds 14 14 0
+answering-builds 12 11 3.5
+sweeps 0 0 0
+valuables 13 0 39
+trailing 1 0 3
+expect games=7 focus=pairs just=safe-builds
+state pairs 0 36.03616000000001 5.997632000000001 41.810725449863135 41.71072544986313
+state sums 0 24.836416 0.0 29.85581299298683 29.78581299298683
+state building 0 7.933824000000001 7.421824000000001 0.03239338527072772 0.0
+state safe-builds 1 34.77619200000001 32.379008 3.0333165967509435 2.9333165967509434
+state answering-builds 1 29.050112000000002 27.640512 1.2485625435286112 1.2485625435286112
+state sweeps 0 5.473024000000001 4.961024000000001 0.19436031162436632 0.10436031162436632
+state valuables 0 42.66528000000001 0.0 32.39233248570642 32.35233248570642
+state trailing 0 3.7169280000000002 2.7169280000000002 0.7592199672826807 0.2992199672826807
+end
+case random-45
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 11 2 2.25
+building 0 0 0
+safe-builds 7 0 35
+answering-builds 5 4 0.25
+sweeps 0 0 0
+valuables 2 1 4.75
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 5 0 30
+sums 7 2 1.25
+building 9 1 0
+safe-builds 15 4 55
+answering-builds 9 9 0
+sweeps 0 0 0
+valuables 1 1 0
+trailing 9 9 0
+deal
+cassino evidence v1
+pairs 2 0 12
+sums 7 0 1.75
+building 10 0 0
+safe-builds 7 1 30
+answering-builds 10 8 0.5
+sweeps 0 0 0
+valuables 2 1 4.75
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 15 2 78
+sums 7 1 1.5
+building 3 1 0
+safe-builds 4 2 10
+answering-builds 12 9 0.75
+sweeps 3 2 5.25
+valuables 0 0 0
+trailing 14 14 0
+deal
+cassino evidence v1
+pairs 2 0 12
+sums 1 0 0.25
+building 1 0 0
+safe-builds 13 3 50
+answering-builds 2 2 0
+sweeps 2 0 10.5
+valuables 2 0 9.5
+trailing 11 11 0
+deal
+cassino evidence v1
+pairs 4 2 12
+sums 13 1 3
+building 3 0 0
+safe-builds 10 3 35
+answering-builds 15 14 0.25
+sweeps 2 0 10.5
+valuables 0 0 0
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 15 1 84
+sums 12 5 1.75
+building 4 0 0
+safe-builds 6 0 30
+answering-builds 7 7 0
+sweeps 2 2 0
+valuables 3 2 4.75
+trailing 13 13 0
+expect games=7 focus=pairs just=-
+state pairs 0 29.617600000000003 3.6240000000000006 39.46972028311818 39.36972028311818
+state sums 0 34.668544000000004 7.4916480000000005 1.7194368409970682 1.649436840997068
+state building 0 15.621120000000001 0.8396800000000003 0.0 0.0
+state safe-builds 0 33.98540800000001 7.064320000000001 34.065045917623614 33.96504591762361
+state answering-builds 0 34.77984000000001 31.362496 0.21620964998947212 0.21620964998947212
+state sweeps 0 6.416 3.024 4.5067297257899925 4.416729725789993
+state valuables 0 5.951168000000001 2.9994240000000003 3.5482863899191783 3.5082863899191783
+state trailing 1 32.96672 32.96672 0.0 0.0
+end
+case random-46
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 11 11 0
+building 1 1 0
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 14 1 52
+trailing 1 0 2.25
+expect games=1 focus=valuables just=sums
+state pairs 0 1.0 1.0 0.0 0.0
+state sums 1 11.0 11.0 0.0 0.0
+state building 0 1.0 1.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 0.0 0.0 0.0 0.0
+state valuables 0 14.0 1.0 52.0 51.96
+state trailing 0 1.0 0.0 2.25 1.79
+end
+case random-47
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 14 0 49
+building 11 9 7.5
+safe-builds 3 2 3
+answering-builds 0 0 0
+sweeps 2 1 4.25
+valuables 12 7 6.25
+trailing 11 7 3
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 8 0 28
+building 7 7 0
+safe-builds 10 10 0
+answering-builds 8 7 1.25
+sweeps 5 3 8.5
+valuables 14 6 10
+trailing 11 7 3
+deal
+cassino evidence v1
+pairs 1 0 3.75
+sums 2 1 3.5
+building 2 2 0
+safe-builds 13 13 0
+answering-builds 8 7 1.25
+sweeps 9 9 0
+valuables 14 3 13.75
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 3 0 11.25
+sums 1 0 3.5
+building 3 3 0
+safe-builds 15 15 0
+answering-builds 3 2 1.25
+sweeps 4 4 0
+valuables 3 2 1.25
+trailing 12 9 2.25
+deal
+cassino evidence v1
+pairs 3 0 11.25
+sums 1 0 3.5
+building 6 5 3.75
+safe-builds 13 13 0
+answering-builds 11 9 2.5
+sweeps 4 4 0
+valuables 4 1 3.75
+trailing 12 6 4.5
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 8 0 28
+building 7 7 0
+safe-builds 7 6 3
+answering-builds 13 11 2.5
+sweeps 6 6 0
+valuables 5 2 3.75
+trailing 10 4 4.5
+expect games=6 focus=valuables just=sweeps
+state pairs 0 4.832000000000001 0.0 4.911527452511058 4.811527452511059
+state sums 0 18.328320000000005 0.5120000000000001 16.902246508803884 16.832246508803884
+state building 1 21.215680000000006 19.76032 1.479313036690086 1.259313036690086
+state safe-builds 1 38.735040000000005 37.40736 1.0796252927400467 0.9796252927400467
+state answering-builds 0 31.0928 25.931200000000004 1.74885072426056 1.74885072426056
+state sweeps 1 19.071360000000002 17.924480000000003 1.321190042501518 1.2311900425015179
+state valuables 0 26.954560000000004 10.367360000000001 5.6200667880995745 5.5800667880995745
+state trailing 0 36.41408 20.744960000000003 3.1854020296643246 2.7254020296643247
+end
+case random-48
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 12 8 19
+building 7 7 0
+safe-builds 15 12 7.5
+answering-builds 5 5 0
+sweeps 2 2 0
+valuables 2 1 4.25
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 4 4 0
+sums 10 2 38
+building 3 3 0
+safe-builds 15 13 5
+answering-builds 14 13 5.25
+sweeps 3 3 0
+valuables 10 7 12.75
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 2 1 4.75
+building 0 0 0
+safe-builds 15 15 0
+answering-builds 2 2 0
+sweeps 3 3 0
+valuables 4 4 0
+trailing 3 3 0
+expect games=3 focus=sums just=safe-builds,trailing
+state pairs 1 10.959999999999999 10.959999999999999 0.0 0.0
+state sums 0 17.68 7.720000000000001 19.38934426229508 19.31934426229508
+state building 1 6.880000000000002 6.880000000000002 0.0 0.0
+state safe-builds 1 36.6 33.08 3.60655737704918 3.50655737704918
+state answering-builds 1 16.4 15.600000000000001 1.7213114754098358 1.7213114754098358
+state sweeps 0 6.68 6.68 0.0 0.0
+state valuables 0 13.28 10.24 5.295081967213114 5.255081967213114
+state trailing 1 6.5200000000000005 6.5200000000000005 0.0 0.0
+end
+case random-49
+deal
+cassino evidence v1
+pairs 4 2 9.5
+sums 9 9 0
+building 15 3 60
+safe-builds 10 3 29.75
+answering-builds 3 3 0
+sweeps 1 0 2.5
+valuables 1 0 4.75
+trailing 13 11 8.5
+expect games=1 focus=building just=sums
+state pairs 0 4.0 2.0 9.5 9.4
+state sums 1 9.0 9.0 0.0 0.0
+state building 0 15.0 3.0 60.0 59.78
+state safe-builds 0 10.0 3.0 29.75 29.65
+state answering-builds 0 3.0 3.0 0.0 0.0
+state sweeps 0 1.0 0.0 2.5 2.41
+state valuables 0 1.0 0.0 4.75 4.71
+state trailing 0 13.0 11.0 8.5 8.04
+end
+case random-50
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 15 15 0
+building 4 0 11
+safe-builds 15 15 0
+answering-builds 2 2 0
+sweeps 13 4 47.25
+valuables 12 12 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 15 14 3.75
+sums 15 15 0
+building 8 0 22
+safe-builds 4 4 0
+answering-builds 0 0 0
+sweeps 13 4 47.25
+valuables 15 15 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 13 13 0
+building 6 0 16.5
+safe-builds 12 11 4.5
+answering-builds 3 2 4.5
+sweeps 4 1 15.75
+valuables 8 7 5.25
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 7 6 3.75
+sums 13 13 0
+building 12 0 33
+safe-builds 3 3 0
+answering-builds 3 2 4.5
+sweeps 1 0 5.25
+valuables 3 3 0
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 13 12 3.75
+sums 10 10 0
+building 5 0 13.75
+safe-builds 2 2 0
+answering-builds 3 3 0
+sweeps 2 0 10.5
+valuables 1 1 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 10 9 3.75
+sums 0 0 0
+building 6 0 16.5
+safe-builds 11 10 4.5
+answering-builds 2 1 4.5
+sweeps 6 3 15.75
+valuables 6 6 0
+trailing 3 3 0
+expect games=6 focus=sweeps just=trailing
+state pairs 1 31.35168 28.502080000000003 2.8965001301066877 2.7965001301066876
+state sums 1 34.0352 34.0352 0.0 0.0
+state building 0 25.339520000000004 0.0 18.888151617659815 18.668151617659817
+state safe-builds 1 27.2176 25.705600000000004 1.844262295081967 1.7442622950819668
+state answering-builds 0 8.51136 6.3593600000000015 2.624902419984387 2.624902419984387
+state sweeps 0 19.872640000000004 6.461120000000001 19.085154826958103 18.995154826958103
+state valuables 1 22.892160000000004 22.380160000000004 0.7285974499089254 0.6885974499089254
+state trailing 1 7.6656 7.6656 0.0 0.0
+end
+case random-51
+deal
+cassino evidence v1
+pairs 7 5 1
+sums 6 3 16.5
+building 6 6 0
+safe-builds 0 0 0
+answering-builds 1 0 4.75
+sweeps 3 3 0
+valuables 15 12 10.5
+trailing 13 6 42
+deal
+cassino evidence v1
+pairs 11 10 0.5
+sums 3 0 16.5
+building 12 10 3.5
+safe-builds 5 5 0
+answering-builds 3 3 0
+sweeps 2 2 0
+valuables 2 2 0
+trailing 14 10 24
+deal
+cassino evidence v1
+pairs 14 10 2
+sums 12 4 44
+building 9 8 1.75
+safe-builds 5 5 0
+answering-builds 3 1 9.5
+sweeps 1 1 0
+valuables 5 5 0
+trailing 15 8 42
+deal
+cassino evidence v1
+pairs 8 8 0
+sums 3 1 11
+building 1 1 0
+safe-builds 2 2 0
+answering-builds 2 0 9.5
+sweeps 1 1 0
+valuables 10 9 3.5
+trailing 6 3 18
+deal
+cassino evidence v1
+pairs 11 9 1
+sums 7 3 22
+building 10 10 0
+safe-builds 3 3 0
+answering-builds 2 2 0
+sweeps 3 3 0
+valuables 15 14 3.5
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 14 13 0.5
+sums 14 5 49.5
+building 9 6 5.25
+safe-builds 1 1 0
+answering-builds 3 2 4.75
+sweeps 0 0 0
+valuables 12 11 3.5
+trailing 7 3 24
+deal
+cassino evidence v1
+pairs 8 8 0
+sums 4 0 22
+building 11 11 0
+safe-builds 4 4 0
+answering-builds 2 2 0
+sweeps 2 2 0
+valuables 2 2 0
+trailing 3 2 6
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 2 2 0
+building 2 2 0
+safe-builds 15 15 0
+answering-builds 2 2 0
+sweeps 0 0 0
+valuables 3 3 0
+trailing 11 6 30
+deal
+cassino evidence v1
+pairs 14 12 1
+sums 6 3 16.5
+building 10 9 1.75
+safe-builds 12 12 0
+answering-builds 1 1 0
+sweeps 3 2 2
+valuables 15 15 0
+trailing 8 6 12
+deal
+cassino evidence v1
+pairs 10 9 0.5
+sums 7 1 33
+building 3 2 1.75
+safe-builds 8 8 0
+answering-builds 1 1 0
+sweeps 2 2 0
+valuables 9 7 7
+trailing 11 6 30
+expect games=10 focus=sums just=-
+state pairs 1 42.45306265600001 37.51303424 0.553426566719999 0.45342656671999904
+state sums 0 27.767797248000008 9.214697984 22.86334182588626 22.79334182588626
+state building 1 29.843353088000004 26.269293568000005 1.4013944111132106 1.1813944111132106
+state safe-builds 1 33.05236480000001 33.05236480000001 0.0 0.0
+state answering-builds 0 7.779127808000002 6.291591680000001 1.5831486091221931 1.5831486091221931
+state sweeps 0 7.6170967040000015 6.817096704000001 0.3584928798725348 0.2684928798725348
+state valuables 1 39.79322624 36.391149056 2.667919728339258 2.627919728339258
+state trailing 0 37.98311270400001 22.167661568000007 21.261474840854973 20.801474840854972
+end
+case random-52
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 2 2 0
+building 4 4 0
+safe-builds 2 0 8.5
+answering-builds 3 3 0
+sweeps 12 12 0
+valuables 9 2 36.75
+trailing 3 1 0.5
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 2 2 0
+sweeps 14 13 2.5
+valuables 14 2 63
+trailing 2 1 0.25
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 2 2 0
+building 14 13 3.25
+safe-builds 0 0 0
+answering-builds 3 3 0
+sweeps 6 6 0
+valuables 3 1 10.5
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 4 4 0
+safe-builds 3 0 12.75
+answering-builds 0 0 0
+sweeps 11 10 2.5
+valuables 8 2 31.5
+trailing 1 0 0.25
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 3 3 0
+building 13 12 3.25
+safe-builds 1 1 0
+answering-builds 1 1 0
+sweeps 7 7 0
+valuables 2 0 10.5
+trailing 2 0 0.5
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 1 1 0
+building 2 2 0
+safe-builds 3 1 8.5
+answering-builds 3 3 0
+sweeps 3 3 0
+valuables 13 1 63
+trailing 3 1 0.5
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 0 0 0
+building 14 12 6.5
+safe-builds 2 1 4.25
+answering-builds 3 3 0
+sweeps 13 12 2.5
+valuables 13 0 68.25
+trailing 3 1 0.5
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 0 0 0
+building 6 5 3.25
+safe-builds 3 1 8.5
+answering-builds 1 1 0
+sweeps 13 13 0
+valuables 13 3 52.5
+trailing 2 0 0.5
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 3 2 1.5
+building 15 14 3.25
+safe-builds 1 0 4.25
+answering-builds 3 3 0
+sweeps 15 15 0
+valuables 1 0 5.25
+trailing 2 1 0.25
+expect games=9 focus=valuables just=answering-builds
+state pairs 0 5.81428992 5.81428992 0.0 0.0
+state sums 0 5.600632320000001 4.600632320000001 0.3465074415383732 0.2765074415383732
+state building 1 40.76062464 37.00888064 2.816682298618375 2.596682298618375
+state safe-builds 0 7.9441843200000015 2.3616000000000006 5.480819861370411 5.380819861370411
+state answering-builds 1 9.374778880000001 9.374778880000001 0.0 0.0
+state sweeps 1 48.249822720000004 47.072427520000005 0.6799603307192688 0.5899603307192688
+state valuables 0 35.049034240000005 4.58447872 36.94668316793624 36.906683167936244
+state trailing 0 9.125626880000002 2.52948736 0.38093523818422553 0.0
+end
+case random-53
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 2 2 0
+building 7 7 0
+safe-builds 5 4 4
+answering-builds 2 2 0
+sweeps 0 0 0
+valuables 14 13 1.25
+trailing 14 7 3.5
+deal
+cassino evidence v1
+pairs 8 6 10
+sums 1 1 0
+building 11 9 4.5
+safe-builds 2 2 0
+answering-builds 5 3 0.5
+sweeps 13 13 0
+valuables 10 10 0
+trailing 5 4 0.5
+deal
+cassino evidence v1
+pairs 7 6 5
+sums 3 3 0
+building 14 14 0
+safe-builds 2 1 4
+answering-builds 0 0 0
+sweeps 13 13 0
+valuables 2 2 0
+trailing 6 5 0.5
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 3 3 0
+building 12 11 2.25
+safe-builds 1 1 0
+answering-builds 4 4 0
+sweeps 7 7 0
+valuables 6 6 0
+trailing 8 8 0
+deal
+cassino evidence v1
+pairs 7 7 0
+sums 1 1 0
+building 5 5 0
+safe-builds 4 4 0
+answering-builds 9 9 0
+sweeps 12 12 0
+valuables 7 6 1.25
+trailing 1 0 0.5
+expect games=5 focus=pairs just=-
+state pairs 0 18.4048 16.7408 2.4750118990956684 2.3750118990956683
+state sums 0 6.6512 6.6512 0.0 0.0
+state building 1 32.059200000000004 30.235200000000003 1.2208472156116137 1.0008472156116137
+state safe-builds 0 9.152000000000001 8.1024 1.2489290813898146 1.1489290813898145
+state answering-builds 0 15.5792 14.5552 0.07615421227986674 0.07615421227986674
+state sweeps 1 32.576 32.576 0.0 0.0
+state valuables 1 23.934400000000007 22.5248 0.5241551642075202 0.4841551642075202
+state trailing 0 19.5344 14.515200000000002 0.7465492622560684 0.2865492622560684
+end
+case random-54
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 0 0 0
+building 10 10 0
+safe-builds 2 2 0
+answering-builds 1 0 1
+sweeps 10 10 0
+valuables 3 3 0
+trailing 6 1 2.5
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 15 10 12.5
+building 2 2 0
+safe-builds 1 1 0
+answering-builds 2 0 2
+sweeps 1 1 0
+valuables 3 3 0
+trailing 3 0 1.5
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 11 6 12.5
+building 3 3 0
+safe-builds 1 1 0
+answering-builds 0 0 0
+sweeps 9 9 0
+valuables 3 3 0
+trailing 8 1 3.5
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 15 9 15
+building 13 11 0.5
+safe-builds 2 2 0
+answering-builds 3 3 0
+sweeps 4 4 0
+valuables 0 0 0
+trailing 7 1 3
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 12 7 12.5
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 3 0 3
+sweeps 3 3 0
+valuables 1 1 0
+trailing 2 1 0.5
+deal
+cassino evidence v1
+pairs 12 11 1
+sums 4 3 2.5
+building 4 4 0
+safe-builds 1 1 0
+answering-builds 1 0 1
+sweeps 7 7 0
+valuables 3 3 0
+trailing 12 1 5.5
+deal
+cassino evidence v1
+pairs 5 5 0
+sums 6 2 10
+building 4 4 0
+safe-builds 3 3 0
+answering-builds 3 1 2
+sweeps 8 8 0
+valuables 3 3 0
+trailing 7 0 3.5
+deal
+cassino evidence v1
+pairs 4 4 0
+sums 1 0 2.5
+building 2 2 0
+safe-builds 1 1 0
+answering-builds 0 0 0
+sweeps 15 15 0
+valuables 3 3 0
+trailing 13 3 5
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 15 10 12.5
+building 9 8 0.25
+safe-builds 3 3 0
+answering-builds 0 0 0
+sweeps 10 10 0
+valuables 3 2 0.75
+trailing 12 0 6
+expect games=9 focus=sums just=safe-builds
+state pairs 1 27.749603840000002 27.237603840000002 0.11827454004509808 0.01827454004509807
+state sums 0 37.547712000000004 22.302336000000004 8.804393721750865 8.734393721750864
+state building 1 22.351424 20.696064 0.09559909307082694 0.0
+state safe-builds 1 7.694763520000001 7.694763520000001 0.0 0.0
+state answering-builds 0 5.2310425600000015 1.6230400000000005 0.8334664907530006 0.8334664907530006
+state sweeps 1 37.49025280000001 37.49025280000001 0.0 0.0
+state valuables 1 11.184494080000002 10.184494080000002 0.1732537207691866 0.1332537207691866
+state trailing 0 39.86989056 4.079196160000001 4.133913982475261 3.673913982475261
+end
+case random-55
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 2 2 0
+building 2 0 0.5
+safe-builds 9 9 0
+answering-builds 13 11 11
+sweeps 1 1 0
+valuables 1 0 1.25
+trailing 3 1 5.5
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 1 1 0
+building 4 1 0.75
+safe-builds 9 9 0
+answering-builds 0 0 0
+sweeps 15 13 3
+valuables 0 0 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 2 0 11
+sums 15 15 0
+building 12 1 2.75
+safe-builds 5 5 0
+answering-builds 1 1 0
+sweeps 14 14 0
+valuables 0 0 0
+trailing 2 1 2.75
+deal
+cassino evidence v1
+pairs 1 0 5.5
+sums 7 7 0
+building 5 2 0.75
+safe-builds 8 8 0
+answering-builds 6 5 5.5
+sweeps 15 14 1.5
+valuables 0 0 0
+trailing 1 0 2.75
+deal
+cassino evidence v1
+pairs 1 0 5.5
+sums 4 4 0
+building 10 1 2.25
+safe-builds 13 12 4.25
+answering-builds 7 6 5.5
+sweeps 13 13 0
+valuables 1 0 1.25
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 3 3 0
+building 13 4 2.25
+safe-builds 1 1 0
+answering-builds 13 11 11
+sweeps 1 1 0
+valuables 2 0 2.5
+trailing 2 0 5.5
+expect games=6 focus=answering-builds just=-
+state pairs 0 2.4640000000000004 0.0 3.673345476624165 3.573345476624165
+state sums 1 19.424960000000002 19.424960000000002 0.0 0.0
+state building 0 32.63776 7.001600000000001 1.7372061757307657 1.5172061757307658
+state safe-builds 1 25.71552 24.91552 0.9215890363431347 0.8215890363431347
+state answering-builds 0 27.211840000000002 23.116480000000003 6.105386416861827 6.105386416861827
+state sweeps 1 34.63968 33.18048 0.5932864949258393 0.5032864949258393
+state valuables 0 3.1276800000000002 0.0 1.059718969555035 1.019718969555035
+state trailing 0 4.6470400000000005 0.8396800000000003 2.8380171740827476 2.3780171740827476
+end
+case random-56
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 2 2 0
+building 11 10 0
+safe-builds 3 3 0
+answering-builds 3 2 5.5
+sweeps 3 3 0
+valuables 3 2 1.25
+trailing 3 1 10.5
+deal
+cassino evidence v1
+pairs 14 2 24
+sums 3 2 5.5
+building 15 14 0
+safe-builds 3 3 0
+answering-builds 3 1 11
+sweeps 1 1 0
+valuables 2 2 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 9 2 14
+sums 2 1 5.5
+building 14 13 0
+safe-builds 9 9 0
+answering-builds 12 10 11
+sweeps 0 0 0
+valuables 0 0 0
+trailing 1 0 5.25
+deal
+cassino evidence v1
+pairs 15 4 22
+sums 2 2 0
+building 1 1 0
+safe-builds 13 12 4.75
+answering-builds 14 12 11
+sweeps 2 2 0
+valuables 2 2 0
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 4 1 6
+sums 0 0 0
+building 14 14 0
+safe-builds 9 9 0
+answering-builds 0 0 0
+sweeps 3 3 0
+valuables 0 0 0
+trailing 3 2 5.25
+expect games=5 focus=pairs just=-
+state pairs 0 28.928000000000004 6.504000000000001 13.341266063779152 13.241266063779152
+state sums 0 5.2352 4.083200000000001 1.8848167539267016 1.8148167539267015
+state building 1 35.945600000000006 34.384 0.0 0.0
+state safe-builds 1 27.9248 27.1248 1.1304140885292717 1.0304140885292716
+state answering-builds 0 21.644800000000004 17.331200000000003 7.057591623036648 7.057591623036648
+state sweeps 0 6.3408 6.3408 0.0 0.0
+state valuables 0 3.8528000000000007 3.4432000000000005 0.15230842455973348 0.11230842455973347
+state trailing 0 8.2928 5.833600000000001 3.8406711089957164 3.3806711089957164
+end
+case random-57
+deal
+cassino evidence v1
+pairs 8 2 18
+sums 10 10 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 2 2 0
+sweeps 3 2 3.25
+valuables 13 13 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 2 1 3
+sums 12 12 0
+building 0 0 0
+safe-builds 9 7 0
+answering-builds 14 8 7.5
+sweeps 1 1 0
+valuables 8 8 0
+trailing 3 2 3.75
+expect games=2 focus=pairs just=-
+state pairs 0 8.4 2.6 9.666666666666666 9.566666666666666
+state sums 1 20.0 20.0 0.0 0.0
+state building 0 0.0 0.0 0.0 0.0
+state safe-builds 0 9.0 7.0 0.0 0.0
+state answering-builds 0 15.6 9.6 4.166666666666667 4.166666666666667
+state sweeps 0 3.4000000000000004 2.6 1.4444444444444444 1.3544444444444443
+state valuables 1 18.4 18.4 0.0 0.0
+state trailing 0 3.8 2.8 2.0833333333333335 1.6233333333333335
+end
+case random-58
+deal
+cassino evidence v1
+pairs 8 7 4
+sums 3 0 1.5
+building 0 0 0
+safe-builds 1 0 3.5
+answering-builds 12 10 11.5
+sweeps 0 0 0
+valuables 2 0 1
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 7 6 4
+sums 3 0 1.5
+building 4 3 0.25
+safe-builds 3 3 0
+answering-builds 12 11 5.75
+sweeps 12 0 21
+valuables 11 0 5.5
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 7 0 3.5
+building 2 0 0.5
+safe-builds 1 1 0
+answering-builds 14 14 0
+sweeps 10 2 14
+valuables 15 6 4.5
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 15 14 4
+sums 9 0 4.5
+building 3 1 0.5
+safe-builds 1 1 0
+answering-builds 0 0 0
+sweeps 14 1 22.75
+valuables 15 2 6.5
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 6 0 3
+building 9 5 1
+safe-builds 3 3 0
+answering-builds 14 11 17.25
+sweeps 11 3 14
+valuables 11 2 4.5
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 4 1 1.5
+building 10 2 2
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 12 1 19.25
+valuables 0 0 0
+trailing 1 0 1
+expect games=6 focus=sweeps just=-
+state pairs 1 20.00064 18.62336 1.4932778211466737 1.3932778211466736
+state sums 0 20.35584 1.0 2.6232544019429263 2.5532544019429264
+state building 0 21.782400000000003 7.8688 0.9428397952988116 0.7228397952988116
+state safe-builds 0 5.10848 4.780800000000001 0.31086824529447477 0.21086824529447476
+state answering-builds 1 27.21536 23.750400000000003 5.400381646283286 5.400381646283286
+state sweeps 0 39.7952 5.064 16.474650880388584 16.384650880388584
+state valuables 0 31.24096 5.952000000000002 3.4273570994882467 3.3873570994882467
+state trailing 1 6.322240000000001 5.322240000000001 0.27105559892445136 0.0
+end
+case random-59
+deal
+cassino evidence v1
+pairs 10 10 0
+sums 3 3 0
+building 9 9 0
+safe-builds 0 0 0
+answering-builds 2 2 0
+sweeps 3 1 7
+valuables 5 5 0
+trailing 8 8 0
+expect games=1 focus=- just=pairs,building,trailing
+state pairs 1 10.0 10.0 0.0 0.0
+state sums 0 3.0 3.0 0.0 0.0
+state building 1 9.0 9.0 0.0 0.0
+state safe-builds 0 0.0 0.0 0.0 0.0
+state answering-builds 0 2.0 2.0 0.0 0.0
+state sweeps 0 3.0 1.0 7.0 6.91
+state valuables 0 5.0 5.0 0.0 0.0
+state trailing 1 8.0 8.0 0.0 0.0
+end
+case random-60
+deal
+cassino evidence v1
+pairs 6 4 11
+sums 3 3 0
+building 1 1 0
+safe-builds 9 0 45
+answering-builds 10 10 0
+sweeps 14 14 0
+valuables 11 9 1
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 14 6 44
+sums 5 5 0
+building 3 3 0
+safe-builds 2 0 10
+answering-builds 0 0 0
+sweeps 1 1 0
+valuables 6 6 0
+trailing 12 12 0
+deal
+cassino evidence v1
+pairs 10 2 44
+sums 11 11 0
+building 5 5 0
+safe-builds 11 2 45
+answering-builds 0 0 0
+sweeps 10 10 0
+valuables 10 8 1
+trailing 3 2 3.5
+deal
+cassino evidence v1
+pairs 7 4 16.5
+sums 7 4 9.75
+building 4 4 0
+safe-builds 12 1 55
+answering-builds 11 11 0
+sweeps 13 13 0
+valuables 11 9 1
+trailing 15 15 0
+deal
+cassino evidence v1
+pairs 5 2 16.5
+sums 15 13 6.5
+building 2 2 0
+safe-builds 15 2 65
+answering-builds 2 2 0
+sweeps 10 10 0
+valuables 11 11 0
+trailing 2 2 0
+expect games=5 focus=safe-builds just=-
+state pairs 0 26.625600000000002 11.1904 25.253926701570677 25.153926701570676
+state sums 1 31.428800000000003 27.028800000000004 4.2539267015706805 4.18392670157068
+state building 1 10.3456 10.3456 0.0 0.0
+state safe-builds 0 36.35040000000001 4.08 47.99857210851975 47.89857210851975
+state answering-builds 1 14.896 14.896 0.0 0.0
+state sweeps 1 33.046400000000006 33.046400000000006 0.0 0.0
+state valuables 0 33.77760000000001 30.078400000000002 0.5502141837220371 0.5102141837220371
+state trailing 1 23.2928 22.652800000000003 0.6663493574488338 0.20634935744883381
+end
+case random-61
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 13 11 4
+building 3 3 0
+safe-builds 1 1 0
+answering-builds 1 0 1.25
+sweeps 3 2 1.5
+valuables 0 0 0
+trailing 8 7 2
+expect games=1 focus=sums just=-
+state pairs 0 2.0 2.0 0.0 0.0
+state sums 0 13.0 11.0 4.0 3.93
+state building 0 3.0 3.0 0.0 0.0
+state safe-builds 0 1.0 1.0 0.0 0.0
+state answering-builds 0 1.0 0.0 1.25 1.25
+state sweeps 0 3.0 2.0 1.5 1.41
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 8.0 7.0 2.0 1.54
+end
+case random-62
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 5 5 0
+building 12 10 7
+safe-builds 8 3 17.5
+answering-builds 7 7 0
+sweeps 2 0 11.5
+valuables 0 0 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 5 4 4.75
+building 8 8 0
+safe-builds 11 3 28
+answering-builds 7 6 1
+sweeps 6 0 34.5
+valuables 11 11 0
+trailing 9 9 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 8 7 4.75
+building 12 8 14
+safe-builds 8 4 14
+answering-builds 1 1 0
+sweeps 2 1 5.75
+valuables 4 4 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 8 4 19
+building 12 10 7
+safe-builds 15 5 35
+answering-builds 13 13 0
+sweeps 0 0 0
+valuables 14 14 0
+trailing 5 4 4.75
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 9 9 0
+building 3 3 0
+safe-builds 6 1 17.5
+answering-builds 15 14 1
+sweeps 4 1 17.25
+valuables 3 3 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 2 2 0
+building 3 3 0
+safe-builds 12 3 31.5
+answering-builds 11 9 2
+sweeps 4 2 11.5
+valuables 11 10 1.25
+trailing 2 1 4.75
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 0 0 0
+building 7 6 3.5
+safe-builds 9 4 17.5
+answering-builds 12 12 0
+sweeps 4 0 23
+valuables 13 12 1.25
+trailing 14 14 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 10 8 9.5
+building 12 8 14
+safe-builds 9 4 17.5
+answering-builds 10 10 0
+sweeps 5 0 28.75
+valuables 11 11 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 2 1 5
+sums 12 8 19
+building 4 3 3.5
+safe-builds 8 4 14
+answering-builds 4 4 0
+sweeps 2 0 11.5
+valuables 11 11 0
+trailing 6 6 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 9 7 9.5
+building 8 7 3.5
+safe-builds 2 0 7
+answering-builds 4 4 0
+sweeps 11 1 57.5
+valuables 5 5 0
+trailing 9 8 4.75
+expect games=10 focus=sweeps just=-
+state pairs 1 5.817602048000001 5.017602048000001 0.896232199681337 0.7962321996813371
+state sums 0 34.05314304 26.14707968 8.414231410193977 8.344231410193977
+state building 1 33.290940416000005 26.78735616 5.100131420621818 4.880131420621818
+state safe-builds 0 34.178397184000005 12.420030464000002 17.062980258571454 16.962980258571452
+state answering-builds 1 34.896316416000005 33.58166425600001 0.29455839929315536 0.29455839929315536
+state sweeps 0 22.491618816000003 2.3565952 25.940631227379814 25.850631227379814
+state valuables 1 39.33901056000001 38.41741056000001 0.2581148735082251 0.2181148735082251
+state trailing 1 26.483984896000006 24.812240896000002 1.7791965778785916 1.3191965778785917
+end
+case random-63
+deal
+cassino evidence v1
+pairs 14 14 0
+sums 2 2 0
+building 0 0 0
+safe-builds 9 6 0
+answering-builds 11 9 5
+sweeps 3 0 12
+valuables 1 1 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 0 0 0
+building 1 1 0
+safe-builds 14 5 0
+answering-builds 6 5 2.5
+sweeps 11 2 36
+valuables 10 10 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 4 4 0
+sums 0 0 0
+building 2 2 0
+safe-builds 11 5 0
+answering-builds 3 2 2.5
+sweeps 12 3 36
+valuables 1 1 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 15 15 0
+sums 14 14 0
+building 3 3 0
+safe-builds 0 0 0
+answering-builds 2 2 0
+sweeps 10 0 40
+valuables 8 8 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 7 7 0
+sums 9 9 0
+building 3 3 0
+safe-builds 14 5 0
+answering-builds 3 2 2.5
+sweeps 13 0 52
+valuables 11 9 7.5
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 9 9 0
+building 3 3 0
+safe-builds 13 5 0
+answering-builds 14 12 5
+sweeps 7 2 20
+valuables 10 9 3.75
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 1 1 0
+building 0 0 0
+safe-builds 10 5 0
+answering-builds 13 11 5
+sweeps 6 0 24
+valuables 8 6 7.5
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 7 7 0
+sums 5 5 0
+building 2 2 0
+safe-builds 9 4 0
+answering-builds 10 9 2.5
+sweeps 6 0 24
+valuables 12 11 3.75
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 8 8 0
+building 3 3 0
+safe-builds 14 6 0
+answering-builds 7 7 0
+sweeps 8 1 28
+valuables 0 0 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 13 10 11.25
+building 1 1 0
+safe-builds 11 3 0
+answering-builds 2 2 0
+sweeps 13 0 52
+valuables 13 10 11.25
+trailing 3 3 0
+expect games=10 focus=sweeps just=-
+state pairs 1 23.576061952000007 23.576061952000007 0.0 0.0
+state sums 1 33.685971456000004 30.685971456000004 2.52065306160376 2.4506530616037603
+state building 1 8.265474560000001 8.265474560000001 0.0 0.0
+state safe-builds 0 48.855956992 19.299143168000004 0.0 0.0
+state answering-builds 0 31.00990156800001 27.553098752000004 1.9363112447802002 1.9363112447802002
+state sweeps 0 40.82520934400001 2.5838899200000007 34.27310182608817 34.18310182608817
+state valuables 1 36.59528652800001 30.866326528000002 4.813573521268493 4.773573521268493
+state trailing 1 8.303382016 8.303382016 0.0 0.0
+end
+case random-64
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 6 6 0
+building 7 2 27.5
+safe-builds 4 3 1.5
+answering-builds 1 1 0
+sweeps 14 14 0
+valuables 8 8 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 13 6 38.5
+safe-builds 6 6 0
+answering-builds 1 1 0
+sweeps 7 6 0.25
+valuables 12 11 4.25
+trailing 6 2 11
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 0 0 0
+building 2 2 0
+safe-builds 2 2 0
+answering-builds 1 1 0
+sweeps 3 3 0
+valuables 4 4 0
+trailing 14 0 38.5
+deal
+cassino evidence v1
+pairs 2 0 4.5
+sums 12 12 0
+building 15 6 49.5
+safe-builds 1 1 0
+answering-builds 1 1 0
+sweeps 8 8 0
+valuables 10 10 0
+trailing 1 0 2.75
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 12 12 0
+building 15 10 27.5
+safe-builds 13 12 1.5
+answering-builds 1 1 0
+sweeps 9 9 0
+valuables 12 11 4.25
+trailing 11 3 22
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 11 11 0
+building 15 7 44
+safe-builds 6 6 0
+answering-builds 1 1 0
+sweeps 9 9 0
+valuables 0 0 0
+trailing 10 3 19.25
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 2 2 0
+building 2 1 5.5
+safe-builds 15 15 0
+answering-builds 1 1 0
+sweeps 2 2 0
+valuables 10 9 4.25
+trailing 13 2 30.25
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 7 7 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 1 1 0
+sweeps 7 7 0
+valuables 3 2 4.25
+trailing 10 1 24.75
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 1 1 0
+building 1 1 0
+safe-builds 5 4 1.5
+answering-builds 2 2 0
+sweeps 5 5 0
+valuables 4 4 0
+trailing 14 0 38.5
+expect games=9 focus=trailing just=-
+state pairs 0 5.076992000000001 4.421632000000002 0.34063067532988245 0.24063067532988244
+state sums 1 23.365992960000007 23.365992960000007 0.0 0.0
+state building 0 25.444190720000005 13.404203520000005 15.297132256364796 15.077132256364795
+state safe-builds 1 25.778147840000003 24.200775680000007 0.5465711915154575 0.44657119151545754
+state answering-builds 0 5.328911360000001 5.328911360000001 0.0 0.0
+state sweeps 1 27.399088640000002 27.189373440000008 0.012111312900618046 0.0
+state valuables 1 25.899335680000007 23.840020480000007 2.021776116940403 1.9817761169404031
+state trailing 0 45.201587200000006 5.2642304000000015 25.370750765384113 24.910750765384112
+end
+case random-65
+deal
+cassino evidence v1
+pairs 11 10 6
+sums 10 6 1
+building 1 1 0
+safe-builds 1 1 0
+answering-builds 6 0 21
+sweeps 2 2 0
+valuables 11 9 6.5
+trailing 3 2 1.5
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 9 5 1
+building 4 2 12
+safe-builds 1 1 0
+answering-builds 15 3 42
+sweeps 3 3 0
+valuables 7 7 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 3 2 6
+sums 6 0 1.5
+building 2 0 12
+safe-builds 3 2 2.5
+answering-builds 8 0 28
+sweeps 3 2 3.75
+valuables 2 1 3.25
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 7 6
+sums 14 5 2.25
+building 8 5 18
+safe-builds 3 3 0
+answering-builds 11 1 35
+sweeps 2 2 0
+valuables 3 3 0
+trailing 14 11 4.5
+deal
+cassino evidence v1
+pairs 13 12 6
+sums 3 0 0.75
+building 0 0 0
+safe-builds 1 1 0
+answering-builds 15 2 45.5
+sweeps 1 1 0
+valuables 5 4 3.25
+trailing 4 3 1.5
+expect games=5 focus=pairs just=-
+state pairs 0 26.849600000000002 24.0 5.086149452641599 4.986149452641599
+state sums 0 26.744 9.017600000000002 1.3183008091385053 1.2483008091385053
+state building 0 10.1376 5.4336 8.396001903855307 8.176001903855306
+state safe-builds 0 6.241600000000001 5.6016 0.475963826749167 0.37596382674916695
+state answering-builds 0 39.05760000000001 4.336 36.15111851499285 36.15111851499285
+state sweeps 0 6.8752 6.2352 0.7139457401237506 0.6239457401237506
+state valuables 0 16.769600000000004 14.310400000000001 2.3775583055687766 2.3375583055687765
+state trailing 0 16.428800000000003 12.619200000000001 1.6999048072346499 1.23990480723465
+end
+case random-66
+deal
+cassino evidence v1
+pairs 15 1 45.5
+sums 2 1 5.75
+building 4 3 0
+safe-builds 7 3 2
+answering-builds 9 9 0
+sweeps 1 1 0
+valuables 14 10 15
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 11 1 32.5
+sums 6 1 28.75
+building 8 4 0
+safe-builds 6 3 1.5
+answering-builds 1 1 0
+sweeps 2 2 0
+valuables 7 3 15
+trailing 7 7 0
+deal
+cassino evidence v1
+pairs 10 1 29.25
+sums 3 2 5.75
+building 9 4 0
+safe-builds 4 1 1.5
+answering-builds 14 13 4.25
+sweeps 1 1 0
+valuables 4 3 3.75
+trailing 8 8 0
+deal
+cassino evidence v1
+pairs 14 2 39
+sums 9 3 34.5
+building 15 9 0
+safe-builds 12 11 0.5
+answering-builds 8 8 0
+sweeps 3 3 0
+valuables 9 6 11.25
+trailing 5 5 0
+deal
+cassino evidence v1
+pairs 6 0 19.5
+sums 2 0 11.5
+building 2 1 0
+safe-builds 8 6 1
+answering-builds 13 12 4.25
+sweeps 0 0 0
+valuables 6 2 15
+trailing 14 14 0
+deal
+cassino evidence v1
+pairs 9 0 29.25
+sums 1 1 0
+building 12 8 0
+safe-builds 3 2 0.5
+answering-builds 9 9 0
+sweeps 3 3 0
+valuables 6 4 7.5
+trailing 5 4 3.75
+expect games=6 focus=pairs just=-
+state pairs 0 37.30080000000001 2.5292800000000004 30.631299332119003 30.531299332119
+state sums 0 13.008960000000002 4.681280000000001 12.979269667794258 12.909269667794257
+state building 0 32.395520000000005 19.22944 0.0 0.0
+state safe-builds 0 23.879360000000005 16.56384 0.9914563275219013 0.8914563275219013
+state answering-builds 1 35.04672000000001 33.73472 1.5114060196027408 1.5114060196027408
+state sweeps 0 6.57888 6.57888 0.0 0.0
+state valuables 0 26.062720000000002 15.481600000000002 10.755269320843091 10.715269320843092
+state trailing 1 26.363200000000003 25.363200000000003 1.0164584959666925 0.5564584959666925
+end
+case random-67
+deal
+cassino evidence v1
+pairs 2 1 3.5
+sums 3 2 5.5
+building 0 0 0
+safe-builds 12 12 0
+answering-builds 15 7 48
+sweeps 7 1 12
+valuables 6 2 24
+trailing 3 0 12
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 3 1 11
+building 2 1 2.25
+safe-builds 4 4 0
+answering-builds 10 4 36
+sweeps 3 1 4
+valuables 5 2 18
+trailing 1 0 4
+expect games=2 focus=valuables just=-
+state pairs 0 1.6 0.8 1.5555555555555556 1.4555555555555555
+state sums 0 5.4 2.6 8.555555555555555 8.485555555555555
+state building 0 2.0 1.0 1.25 1.03
+state safe-builds 1 13.600000000000001 13.600000000000001 0.0 0.0
+state answering-builds 0 22.0 9.600000000000001 41.333333333333336 41.333333333333336
+state sweeps 0 8.600000000000001 1.8 7.555555555555556 7.465555555555556
+state valuables 0 9.8 3.6 20.666666666666668 20.62666666666667
+state trailing 0 3.4000000000000004 0.0 7.555555555555556 7.095555555555556
+end
+case random-68
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 3 2 5.5
+building 1 0 3
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 2 2 0
+valuables 2 2 0
+trailing 6 5 1.25
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 1 1 0
+building 2 1 3
+safe-builds 3 3 0
+answering-builds 3 3 0
+sweeps 2 2 0
+valuables 0 0 0
+trailing 3 2 1.25
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 0 0 0
+building 7 0 21
+safe-builds 2 2 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 2 2 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 3 2 5.5
+building 2 0 6
+safe-builds 0 0 0
+answering-builds 3 3 0
+sweeps 3 3 0
+valuables 0 0 0
+trailing 15 10 6.25
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 1 0 5.5
+building 3 0 9
+safe-builds 3 3 0
+answering-builds 2 2 0
+sweeps 0 0 0
+valuables 0 0 0
+trailing 3 1 2.5
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 0 0 0
+building 6 0 18
+safe-builds 1 1 0
+answering-builds 2 2 0
+sweeps 2 2 0
+valuables 2 2 0
+trailing 10 7 3.75
+deal
+cassino evidence v1
+pairs 3 2 3.25
+sums 0 0 0
+building 2 0 6
+safe-builds 2 2 0
+answering-builds 1 1 0
+sweeps 3 1 0.5
+valuables 1 1 0
+trailing 5 1 5
+expect games=7 focus=building just=-
+state pairs 0 6.7706240000000015 5.7706240000000015 0.8224882978895708 0.7224882978895708
+state sums 0 3.2901120000000006 1.8759680000000003 1.968351662590499 1.898351662590499
+state building 0 13.528704000000001 0.32768000000000014 10.022481009377884 9.802481009377884
+state safe-builds 0 6.522240000000001 6.522240000000001 0.0 0.0
+state answering-builds 0 6.39904 6.39904 0.0 0.0
+state sweeps 0 7.315648 5.315648 0.12653666121378013 0.03653666121378013
+state valuables 0 3.9434880000000008 3.9434880000000008 0.0 0.0
+state trailing 0 25.565504000000004 14.735680000000002 3.425924426232163 2.965924426232163
+end
+case random-69
+deal
+cassino evidence v1
+pairs 10 10 0
+sums 15 4 2.75
+building 0 0 0
+safe-builds 6 5 2
+answering-builds 14 6 20
+sweeps 8 7 0.5
+valuables 3 3 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 5 0 1.25
+building 1 1 0
+safe-builds 10 7 6
+answering-builds 7 4 7.5
+sweeps 4 4 0
+valuables 9 9 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 13 11 1.5
+sums 7 5 0.5
+building 2 1 2.25
+safe-builds 3 2 2
+answering-builds 12 5 17.5
+sweeps 3 3 0
+valuables 6 4 2.5
+trailing 2 0 9
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 8 1 1.75
+building 1 0 2.25
+safe-builds 2 2 0
+answering-builds 2 2 0
+sweeps 8 7 0.5
+valuables 15 11 5
+trailing 3 1 9
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 12 3 2.25
+building 1 1 0
+safe-builds 5 4 2
+answering-builds 5 2 7.5
+sweeps 15 14 0.5
+valuables 14 11 3.75
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 15 14 0.75
+sums 13 4 2.25
+building 2 0 4.5
+safe-builds 2 2 0
+answering-builds 0 0 0
+sweeps 12 11 0.5
+valuables 9 8 1.25
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 8 0
+sums 8 0 2
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 15 10 12.5
+sweeps 4 3 0.5
+valuables 4 3 1.25
+trailing 1 0 4.5
+deal
+cassino evidence v1
+pairs 12 12 0
+sums 10 0 2.5
+building 0 0 0
+safe-builds 1 1 0
+answering-builds 4 2 5
+sweeps 12 5 3.5
+valuables 8 5 3.75
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 5 2 0.75
+building 2 0 4.5
+safe-builds 3 3 0
+answering-builds 6 4 5
+sweeps 10 10 0
+valuables 14 9 6.25
+trailing 1 0 4.5
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 11 2 2.25
+building 3 3 0
+safe-builds 8 4 8
+answering-builds 12 7 12.5
+sweeps 15 15 0
+valuables 8 6 2.5
+trailing 0 0 0
+expect games=10 focus=sums just=-
+state pairs 1 33.87035904000001 33.04132864 0.13931320106150608 0.03931320106150607
+state sums 0 41.170245120000004 8.069030912000002 1.8541483763599353 1.7841483763599353
+state building 0 6.59622656 3.7051673600000004 1.4574714447515438 1.2374714447515438
+state safe-builds 0 17.134061568 11.959132160000003 2.31896918326374 2.2189691832637397
+state answering-builds 0 34.772723712 20.304619008000003 8.104238315053637 8.104238315053637
+state sweeps 1 47.02952806400001 40.90388633600001 0.6862496700431534 0.5962496700431534
+state valuables 1 41.744973824 30.452327424000007 3.1627604135298544 3.1227604135298543
+state trailing 0 2.5178624000000003 0.2621440000000001 2.274353396430375 1.8143533964303749
+end
+case random-70
+deal
+cassino evidence v1
+pairs 4 0 5
+sums 3 1 0
+building 2 2 0
+safe-builds 4 1 6
+answering-builds 8 4 7
+sweeps 5 5 0
+valuables 11 11 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 13 6 8.75
+sums 12 8 0
+building 3 3 0
+safe-builds 15 5 20
+answering-builds 13 8 8.75
+sweeps 7 5 12
+valuables 15 14 1.25
+trailing 3 0 5.25
+deal
+cassino evidence v1
+pairs 11 2 11.25
+sums 8 6 0
+building 3 2 1.5
+safe-builds 13 3 20
+answering-builds 1 0 1.75
+sweeps 11 8 18
+valuables 6 5 1.25
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 12 3 11.25
+sums 4 3 0
+building 0 0 0
+safe-builds 2 1 2
+answering-builds 6 3 5.25
+sweeps 7 6 6
+valuables 8 7 1.25
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 9 2 8.75
+sums 10 7 0
+building 3 3 0
+safe-builds 1 0 2
+answering-builds 10 5 8.75
+sweeps 8 7 6
+valuables 15 12 3.75
+trailing 0 0 0
+expect games=5 focus=pairs just=-
+state pairs 0 33.934400000000004 8.752000000000002 9.363993336506425 9.263993336506426
+state sums 0 25.692800000000005 17.745600000000003 0.0 0.0
+state building 0 7.275200000000001 6.635199999999999 0.28557829604950025 0.06557829604950025
+state safe-builds 0 20.238400000000002 5.6896 8.655878153260351 8.555878153260352
+state answering-builds 0 25.3728 13.1344 6.3711327939076625 6.3711327939076625
+state sweeps 0 26.272000000000002 21.528 8.46739647786768 8.37739647786768
+state valuables 1 37.4256 32.473600000000005 1.8413850547358397 1.8013850547358397
+state trailing 0 1.5360000000000005 0.0 0.7996192289386007 0.3396192289386007
+end
+case random-71
+deal
+cassino evidence v1
+pairs 7 3 8
+sums 3 1 7
+building 1 1 0
+safe-builds 0 0 0
+answering-builds 1 0 3.5
+sweeps 3 3 0
+valuables 12 7 6.25
+trailing 13 2 33
+deal
+cassino evidence v1
+pairs 6 5 2
+sums 6 1 17.5
+building 0 0 0
+safe-builds 1 1 0
+answering-builds 0 0 0
+sweeps 2 1 4.75
+valuables 2 1 1.25
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 8 0 28
+building 7 3 13
+safe-builds 10 4 9
+answering-builds 15 13 7
+sweeps 2 0 9.5
+valuables 15 7 10
+trailing 9 2 21
+deal
+cassino evidence v1
+pairs 5 0 10
+sums 11 1 35
+building 4 1 9.75
+safe-builds 10 4 9
+answering-builds 3 3 0
+sweeps 0 0 0
+valuables 4 1 3.75
+trailing 3 0 9
+deal
+cassino evidence v1
+pairs 15 5 20
+sums 5 2 10.5
+building 3 3 0
+safe-builds 8 3 7.5
+answering-builds 14 12 7
+sweeps 3 1 9.5
+valuables 5 2 3.75
+trailing 5 0 15
+deal
+cassino evidence v1
+pairs 2 1 2
+sums 0 0 0
+building 12 8 13
+safe-builds 15 2 19.5
+answering-builds 14 12 7
+sweeps 3 1 9.5
+valuables 2 1 1.25
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 11 5 12
+sums 2 1 3.5
+building 11 5 19.5
+safe-builds 7 2 7.5
+answering-builds 13 12 3.5
+sweeps 1 1 0
+valuables 1 0 1.25
+trailing 12 3 27
+deal
+cassino evidence v1
+pairs 8 2 12
+sums 9 0 31.5
+building 11 4 22.75
+safe-builds 4 4 0
+answering-builds 0 0 0
+sweeps 2 0 9.5
+valuables 5 4 1.25
+trailing 0 0 0
+expect games=8 focus=trailing just=-
+state pairs 0 31.176550400000004 11.467545600000001 9.472888962714825 9.372888962714825
+state sums 0 22.489049600000005 2.7054592000000004 16.640290812669758 16.570290812669757
+state building 0 33.15787520000001 16.258355200000004 13.199135467518124 12.979135467518123
+state safe-builds 0 30.930944 11.627264 6.9585559646742885 6.858555964674289
+state answering-builds 0 32.881715199999995 28.91264 3.338451931624878 3.338451931624878
+state sweeps 0 8.064793600000002 2.8432896000000003 5.960421607621297 5.870421607621297
+state valuables 0 19.234470400000006 10.0975104 2.7447291357136048 2.7047291357136047
+state trailing 0 19.326361600000002 3.7369344 11.239297546210421 10.77929754621042
+end
+case random-72
+deal
+cassino evidence v1
+pairs 7 4 5.25
+sums 11 2 6.75
+building 2 0 3
+safe-builds 8 4 6
+answering-builds 0 0 0
+sweeps 1 1 0
+valuables 0 0 0
+trailing 0 0 0
+expect games=1 focus=safe-builds just=-
+state pairs 0 7.0 4.0 5.25 5.15
+state sums 0 11.0 2.0 6.75 6.68
+state building 0 2.0 0.0 3.0 2.78
+state safe-builds 0 8.0 4.0 6.0 5.9
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 1.0 1.0 0.0 0.0
+state valuables 0 0.0 0.0 0.0 0.0
+state trailing 0 0.0 0.0 0.0 0.0
+end
+case random-73
+deal
+cassino evidence v1
+pairs 15 15 0
+sums 0 0 0
+building 7 4 13.5
+safe-builds 6 0 16.5
+answering-builds 10 9 2.5
+sweeps 3 3 0
+valuables 1 1 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 0 0 0
+building 7 4 13.5
+safe-builds 12 5 19.25
+answering-builds 11 9 5
+sweeps 2 2 0
+valuables 2 2 0
+trailing 2 0 0.5
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 3 3 0
+building 6 2 18
+safe-builds 4 1 8.25
+answering-builds 9 7 5
+sweeps 1 1 0
+valuables 1 0 2.25
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 13 13 0
+sums 2 2 0
+building 3 2 4.5
+safe-builds 9 2 19.25
+answering-builds 10 6 10
+sweeps 0 0 0
+valuables 2 1 2.25
+trailing 2 0 0.5
+expect games=4 focus=building just=-
+state pairs 1 24.36 24.36 0.0 0.0
+state sums 0 4.4 4.4 0.0 0.0
+state building 0 15.864000000000003 8.208000000000002 11.67073170731707 11.45073170731707
+state safe-builds 0 22.952 6.0 15.7920054200542 15.692005420054201
+state answering-builds 0 29.360000000000003 21.968000000000004 6.260162601626017 6.260162601626017
+state sweeps 0 3.6160000000000005 3.6160000000000005 0.0 0.0
+state valuables 0 4.5920000000000005 2.792 1.3719512195121948 1.3319512195121948
+state trailing 0 3.2800000000000002 0.0 0.27777777777777773 0.0
+end
+case random-74
+deal
+cassino evidence v1
+pairs 14 13 6
+sums 3 3 0
+building 2 2 0
+safe-builds 11 10 2.25
+answering-builds 6 1 8.75
+sweeps 7 0 5.25
+valuables 0 0 0
+trailing 9 8 5.75
+deal
+cassino evidence v1
+pairs 8 6 12
+sums 0 0 0
+building 0 0 0
+safe-builds 1 1 0
+answering-builds 9 5 7
+sweeps 1 1 0
+valuables 2 0 10
+trailing 15 12 17.25
+deal
+cassino evidence v1
+pairs 5 5 0
+sums 2 2 0
+building 0 0 0
+safe-builds 4 4 0
+answering-builds 3 2 1.75
+sweeps 1 0 0.75
+valuables 3 2 5
+trailing 10 10 0
+deal
+cassino evidence v1
+pairs 8 8 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 13 5 14
+sweeps 7 0 5.25
+valuables 0 0 0
+trailing 7 6 5.75
+deal
+cassino evidence v1
+pairs 15 15 0
+sums 3 3 0
+building 2 2 0
+safe-builds 7 6 2.25
+answering-builds 13 3 17.5
+sweeps 13 0 9.75
+valuables 3 3 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 13 13 0
+sums 1 0 3.25
+building 0 0 0
+safe-builds 15 15 0
+answering-builds 10 6 7
+sweeps 4 0 3
+valuables 1 0 5
+trailing 4 4 0
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 10 5 8.75
+sweeps 8 0 6
+valuables 0 0 0
+trailing 13 11 11.5
+expect games=7 focus=answering-builds just=-
+state pairs 1 41.43545600000001 40.51795200000001 1.393174713723458 1.293174713723458
+state sums 0 4.3256320000000015 3.525632000000001 0.6579906383116567 0.5879906383116567
+state building 0 1.8042880000000006 1.8042880000000006 0.0 0.0
+state safe-builds 1 21.329664000000005 20.42752 0.5136943036232002 0.41369430362320025
+state answering-builds 0 38.726783999999995 16.999744 9.622434848803874 9.622434848803874
+state sweeps 0 25.676288 0.32768000000000014 4.811292334105375 4.721292334105375
+state valuables 0 4.60416 2.7392000000000003 2.3598581169725144 2.3198581169725143
+state trailing 1 31.794496000000006 28.037312000000004 5.467347467647106 5.007347467647106
+end
+case random-75
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 9 8 0.5
+building 2 2 0
+safe-builds 11 8 17.25
+answering-builds 5 4 0.25
+sweeps 4 4 0
+valuables 8 7 0.25
+trailing 14 13 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 12 12 0
+building 1 1 0
+safe-builds 14 12 11.5
+answering-builds 12 11 0.25
+sweeps 11 10 2.5
+valuables 12 12 0
+trailing 15 13 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 11 11 0
+building 2 2 0
+safe-builds 4 3 5.75
+answering-builds 8 8 0
+sweeps 2 1 2.5
+valuables 9 9 0
+trailing 5 4 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 15 14 0.5
+building 2 2 0
+safe-builds 8 5 17.25
+answering-builds 11 9 0.5
+sweeps 2 2 0
+valuables 0 0 0
+trailing 6 6 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 11 10 0.5
+building 0 0 0
+safe-builds 3 2 5.75
+answering-builds 1 0 0.25
+sweeps 9 8 2.5
+valuables 15 13 0.5
+trailing 14 12 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 3 3 0
+building 2 2 0
+safe-builds 10 7 17.25
+answering-builds 11 11 0
+sweeps 8 6 5
+valuables 2 2 0
+trailing 10 8 0
+expect games=6 focus=safe-builds just=-
+state pairs 0 4.79168 4.79168 0.0 0.0
+state sums 1 34.89632 33.128640000000004 0.2395697805533871 0.1695697805533871
+state building 0 5.368960000000001 5.368960000000001 0.0 0.0
+state safe-builds 0 28.90688 20.872640000000004 12.521922976841008 12.421922976841008
+state answering-builds 0 29.489600000000003 26.672320000000003 0.19090987943446958 0.19090987943446958
+state sweeps 1 23.320320000000002 19.598720000000004 2.5219012923930957 2.431901292393096
+state valuables 1 26.14464 24.21696 0.1306271142336716 0.09062711423367159
+state trailing 1 38.33152 33.07264000000001 0.0 0.0
+end
+case random-76
+deal
+cassino evidence v1
+pairs 13 12 2.25
+sums 2 1 2
+building 5 0 10
+safe-builds 6 5 4
+answering-builds 3 1 7
+sweeps 5 2 12
+valuables 1 1 0
+trailing 15 13 6
+deal
+cassino evidence v1
+pairs 7 6 2.25
+sums 3 0 6
+building 0 0 0
+safe-builds 1 1 0
+answering-builds 13 2 38.5
+sweeps 14 14 0
+valuables 12 11 2.25
+trailing 4 3 3
+deal
+cassino evidence v1
+pairs 4 3 2.25
+sums 2 0 4
+building 15 0 30
+safe-builds 9 7 8
+answering-builds 9 1 28
+sweeps 7 7 0
+valuables 2 2 0
+trailing 5 5 0
+deal
+cassino evidence v1
+pairs 7 6 2.25
+sums 0 0 0
+building 11 1 20
+safe-builds 5 3 8
+answering-builds 14 2 42
+sweeps 3 3 0
+valuables 14 13 2.25
+trailing 1 1 0
+expect games=4 focus=sums just=valuables
+state pairs 0 21.336000000000002 18.384 2.25 2.15
+state sums 0 4.544 0.5120000000000001 2.7317073170731705 2.6617073170731707
+state building 0 25.560000000000002 1.0 16.639566395663955 16.419566395663956
+state safe-builds 0 15.912 11.8 5.571815718157181 5.471815718157181
+state answering-builds 0 31.056 4.5920000000000005 31.376693766937663 31.376693766937663
+state sweeps 1 20.12 18.584000000000003 2.0813008130081303 1.9913008130081302
+state valuables 1 23.792 22.152 1.25 1.21
+state trailing 0 15.240000000000002 13.576 1.6910569105691058 1.2310569105691058
+end
+case random-77
+deal
+cassino evidence v1
+pairs 10 10 0
+sums 3 3 0
+building 0 0 0
+safe-builds 3 3 0
+answering-builds 0 0 0
+sweeps 8 6 2
+valuables 10 4 10.5
+trailing 1 0 4.5
+deal
+cassino evidence v1
+pairs 8 7 3.25
+sums 1 1 0
+building 0 0 0
+safe-builds 3 2 5.25
+answering-builds 3 1 11
+sweeps 3 2 1
+valuables 2 1 1.75
+trailing 4 0 18
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 2 2 0
+building 0 0 0
+safe-builds 1 1 0
+answering-builds 0 0 0
+sweeps 10 8 2
+valuables 9 3 10.5
+trailing 11 5 27
+deal
+cassino evidence v1
+pairs 8 4 13
+sums 2 2 0
+building 2 2 0
+safe-builds 1 0 5.25
+answering-builds 2 2 0
+sweeps 9 5 4
+valuables 1 0 1.75
+trailing 9 3 27
+deal
+cassino evidence v1
+pairs 9 6 9.75
+sums 2 2 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 2 2 0
+sweeps 4 2 2
+valuables 1 0 1.75
+trailing 4 0 18
+deal
+cassino evidence v1
+pairs 1 0 3.25
+sums 2 2 0
+building 1 1 0
+safe-builds 3 3 0
+answering-builds 2 1 5.5
+sweeps 5 5 0
+valuables 2 2 0
+trailing 4 1 13.5
+expect games=6 focus=trailing just=sums
+state pairs 1 21.4096 15.040000000000001 5.611176164454852 5.511176164454852
+state sums 1 7.296640000000001 7.296640000000001 0.0 0.0
+state building 0 2.2800000000000002 2.2800000000000002 0.0 0.0
+state safe-builds 0 6.363840000000001 5.314240000000001 1.493624772313297 1.3936247723132968
+state answering-builds 0 6.108800000000001 4.2896 2.7120739005984906 2.7120739005984906
+state sweeps 0 22.93024 16.68128 1.6938155954549396 1.6038155954549396
+state valuables 0 12.144000000000002 5.2563200000000005 3.2671523982999395 3.2271523982999395
+state trailing 0 20.55808 5.48 18.39149102263856 17.93149102263856
+end
+case random-78
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 13 11 0.5
+building 0 0 0
+safe-builds 15 14 5.25
+answering-builds 13 9 11
+sweeps 8 2 33
+valuables 7 7 0
+trailing 7 4 14.25
+deal
+cassino evidence v1
+pairs 5 5 0
+sums 0 0 0
+building 3 1 9.5
+safe-builds 6 6 0
+answering-builds 13 10 8.25
+sweeps 12 1 60.5
+valuables 11 9 6.5
+trailing 10 9 4.75
+deal
+cassino evidence v1
+pairs 13 13 0
+sums 14 13 0.25
+building 1 1 0
+safe-builds 5 5 0
+answering-builds 1 1 0
+sweeps 1 0 5.5
+valuables 1 1 0
+trailing 11 6 23.75
+deal
+cassino evidence v1
+pairs 14 14 0
+sums 9 7 0.5
+building 1 0 4.75
+safe-builds 12 12 0
+answering-builds 0 0 0
+sweeps 8 0 44
+valuables 10 7 9.75
+trailing 8 8 0
+expect games=4 focus=sweeps just=-
+state pairs 1 29.136000000000003 29.136000000000003 0.0 0.0
+state sums 0 26.856 23.032 0.3238482384823848 0.2538482384823848
+state building 0 3.7200000000000006 1.4400000000000002 3.66869918699187 3.44869918699187
+state safe-builds 1 27.52 27.008000000000003 0.910569105691057 0.810569105691057
+state answering-builds 0 15.776 11.808 3.6964769647696474 3.6964769647696474
+state sweeps 0 20.576 1.6640000000000001 35.235772357723576 35.14577235772357
+state valuables 0 21.424 17.144000000000002 4.7120596205962055 4.6720596205962055
+state trailing 0 26.784000000000002 20.608 9.937669376693766 9.477669376693765
+end
+case random-79
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 1 1 0
+building 3 3 0
+safe-builds 1 1 0
+answering-builds 1 1 0
+sweeps 2 2 0
+valuables 2 1 1
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 4 4 0
+building 7 7 0
+safe-builds 1 1 0
+answering-builds 3 2 4.5
+sweeps 1 1 0
+valuables 1 1 0
+trailing 3 2 3.75
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 6 6 0
+building 13 13 0
+safe-builds 1 1 0
+answering-builds 0 0 0
+sweeps 15 14 5.25
+valuables 1 1 0
+trailing 5 4 3.75
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 3 3 0
+building 15 14 1.75
+safe-builds 2 2 0
+answering-builds 3 3 0
+sweeps 6 5 5.25
+valuables 0 0 0
+trailing 11 11 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 13 13 0
+building 14 14 0
+safe-builds 2 2 0
+answering-builds 3 3 0
+sweeps 12 12 0
+valuables 0 0 0
+trailing 9 7 7.5
+expect games=5 focus=- just=-
+state pairs 1 12.9184 12.9184 0.0 0.0
+state sums 1 21.6976 21.6976 0.0 0.0
+state building 1 39.1328 38.332800000000006 0.41646834840552116 0.19646834840552116
+state safe-builds 0 5.1616 5.1616 0.0 0.0
+state answering-builds 0 7.3456 6.833600000000001 0.6853879105188005 0.6853879105188005
+state sweeps 1 27.7312 26.291199999999996 2.248929081389814 2.158929081389814
+state valuables 0 1.9712000000000005 1.5616000000000003 0.12184673964778679 0.0818467396477868
+state trailing 1 22.9456 19.7936 3.516182770109471 3.056182770109471
+end
+case random-80
+deal
+cassino evidence v1
+pairs 7 7 0
+sums 0 0 0
+building 0 0 0
+safe-builds 1 1 0
+answering-builds 11 1 60
+sweeps 15 14 3.5
+valuables 6 5 4.75
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 7 5 3
+building 3 0 7.5
+safe-builds 5 4 2
+answering-builds 7 1 36
+sweeps 10 8 7
+valuables 14 11 14.25
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 15 15 0
+sums 10 8 3
+building 1 0 2.5
+safe-builds 10 10 0
+answering-builds 2 0 12
+sweeps 0 0 0
+valuables 8 6 9.5
+trailing 3 2 2
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 7 5 3
+building 0 0 0
+safe-builds 1 1 0
+answering-builds 15 2 78
+sweeps 4 4 0
+valuables 11 11 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 2 1 1.5
+building 3 2 2.5
+safe-builds 15 14 2
+answering-builds 13 1 72
+sweeps 0 0 0
+valuables 9 8 4.75
+trailing 2 0 4
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 1 0 1.5
+building 1 0 2.5
+safe-builds 3 3 0
+answering-builds 8 2 36
+sweeps 6 4 7
+valuables 12 10 9.5
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 10 8 3
+building 2 0 5
+safe-builds 0 0 0
+answering-builds 1 0 6
+sweeps 3 3 0
+valuables 10 8 9.5
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 7 7 0
+sums 5 4 1.5
+building 1 0 2.5
+safe-builds 14 14 0
+answering-builds 4 0 24
+sweeps 8 8 0
+valuables 13 13 0
+trailing 1 0 2
+expect games=8 focus=answering-builds just=-
+state pairs 1 17.8885504 17.8885504 0.0 0.0
+state sums 0 22.643008000000005 16.892160000000004 2.0730553786809147 2.003055378680915
+state building 0 5.890112000000001 1.0240000000000002 2.923545552141106 2.703545552141106
+state safe-builds 1 28.806835200000002 28.032691200000002 0.3720827219622934 0.27208272196229344
+state answering-builds 0 27.517235200000005 3.0830592000000006 35.231951865489144 35.231951865489144
+state sweeps 1 21.645568000000004 19.631564800000003 1.6940099480449968 1.6040099480449967
+state valuables 0 45.343347200000004 40.29984 5.75723571083611 5.71723571083611
+state trailing 0 6.2279296 3.876249600000001 1.1303058547044038 0.6703058547044038
+end
+case random-81
+deal
+cassino evidence v1
+pairs 15 11 10
+sums 2 0 4.5
+building 10 9 3
+safe-builds 2 1 0
+answering-builds 14 14 0
+sweeps 2 2 0
+valuables 1 0 1.75
+trailing 15 9 10.5
+deal
+cassino evidence v1
+pairs 7 7 0
+sums 14 1 29.25
+building 5 3 6
+safe-builds 1 1 0
+answering-builds 11 11 0
+sweeps 10 10 0
+valuables 9 3 10.5
+trailing 2 2 0
+expect games=2 focus=sums just=sweeps
+state pairs 0 19.0 15.8 4.444444444444445 4.344444444444445
+state sums 0 15.6 1.0 18.25 18.18
+state building 0 13.0 10.2 4.666666666666667 4.446666666666667
+state safe-builds 0 2.6 1.8 0.0 0.0
+state answering-builds 1 22.200000000000003 22.200000000000003 0.0 0.0
+state sweeps 1 11.6 11.6 0.0 0.0
+state valuables 0 9.8 3.0 6.611111111111111 6.571111111111111
+state trailing 0 14.0 9.2 4.666666666666667 4.206666666666667
+end
+case random-82
+deal
+cassino evidence v1
+pairs 3 2 2.5
+sums 9 3 19.5
+building 14 14 0
+safe-builds 2 2 0
+answering-builds 2 0 4.5
+sweeps 15 4 33
+valuables 6 6 0
+trailing 3 2 3.75
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 14 13 5
+safe-builds 1 1 0
+answering-builds 8 1 15.75
+sweeps 10 4 18
+valuables 3 3 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 1 0 3.25
+building 6 5 5
+safe-builds 0 0 0
+answering-builds 1 1 0
+sweeps 0 0 0
+valuables 7 7 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 1 0 3.25
+building 6 6 0
+safe-builds 3 3 0
+answering-builds 2 1 2.25
+sweeps 14 4 30
+valuables 4 4 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 12 7 16.25
+building 7 7 0
+safe-builds 3 3 0
+answering-builds 13 7 13.5
+sweeps 5 3 6
+valuables 5 5 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 3 3 0
+safe-builds 0 0 0
+answering-builds 8 1 15.75
+sweeps 12 4 24
+valuables 14 14 0
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 6 2 13
+building 2 1 5
+safe-builds 3 3 0
+answering-builds 14 3 24.75
+sweeps 4 1 9
+valuables 7 6 4
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 6 3 9.75
+building 1 1 0
+safe-builds 1 1 0
+answering-builds 2 0 4.5
+sweeps 13 3 30
+valuables 10 10 0
+trailing 0 0 0
+expect games=8 focus=sweeps just=-
+state pairs 0 8.3216256 8.1119104 0.1259962656380253 0.02599626563802529
+state sums 0 19.568716800000004 8.813145600000002 8.40048955824405 8.33048955824405
+state building 1 19.133708800000004 17.743884800000004 1.6700042142305644 1.4500042142305645
+state safe-builds 1 6.8463744 6.8463744 0.0 0.0
+state answering-builds 0 28.639462400000003 7.623424 11.363735776971843 11.363735776971843
+state sweeps 0 37.941568000000004 11.421836800000001 19.119570333047257 19.029570333047257
+state valuables 1 33.09688320000001 32.2968832 0.7690201760133377 0.7290201760133377
+state trailing 0 4.654489600000001 4.4447744 0.188994398457038 0.0
+end
+case random-83
+deal
+cassino evidence v1
+pairs 14 14 0
+sums 7 6 6
+building 11 1 50
+safe-builds 9 8 1.5
+answering-builds 15 14 3.75
+sweeps 6 6 0
+valuables 0 0 0
+trailing 1 0 1.75
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 14 12 12
+building 10 0 50
+safe-builds 10 8 3
+answering-builds 6 5 3.75
+sweeps 13 13 0
+valuables 6 0 16.5
+trailing 1 0 1.75
+deal
+cassino evidence v1
+pairs 4 3 3.5
+sums 0 0 0
+building 13 3 50
+safe-builds 13 12 1.5
+answering-builds 8 8 0
+sweeps 13 13 0
+valuables 4 0 11
+trailing 1 0 1.75
+deal
+cassino evidence v1
+pairs 10 10 0
+sums 2 2 0
+building 11 2 45
+safe-builds 4 4 0
+answering-builds 4 3 3.75
+sweeps 4 4 0
+valuables 13 0 35.75
+trailing 1 0 1.75
+deal
+cassino evidence v1
+pairs 10 9 3.5
+sums 10 7 18
+building 2 0 10
+safe-builds 14 13 1.5
+answering-builds 10 10 0
+sweeps 7 7 0
+valuables 2 0 5.5
+trailing 2 0 3.5
+expect games=5 focus=building just=safe-builds
+state pairs 1 30.902400000000004 29.262400000000003 1.7075202284626365 1.6075202284626364
+state sums 0 21.635200000000005 17.201600000000003 7.913374583531652 7.843374583531651
+state building 0 28.745600000000003 3.9296000000000006 36.910994764397905 36.69099476439791
+state safe-builds 1 34.32640000000001 31.252800000000004 1.3714897667777248 1.2714897667777247
+state answering-builds 1 27.535999999999998 25.8144 1.920514040932889 1.920514040932889
+state sweeps 1 27.6336 27.6336 0.0 0.0
+state valuables 0 18.032 0.0 14.751308900523558 14.711308900523559
+state trailing 0 4.361600000000001 0.0 2.2705854355069013 1.8105854355069013
+end
+case random-84
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 15 14 2.75
+building 0 0 0
+safe-builds 9 1 14
+answering-builds 0 0 0
+sweeps 8 4 7
+valuables 6 6 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 5 4 2.75
+building 2 1 4.75
+safe-builds 15 7 14
+answering-builds 9 7 5.5
+sweeps 8 5 5.25
+valuables 14 14 0
+trailing 13 11 5
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 11 11 0
+building 3 1 9.5
+safe-builds 1 1 0
+answering-builds 1 1 0
+sweeps 5 3 3.5
+valuables 7 7 0
+trailing 10 6 10
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 3 3 0
+building 1 1 0
+safe-builds 13 6 12.25
+answering-builds 9 7 5.5
+sweeps 8 1 12.25
+valuables 10 10 0
+trailing 14 11 7.5
+deal
+cassino evidence v1
+pairs 2 1 3.75
+sums 14 13 2.75
+building 1 1 0
+safe-builds 9 2 12.25
+answering-builds 11 10 2.75
+sweeps 8 3 8.75
+valuables 4 4 0
+trailing 12 11 2.5
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 7 6 2.75
+building 2 1 4.75
+safe-builds 2 1 1.75
+answering-builds 5 4 2.75
+sweeps 5 2 5.25
+valuables 10 8 1
+trailing 10 5 12.5
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 1 1 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 11 11 0
+sweeps 14 3 19.25
+valuables 1 1 0
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 3 2 3.75
+sums 9 8 2.75
+building 0 0 0
+safe-builds 12 6 10.5
+answering-builds 0 0 0
+sweeps 13 6 12.25
+valuables 10 9 0.5
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 14 14 0
+building 1 1 0
+safe-builds 11 4 12.25
+answering-builds 14 14 0
+sweeps 10 8 3.5
+valuables 3 3 0
+trailing 4 3 2.5
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 3 3 0
+building 2 2 0
+safe-builds 14 7 12.25
+answering-builds 6 5 2.75
+sweeps 7 2 8.75
+valuables 3 3 0
+trailing 7 4 7.5
+expect games=10 focus=safe-builds just=-
+state pairs 0 8.307721728 7.340041728 0.813061851550909 0.7130618515509091
+state sums 1 33.87214592000001 32.192876032 1.0346983250868502 0.9646983250868502
+state building 0 5.173713920000001 4.17691136 1.060872779308686 0.8408727793086861
+state safe-builds 0 41.590449152000005 18.196162048000005 9.172937108647663 9.072937108647663
+state answering-builds 1 32.563440639999996 29.966328320000002 1.6002357850690068 1.6002357850690068
+state sweeps 0 40.719087104 17.845261312000005 8.96886340205269 8.87886340205269
+state valuables 1 24.962283008000007 23.503083008000004 0.1634727532218759 0.1234727532218759
+state trailing 0 29.632366080000004 21.495848960000004 4.557630397626537 4.097630397626537
+end
+case random-85
+deal
+cassino evidence v1
+pairs 12 2 60
+sums 5 2 18
+building 7 7 0
+safe-builds 1 1 0
+answering-builds 8 5 7.5
+sweeps 12 10 4
+valuables 0 0 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 10 3 42
+building 4 4 0
+safe-builds 0 0 0
+answering-builds 9 7 5
+sweeps 8 7 2
+valuables 3 2 3.25
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 8 0 48
+sums 2 1 6
+building 11 9 12
+safe-builds 2 1 0.25
+answering-builds 11 7 10
+sweeps 11 10 2
+valuables 2 2 0
+trailing 9 2 12.25
+expect games=3 focus=pairs just=-
+state pairs 0 15.680000000000001 1.2800000000000002 35.409836065573764 35.30983606557376
+state sums 0 13.200000000000001 4.68 20.950819672131146 20.880819672131146
+state building 1 18.68 16.68 4.918032786885245 4.698032786885245
+state safe-builds 0 2.64 1.6400000000000001 0.10245901639344261 0.0024590163934426063
+state answering-builds 0 23.32 15.8 7.7049180327868845 7.7049180327868845
+state sweeps 0 25.080000000000002 22.0 2.524590163934426 2.434590163934426
+state valuables 0 4.4 3.6 1.0655737704918031 1.025573770491803
+state trailing 0 10.280000000000001 3.2800000000000002 5.020491803278688 4.560491803278688
+end
+case random-86
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 5 5 0
+building 6 4 11.5
+safe-builds 0 0 0
+answering-builds 8 8 0
+sweeps 9 3 28.5
+valuables 3 3 0
+trailing 12 11 3.5
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 2 2 0
+building 4 4 0
+safe-builds 3 3 0
+answering-builds 6 6 0
+sweeps 13 6 33.25
+valuables 1 0 6
+trailing 9 6 10.5
+deal
+cassino evidence v1
+pairs 12 11 1.75
+sums 6 6 0
+building 14 13 5.75
+safe-builds 2 2 0
+answering-builds 9 9 0
+sweeps 1 0 4.75
+valuables 2 1 6
+trailing 1 0 3.5
+deal
+cassino evidence v1
+pairs 4 4 0
+sums 8 7 6
+building 9 9 0
+safe-builds 2 2 0
+answering-builds 14 14 0
+sweeps 15 10 23.75
+valuables 2 2 0
+trailing 15 7 28
+deal
+cassino evidence v1
+pairs 10 10 0
+sums 4 3 6
+building 6 5 5.75
+safe-builds 2 2 0
+answering-builds 0 0 0
+sweeps 0 0 0
+valuables 2 1 6
+trailing 8 3 17.5
+deal
+cassino evidence v1
+pairs 9 7 3.5
+sums 5 5 0
+building 3 3 0
+safe-builds 2 1 5.5
+answering-builds 4 4 0
+sweeps 14 6 38
+valuables 3 3 0
+trailing 12 7 17.5
+deal
+cassino evidence v1
+pairs 10 9 1.75
+sums 5 5 0
+building 3 2 5.75
+safe-builds 3 3 0
+answering-builds 2 2 0
+sweeps 5 4 4.75
+valuables 1 1 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 7 6 1.75
+sums 11 9 12
+building 3 3 0
+safe-builds 0 0 0
+answering-builds 1 1 0
+sweeps 8 3 23.75
+valuables 2 2 0
+trailing 12 7 17.5
+expect games=8 focus=sweeps just=-
+state pairs 1 34.124428800000004 30.716748800000005 1.433126774514056 1.3331267745140558
+state sums 1 27.063744000000003 24.142144000000002 4.212692524201064 4.142692524201064
+state building 1 20.972787200000006 18.913676800000005 2.8453469665230133 2.625346966523013
+state safe-builds 0 6.964992000000001 6.324992000000001 0.8459221936146716 0.7459221936146716
+state answering-builds 1 17.094105600000002 17.094105600000002 0.0 0.0
+state sweeps 0 32.7269888 16.338009600000007 18.70825450876529 18.61825450876529
+state valuables 0 8.1098496 7.0080256 1.5887341620294748 1.5487341620294748
+state trailing 0 35.923558400000005 20.5629312 12.92006650486482 12.46006650486482
+end
+case random-87
+deal
+cassino evidence v1
+pairs 3 0 15
+sums 11 11 0
+building 1 1 0
+safe-builds 2 2 0
+answering-builds 0 0 0
+sweeps 2 2 0
+valuables 1 1 0
+trailing 2 1 4.5
+deal
+cassino evidence v1
+pairs 10 0 50
+sums 13 13 0
+building 3 1 2.5
+safe-builds 0 0 0
+answering-builds 0 0 0
+sweeps 1 1 0
+valuables 2 0 0.5
+trailing 3 2 4.5
+expect games=2 focus=pairs just=-
+state pairs 0 12.4 0.0 34.44444444444444 34.34444444444444
+state sums 1 21.8 21.8 0.0 0.0
+state building 0 3.8 1.8 1.3888888888888888 1.1688888888888889
+state safe-builds 0 1.6 1.6 0.0 0.0
+state answering-builds 0 0.0 0.0 0.0 0.0
+state sweeps 0 2.6 2.6 0.0 0.0
+state valuables 0 2.8 0.8 0.2777777777777778 0.23777777777777778
+state trailing 0 4.6 2.8 4.5 4.04
+end
+case random-88
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 3 1 0
+building 0 0 0
+safe-builds 3 2 4.75
+answering-builds 0 0 0
+sweeps 11 6 3.75
+valuables 2 2 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 2 0 4.5
+sums 0 0 0
+building 3 3 0
+safe-builds 1 1 0
+answering-builds 1 1 0
+sweeps 12 6 4.5
+valuables 0 0 0
+trailing 2 1 3
+deal
+cassino evidence v1
+pairs 2 1 2.25
+sums 0 0 0
+building 2 2 0
+safe-builds 3 2 4.75
+answering-builds 0 0 0
+sweeps 4 4 0
+valuables 0 0 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 2 0 4.5
+sums 0 0 0
+building 0 0 0
+safe-builds 0 0 0
+answering-builds 3 3 0
+sweeps 5 5 0
+valuables 1 1 0
+trailing 2 1 3
+deal
+cassino evidence v1
+pairs 3 2 2.25
+sums 2 1 0
+building 1 1 0
+safe-builds 3 3 0
+answering-builds 1 1 0
+sweeps 3 2 0.75
+valuables 1 1 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 2 0 4.5
+sums 3 1 0
+building 3 3 0
+safe-builds 0 0 0
+answering-builds 2 2 0
+sweeps 5 2 2.25
+valuables 0 0 0
+trailing 2 2 0
+expect games=6 focus=pairs just=-
+state pairs 0 7.523200000000001 2.112 3.3001561280249803 3.20015612802498
+state sums 0 5.5830400000000004 2.1276800000000002 0.0 0.0
+state building 0 6.052800000000001 6.052800000000001 0.0 0.0
+state safe-builds 0 5.32864 4.4889600000000005 1.081099835198196 0.981099835198196
+state answering-builds 0 5.1296 5.1296 0.0 0.0
+state sweeps 0 21.16768 13.271680000000003 1.605191256830601 1.515191256830601
+state valuables 0 2.0953600000000003 2.0953600000000003 0.0 0.0
+state trailing 0 5.778560000000001 4.728960000000001 0.8534998698933124 0.39349986989331237
+end
+case random-89
+deal
+cassino evidence v1
+pairs 14 1 52
+sums 15 7 18
+building 9 4 30
+safe-builds 4 2 2
+answering-builds 6 6 0
+sweeps 9 7 11
+valuables 15 1 84
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 4 0 16
+sums 13 3 22.5
+building 14 9 30
+safe-builds 7 5 2
+answering-builds 7 7 0
+sweeps 4 2 11
+valuables 2 0 12
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 10 0 40
+sums 9 5 9
+building 7 7 0
+safe-builds 6 4 2
+answering-builds 0 0 0
+sweeps 12 11 5.5
+valuables 15 1 84
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 9 0 36
+sums 4 2 4.5
+building 11 9 12
+safe-builds 9 5 4
+answering-builds 1 1 0
+sweeps 13 9 22
+valuables 8 0 48
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 4 0 16
+sums 6 4 4.5
+building 10 8 12
+safe-builds 7 5 2
+answering-builds 7 5 8.5
+sweeps 2 1 5.5
+valuables 12 0 72
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 15 6 36
+sums 5 1 9
+building 9 6 18
+safe-builds 10 7 3
+answering-builds 3 3 0
+sweeps 4 2 11
+valuables 7 0 42
+trailing 3 2 5.75
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 9 3 13.5
+building 9 6 18
+safe-builds 3 2 1
+answering-builds 15 15 0
+sweeps 7 4 16.5
+valuables 10 0 60
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 11 2 36
+sums 11 5 13.5
+building 12 10 12
+safe-builds 9 6 3
+answering-builds 9 8 4.25
+sweeps 4 2 11
+valuables 5 1 24
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 1 0 4
+sums 5 2 6.75
+building 5 3 12
+safe-builds 3 2 1
+answering-builds 3 2 4.25
+sweeps 4 4 0
+valuables 15 1 84
+trailing 2 1 5.75
+deal
+cassino evidence v1
+pairs 1 0 4
+sums 15 9 13.5
+building 12 9 18
+safe-builds 11 8 3
+answering-builds 7 7 0
+sweeps 15 8 38.5
+valuables 13 0 78
+trailing 0 0 0
+expect games=10 focus=valuables just=-
+state pairs 0 23.301304832000007 3.871817728000001 17.413331965898095 17.313331965898094
+state sums 0 41.792396800000006 20.072024576000004 10.949904549119777 10.879904549119777
+state building 0 43.159560192 31.825162752000008 15.237377924570577 15.017377924570576
+state safe-builds 0 32.41462323200001 22.226477056 2.2827361644978703 2.1827361644978702
+state answering-builds 1 28.604415488000008 26.509055488000005 1.9952996707945545 1.9952996707945545
+state sweeps 0 34.441262592 21.616111616000005 15.804680746890375 15.714680746890375
+state valuables 0 47.71105024000001 1.7839329280000003 61.74204206033487 61.70204206033487
+state trailing 0 4.458876928000001 3.2492769280000005 1.5583685488059091 1.0983685488059092
+end
+case random-90
+deal
+cassino evidence v1
+pairs 3 3 0
+sums 10 5 3.75
+building 0 0 0
+safe-builds 3 3 0
+answering-builds 15 15 0
+sweeps 2 2 0
+valuables 2 0 8.5
+trailing 10 0 57.5
+deal
+cassino evidence v1
+pairs 1 1 0
+sums 4 3 0.75
+building 1 1 0
+safe-builds 3 2 5
+answering-builds 5 5 0
+sweeps 1 1 0
+valuables 3 1 8.5
+trailing 13 0 74.75
+deal
+cassino evidence v1
+pairs 15 15 0
+sums 14 11 2.25
+building 3 2 1
+safe-builds 3 3 0
+answering-builds 4 4 0
+sweeps 3 3 0
+valuables 1 0 4.25
+trailing 15 0 86.25
+deal
+cassino evidence v1
+pairs 9 9 0
+sums 13 7 4.5
+building 3 2 1
+safe-builds 2 2 0
+answering-builds 10 10 0
+sweeps 1 1 0
+valuables 3 0 12.75
+trailing 8 0 46
+deal
+cassino evidence v1
+pairs 13 9 23
+sums 7 4 2.25
+building 2 1 1
+safe-builds 1 1 0
+answering-builds 6 6 0
+sweeps 1 1 0
+valuables 3 1 8.5
+trailing 10 0 57.5
+expect games=5 focus=trailing just=-
+state pairs 1 31.5408 27.5408 6.8419800095192755 6.741980009519276
+state sums 0 32.504000000000005 20.224 2.739766777724893 2.669766777724893
+state building 0 6.832000000000001 4.392 0.7258448357924797 0.5058448357924797
+state safe-builds 0 7.284800000000001 6.772800000000001 0.7615421227986673 0.6615421227986673
+state answering-builds 1 25.264000000000003 25.264000000000003 0.0 0.0
+state sweeps 0 5.051200000000001 5.051200000000001 0.0 0.0
+state valuables 0 8.395199999999999 1.512 8.702284626368396 8.662284626368397
+state trailing 0 36.751999999999995 0.0 62.86411232746311 62.40411232746311
+end
+case random-91
+deal
+cassino evidence v1
+pairs 5 5 0
+sums 13 13 0
+building 2 1 1.5
+safe-builds 15 15 0
+answering-builds 9 3 36
+sweeps 12 2 12.5
+valuables 0 0 0
+trailing 5 1 16
+deal
+cassino evidence v1
+pairs 6 6 0
+sums 6 6 0
+building 3 2 1.5
+safe-builds 8 7 6
+answering-builds 0 0 0
+sweeps 3 1 2.5
+valuables 1 1 0
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 15 14 0
+sums 13 11 7
+building 3 3 0
+safe-builds 6 5 6
+answering-builds 14 2 72
+sweeps 9 2 8.75
+valuables 0 0 0
+trailing 4 3 4
+deal
+cassino evidence v1
+pairs 8 7 0
+sums 10 7 10.5
+building 1 1 0
+safe-builds 5 5 0
+answering-builds 1 0 6
+sweeps 14 6 10
+valuables 0 0 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 5 5 0
+sums 7 7 0
+building 1 1 0
+safe-builds 7 6 6
+answering-builds 8 2 36
+sweeps 11 2 11.25
+valuables 0 0 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 2 2 0
+building 3 2 1.5
+safe-builds 12 12 0
+answering-builds 3 0 18
+sweeps 2 0 2.5
+valuables 3 3 0
+trailing 7 6 4
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 6 6 0
+building 1 0 1.5
+safe-builds 13 11 12
+answering-builds 1 0 6
+sweeps 1 1 0
+valuables 0 0 0
+trailing 9 9 0
+expect games=7 focus=answering-builds just=-
+state pairs 1 18.316800000000004 17.395200000000003 0.0 0.0
+state sums 1 27.898752 25.543552000000002 2.086134011434865 2.016134011434865
+state building 0 7.288128 4.898304 0.9072010495456827 0.6872010495456827
+state safe-builds 1 38.6512 35.273920000000004 5.1281968222089045 5.028196822208905
+state answering-builds 0 17.125696 2.885632000000001 21.62268184836656 21.62268184836656
+state sweeps 0 24.623168000000007 7.023168000000002 5.567613093406325 5.477613093406325
+state valuables 0 2.7276800000000003 2.7276800000000003 0.0 0.0
+state trailing 0 19.684160000000002 17.425984 2.285936411784714 1.8259364117847139
+end
+case random-92
+deal
+cassino evidence v1
+pairs 13 13 0
+sums 7 6 2.75
+building 3 2 5.75
+safe-builds 1 1 0
+answering-builds 14 11 17.25
+sweeps 7 6 5
+valuables 0 0 0
+trailing 10 9 1
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 3 3 0
+building 7 4 17.25
+safe-builds 2 1 3.5
+answering-builds 6 4 11.5
+sweeps 10 9 5
+valuables 1 1 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 14 14 0
+sums 2 2 0
+building 10 9 5.75
+safe-builds 0 0 0
+answering-builds 5 5 0
+sweeps 15 12 15
+valuables 0 0 0
+trailing 0 0 0
+expect games=3 focus=building just=-
+state pairs 1 23.92 23.92 0.0 0.0
+state sums 0 8.880000000000003 8.240000000000002 0.7213114754098361 0.6513114754098361
+state building 0 17.52 13.48 9.520491803278688 9.300491803278687
+state safe-builds 0 2.2399999999999998 1.4400000000000002 1.1475409836065573 1.0475409836065572
+state answering-builds 0 18.760000000000005 15.240000000000002 8.295081967213115 8.295081967213115
+state sweeps 0 27.480000000000004 23.04 9.098360655737704 9.008360655737704
+state valuables 0 0.8 0.8 0.0 0.0
+state trailing 0 7.2 6.56 0.26229508196721313 0.0
+end
+case random-93
+deal
+cassino evidence v1
+pairs 9 7 6.5
+sums 0 0 0
+building 0 0 0
+safe-builds 15 11 8
+answering-builds 4 4 0
+sweeps 14 14 0
+valuables 10 8 8.5
+trailing 5 4 4.25
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 2 2 0
+building 3 1 3
+safe-builds 9 8 2
+answering-builds 3 3 0
+sweeps 14 13 3.25
+valuables 6 6 0
+trailing 12 12 0
+deal
+cassino evidence v1
+pairs 1 0 3.25
+sums 2 2 0
+building 12 10 3
+safe-builds 14 13 2
+answering-builds 13 12 2.5
+sweeps 4 4 0
+valuables 14 14 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 9 6 9.75
+sums 1 0 2.5
+building 12 10 3
+safe-builds 10 10 0
+answering-builds 9 8 2.5
+sweeps 0 0 0
+valuables 0 0 0
+trailing 8 8 0
+deal
+cassino evidence v1
+pairs 8 7 3.25
+sums 2 0 5
+building 2 1 1.5
+safe-builds 7 6 2
+answering-builds 15 14 2.5
+sweeps 5 5 0
+valuables 15 13 8.5
+trailing 6 3 12.75
+deal
+cassino evidence v1
+pairs 15 14 3.25
+sums 2 2 0
+building 3 3 0
+safe-builds 14 14 0
+answering-builds 4 4 0
+sweeps 15 12 9.75
+valuables 7 6 4.25
+trailing 13 12 4.25
+deal
+cassino evidence v1
+pairs 9 8 3.25
+sums 0 0 0
+building 1 0 1.5
+safe-builds 5 5 0
+answering-builds 10 10 0
+sweeps 3 3 0
+valuables 6 5 4.25
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 1 1 0
+building 8 5 4.5
+safe-builds 2 2 0
+answering-builds 13 13 0
+sweeps 7 6 3.25
+valuables 0 0 0
+trailing 15 11 17
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 0 0 0
+safe-builds 9 7 4
+answering-builds 5 5 0
+sweeps 10 9 3.25
+valuables 1 1 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 12 10 6.5
+sums 1 1 0
+building 2 2 0
+safe-builds 14 14 0
+answering-builds 12 12 0
+sweeps 2 2 0
+valuables 8 8 0
+trailing 7 7 0
+expect games=10 focus=pairs just=-
+state pairs 0 30.430410752000007 25.916548096000007 3.2869436090126376 3.1869436090126375
+state sums 0 4.131678720000001 3.2141747200000004 0.513935392585266 0.443935392585266
+state building 0 15.681786880000002 11.642844160000003 1.357436444374696 1.137436444374696
+state safe-builds 1 42.14882816000001 39.306789888000004 1.2735631060465533 1.1735631060465532
+state answering-builds 1 42.11938099200001 41.319841792000005 0.4478579849671604 0.4478579849671604
+state sweeps 1 28.86511923200001 26.028547072000006 2.0655596865407087 1.9755596865407086
+state valuables 1 24.939223040000005 23.093827584000003 1.757271755613626 1.7172717556136259
+state trailing 1 30.418101760000003 26.331244032000008 3.891696834559494 3.431696834559494
+end
+case random-94
+deal
+cassino evidence v1
+pairs 14 0 45.5
+sums 3 2 6
+building 12 12 0
+safe-builds 15 3 60
+answering-builds 3 2 4.25
+sweeps 3 3 0
+valuables 1 1 0
+trailing 1 1 0
+deal
+cassino evidence v1
+pairs 8 1 22.75
+sums 3 2 6
+building 5 5 0
+safe-builds 15 4 55
+answering-builds 9 5 17
+sweeps 2 2 0
+valuables 3 2 4
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 7 1 19.5
+sums 0 0 0
+building 1 1 0
+safe-builds 13 3 50
+answering-builds 13 5 34
+sweeps 1 1 0
+valuables 1 0 4
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 1 0 3.25
+sums 2 2 0
+building 13 13 0
+safe-builds 6 2 20
+answering-builds 2 2 0
+sweeps 0 0 0
+valuables 12 7 20
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 9 2 22.75
+sums 0 0 0
+building 14 13 5.25
+safe-builds 8 0 40
+answering-builds 3 2 4.25
+sweeps 2 2 0
+valuables 8 6 8
+trailing 0 0 0
+expect games=5 focus=safe-builds just=-
+state pairs 0 24.110400000000002 3.152 20.26261304140885 20.16261304140885
+state sums 0 4.364800000000001 3.4432000000000005 1.6449309852451215 1.5749309852451214
+state building 1 32.51520000000001 31.515200000000004 1.561756306520704 1.341756306520704
+state safe-builds 0 34.944 6.796800000000002 41.86577820085673 41.76577820085673
+state answering-builds 0 18.756800000000002 10.179200000000002 10.844478819609707 10.844478819609707
+state sweeps 0 4.892800000000001 4.892800000000001 0.0 0.0
+state valuables 0 20.1856 13.0336 8.510233222275106 8.470233222275107
+state trailing 0 3.3536 3.3536 0.0 0.0
+end
+case random-95
+deal
+cassino evidence v1
+pairs 5 5 0
+sums 2 1 5.25
+building 15 12 4.5
+safe-builds 3 1 3.5
+answering-builds 12 10 2.5
+sweeps 13 8 8.75
+valuables 10 3 10.5
+trailing 11 11 0
+deal
+cassino evidence v1
+pairs 15 10 8.75
+sums 3 3 0
+building 10 10 0
+safe-builds 3 2 1.75
+answering-builds 3 2 1.25
+sweeps 5 4 1.75
+valuables 2 2 0
+trailing 10 9 1.5
+deal
+cassino evidence v1
+pairs 12 11 1.75
+sums 3 2 5.25
+building 13 11 3
+safe-builds 2 1 1.75
+answering-builds 2 1 1.25
+sweeps 2 2 0
+valuables 10 7 4.5
+trailing 12 12 0
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 0 0 0
+building 8 7 1.5
+safe-builds 3 1 3.5
+answering-builds 14 13 1.25
+sweeps 12 4 14
+valuables 15 12 4.5
+trailing 13 13 0
+deal
+cassino evidence v1
+pairs 6 4 3.5
+sums 0 0 0
+building 1 1 0
+safe-builds 1 0 1.75
+answering-builds 13 12 1.25
+sweeps 15 9 10.5
+valuables 13 11 3
+trailing 10 10 0
+deal
+cassino evidence v1
+pairs 9 6 5.25
+sums 2 1 5.25
+building 10 10 0
+safe-builds 3 0 5.25
+answering-builds 11 9 2.5
+sweeps 15 7 14
+valuables 15 11 6
+trailing 3 3 0
+deal
+cassino evidence v1
+pairs 5 3 3.5
+sums 0 0 0
+building 14 11 4.5
+safe-builds 1 0 1.75
+answering-builds 9 9 0
+sweeps 11 4 12.25
+valuables 12 8 6
+trailing 5 5 0
+expect games=7 focus=sweeps just=-
+state pairs 0 27.181120000000007 19.453120000000002 3.422563612510325 3.322563612510325
+state sums 0 4.336128000000001 2.8643840000000003 1.955410505174843 1.8854105051748429
+state building 1 39.269760000000005 34.152128000000005 1.9427041998024002 1.7227041998024002
+state safe-builds 0 8.164672000000003 1.839104 2.8014568925025505 2.7014568925025504
+state answering-builds 0 38.235968 34.22240000000001 1.2696587356861728 1.2696587356861728
+state sweeps 0 44.609472000000004 21.635072000000005 10.174863542864546 10.084863542864547
+state valuables 0 47.3728 34.292992000000005 4.965225700911873 4.925225700911873
+state trailing 1 31.531584000000006 31.203904 0.12439059943959448 0.0
+end
+case random-96
+deal
+cassino evidence v1
+pairs 0 0 0
+sums 1 1 0
+building 3 0 18
+safe-builds 6 5 4.5
+answering-builds 4 4 0
+sweeps 0 0 0
+valuables 2 2 0
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 0 0 0
+building 3 0 18
+safe-builds 11 11 0
+answering-builds 2 1 2.5
+sweeps 6 6 0
+valuables 3 3 0
+trailing 11 3 18
+expect games=2 focus=building just=safe-builds
+state pairs 0 2.0 2.0 0.0 0.0
+state sums 0 0.8 0.8 0.0 0.0
+state building 0 5.4 0.0 18.0 17.78
+state safe-builds 1 15.8 15.0 2.0 1.9
+state answering-builds 0 5.2 4.2 1.3888888888888888 1.3888888888888888
+state sweeps 0 6.0 6.0 0.0 0.0
+state valuables 0 4.6 4.6 0.0 0.0
+state trailing 0 11.0 3.0 10.0 9.54
+end
+case random-97
+deal
+cassino evidence v1
+pairs 10 10 0
+sums 10 3 24.5
+building 6 6 0
+safe-builds 11 10 0.5
+answering-builds 2 0 2.5
+sweeps 5 5 0
+valuables 7 4 13.5
+trailing 3 2 5
+deal
+cassino evidence v1
+pairs 12 12 0
+sums 10 4 21
+building 12 9 3
+safe-builds 2 2 0
+answering-builds 1 0 1.25
+sweeps 11 11 0
+valuables 1 1 0
+trailing 1 0 5
+deal
+cassino evidence v1
+pairs 2 1 6
+sums 13 7 21
+building 13 13 0
+safe-builds 11 10 0.5
+answering-builds 2 0 2.5
+sweeps 9 9 0
+valuables 1 1 0
+trailing 6 2 20
+deal
+cassino evidence v1
+pairs 11 9 12
+sums 0 0 0
+building 4 2 2
+safe-builds 8 4 2
+answering-builds 3 1 2.5
+sweeps 12 12 0
+valuables 8 6 9
+trailing 1 0 5
+deal
+cassino evidence v1
+pairs 11 11 0
+sums 7 3 14
+building 2 2 0
+safe-builds 12 10 1
+answering-builds 1 0 1.25
+sweeps 14 13 1.5
+valuables 6 4 9
+trailing 15 3 60
+deal
+cassino evidence v1
+pairs 9 8 6
+sums 10 6 14
+building 1 1 0
+safe-builds 10 8 1
+answering-builds 1 0 1.25
+sweeps 14 14 0
+valuables 5 3 9
+trailing 1 0 5
+deal
+cassino evidence v1
+pairs 11 11 0
+sums 14 7 24.5
+building 5 5 0
+safe-builds 6 5 0.5
+answering-builds 1 0 1.25
+sweeps 15 15 0
+valuables 3 1 9
+trailing 14 1 65
+deal
+cassino evidence v1
+pairs 13 12 6
+sums 9 5 14
+building 10 10 0
+safe-builds 15 13 1
+answering-builds 3 1 2.5
+sweeps 8 8 0
+valuables 10 5 22.5
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 2 2 0
+sums 9 2 24.5
+building 14 13 1
+safe-builds 11 9 1
+answering-builds 0 0 0
+sweeps 9 9 0
+valuables 11 4 31.5
+trailing 4 0 20
+deal
+cassino evidence v1
+pairs 14 13 6
+sums 15 7 28
+building 3 3 0
+safe-builds 5 5 0
+answering-builds 1 1 0
+sweeps 15 14 1.5
+valuables 2 2 0
+trailing 13 0 65
+expect games=10 focus=trailing just=-
+state pairs 1 43.5013376 40.7177344 3.7421322284640137 3.6421322284640136
+state sums 0 47.263956480000004 21.366388224000005 20.308955243913395 20.238955243913395
+state building 1 30.818405888000008 28.990801408000006 0.4094894958144667 0.1894894958144667
+state safe-builds 1 40.71611852800001 34.457049600000005 0.7011973891623187 0.6011973891623187
+state answering-builds 0 5.811350016000001 1.9021440000000003 1.094861345852249 1.094861345852249
+state sweeps 1 52.87166720000001 51.54398720000001 0.4462160875773441 0.35621608757734413
+state valuables 0 26.16424345600001 13.938742272 12.326498795636 12.286498795636001
+state trailing 0 30.783660544000004 2.182905856000001 32.0411466082157 31.581146608215697
+end
+case random-98
+deal
+cassino evidence v1
+pairs 5 1 20
+sums 1 1 0
+building 1 0 0
+safe-builds 7 6 1.75
+answering-builds 6 6 0
+sweeps 9 9 0
+valuables 1 1 0
+trailing 4 0 9
+deal
+cassino evidence v1
+pairs 8 5 15
+sums 3 3 0
+building 6 2 0
+safe-builds 14 12 3.5
+answering-builds 5 5 0
+sweeps 3 2 0
+valuables 3 3 0
+trailing 9 3 13.5
+deal
+cassino evidence v1
+pairs 10 1 45
+sums 2 2 0
+building 13 4 0
+safe-builds 7 7 0
+answering-builds 9 9 0
+sweeps 10 10 0
+valuables 0 0 0
+trailing 2 1 2.25
+deal
+cassino evidence v1
+pairs 5 1 20
+sums 0 0 0
+building 15 3 0
+safe-builds 9 8 1.75
+answering-builds 15 15 0
+sweeps 0 0 0
+valuables 1 1 0
+trailing 12 3 20.25
+deal
+cassino evidence v1
+pairs 6 1 25
+sums 0 0 0
+building 3 1 0
+safe-builds 14 14 0
+answering-builds 11 11 0
+sweeps 3 3 0
+valuables 3 3 0
+trailing 14 2 27
+deal
+cassino evidence v1
+pairs 2 0 10
+sums 1 1 0
+building 7 2 0
+safe-builds 14 12 3.5
+answering-builds 0 0 0
+sweeps 12 10 0
+valuables 3 3 0
+trailing 4 0 9
+deal
+cassino evidence v1
+pairs 9 1 40
+sums 1 1 0
+building 11 3 0
+safe-builds 13 11 3.5
+answering-builds 9 9 0
+sweeps 4 4 0
+valuables 0 0 0
+trailing 7 4 6.75
+deal
+cassino evidence v1
+pairs 15 5 50
+sums 0 0 0
+building 12 2 0
+safe-builds 5 3 3.5
+answering-builds 5 4 1.25
+sweeps 1 1 0
+valuables 3 3 0
+trailing 4 1 6.75
+deal
+cassino evidence v1
+pairs 15 7 40
+sums 2 1 2
+building 0 0 0
+safe-builds 14 13 1.75
+answering-builds 3 3 0
+sweeps 7 6 0
+valuables 0 0 0
+trailing 2 0 4.5
+expect games=9 focus=pairs just=-
+state pairs 0 43.01802240000001 13.85577216 33.68312240054737 33.58312240054737
+state sums 0 4.473205760000001 3.473205760000001 0.46200992205116426 0.39200992205116425
+state building 0 31.201935360000007 7.404646400000002 0.0 0.0
+state safe-builds 1 48.116945920000006 42.29806336 2.3523337932241697 2.2523337932241696
+state answering-builds 1 26.595304960000007 25.795304960000006 0.23100496102558213 0.23100496102558213
+state sweeps 1 22.493335040000005 20.259619840000003 0.0 0.0
+state valuables 0 6.289397760000001 6.289397760000001 0.0 0.0
+state trailing 0 24.477373440000004 6.053529600000001 9.575998488451377 9.115998488451377
+end
+case random-99
+deal
+cassino evidence v1
+pairs 7 4 15.75
+sums 14 12 11.5
+building 8 8 0
+safe-builds 10 9 3.75
+answering-builds 0 0 0
+sweeps 1 0 5.5
+valuables 13 6 17.5
+trailing 1 0 1.25
+deal
+cassino evidence v1
+pairs 8 5 15.75
+sums 13 13 0
+building 10 10 0
+safe-builds 8 7 3.75
+answering-builds 2 2 0
+sweeps 8 7 5.5
+valuables 5 5 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 12 11 5.25
+sums 1 1 0
+building 14 14 0
+safe-builds 15 13 7.5
+answering-builds 1 1 0
+sweeps 11 10 5.5
+valuables 0 0 0
+trailing 2 2 0
+deal
+cassino evidence v1
+pairs 8 5 15.75
+sums 10 9 5.75
+building 1 1 0
+safe-builds 15 15 0
+answering-builds 2 2 0
+sweeps 12 10 11
+valuables 9 8 2.5
+trailing 0 0 0
+deal
+cassino evidence v1
+pairs 4 4 0
+sums 1 1 0
+building 12 11 3.25
+safe-builds 13 9 15
+answering-builds 0 0 0
+sweeps 15 14 5.5
+valuables 10 10 0
+trailing 14 13 1.25
+expect games=5 focus=pairs just=sweeps,trailing
+state pairs 0 25.043200000000002 19.238400000000002 9.065683008091385 8.965683008091386
+state sums 1 22.030400000000004 20.411200000000004 2.769633507853403 2.6996335078534033
+state building 1 30.1568 29.1568 0.9668015230842454 0.7468015230842454
+state safe-builds 1 42.792 36.5904 6.918134221799142 6.818134221799142
+state answering-builds 0 3.2640000000000002 3.2640000000000002 0.0 0.0
+state sweeps 1 36.1456 31.984000000000005 6.808900523560209 6.718900523560209
+state valuables 0 25.0848 21.4176 2.727272727272727 2.687272727272727
+state trailing 1 16.7136 15.304 0.5241551642075202 0.06415516420752015
+end

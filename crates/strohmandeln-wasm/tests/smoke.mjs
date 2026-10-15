@@ -110,9 +110,18 @@ for (let i = 0; i < sittings; i++) {
     settled ||= r.events.some((e) => e.type === "sitting_end");
     const from = Math.max(0, r.events.map((e) => e.type).lastIndexOf("deal_start"));
     const seen = JSON.stringify(r.state) + JSON.stringify(r.events.slice(from));
-    for (const code of audit()) {
+    const hidden = audit();
+    for (const code of hidden) {
       assert.ok(!seen.includes(`"${code}"`), `hidden card ${code} reached the human`);
       looked++;
+    }
+    // The tracker names every card, but a hidden one only as unseen.
+    w.strohmandeln_tracker();
+    const tracker = out().tracker;
+    assert.equal(tracker === null, r.state.deal === null);
+    if (tracker) {
+      assert.equal(Object.keys(tracker.cards).length, 54);
+      for (const code of hidden) assert.equal(tracker.cards[code].place, "unseen", `the tracker placed hidden ${code}`);
     }
   };
   check();

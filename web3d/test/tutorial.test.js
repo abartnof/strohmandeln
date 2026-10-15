@@ -4,27 +4,26 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { tutorialPages } from "../src/tutor.js";
+import { KEYS, STRINGS, COMBOS, allPages, lines, page, pages, text, words } from "./support/pages.js";
 
 const read = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
-const STRINGS = JSON.parse(read("../strings.json"));
-// The page keys are the table of docs/TABLE3D.md 6.2.2, in its order.
-const KEYS = [...read("../../docs/TABLE3D.md").split("### 6.2 Tutorial pages")[1].split("### 6.3")[0].matchAll(/^\| `([a-z-]+)` \|/gm)].map((m) => m[1]);
-const FILES = { en: "../tutorial.en.md", de: "../tutorial.md" };
-// The pages for the game's `both_pass` setting (TABLE3D 6.2.2); the default plays a simple game.
-const pages = (lang, both_pass = "play") => tutorialPages(read(FILES[lang]), KEYS, { both_pass });
-const lines = (page) => page.blocks.flatMap((b) => (b.spans ? [b.spans] : b.items)).map((spans) => spans.map((x) => x.text).join(""));
-const words = (s) => s.split(/\s+/).filter(Boolean).length;
 
 // A newcomer reads about 200 words a minute; a page is read in under a minute
 // and a page is looked at between moves, so the cap is 150 words, headings
 // included. A line is at most 25 words (TABLE3D 6.2.1).
 const PAGE_WORDS = 150;
 const LINE_WORDS = 25;
+// One page is deliberately over: `scoring-full`, the long page, which never
+// opens by itself and is read at leisure (TABLE3D 6.2.4). The pop-up that holds
+// the table of what every card is worth, `thirds`, fits the ordinary cap.
+const OVER_WORDS = { "scoring-full": 1500 };
+const OVER_LINE = { "scoring-full": 45 };
 
-test("the spec lists thirteen page keys", () => {
-  assert.equal(KEYS.length, 13);
+test("the spec lists fourteen page keys: thirteen that fall due, and the long scoring page that does not", () => {
+  assert.equal(KEYS.length, 14);
   assert.equal(KEYS[0], "packets");
   assert.equal(KEYS[12], "extension");
+  assert.equal(KEYS[13], "scoring-full");
 });
 
 for (const lang of ["en", "de"]) {
@@ -37,19 +36,30 @@ for (const lang of ["en", "de"]) {
     }
   });
 
-  test(`${lang}: no page exceeds ${PAGE_WORDS} words, no line ${LINE_WORDS}, under either both-pass setting`, () => {
-    for (const p of [...pages(lang), ...pages(lang, "throw_in")]) {
+  test(`${lang}: no page exceeds ${PAGE_WORDS} words (the named exceptions their own cap), no line ${LINE_WORDS} (the long page ${OVER_LINE["scoring-full"]}), under every setting`, () => {
+    for (const p of allPages(lang)) {
       const ls = lines(p);
       const total = words(p.title) + ls.reduce((n, l) => n + words(l), 0);
-      assert.ok(total <= PAGE_WORDS, `${p.key}: ${total} words`);
-      for (const l of ls) assert.ok(words(l) <= LINE_WORDS, `${p.key}: ${words(l)} words: ${l}`);
+      assert.ok(total <= (OVER_WORDS[p.key] ?? PAGE_WORDS), `${p.key}: ${total} words`);
+      for (const l of ls) assert.ok(words(l) <= (OVER_LINE[p.key] ?? LINE_WORDS), `${p.key}: ${words(l)} words: ${l}`);
     }
+  });
+
+  test(`${lang}: the exceptions are used (a cap nothing needs is removed)`, () => {
+    for (const key of Object.keys(OVER_WORDS)) {
+      const longest = Math.max(...allPages(lang).filter((p) => p.key === key).map((p) => words(p.title) + lines(p).reduce((n, l) => n + words(l), 0)));
+      assert.ok(longest > PAGE_WORDS, `${key} fits the ordinary cap: ${longest}`);
+    }
+    assert.ok(Math.max(...lines(page(lang, "scoring-full")).map(words)) > LINE_WORDS);
   });
 
   test(`${lang}: no jargon a newcomer would not know`, () => {
     const JARGON = ["Stichzwang", "Bummerl", "Valat", "Mondfang", "Stecher", "Impassiren", "finesse", "ruff", "void", "Kontra", "Hinterhand", "Vorhand"];
-    const text = [...pages(lang), ...pages(lang, "throw_in")].flatMap((p) => [p.title, ...lines(p)]).join("\n");
-    assert.deepEqual(JARGON.filter((j) => new RegExp(`\\b${j}`, "i").test(text)), []);
+    const said = allPages(lang).filter((p) => p.key !== "scoring-full").flatMap((p) => [p.title, ...lines(p)]).join("\n");
+    assert.deepEqual(JARGON.filter((j) => new RegExp(`\\b${j}`, "i").test(said)), []);
+    // the long page names the Valat (RULES 10), once, and nothing else of the list
+    const long = allPages(lang).filter((p) => p.key === "scoring-full").flatMap((p) => lines(p)).join("\n");
+    assert.deepEqual(JARGON.filter((j) => j !== "Valat").filter((j) => new RegExp(`\\b${j}`, "i").test(long)), []);
   });
 }
 
@@ -103,17 +113,17 @@ test("the bidding page tells what happens when both pass, by the setting (RULES 
   assert.doesNotMatch(page("en", "play"), /thrown in/);
   assert.match(page("en", "throw_in"), /thrown in: nothing is scored/);
   assert.doesNotMatch(page("en", "throw_in"), /plain game/);
-  assert.match(page("de", "play"), /einfache Partie/);
+  assert.match(page("de", "play"), /einfaches Spiel/);
   assert.match(page("de", "throw_in"), /eingeworfen: nichts wird gezählt/);
-  assert.doesNotMatch(page("de", "throw_in"), /einfache Partie/);
+  assert.doesNotMatch(page("de", "throw_in"), /einfaches Spiel/);
 });
 
-test("the two both-pass variants have the same shape in both languages", () => {
+test("every combination of the settings has the same shape in both languages", () => {
   const shape = (p) => p.blocks.map((b) => (b.items ? b.type + b.items.length : b.type)).join(",");
-  for (const setting of ["play", "throw_in"]) {
-    const en = pages("en", setting);
-    const de = pages("de", setting);
-    en.forEach((p, i) => assert.equal(shape(de[i]), shape(p), setting + " " + p.key));
+  for (const c of COMBOS) {
+    const en = pages("en", c.both_pass, c);
+    const de = pages("de", c.both_pass, c);
+    en.forEach((p, i) => assert.equal(shape(de[i]), shape(p), `${JSON.stringify(c)} ${p.key}`));
   }
 });
 
@@ -122,4 +132,12 @@ test("a variant block is dropped, whole, when its setting is not the game's", ()
   const items = (setting) => tutorialPages(md, ["p"], { both_pass: setting })[0].blocks[1].items.map((s) => s[0].text);
   assert.deepEqual(items("play"), ["one", "plain", "last"]);
   assert.deepEqual(items("throw_in"), ["one", "thrown", "last"]);
+});
+
+test("a block may name several settings, and is kept only when all of them hold", () => {
+  const md = "# P\n\n## H\n\n<!-- if values=2/3/4 both_pass=play -->\n- both\n<!-- end -->\n<!-- if values=2/3/4 -->\n- values only\n<!-- end -->\n- last\n";
+  const items = (settings) => tutorialPages(md, ["p"], settings)[0].blocks[1].items.map((x) => x[0].text);
+  assert.deepEqual(items({ values: "2/3/4", both_pass: "play" }), ["both", "values only", "last"]);
+  assert.deepEqual(items({ values: "2/3/4", both_pass: "throw_in" }), ["values only", "last"]);
+  assert.deepEqual(items({ values: "1/2/3", both_pass: "play" }), ["last"]);
 });

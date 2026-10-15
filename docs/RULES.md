@@ -253,9 +253,9 @@ two cards, so there is no tie.
 1.7): value 5 is 13 thirds, 4 is 10, 3 is 7, 2 is 4, 1 is 1. This is the
 traditional "count in threes, deduct 2 from each group of three" [14 rule 15]
 [02 A17], kept exact: no group and no leftover is rounded. A take counts the sum
-of its cards. The two takes always sum to 210 thirds (70 Points).
+of its cards. The two takes always sum to 210 thirds (70 points).
 
-8.2 The **threshold** is 36 Points, that is at least 35 2/3, that is **107
+8.2 The **threshold** is 36 points, that is at least 35 2/3, that is **107
 thirds**. A take of 106 thirds (35 1/3) does not win [14 rule 16][03-S14 "36
 (35 2/3)"][02-S2 "35 Punkte und 2 Blatt"].
 

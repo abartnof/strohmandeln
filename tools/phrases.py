@@ -539,7 +539,7 @@ def phrase_groups():
         ('Thirty-five and two thirds: just enough.', 'Pr', 'Fünfunddreißig und zwei Blatt: gerade genug.'),
         ("A hair's breadth: thirty-five and two thirds.", 'Pr', 'Auf Haaresbreite: fünfunddreißig und zwei Blatt.'),
         ('It counts the same for both of us.', 'Ha', 'Es gilt ja Einem wie dem Andern.'),
-        ('By a single third of a Point!', 'T', 'Um ein einziges Drittel!'),
+        ('By a single third!', 'T', 'Um ein einziges Drittel!'),
         ('Thirty-five and two thirds: the proudest win.', 'Kg', 'Fünfunddreißig und zwei Blatt: der stolzeste Sieg.'))
     add('result-won-mine', 'game_scored: the opponent wins the deal',
         ('Gewonnen, and fairly, I hope.', 'T', "Gewonnen, und ehrlich, hoff' ich."),

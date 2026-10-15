@@ -48,7 +48,7 @@ test("the Kibitzer's tab and mute say what they do, and § 13 is only the flavou
 });
 
 test("keys are namespaced", () => {
-  const ok = /^(ui|chip|banner|hud|slate|refusal|hint|explain|review|sr|card|settings|error|tutor|keys)\./;
+  const ok = /^(ui|chip|banner|hud|slate|refusal|hint|explain|review|sr|card|settings|error|tutor|tracker|keys)\./;
   for (const key of Object.keys(TABLE)) assert.match(key, ok, key);
 });
 
@@ -129,6 +129,18 @@ test("tn picks the plural form", () => {
   assert.equal(s.tn("x", 3), "3 Tours");
   s.setLang("de");
   assert.equal(s.tn("x", 3), "3 Touren");
+});
+
+test("count groups four digits and more as the language writes them", () => {
+  const s = createStrings(TABLE);
+  const all = [0, -0, 7, 999, 1000, 12345, 1234567, -999, -1000, -1234567];
+  assert.deepEqual(all.map(s.count), ["0", "0", "7", "999", "1,000", "12,345", "1,234,567", "-999", "-1,000", "-1,234,567"]);
+  s.setLang("de");
+  assert.deepEqual(all.map(s.count), ["0", "0", "7", "999", "1.000", "12.345", "1.234.567", "-999", "-1.000", "-1.234.567"]);
+  s.setLang("en");
+  assert.equal(s.count(1000), "1,000", "a language switch is followed");
+  // Only whole counts are grouped.
+  assert.equal(s.count(1234.5), "1234.5");
 });
 
 test("thirds are written with the fraction glyphs", () => {

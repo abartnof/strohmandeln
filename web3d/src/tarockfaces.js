@@ -108,7 +108,7 @@ export function contrast(a, b) {
 
 const RANK_FONT = "-apple-system, system-ui, 'Helvetica Neue', Arial, sans-serif";
 const SUIT_FONT = '"Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", system-ui, sans-serif';
-const GLYPH = { s: "♠︎", h: "♥︎", d: "♦︎", c: "♣︎" };
+export const GLYPH = { s: "♠︎", h: "♥︎", d: "♦︎", c: "♣︎" };
 const rankFont = (px) => `700 ${px}px ${RANK_FONT}`;
 const suitFont = (px) => `${px}px ${SUIT_FONT}`;
 

@@ -25,6 +25,7 @@ export async function loadEngine(bytes, onTrap) {
       review: () => call("review"),
       reviewSitting: () => call("review_sitting"),
       explain: () => call("explain"),
+      tracker: () => call("tracker"),
       audit: () => call("audit"),
     },
     onTrap,

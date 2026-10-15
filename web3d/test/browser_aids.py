@@ -6,7 +6,7 @@ import json
 import re
 from pathlib import Path
 
-from browser import NO_DRAW, PAGE, ROOT, WORDS, STRINGS, check_offline, close_all, fail_if, js, rest, state, still
+from browser import NO_DRAW, PAGE, ROOT, WORDS, STRINGS, check_offline, close_all, fail_if, intersects, js, rest, state, still
 from browser_scenarios import (
     FAST,
     choose,
@@ -17,6 +17,7 @@ from browser_scenarios import (
     open_page,
     take_if_bidding,
     to_last_trick,
+    with_prefs,
     until_over,
     watch_chips,
     chips_seen,
@@ -666,9 +667,115 @@ def check_tutor_pages(browser, failures):
     check_offline(page, failures, "tutor_pages: ")
 
 
+# ---- 10.4 the cards-out tracker (6.6) ----------------------------------------------------------------
+
+TRACKER_SIZES = [("1280x720", {"width": 1280, "height": 720}), ("1024x768", {"width": 1024, "height": 768})]  # a phone layout is deferred (6.6.6)
+BOXES = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; };
+  const shown = (sel) => [...document.querySelectorAll(sel)].filter((e) => !e.hidden && e.getBoundingClientRect().width > 0).map(box);
+  const panel = document.querySelector('.tracker');
+  return { panel: panel ? box(panel) : null, bar: shown('.move-bar button'), prompt: shown('.prompt, .aid-line, .refusal'), tabs: shown('.tutor-row > button'), hud: shown('.info .hud'),
+    hand: window.strohmandeln3d.cardRects('your-hand') }; })()"""
+
+
+def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0"):
+    page = with_prefs(browser, {"hints": True, "slateAuto": False, "trackerFolded": False, **(prefs or {})}, query, viewport=size)
+    take_if_bidding(page)
+    drive(page, lambda s, log: sum(e["type"] == "trick_won" for e in log) >= 3 or s["prompt"] == "over")
+    rest(page)
+    return page
+
+
+def check_tracker_clear(browser, failures):
+    # Open at rest, the engine's counts in the panel, clear of the hand, the bar, the prompt, the tabs and the HUD.
+    for name, size in TRACKER_SIZES:
+        page = tracker_page(browser, size)
+        where = f"tracker_clear {name}: "
+        boxes = page.evaluate(BOXES)
+        panel = boxes["panel"]
+        fail_if(panel is None, failures, f"{where}no panel with Hints on")
+        if panel:
+            fail_if(panel["left"] < 0 or panel["right"] > size["width"] or panel["top"] < 0 or panel["bottom"] > size["height"], failures, f"{where}the panel runs off the window: {panel}")
+            for what in ("bar", "prompt", "tabs", "hud", "hand"):
+                for other in boxes[what]:
+                    fail_if(intersects(panel, other), failures, f"{where}the panel {panel} covers {what} {other}")
+            data = js(page, "tracker()")["data"]
+            fail_if(not data or data["trick"] != state(page)["deal"]["trick_number"], failures, f"{where}the panel is not of the trick at rest ({data and data['trick']})")
+            lines = page.locator(".tracker-lines li").count()
+            fail_if(not 2 <= lines <= 4, failures, f"{where}{lines} lines")
+            fail_if(page.locator(".tracker-grid .tracker-cell").count() != 54, failures, f"{where}the grid has not 54 cells")
+            fail_if(page.locator(".tracker-grid").get_attribute("aria-hidden") != "true", failures, f"{where}the grid is not hidden from the screen reader")
+            fail_if(page.locator(".tracker-sr li").count() != 5, failures, f"{where}the screen reader has not 5 sentences")
+            first = page.locator(".tracker-lines li").first.inner_text()
+            fail_if(not first.startswith(("Tarocks still out", "No tarock is out")), failures, f"{where}the first line is {first!r}")
+            fail_if(page.locator("[data-act=tracker]").get_attribute("aria-expanded") != "true", failures, f"{where}the tab does not say it is open")
+            scroll = page.evaluate("(() => { const p = document.querySelector('.tracker'); return p.scrollHeight - p.clientHeight; })()")
+            fail_if(scroll > 1, failures, f"{where}the panel scrolls by {scroll} px: the legend is cut off")
+        check_offline(page, failures, where)
+        close_all(browser)
+
+
+def check_tracker_fold_and_settings(browser, failures):
+    where = "tracker_fold_and_settings: "
+    page = tracker_page(browser, TRACKER_SIZES[0][1])
+    tab = page.locator("[data-act=tracker]")
+    # A tap on the tab folds it, and is kept; another opens it.
+    tab.click()
+    fail_if(page.locator(".tracker").count(), failures, f"{where}the tab did not fold the panel")
+    fail_if(js(page, "prefs()")["trackerFolded"] is not True, failures, f"{where}the fold was not kept")
+    fail_if(tab.get_attribute("aria-expanded") != "false", failures, f"{where}the tab says open while folded")
+    tab.click()
+    fail_if(page.locator(".tracker").count() != 1, failures, f"{where}the tab did not open the panel")
+    page.locator("[data-act=tracker-fold]").click()
+    fail_if(page.locator(".tracker").count(), failures, f"{where}Fold did not fold the panel")
+    tab.click()
+    # It follows the cards: after the human's next play and the reply, the panel is of the new trick.
+    before = js(page, "tracker()")["data"]["trick"]
+    drive(page, lambda s, log: (s["deal"] or {}).get("trick_number", 0) > before or s["prompt"] == "over")
+    rest(page)
+    if state(page)["prompt"] != "over":
+        fail_if(page.locator(".tracker").get_attribute("data-trick") != str(state(page)["deal"]["trick_number"]), failures, f"{where}the panel was not updated at rest")
+    # Hints off: no tab, no panel; back on, and the tracker's own setting off: the same.
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.wait_for_selector(".settings-root:not([hidden])", timeout=10_000)
+    page.locator("[data-row=hints] [data-value=toggle]").click()
+    fail_if(page.locator("[data-act=tracker]:not([hidden])").count() or page.locator(".tracker").count(), failures, f"{where}Hints off left the tracker")
+    page.locator("[data-row=hints] [data-value=toggle]").click()
+    fail_if(page.locator(".tracker").count() != 1, failures, f"{where}Hints on did not bring the panel back")
+    page.locator("[data-row=tracker] [data-value=toggle]").click()
+    fail_if(page.locator("[data-act=tracker]:not([hidden])").count() or page.locator(".tracker").count(), failures, f"{where}the tracker setting off left it")
+    page.locator("[data-row=tracker] [data-value=toggle]").click()
+    # The Kibitzer's mute takes it away; unmuting brings it back.
+    page.keyboard.press("Escape")
+    page.keyboard.press("m")
+    fail_if(page.locator(".tracker").count(), failures, f"{where}the muted Kibitzer kept the panel")
+    page.keyboard.press("m")
+    fail_if(page.locator(".tracker").count() != 1, failures, f"{where}unmuting did not bring the panel back")
+    check_offline(page, failures, where)
+
+
+def check_tracker_languages(browser, failures):
+    # In German the tab, the lines and the court labels are German; upright the tracker is out of the way.
+    where = "tracker_languages: "
+    page = tracker_page(browser, TRACKER_SIZES[0][1], {"lang": "de"})
+    fail_if(page.locator("[data-act=tracker]").inner_text() != t("tracker.tab", "de"), failures, f"{where}the tab is not German")
+    first = page.locator(".tracker-lines li").first.inner_text()
+    fail_if(not first.startswith(("Tarock noch draußen", "Kein Tarock")), failures, f"{where}the first German line is {first!r}")
+    labels = page.locator("[data-row=h] .tracker-cell").all_inner_texts()[:4]
+    fail_if(labels != ["K", "D", "C", "B"], failures, f"{where}the German court labels are {labels}")
+    scroll = page.evaluate("(() => { const p = document.querySelector('.tracker'); return p.scrollHeight - p.clientHeight; })()")
+    fail_if(scroll > 1, failures, f"{where}the German panel scrolls by {scroll} px: the legend is cut off at 1280x720")
+    fail_if(page.locator(".tracker-legend li").count() != 3, failures, f"{where}the legend has not three entries")
+    close_all(browser)
+    # Upright, the tracker is not there at all (deferred, 6.6.6): it cannot break the page.
+    upright = tracker_page(browser, {"width": 390, "height": 844})
+    fail_if(upright.locator(".tracker-root").is_visible() or upright.locator("[data-act=tracker]").is_visible(), failures, f"{where}the tracker shows on a phone")
+    fail_if(js(upright, "tracker()")["data"] is not None, failures, f"{where}the engine was asked for a tracker nobody sees")
+    check_offline(upright, failures, f"{where}upright: ")
+
+
 CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_skill_speed,
     check_language_switch, check_language_switch_at_count, check_prefs_storage, check_save_restore, check_export_import_file,
-    check_tutor_pages,
+    check_tutor_pages, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages,
 ]

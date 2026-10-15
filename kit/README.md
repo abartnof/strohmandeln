@@ -19,10 +19,10 @@ inside it. A plain directory is in every worktree from the start.
 |---|---|
 | Render | `scene.js` (stage, lights, table, camera), `cards.js` (card slab), `materials.js` (toon shading), `deck.js` (meshes by card code, ink line), `surfaces.js` (table tops), `framing.js` (camera fit to the window), `art.js` (image-map loader), `faces.js` (Large Text faces) |
 | Motion | `easing.js`, `kinematics.js` (card paths: pose, layDown, pull, toss, flip, fan, peelOff, carryBlock ...), `timeline.js` |
-| Loop | `director.js` (render on demand, a clock a gate can hold, picking, screen points) |
+| Loop | `director.js` (render on demand, a clock a gate can hold, picking, screen points; `advance` returns `beats`, `count` and, if the game's choreography gives them, `landed`: when an event's cards come to rest) |
 | Talk | `bag.js` (shuffle bag), `dialogue.js` (when and where a line is said) |
 | Score | `scoring.js` (a game's definition, the per-hand ledger, segments, the count's popups), `hud.js` (the HUD widget), `count.js` (the count's timing, the talk system's quiet) |
-| Shell | `tutorial.js` (the small Markdown parser), `engine.js` (wasm wrapper) |
+| Shell | `tutorial.js` (the small Markdown parser; `[text](#key)` is a link to another page, a span `{ text, page }` the game's view turns into a button), `engine.js` (wasm wrapper) |
 | Constants | `units.js` (CARD, TABLE, CAMERA*, PORTRAIT_BELOW), `reveal.js` (table edges, fog, the camera's way back) |
 
 `css/hud.css`: the HUD's styling (inlined by `build.py`, below).
@@ -30,6 +30,17 @@ inside it. A plain directory is in every worktree from the start.
 `test/`: the Node tests that cover them, plus tests for what the kit changed
 (`engine`, `tutorial`, `director`, `modules`) and `test_build.py` for
 `build.py`. `build.py`: the page builder, below. `STAMP`: provenance.
+
+`learner/` is a Rust crate (`kit-learner`, no dependencies, a workspace member of
+the game), the game-independent part of Cassino's learner: the discounted Beta
+fold, mastery with hysteresis, the focus over a prerequisite graph, the summary's
+text form and versions, and the brief's shape. A game supplies a `Ladder` (its
+skills as indexes, with `needs`, `top_rate`, `top_cost`, `min_chances`) and
+`Params`; the evidence, the words and the rules stay the game's.
+`docs/TUTOR.md` section 13 has the API. Its tests include an equivalence test
+against Cassino's own learner (`learner/tests/equivalence.rs`); `STAMP` lists
+its files. It is not JavaScript, so the origin-header and `kit/test` rules do not
+apply to it; `bin/gate` checks that every file under `learner/` is in `STAMP`.
 
 ## What was left out, and why
 

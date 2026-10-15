@@ -25,7 +25,7 @@ import { choreograph, initialPlacement, LAST_TRICK, opening } from "./choreograp
 import { dragKind, sameSpot, shake } from "./gesture.js";
 import { handRange } from "./layout.js";
 import { TRULL, KINGS } from "./cardinfo.js";
-import { bonusLines, countGame, countLines, edgeOf } from "./counting.js";
+import { bonusLines, countGame, countLines, edgeOf, runningTally } from "./counting.js";
 import { loadEngine } from "./engine.js";
 import { createMirror } from "./mirror.js";
 import { createNewSitting } from "./newsitting.js";
@@ -37,10 +37,12 @@ import { createSettings } from "./settings.js";
 import { createSpeaker } from "./speaker.js";
 import { createSlate } from "./slate.js";
 import { hintLines, hintSpoken } from "./hinttext.js";
-import { cardName, getLang, onLang, romanName, setLang, signed, suitName, t, tn, thirds } from "./strings.js";
+import { cardName, count, getLang, onLang, romanName, setLang, signed, suitName, t, tn, thirds } from "./strings.js";
 import { createTalk } from "./talk.js";
 import { ALL_CODES, backTexture, COURT_CODES, faceTextures } from "./tarockfaces.js";
 import { createUi } from "./ui.js";
+import { trackerFits, trackerModel, trackerOpen, trackerVisible } from "./tracker.js";
+import { trackerPanel } from "./trackerview.js";
 import { addSitting, clearProgress, exportText, loadProgress, summaryOf } from "./progress.js";
 import { explainText, reviewBlocks } from "./review.js";
 import { createTutor, extendPromptDue, PAGE_KEYS, tutorialPages } from "./tutor.js";
@@ -107,6 +109,8 @@ async function main() {
   let sel = { chosen: null, scroll: -1e9 }; // a row of cards starts at its left end
   let focus = null; // { row: "hand" | "packets", index }
   let hintCard = null;
+  let trackerData = null; // the engine's tracker at the last rest (6.6)
+  let trackerSig = "";
   let pending = 0; // scheduled moments not yet come
   let restModel = null; // the model at the last rest, for the tags
   let sittingOver = false;
@@ -226,11 +230,60 @@ async function main() {
   });
   let tutorBuf = []; // events the tutor has not yet reckoned with
   let reviewChip = null; // null, "deal" or "sitting"
-  let pageHelp = false; // the page open now came from the Help list
+  let pageHelp = false; // the page open now came from the Help list or a link
+  let pageLinked = false; // ... and it was reached by a link from a page that was due
   let pastSittings = []; // the sittings kept before this one, for the sitting's review
-  const showTutor = () => ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip });
+  const showTutor = () => {
+    ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip });
+    showTracker(); // the Kibitzer's mute is the slate's too (6.6.2)
+  };
   const tutorWords = () => ({ t, cardName: romanName, thirds, signed, suitName: (c) => (getLang() === "en" ? suitName(c).toLowerCase() : suitName(c)) });
   showTutor();
+
+  // ---- the cards-out tracker (docs/TABLE3D.md 6.6) ----------------------------------
+  // Drawn from the engine's payload taken with the cards at rest; redrawn when a
+  // setting, the language or the fold changes.
+  // Wanted by the preferences, and a window it fits (an upright phone is not asked).
+  function trackerShown() {
+    return trackerVisible(prefs) && trackerFits({ width: window.innerWidth, height: window.innerHeight });
+  }
+  function showTracker() {
+    const on = Boolean(wasm?.deal) && trackerShown();
+    const open = on && trackerOpen(prefs, { width: window.innerWidth, height: window.innerHeight });
+    if (on && !trackerData && !director.busy() && pending === 0) trackerData = engine.tracker()?.tracker ?? null;
+    const sig = JSON.stringify([on, open, trackerData, getLang()]);
+    if (sig === trackerSig) return placeTracker();
+    trackerSig = sig;
+    const model = open && trackerData ? trackerModel(trackerData, { t, lang: getLang(), cardName, romanName, thirds }) : null;
+    const node = model ? trackerPanel(document, model, { foldLabel: t("tracker.fold"), foldTitle: t("tracker.fold.title") }) : null;
+    const hadFocus = document.activeElement?.dataset?.act === "tracker-fold";
+    ui.setTracker({ tab: on, open, node });
+    placeTracker();
+    if (hadFocus) ui.trackerRoot.querySelector("[data-act=tracker-fold]")?.focus();
+  }
+  function updateTracker() {
+    trackerData = wasm?.deal && trackerShown() ? (engine.tracker()?.tracker ?? null) : null;
+    showTracker();
+  }
+  // The panel lies below the HUD and above the Kibitzer's tabs, with a height to
+  // scroll inside (6.6.6).
+  function placeTracker() {
+    const root = ui.trackerRoot;
+    if (!root.firstChild) return;
+    const top = document.querySelector(".info").getBoundingClientRect().bottom + 6;
+    let limit = ui.root.querySelector(".tutor-row").getBoundingClientRect().top;
+    // The fan's outer cards reach up beside the panel on a narrower window.
+    const lane = root.getBoundingClientRect();
+    if (S) for (const r of cardRectsOf("your-hand")) if (r.left < lane.right && r.right > lane.left) limit = Math.min(limit, r.top);
+    root.style.setProperty("--tracker-top", `${Math.round(top)}px`);
+    root.style.setProperty("--tracker-max", `${Math.max(120, Math.round(limit - top - 6))}px`);
+  }
+  // The fold is the person's, and kept.
+  function toggleTracker() {
+    const open = trackerOpen(prefs, { width: window.innerWidth, height: window.innerHeight });
+    save({ trackerFolded: open });
+    showTracker();
+  }
 
   // The Kibitzer's note, in his tab and not in the opponent's box (6.5).
   function kibitzNote(text) {
@@ -238,16 +291,18 @@ async function main() {
     director.at(Math.max(4000, 250 + 70 * text.length), () => ui.kibitzNote(null), "linger");
   }
 
-  // The pages, for the sitting's both-pass rule (6.2.2).
+  // The pages, for the sitting's rules: both-pass, game values and ultimo (6.2.2).
   function pagesNow() {
     const begun = log.find((e) => e.type === "sitting_start");
-    const both_pass = begun?.settings?.both_pass ?? prefs.both_pass;
-    return tutorialPages(getLang() === "de" ? TUTORIAL_DE : TUTORIAL_EN, PAGE_KEYS, { both_pass });
+    const settings = begun?.settings ?? {};
+    const rule = (k) => settings[k] ?? prefs[k];
+    return tutorialPages(getLang() === "de" ? TUTORIAL_DE : TUTORIAL_EN, PAGE_KEYS, { both_pass: rule("both_pass"), values: rule("values"), ultimo: rule("ultimo") });
   }
   function openPage(key, { help }) {
     const page = pagesNow().find((p) => p.key === key);
     if (!page) return tutor.helpClosed(key);
     pageHelp = help;
+    if (!help) pageLinked = false;
     ui.dialog({
       id: "page",
       title: page.title,
@@ -266,10 +321,13 @@ async function main() {
     if (!key) return;
     if (pageHelp) tutor.helpClosed(key);
     else tutor.close(key, remind);
-    // A second page of the same moment follows (not after a Help page); then
-    // the bar and the prompts a page was holding back.
+    const linked = pageLinked;
+    pageLinked = false;
+    // A second page of the same moment follows (not after a Help page, unless
+    // a link led to it from a page that was due); then the bar and the
+    // prompts a page was holding back.
     if (S) {
-      if (!pageHelp) tutorStep();
+      if (!pageHelp || linked) tutorStep();
       refresh();
     }
   }
@@ -420,6 +478,14 @@ async function main() {
     for (const m of momentsOf({ events, since, beats: timing.beats, count: countEvent ? timing.count : null })) {
       later(m.ms, () => (m.synthetic ? talk.onEvent(m.event, { human }) : onEvent(m.event, m.index, model, timing)));
     }
+    // The tally moves as each trick's cards reach the pile (2.1), not as the trick is complete.
+    for (const [at, ms] of Object.entries(timing.landed ?? {})) {
+      later(ms, () => {
+        showTally(log.slice(0, Number(at) + 1));
+        const tally = hud.totals();
+        ui.live(t("sr.tally", { a: thirds(tally.you), b: thirds(tally.opp) }));
+      });
+    }
     if (countEvent) schedulePopups(timing.count, lines, since + events.indexOf(countEvent), events.find((e) => e.type === "game_scored"));
     persist(reply);
     refresh();
@@ -443,6 +509,7 @@ async function main() {
   function schedulePopups(count, lines, at, scored) {
     if (!count) return;
     const events = countEvents(game, lines, { at, hand: 1 });
+    if (count.lines.length) later(Math.max(0, count.lines[0] - 1), () => hud.reset({ hands: [], live: countLedger(game, []) })); // the count begins from nothing
     for (const ev of events) {
       later(ev.end ? count.end : (count.lines[ev.line] ?? count.end), () => (ev.end ? hud.endHand(1) : hud.score(ev)));
     }
@@ -453,6 +520,22 @@ async function main() {
     });
     const paid = bonusLines(scored?.credits ?? [], human, (cause) => t(`slate.cause.${cause}`));
     for (const ev of countEvents(game, paid, { at, hand: 1 })) if (!ev.end) later(count.end + 700, () => hud.score(ev));
+  }
+
+  // The running tally (2.5.3): the HUD's lines hold the take so far, counted as the count
+  // will count it. The count starts again from nothing and lands on the same numbers.
+  // Whether this deal's count has begun: a `count` since the last `deal_start`.
+  function countBegun() {
+    for (let i = log.length - 1; i >= 0; i--) {
+      if (log[i].type === "count") return true;
+      if (log[i].type === "deal_start") return false;
+    }
+    return false;
+  }
+  function showTally(events = log) {
+    const ledger = countLedger(game, []);
+    ledger.count = runningTally(events, human);
+    hud.reset({ hands: [], live: ledger });
   }
 
   // ---- what is shown at an event's moment ------------------------------------------
@@ -601,6 +684,7 @@ async function main() {
     if (pending > 0 || director.busy() || !S) return;
     restModel = S.model;
     placeTags();
+    updateTracker();
     tutorStep(); // a due page opens before the bar and the prompts are drawn
     refresh();
     armIdle();
@@ -787,9 +871,9 @@ async function main() {
     const r = engine.hint();
     if (!r?.hint) return ui.setAid(t("hint.none"));
     hintCard = r.hint.action === "play" ? r.hint.card : null;
-    const lines = hintLines(r, { t, cardName: romanName, thirds });
+    const lines = hintLines(r, { t, cardName: romanName, thirds, count });
     ui.setAid([lines.lead, lines.reason].filter(Boolean).join(" "), lines.more);
-    ui.live(hintSpoken(hintLines(r, { t, cardName, thirds })));
+    ui.live(hintSpoken(hintLines(r, { t, cardName, thirds, count })));
     director.redecorate();
   }
 
@@ -805,6 +889,9 @@ async function main() {
         if (!r.ok) return showRefusal(r.refusal);
         return advance(r);
       }
+      case "tracker":
+      case "tracker-fold":
+        return toggleTracker();
       case "slate":
         return toggleSlate();
       case "settings":
@@ -819,6 +906,12 @@ async function main() {
       case "review":
         return openReview();
       case "page":
+        // From the Help list, or a link on the page that is open (6.2.4).
+        if (ui.dialogOpen("page")) {
+          if (!pageHelp) pageLinked = true; // a page that was due: the next due page follows the linked one
+          return tutor.follow(data.page);
+        }
+        pageLinked = false;
         return tutor.help(data.page);
       default:
     }
@@ -890,6 +983,8 @@ async function main() {
     S = null;
     log = [];
     restModel = null;
+    trackerData = null;
+    showTracker();
   }
 
   function newSitting({ touren = prefs.touren, seed = over.seed, humanSeat = over.human } = {}) {
@@ -956,7 +1051,8 @@ async function main() {
     restModel = model;
     trickShown = r.state.deal?.playing ? r.state.deal.trick_number : 0;
     showTour();
-    hud.reset({ hands: [], live: null });
+    showTally(); // a deal under way shows its take so far
+    if (countBegun()) hud.endHand(1); // a counted deal is not live
     ui.root.classList.toggle("left", prefs.leftHanded);
     if (r.state.over) {
       const end = [...log].reverse().find((e) => e.type === "sitting_end");
@@ -1033,6 +1129,7 @@ async function main() {
         break;
       default:
     }
+    showTracker();
     if (wasm) refresh();
   }
 
@@ -1058,9 +1155,12 @@ async function main() {
     ui.hudSlot.replaceChildren();
     game = countGame(hudWords());
     hud = createHud(ui.hudSlot, game, { later: (ms, fn) => director.at(ms, fn), reduced: () => calm() });
-    const ledger = countLedger(game, []);
-    ledger.count = { you: totals.you, opp: totals.opp };
-    hud.reset({ hands: [ledger], live: null });
+    if (log.some((e) => e.type === "deal_start") && !countBegun()) showTally(); // a deal under way keeps its live ledger
+    else {
+      const ledger = countLedger(game, []);
+      ledger.count = { you: totals.you, opp: totals.opp };
+      hud.reset({ hands: [ledger], live: null });
+    }
     hud.node.classList.toggle("edge", edgeOf(totals).tick); // the tick (2.5.4) is on the old HUD's node
     if (wasm) {
       refresh();
@@ -1226,11 +1326,13 @@ async function main() {
     // Upright, the Kibitzer's tabs lie in a row above the controls (tutor.css).
     const tabs = window.matchMedia("(max-aspect-ratio: 85/100)").matches ? ui.root.querySelector(".tutor-row").getBoundingClientRect().top : Infinity;
     stage.setStrips({ top: hud.bottom + 6, foot: window.innerHeight - Math.min(controls.top, tabs) + 6, raised: 0 });
+    placeTracker();
   }
   new ResizeObserver(() => {
     fitStrips();
     sel = { ...sel, at: null }; // cards move on a resize
     if (S) director.relayout();
+    showTracker(); // a window that no longer fits it, or now does
   }).observe(document.getElementById("overlay"));
   fitStrips();
   stage.onReframe = () => S && director.relayout();
@@ -1265,6 +1367,7 @@ async function main() {
     faces: () => director.placement().filter((m) => m.code).map((m) => m.code),
     shown: () => director.meshes.map((m) => m.userData.code),
     hidden: () => engine.audit().hidden,
+    tracker: () => ({ data: trackerData, open: Boolean(ui.trackerRoot.firstChild) }),
     busy: () => director.busy() || pending > 0 || stage.reframing(),
     timing: () => lastTiming,
     debug: () => ({ pending, dbusy: director.busy(), reframing: stage.reframing(), held: director.held(), stepping, prompt: wasm?.prompt, events: log.length }),
