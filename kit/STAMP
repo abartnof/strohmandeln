@@ -54,4 +54,3 @@ test/counting.test.js    -                              new: a Strohmandeln-like
 test/fixtures/games.js   -                              new: the stand-in game definitions
 build.py                 web3d/build.py                 generalised: config file, no wasm/art/courts specifics; new: optional kit_styles (the kit's stylesheets, inlined before the game's)
 package.json             -                              new: marks kit/js as ES modules
-node_modules             -                              new: symlink to ../web3d/node_modules

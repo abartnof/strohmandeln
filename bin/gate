@@ -19,6 +19,10 @@ cd "$(dirname "$0")/.."
 [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 parts=()
 
+# kit/node_modules is made here, not tracked: GitHub Pages cannot archive a
+# link to a missing directory (kit/README.md)
+[ -e kit/node_modules ] || [ -L kit/node_modules ] || ln -s ../web3d/node_modules kit/node_modules
+
 fail() {
   echo "gate: FAILED: $1" >&2
   exit 1

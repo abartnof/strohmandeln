@@ -139,10 +139,11 @@ repository root. They never visit `web3d/node_modules`, so `three` is not
 found (RC reproduced exactly this with a submodule). Two things prevent it
 here, and they cover different tools:
 
-1. `kit/node_modules` is a committed symlink to `../web3d/node_modules`. Node
-   (the kit's tests, the game's tests) and esbuild find `three` there, from any
-   kit file, in any worktree, after `npm ci` in `web3d/`. (`.gitignore` has
-   `node_modules/`, which matches directories only, so the symlink is tracked.)
+1. `kit/node_modules` is a symlink to `../web3d/node_modules`, made by
+   `bin/gate` when missing and ignored by git (a tracked link to a missing
+   directory breaks the GitHub Pages build). Node (the kit's tests, the game's
+   tests) and esbuild find `three` there, from any kit file, after `npm ci` in
+   `web3d/`.
 2. `build.py` also runs esbuild with `NODE_PATH=<web3d>/node_modules`. This
    covers esbuild only: Node's ES-module resolver ignores `NODE_PATH`, so the
    tests rely on the symlink alone.
