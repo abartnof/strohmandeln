@@ -39,23 +39,29 @@ pub const EVIDENCE_VERSION: u32 = 3;
 
 /// The resolution of the evidence: a player who loses less than this on a
 /// decision is perfect in it, and a miss costs at least this (so `top_cost` is
-/// conditional on it). The least gap in thirds that can be a clear chance: a class must beat the
-/// next by more than this and by more than twice the standard error of the
-/// per-world difference ([`Advice::std_error`]), and a spread card is met
-/// unless it is worse than the best by as much. Provisional; M1 (advisor
-/// noise under independent seeds) sets it, and says whether the standard
-/// error rule alone would do.
-pub const MARGIN: f64 = 6.0;
+/// conditional on it). The least gap in thirds that can be a clear chance: a
+/// class must beat the next by more than this and by more than twice the
+/// standard error of the per-world difference ([`Advice::std_error`]), and a
+/// spread card is met unless it is worse than the best by as much.
+///
+/// **Measured, M1** (`docs/MEASUREMENTS.md`): twice the median across-stream
+/// standard deviation of the gap, 5 thirds, over 596 positions each re-drawn
+/// under 8 independent streams. The two-standard-error rule alone is honest
+/// (calibration 0.97 to 1.19, sign replication 0.97 to 1.00).
+pub const MARGIN: f64 = 10.0;
 
 /// The same where the search solved the position (nothing face down and the
 /// search reached the last trick, [`search_complete`]): the least loss that
-/// counts. Provisional; M1 sets it.
+/// counts. **Measured, M1**: an exact position has no spread across streams
+/// (68 exact reads of position and skill, all zero), so it is the resolution of the
+/// solver, one third.
 pub const EXACT_MARGIN: f64 = 1.0;
 
 /// The least expectation in Points, per unit of doubling, that can make a bid
 /// a clear chance, besides twice its standard error over the sampled worlds
-/// (`rung4::bid_samples`). Provisional; M1 sets it.
-pub const BID_MARGIN: f64 = 0.5;
+/// (`rung4::bid_samples`). **Measured, M1**: twice the median across-stream
+/// standard deviation of the bid mean (0.217 Point), 200 bids under 8 streams.
+pub const BID_MARGIN: f64 = 0.45;
 
 /// Thirds in a Point, to price a bid or an announcement in the unit of the
 /// rest. **Borrowed**: it is the solver's weight of the ultimo inside the final
@@ -875,6 +881,9 @@ mod tests {
     use crate::testutil::{c, know};
     use strohmandeln_core::cards::Honour;
 
+    /// The tests' open-position values are written for a margin of 5; this
+    /// brings them to `MARGIN` (a test holds the fit).
+    const OPEN: f64 = 2.0;
     const NO: [&str; 3] = ["", "", ""];
     /// An opponent cover keeps the position from being exact.
     const HID: [&str; 3] = ["T2", "", ""];
@@ -911,7 +920,13 @@ mod tests {
         exact: bool,
         skill: Skill,
     ) -> Option<Verdict> {
-        let scores = sc(scores);
+        // the values are written for a margin of 5 and doubled where the
+        // search is not exact (`OPEN`); an exact position keeps them
+        let scale = if exact { 1.0 } else { OPEN };
+        let scores: Vec<(Card, f64)> = sc(scores)
+            .into_iter()
+            .map(|(c, v)| (c, v * scale))
+            .collect();
         let per_world = rows(&scores, noise);
         let advice = Advice {
             scores: &scores,
@@ -990,32 +1005,32 @@ mod tests {
         // the same means: steady worlds make a clear chance, wild ones do not
         assert!(one_with(&k, "Kh", &s, 0.0, false, Skill::Off).is_some());
         assert!(one_with(&k, "Kh", &s, 2.0, false, Skill::Off).is_some());
-        assert!(one_with(&k, "Kh", &s, 30.0, false, Skill::Off).is_none());
-        assert!(one_with(&k, "Qh", &s, 30.0, false, Skill::Off).is_none());
+        assert!(one_with(&k, "Kh", &s, 30.0 * OPEN, false, Skill::Off).is_none());
+        assert!(one_with(&k, "Qh", &s, 30.0 * OPEN, false, Skill::Off).is_none());
         // worth, cheap, pagat, void, behind, run are held to the same rule
         let f = know(&["Kh", "Qh", "4h"], NO, HID, &[], Some("3h"));
         let w = [("Kh", 20.0), ("Qh", 12.0), ("4h", 0.0)];
         assert!(one_with(&f, "4h", &w, 0.0, false, Skill::Worth).is_some());
-        assert!(one_with(&f, "4h", &w, 30.0, false, Skill::Worth).is_none());
+        assert!(one_with(&f, "4h", &w, 30.0 * OPEN, false, Skill::Worth).is_none());
         assert!(one_with(&f, "Qh", &w, 0.0, false, Skill::Cheap).is_some());
-        assert!(one_with(&f, "Qh", &w, 30.0, false, Skill::Cheap).is_none());
+        assert!(one_with(&f, "Qh", &w, 30.0 * OPEN, false, Skill::Cheap).is_none());
         let p = know(&["T1", "T9", "Kh"], NO, HID, &[], Some("3d"));
         let ps = [("T1", 20.0), ("T9", 5.0), ("Kh", 3.0)];
         assert!(one_with(&p, "T9", &ps, 0.0, false, Skill::Pagat).is_some());
-        assert!(one_with(&p, "T9", &ps, 30.0, false, Skill::Pagat).is_none());
+        assert!(one_with(&p, "T9", &ps, 30.0 * OPEN, false, Skill::Pagat).is_none());
         let r = know(&["T10", "T9", "T3", "Kh"], NO, HID, &[], None);
         let rs = [("T10", 12.0), ("T9", 11.0), ("T3", 2.0), ("Kh", 0.0)];
         assert!(one_with(&r, "T3", &rs, 0.0, false, Skill::Run).is_some());
-        assert!(one_with(&r, "T3", &rs, 30.0, false, Skill::Run).is_none());
+        assert!(one_with(&r, "T3", &rs, 30.0 * OPEN, false, Skill::Run).is_none());
         let mut v = know(&["Kh", "Qd", "T3"], NO, HID, &[], None);
         v.opp_void[0] = true;
         let vs = [("Qd", 10.0), ("T3", 4.0), ("Kh", 0.0)];
         assert!(one_with(&v, "Kh", &vs, 0.0, false, Skill::Void).is_some());
-        assert!(one_with(&v, "Kh", &vs, 30.0, false, Skill::Void).is_none());
+        assert!(one_with(&v, "Kh", &vs, 30.0 * OPEN, false, Skill::Void).is_none());
         let b = know(&["Kh", "Qh", "9c"], NO, HID, &[], None);
         let bs = [("9c", 10.0), ("Kh", 0.0), ("Qh", 1.0)];
         assert!(one_with(&b, "Kh", &bs, 0.0, false, Skill::Behind).is_some());
-        assert!(one_with(&b, "Kh", &bs, 30.0, false, Skill::Behind).is_none());
+        assert!(one_with(&b, "Kh", &bs, 30.0 * OPEN, false, Skill::Behind).is_none());
     }
 
     #[test]
@@ -1025,7 +1040,7 @@ mod tests {
         // Qh is 15 below the best: a miss when the worlds agree, met when not
         let steady = one_with(&k, "Qh", &s, 0.0, false, Skill::Cheap).unwrap();
         assert!(!steady.met);
-        assert!(one_with(&k, "Qh", &s, 30.0, false, Skill::Cheap).is_none());
+        assert!(one_with(&k, "Qh", &s, 30.0 * OPEN, false, Skill::Cheap).is_none());
     }
 
     #[test]
@@ -1054,12 +1069,19 @@ mod tests {
         assert!(!search_complete(&open, 28.0), "a packet card is face down");
     }
 
+    #[test]
+    fn the_test_values_fit_the_margin() {
+        // near ties are written as gaps of 4 or less, clear chances as 10 or more
+        assert!(4.0 * OPEN < MARGIN && MARGIN < 10.0 * OPEN, "{MARGIN}");
+    }
+
     // ---- the probe (M1) ----------------------------------------------------
 
     #[test]
     fn the_probe_names_each_skills_pair_clear_or_not() {
         let probed = |k: &Knowledge, played: &str, scores: &[(&str, f64)]| {
-            let scores = sc(scores);
+            let scores: Vec<(Card, f64)> =
+                sc(scores).into_iter().map(|(c, v)| (c, v * OPEN)).collect();
             let per_world = rows(&scores, 0.0);
             let advice = Advice {
                 scores: &scores,
@@ -1111,7 +1133,7 @@ mod tests {
         assert!(met.met && met.cost == 0.0);
         let missed = one(&k, "4h", &s, Skill::Worth).unwrap();
         assert!(!missed.met);
-        assert_eq!(missed.cost, 15.0);
+        assert_eq!(missed.cost, 15.0 * OPEN);
         assert_eq!(missed.direction, Some(Direction::Timid));
         assert_eq!(missed.better, Some(c("Kh")));
     }
@@ -1124,7 +1146,7 @@ mod tests {
         assert!(!missed.met);
         assert_eq!(missed.direction, Some(Direction::Greedy));
         assert_eq!(missed.better, Some(c("4h")));
-        assert_eq!(missed.cost, 15.0);
+        assert_eq!(missed.cost, 15.0 * OPEN);
         // the trick it won: the lead and the king
         assert_eq!(missed.trick_thirds, c("3h").thirds() + c("Kh").thirds());
         assert!(one(&k, "4h", &s, Skill::Worth).unwrap().met);
@@ -1160,7 +1182,7 @@ mod tests {
         assert!(one(&k, "Kh", &s, Skill::Cheap).unwrap().met);
         let m = one(&k, "Qh", &s, Skill::Cheap).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 8.0);
+        assert_eq!(m.cost, 8.0 * OPEN);
         assert_eq!(m.better, Some(c("Kh")));
         assert!(one(&k, "Qh", &[("Kh", 20.0), ("Qh", 17.0)], Skill::Cheap).is_none());
     }
@@ -1172,7 +1194,7 @@ mod tests {
         let s = [("Jh", -10.0), ("4h", 0.0)];
         let m = one(&k, "Jh", &s, Skill::Cheap).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 10.0);
+        assert_eq!(m.cost, 10.0 * OPEN);
         assert!(one(&k, "4h", &s, Skill::Cheap).unwrap().met);
     }
 
@@ -1191,7 +1213,7 @@ mod tests {
         assert!(one(&k, "Qh", &s, Skill::Off).unwrap().met);
         let m = one(&k, "Kh", &s, Skill::Off).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 10.0);
+        assert_eq!(m.cost, 10.0 * OPEN);
         assert_eq!(m.better, Some(c("Qh")));
         assert_eq!(m.direction, Some(Direction::Figure));
     }
@@ -1235,7 +1257,7 @@ mod tests {
         );
         let m = one(&k, "T3", &s, Skill::Run).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 10.0);
+        assert_eq!(m.cost, 10.0 * OPEN);
         assert_eq!(m.better, Some(c("T10")));
     }
 
@@ -1271,7 +1293,7 @@ mod tests {
         assert!(!m.met);
         assert_eq!(m.direction, Some(Direction::Cash));
         assert_eq!(m.better, Some(c("T1")));
-        assert_eq!(m.cost, 15.0);
+        assert_eq!(m.cost, 15.0 * OPEN);
         assert_eq!(m.tarocks, 2);
         let keep = [("T1", 3.0), ("T9", 10.0), ("Kh", 1.0)];
         let m = one(&k, "T1", &keep, Skill::Pagat).unwrap();
@@ -1309,7 +1331,7 @@ mod tests {
         let s = [("Qd", 10.0), ("T3", 4.0), ("Kh", 0.0)];
         let m = one(&k, "Kh", &s, Skill::Void).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 10.0);
+        assert_eq!(m.cost, 10.0 * OPEN);
         assert_eq!(m.better, Some(c("Qd")));
         assert!(one(&k, "Qd", &s, Skill::Void).unwrap().met);
         assert!(one(&k, "T3", &s, Skill::Void).unwrap().met);
@@ -1361,7 +1383,7 @@ mod tests {
         let s = [("9c", 10.0), ("Kh", 0.0), ("Qh", 1.0)];
         let m = one(&k, "Kh", &s, Skill::Behind).unwrap();
         assert!(!m.met);
-        assert_eq!(m.cost, 9.0);
+        assert_eq!(m.cost, 9.0 * OPEN);
         assert_eq!(m.better, Some(c("9c")));
         assert!(one(&k, "9c", &s, Skill::Behind).unwrap().met);
     }

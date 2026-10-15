@@ -257,6 +257,8 @@ pub struct Noise {
     pub exact_spread: Vec<f64>,
     pub calibration_median: f64,
     pub calibration_rms: f64,
+    /// Positions whose reported error is infinite in some stream (one world).
+    pub unbounded: usize,
     /// Mean of own-argmax gap less its held-out mean (thirds), in the
     /// direction of the gap's sign.
     pub selection: f64,
@@ -294,6 +296,7 @@ pub fn noise_of(skill: Skill, reads: &[&SkillRead]) -> Noise {
     let mut exact_spread = Vec::new();
     let (mut sd_fixed, mut se_fixed) = (Vec::new(), Vec::new());
     let (mut sq_sd, mut sq_se) = (0.0, 0.0);
+    let mut unbounded = 0;
     let mut selection = Vec::new();
     for r in reads {
         if r.exact {
@@ -305,8 +308,15 @@ pub fn noise_of(skill: Skill, reads: &[&SkillRead]) -> Noise {
         let e = mean(&r.fixed_se);
         sd_fixed.push(s);
         se_fixed.push(e);
-        sq_sd += s * s;
-        sq_se += e * e;
+        // a stream that finished one world of many reports no error (infinite,
+        // `Advice::std_error`): it stays in the medians, out of the root mean
+        // square
+        if e.is_finite() {
+            sq_sd += s * s;
+            sq_se += e * e;
+        } else {
+            unbounded += 1;
+        }
         for (g, h) in r.gap.iter().zip(&r.held_out) {
             selection.push(g.signum() * (g - h));
         }
@@ -318,6 +328,7 @@ pub fn noise_of(skill: Skill, reads: &[&SkillRead]) -> Noise {
         exact_spread,
         calibration_median: median(&sd_fixed) / median(&se_fixed),
         calibration_rms: (sq_sd / sq_se).sqrt(),
+        unbounded,
         selection: mean(&selection),
     }
 }
@@ -448,6 +459,12 @@ mod tests {
         // medians of the fixed-pair spread (0 and 6) and the mean error (1, 1)
         assert_eq!(n.calibration_median, 3.0);
         assert!((n.calibration_rms - 18.0_f64.sqrt()).abs() < 1e-12);
+        assert_eq!(n.unbounded, 0);
+        // a position whose error is infinite stays out of the root mean square
+        let blind = read(&[2.0, 8.0], &[f64::INFINITY, 1.0], &[8.0, 2.0], false);
+        let m = noise_of(Skill::Off, &[&steady, &wild, &blind]);
+        assert_eq!(m.unbounded, 1);
+        assert!((m.calibration_rms - 18.0_f64.sqrt()).abs() < 1e-12);
         // selection: wild's gaps 2 and 8 and 14 less 11, 8 and 5, signs positive
         assert!((n.selection - (0.0 + 0.0 + 0.0 + (-9.0) + 0.0 + 9.0) / 6.0).abs() < 1e-12);
     }
@@ -461,6 +478,7 @@ mod tests {
             exact_spread: exact.to_vec(),
             calibration_median: 1.0,
             calibration_rms: 1.0,
+            unbounded: 0,
             selection: 0.0,
         };
         // median 2.6: twice is 5.2, rounded to 5

@@ -124,12 +124,22 @@ fn m1(args: &Args) {
         .collect();
     println!("\nnoise: across-stream standard deviation of the gap, thirds (positions not exact)");
     println!(
-        "{:8} {:>5} {:>5} {:>6} {:>6} {:>6} {:>7} {:>7} {:>7} {:>8}",
-        "skill", "pos", "exact", "median", "p90", "p95", "calMed", "calRMS", "select", "exSpread"
+        "{:8} {:>5} {:>5} {:>6} {:>6} {:>6} {:>7} {:>7} {:>5} {:>7} {:>8}",
+        "skill",
+        "pos",
+        "exact",
+        "median",
+        "p90",
+        "p95",
+        "calMed",
+        "calRMS",
+        "noSE",
+        "select",
+        "exSpread"
     );
     for n in &noises {
         println!(
-            "{:8} {:>5} {:>5} {:>6.2} {:>6.2} {:>6.2} {:>7.2} {:>7.2} {:>7.2} {:>8.2}",
+            "{:8} {:>5} {:>5} {:>6.2} {:>6.2} {:>6.2} {:>7.2} {:>7.2} {:>5} {:>7.2} {:>8.2}",
             n.skill.slug(),
             n.positions,
             n.exact_spread.len(),
@@ -138,6 +148,7 @@ fn m1(args: &Args) {
             measure::quantile(&n.spread, 0.95),
             n.calibration_median,
             n.calibration_rms,
+            n.unbounded,
             n.selection,
             measure::quantile(&n.exact_spread, 0.95),
         );
