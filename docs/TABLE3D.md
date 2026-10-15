@@ -1372,7 +1372,7 @@ motion are saved to `web3d/test/out/`.
 - `opponent_unnamed`: no string or DOM text names the opponent other than "your
   opponent" / "Ihr Gegner".
 - `tutor_pages`: in a seeded sitting each page opens at its first occurrence, once
-  (`the-cards`, `packets` and `bidding` at the deal, one at a time, in that order, each Not now bringing the next; `the-pull` at the reveal, ... `extension`); not when
+  (`the-cards` and `packets` at the deal, and `bidding` at the first bid turn, which in the check's seed is the same rest: one at a time, in that order, each Not now bringing the next; `the-pull` at the reveal, ... `extension`); not when
   muted or the tutor is off; each page is in the current language.
 - `tutor_mute`: "§ 13" mutes (one line, then silence); no page, hint or review chip;
   unmute restores them.

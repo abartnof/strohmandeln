@@ -48,8 +48,8 @@ export function runningTally(events, human) {
 }
 
 // Whether the HUD is showing a deal's live tally: a trick has been won in the deal under way
-// and it is not yet counted. Before the first trick of a new deal, and once counted, the HUD
-// shows the last count (a language switch then keeps its numbers, 7.5.2).
+// and it is not yet counted. Otherwise the HUD shows a counted hand: the count once made, or
+// nothing at a new deal's start (deal_start resets it); a language switch keeps either (7.5.2).
 export function liveTally(events) {
   for (let i = events.length - 1; i >= 0; i--) {
     if (events[i].type === "trick_won") return true;
