@@ -5,6 +5,7 @@ members = [
     "crates/strohmandeln-ai",
     "crates/strohmandeln-wasm",
     "crates/strohmandeln-cli",
+    "kit/learner",
 ]
 
 [workspace.package]
