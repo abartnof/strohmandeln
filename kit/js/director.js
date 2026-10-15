@@ -27,7 +27,8 @@ import { CARD } from "./units.js";
 //    them, is an error that names it.
 //
 // `view()` is how the person asks to see the state: { chosen, picked }.
-// `advance` and `restart` return { beats, count }: when each new event will
+// `advance` and `restart` return { beats, count } (`advance` also `landed`,
+// from a choreography that gives it: when an event's cards come to rest): when each new event will
 // be seen to happen, and each line of a hand's count said, in ms from now on
 // the table's clock (for the dialogue and the score sheet; see `at`).
 // `rested()` runs whenever the cards come to rest.
@@ -170,6 +171,8 @@ export function createDirector({ stage, deck, view, decorate, rested, choreograp
     }
     const beats = {};
     for (const [k, ms] of Object.entries(result.beats)) beats[k] = ms / timeline.speed;
+    const landed = {}; // optional: when an event's cards come to rest (Strohmandeln: the tally moves then)
+    for (const [k, ms] of Object.entries(result.landed ?? {})) landed[k] = ms / timeline.speed;
     const count = result.count ? { at: result.count.at, lines: result.count.lines.map((ms) => ms / timeline.speed), end: result.count.end / timeline.speed } : null;
     // Once the cards are still: dressed, drawn once more, and the page told
     // -- once, and only for the latest animation (an earlier one's idle,
@@ -187,7 +190,7 @@ export function createDirector({ stage, deck, view, decorate, rested, choreograp
     moving = true;
     if (manual) frame();
     else wake();
-    return { beats, count };
+    return { beats, landed, count };
   }
 
   // ---- picking ------------------------------------------------------------

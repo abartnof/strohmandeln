@@ -53,3 +53,16 @@ test("headings and lists: '## ', '- ' and '1. '", () => {
   assert.deepEqual(blocks[2].items[1], [{ text: "second " }, { text: "bold", bold: true }]);
   assert.equal(blocks[3].items.length, 2);
 });
+
+test("a link to another page is [text](#key): a span with `page`, among words or alone", () => {
+  const [p] = parseTutorial("# A\n\nSee [the full page](#full) or **this**.\n\n- [One](#one)\n")[0].blocks;
+  assert.deepEqual(p.spans, [{ text: "See " }, { text: "the full page", page: "full" }, { text: " or " }, { text: "this", bold: true }, { text: "." }]);
+  const list = parseTutorial("# A\n\n- [One](#one)\n")[0].blocks[0];
+  assert.deepEqual(list.items[0], [{ text: "One", page: "one" }]);
+});
+
+test("a bracket that is not a page link stays text", () => {
+  const [p] = parseTutorial("# A\n\nA [note] and [a](http://x) too.\n")[0].blocks;
+  assert.equal(p.spans.map((s) => s.text).join(""), "A [note] and [a](http://x) too.");
+  assert.ok(p.spans.every((s) => !s.page));
+});

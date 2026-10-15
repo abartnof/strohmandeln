@@ -5,7 +5,12 @@
 // page's click handler reads. Tested over the tests' tiny DOM.
 import { h } from "./dom.js";
 
-const spans = (doc, list) => list.map((s) => (s.bold ? h(doc, "b", {}, s.text) : s.italic ? h(doc, "i", {}, s.text) : s.text));
+// A link span (kit parseTutorial `[text](#key)`) is a button the page's click
+// handler reads as `data-act="page"`, like a button of the Help list.
+const spans = (doc, list) =>
+  list.map((s) =>
+    s.page ? h(doc, "button", { class: "tutor-link", type: "button", "data-act": "page", "data-page": s.page }, s.text) : s.bold ? h(doc, "b", {}, s.text) : s.italic ? h(doc, "i", {}, s.text) : s.text,
+  );
 
 // A parsed tutorial page (kit/js/tutorial.js parseTutorial): its headings,
 // paragraphs and lists.

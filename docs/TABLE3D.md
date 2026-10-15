@@ -182,7 +182,7 @@ Numbers below are at normal speed, starting values, tuned in play.
 | `honour_forfeited` | A "verwirkt" / "forfeited" chip rises over the player and fades; said only for the opponent's (the human is told through the engine's reply, 3.3) |
 | `card_played` (from hand) | The card is tugged out of the hand, arcs a little above it, and falls into the trick zone (`toss`), tilted ten degrees on its leading edge and sliding flat. The hand reflows (the gap closes by a `snap`) |
 | `card_played` (from a packet) | The cover lifts off its stack (`peelOff`), turns slightly toward the middle and falls into the trick zone like a hand card. The stack's top is bare for a moment: the hidden card beneath is *not* shown (the replacement flip follows the trick, 2.2). The badge keeps its count until the replacement. A packet playing the same trick as a hand card is distinguished by the departure point only |
-| `trick_won` | **The gather.** Both cards rest a moment (1000 ms, 600 for a trick the human has already seen coming: the leader's card, the follower forced). The cards are gathered into one block (`carryBlock`) and carried to the winner's won pile, face down, a trick at a time (squared on the pile, thickness the count). The winner is named by the pile they land on; the HUD's count line moves (the running count shows only the winner's take in thirds) |
+| `trick_won` | **The gather.** Both cards rest a moment (1000 ms, 600 for a trick the human has already seen coming: the leader's card, the follower forced). The cards are gathered into one block (`carryBlock`) and carried to the winner's won pile, face down, a trick at a time (squared on the pile, thickness the count). The winner is named by the pile they land on; as the cards land on the pile (`landed`, after the rest and the carry) the HUD's lines move to the running tally (2.5.3): the cards each side has won so far, in exact thirds; the sentence, the talk and the aid line keep the trick's start |
 | the replacement (after `trick_won`) | **The replacement flip** (R 6.1): for each seat that played a cover, leader first, the packet's next card is turned, held, and either pulled (the chain continues as in the opening reveal) or lowered as the new cover. The two chains run one after the other, never together. A packet with nothing left is empty and fades |
 | `pagat_ultimo` | See 2.3 |
 | `valat` | See 2.4 |
@@ -272,15 +272,27 @@ ticks up. A last group of fewer than three shows its popup the same way. One
 popup a beat (`countSchedule`, `scalePace`); a side's next popup waits for its
 last.
 
-2.5.3 **The running tally in exact thirds.** The HUD's line for each side runs to
+2.5.3 **The running tally in exact thirds.** (It runs during play as well as at
+the count: see the paragraph after this one.) The HUD's line for each side runs to
 36 (a segmented line to 107 thirds, segments by the kit); the number beside it
 shows the exact tally, `format(units)`, e.g. "11⅓", "34⅔", "35⅔". The tally
 rounds nothing [R 8.1]. The target mark at 107 is the HUD's finish (a wider
-segment), labelled "36" (7.5). When a side's tally reaches 107 the finish
+segment), labelled "36" (7.5). As soon as a side's tally reaches 107 (during play or at the count) the finish
 lights; when a side ends at 106 the line stops one short of the finish and the
 tally reads "35⅓", with the chip **"35⅓ is not 36"** (the edge shown, 5.4; tutor
-page "the count in thirds", 6.2). The other side's tally is shown the same way.
+page "Card values and the count", 6.2). The other side's tally is shown the same way.
 The two takes always sum to 210 thirds; the HUD does not display the sum.
+
+**The tally runs during play.** After each `trick_won` (at its gather) each
+line holds the cards its side has won so far, counted as the count will count
+them (`runningTally` in `web3d/src/counting.js`: the sum of `thirdsOf` over the
+`trick_won` cards since the last `deal_start`), set at once with no popup. After
+trick 27 it equals the `count` event's thirds for both sides (a test over
+played sittings holds this). When the count begins the lines start again from
+nothing, and the ritual above runs as before and lands on the same numbers. A
+sitting restored in mid-deal shows its tally from the saved events. The browser
+check `count_thirds` expects the start from nothing; `trick_gather` expects the
+tally to have moved.
 
 2.5.4 **The edge.** At the count's end the winning tally and the target are
 joined by a tick: a hairline at 107 on both lines; a side at 106 stands one
@@ -796,8 +808,8 @@ beyond the one line. When the human first opens the tutor, the intro line is
 (en), parsed by `kit/js/tutorial.js` `parseTutorial(markdown, keys)`. Each is
 written for its moment, for a new player: what is about to happen, only what is
 needed to play it, the interface named as it is. Sections of one-line bullets,
-no preamble; every line at most 25 words (a test holds this, and a jargon list
-out of the pages, as Cassino's).
+no preamble; every line at most 25 words and every page at most 150 (a test holds this, and a jargon list
+out of the pages, as Cassino's). The one exception is the long page `scoring-full` (6.2.4).
 
 6.2.2 **A page opens at the first occurrence of its concept** in a real sitting,
 each once (`seen` in the preferences, 7.7), and only while the tutor is on and
@@ -816,24 +828,55 @@ bar and the prompts are drawn, so it is on screen when the question is asked.
 | Page key | Opens at | Says |
 |---|---|---|
 | `packets` | the first `dealt` | what the three packets are, the face-up card on top, the count of hidden cards beneath, that you and your opponent each have three, that a cover is yours to play |
-| `bidding` | the first `bid` turn (the human's, or the first `bid` event seen) | who speaks first; "Ich nehme auf" or "Weiter"; the declarer; the card values (the 70 Points) and the 36 needed; what is won (3 / 4 by default); both pass plays a simple game or throws in, by the setting |
+| `bidding` | the first `bid` turn (the human's, or the first `bid` event seen) | who speaks first; "Ich nehme auf" or "Weiter"; the declarer; the card values (RULES 1.7, with the court letters the faces show: K Q C J, German K D C B), that the 54 cards count 70 in threes and 36 are needed, and a link to `thirds`; what is won and lost by the `values` setting; both pass plays a simple game (and what it pays) or throws in, by the setting |
 | `the-pull` | the first `reveal_start` (no decision is asked: the cards turn themselves) | the cards are turned in turn; a tarock or a king goes to the hand; the turning continues; a low card stays; the last card of a packet always goes |
 | `playing` | the human's first play turn | how a card is played (tap, then tap again or Play); the leader; the trick winner leads; the HUD |
 | `following` | the first human play turn with a card led | the follower must follow suit, else trump, else any; covers count as hand cards for this; no obligation to win |
 | `from-a-packet` | the first human play turn with a cover legal (or the first cover played) | afterwards the card beneath is turned and may be pulled; the opponent plays before seeing it |
 | `honours` | the first time the human may announce, or the first `announcement` | announce the Trull (Sküs, Mond, Pagat) or four kings before the first card of it is played; 1 Point; paid even if lost; staying silent is allowed, unpaid; the prompt (3.3) |
-| `thirds` | the first `trick_won` (the tally begins to run), or the first `count` | the count in thirds: each card its value less two-thirds (a group of three: the sum less 2) [RULES 8.1]; 36 of 70 is 35⅔; 35⅓ loses; the HUD shows the tally |
+| `thirds` | the first `trick_won` (the tally begins to run), or the first `count` | titled "Card values and the count" / "Kartenwerte und Zählung"; **the table of what every card is worth** (RULES 1.7: 5, 4, 3, 2, 1 with the court letters of the faces), then the count: groups of three, the sum less 2, with one worked example (K, J, 7: 5 + 2 + 1 = 8, less 2 = 6); each card its value less two-thirds [RULES 8.1]; the leftover one or two cards; the two takes make 70; 35⅔ is enough for 36, 35⅓ loses; the score at the top runs as you take tricks (2.5.3); a link to `scoring-full` |
 | `pagat-ultimo` | the first time the human holds `T1` at the last 5 tricks, or the first `pagat_ultimo` | the Pagat in the last trick wins or loses a Point; it is quiet, never announced; the Pagat is the lowest tarock |
-| `scoring` | trick 21, or the first `count` / `game_scored` | what the deal pays: the game (2 / 3 / 4), the honours, the Pagat, all paid between the two players [RULES 9.2, 9.3]; credited to the slate; the evening settled at 2 kreuzer a Point [RULES 15.5, 15.7] |
+| `scoring` | trick 21, or the first `count` / `game_scored` | what the deal pays: a Point is what is paid, not a point of the count; the game by the `values` setting (and a plain game by it when both pass plays), with one example (a win with the Trull announced), the honours, the Pagat by the `ultimo` setting, all paid between the two players [RULES 9.2, 9.3]; credited to the slate; the evening settled at 2 kreuzer a Point [RULES 15.5, 15.8]; a link to `scoring-full` |
 | `draw` | the first `draw` | a simple game that ends 35 : 35 is undecided; the next deal counts double |
 | `touren-slate` | the first `tour_end`, or the first slate opening | the Touren, two deals each; the slate; the note that this is a reconstruction (4.6), said once |
 | `extension` | the first `extension_offered`, or the human's extend prompt | one more Tour needs both players' consent |
+| `scoring-full` | never by itself: Help, or the link on `thirds` and `scoring` | "Scoring in full" / "Die Abrechnung im Ganzen", 6.2.4 |
 
 The pages are authored in English and German at the same time (11); each is a
 key in the tutorial file. The `keys` argument of `parseTutorial` is the list
 above.
 
 6.2.3 A page can also be opened from the hint chip (6.3) and from the review.
+
+6.2.4 **Links between pages.** A page may point at another with `[text](#key)`
+(kit `parseTutorial`: a span `{ text, page }`); the view draws it as a button
+(`data-act="page"`, as the Help list's). Pressed on a page that opened by
+itself, it marks that page seen (as "Not now") and opens the linked page as a
+Help page; both pages are then seen, so a page reached by a link does not open
+again at its own moment. When the linked page is closed the next page due opens,
+if there is one. Pressed on a Help page, it opens the linked page in its place
+(the Help list is the way back). `thirds` and
+`scoring` link to `scoring-full`, and `bidding` to `thirds` (its card values).
+
+**`scoring-full`, "Scoring in full".** The one long page: it never falls due
+(`pagesDue` does not return it) and is read from Help or from those links, at
+leisure. It is exempt from the pop-ups' limits, by name, in
+`web3d/test/tutorial.test.js` (at most 1500 words a page, 45 a line); the
+exemption is checked as used. It takes, in order, with worked examples: what
+every card is worth (RULES 1.7; the 54 cards add up to 106) and the letters the
+faces show; counting in threes and why it comes to thirds (8.1; 106 less 18
+groups of 2 is 70); 36 of 70 and the 35⅔ boundary (8.2 to 8.4); what the score
+at the top shows, during play and at the count (2.5); what the game is worth,
+by `values` and `both_pass` (9.1, 9.2; the Valat, 10); the honours (11); the
+Pagat ultimo by `ultimo` (12); a draw and the double, by `both_pass` (14); one
+whole deal from the two takes to the slate lines; Touren and the slate (15.2,
+15.3, 15.5, 15.9); and the settlement at 2 kreuzer a Point with a worked
+evening (15.8). The pages see the sitting's `values`, `ultimo` and `both_pass`
+settings (`tutorialPages`), and an if-block may name several. Every number in
+the pages is held by a test: the value table against the table's card values
+for all 54 cards, the game values against the engine's credits for each
+`values` setting, the worked deal and evening against core tests
+(`web3d/test/scoring_pages.test.js`).
 
 ### 6.3 Hints and explanations
 

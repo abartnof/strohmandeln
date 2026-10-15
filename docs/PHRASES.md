@@ -666,7 +666,7 @@ count: a very close count, 35 and two thirds
 | Thirty-five and two thirds: just enough. | Fünfunddreißig und zwei Blatt: gerade genug. | Pr [03 §4] |
 | A hair's breadth: thirty-five and two thirds. | Auf Haaresbreite: fünfunddreißig und zwei Blatt. | Pr [03 §4] |
 | It counts the same for both of us. | Es gilt ja Einem wie dem Andern. | Ha [05d POLY-S5] |
-| By a single third of a Point! | Um ein einziges Drittel! | T |
+| By a single third! | Um ein einziges Drittel! | T |
 | Thirty-five and two thirds: the proudest win. | Fünfunddreißig und zwei Blatt: der stolzeste Sieg. | Kg [05c LIT-S16][03 §4 REVIEW RD] |
 
 ### `result-won-mine`

@@ -323,6 +323,9 @@ def check_trick_gather(browser, failures):
     rest(page)
     fail_if(won() != before + 2, failures, f"trick_gather: the piles grew from {before} to {won()}")
     fail_if(any(m["code"] for m in js(page, "placement()") if m["zone"].endswith("won")), failures, "trick_gather: a won card shows its face")
+    # The running tally (TABLE3D 2.5.3): the HUD holds the cards won so far, counted in thirds.
+    totals = js(page, "hud()")["totals"]
+    fail_if(totals["you"] + totals["opp"] <= 0, failures, f"trick_gather: the HUD's tally did not run after a trick: {totals}")
 
 
 def check_last_trick_ultimo(browser, failures):
@@ -383,9 +386,13 @@ def check_count_thirds(browser, failures):
         want = {"you": count["thirds"][human], "opp": count["thirds"][1 - human]}
         seen = [x["totals"] for x in samples]
         fail_if(want not in seen, failures, f"count_thirds: the HUD never showed {want}; at most {max(seen, key=lambda t: t['you'] + t['opp'])}")
-        # The tally only ever rises through the count.
+        # The running tally (TABLE3D 2.5.3) is the full take when the count begins, the count starts
+        # again from nothing, and from there the tally only ever rises.
         rising = [t["you"] + t["opp"] for t in seen]
-        fail_if(any(b < a for a, b in zip(rising[: rising.index(max(rising)) + 1], rising[1:])), failures, "count_thirds: the tally fell during the count")
+        fail_if(0 not in rising, failures, "count_thirds: the count did not begin from nothing")
+        if 0 in rising:
+            from_nothing = rising[rising.index(0):]
+            fail_if(any(b < a for a, b in zip(from_nothing[: from_nothing.index(max(from_nothing)) + 1], from_nothing[1:])), failures, "count_thirds: the tally fell during the count")
         fail_if(sum(count["thirds"]) != 210, failures, "count_thirds: the takes do not sum to 210")
         fail_if(max(x["counted"] for x in samples) < 3, failures, "count_thirds: no cards turned up in the count")
 

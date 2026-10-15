@@ -8,9 +8,11 @@
 // touching code.
 //
 // The small piece of Markdown the pages use: `# page`, `## heading`,
-// paragraphs, `- ` and `1. ` lists, **bold** and *italic*. A page is
-// { key, title, blocks } (the key from `keys` by position, else page-N); a block is { type: "h" | "p", spans } or
-// { type: "ul" | "ol", items: [spans] }; a span is { text, bold?, italic? }.
+// paragraphs, `- ` and `1. ` lists, **bold**, *italic* and [text](#key), a
+// link to another page. A page is { key, title, blocks } (the key from `keys`
+// by position, else page-N); a block is { type: "h" | "p", spans } or
+// { type: "ul" | "ol", items: [spans] }; a span is { text, bold?, italic?, page? }.
+// Kit change: the link span (`page` is the key linked to); Cassino has none.
 export function parseTutorial(markdown, keys = []) {
   const pages = [];
   let page = null;
@@ -59,15 +61,15 @@ export function parseTutorial(markdown, keys = []) {
   return pages;
 }
 
-// **bold** and *italic*, as spans of plain text.
+// **bold**, *italic* and [text](#key), as spans of plain text.
 function inline(text) {
   const spans = [];
-  const pattern = /\*\*(.+?)\*\*|\*(.+?)\*/g;
+  const pattern = /\*\*(.+?)\*\*|\*(.+?)\*|\[([^\]]+)\]\(#([\w-]+)\)/g;
   let at = 0;
   let m;
   while ((m = pattern.exec(text))) {
     if (m.index > at) spans.push({ text: text.slice(at, m.index) });
-    spans.push(m[1] !== undefined ? { text: m[1], bold: true } : { text: m[2], italic: true });
+    spans.push(m[1] !== undefined ? { text: m[1], bold: true } : m[2] !== undefined ? { text: m[2], italic: true } : { text: m[3], page: m[4] });
     at = pattern.lastIndex;
   }
   if (at < text.length) spans.push({ text: text.slice(at) });

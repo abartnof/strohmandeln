@@ -617,3 +617,47 @@ fn rules_10_1_a_valat_played_out_pays_12_and_the_ultimo_and_no_game_value() {
         assert_eq!(sc.thirds, [210, 0]);
     }
 }
+
+/// The worked deal of the table's "Scoring in full" page (web3d/tutorial*.md,
+/// TABLE3D 6.2.4): the declarer's take counts 109 thirds (36 1/3), the Trull
+/// was announced, and the declarer's Pagat loses the last trick. The page
+/// prints these credits for each `values` and `ultimo` setting.
+#[test]
+fn the_pages_worked_deal_pays_game_trull_and_a_lost_ultimo() {
+    // (values, the declarer wins, ultimo)
+    for (v, wins) in [(Values::V234, 3), (Values::V123, 2), (Values::V124, 2)] {
+        for ultimo in [1, 2] {
+            let mut deal = arranged(&["T1"], &["T2"]);
+            deal.settings = Settings {
+                values: v,
+                ultimo,
+                ..Settings::default()
+            };
+            deal.declarer = Some(Seat::A);
+            deal.honours[0][0] = HonourState::Announced;
+            deal.trick = 27;
+            give_thirds(&mut deal, 109);
+            deal.log = fake_26(13);
+            let mut ev = Vec::new();
+            deal.apply(Seat::A, Action::play(c("T1")), &mut ev).unwrap();
+            deal.apply(Seat::B, Action::play(c("T2")), &mut ev).unwrap();
+            let Some(DealEnd::Played(sc)) = deal.end() else {
+                panic!("deal should be over")
+            };
+            assert_eq!(sc.result, GameResult::DeclarerWin);
+            let by: Vec<(Seat, Cause, u32)> = sc
+                .credits
+                .iter()
+                .map(|c| (c.seat, c.cause, c.points))
+                .collect();
+            assert_eq!(
+                by,
+                vec![
+                    (Seat::A, Cause::Game, wins),
+                    (Seat::A, Cause::Trull, 1),
+                    (Seat::B, Cause::UltimoLost, ultimo),
+                ]
+            );
+        }
+    }
+}

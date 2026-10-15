@@ -112,6 +112,37 @@ test("muted, or the tutor off, no page opens by itself; Help still works", () =>
   assert.equal(make().tutor.help("no-such-page"), false);
 });
 
+test("the long scoring page never falls due by itself, at any moment, and Help opens it (TABLE3D 6.2.2)", () => {
+  const everything = [ev("dealt"), ev("bid"), ev("reveal_start"), ev("announcement"), ev("pagat_ultimo"), ev("trick_won"), ev("count"), ev("game_scored", { result: "draw" }), ev("tour_end"), ev("extension_offered")];
+  const late = state({ prompt: "you", phase: "play", legal: [{ action: "announce", honour: "trull" }], deal: { lead: "Kh", trick_number: 27, own_hand: [{ card: "T1" }] } });
+  assert.ok(!pagesDue({ events: everything, state: late, human: 1, slate: true }).includes("scoring-full"));
+  const { tutor, opened } = make();
+  assert.equal(tutor.help("scoring-full"), true);
+  assert.deepEqual(opened, [["scoring-full", true]]);
+});
+
+test("a link from a page that opened by itself marks it seen and opens the other as a Help page", () => {
+  const { tutor, prefs, opened } = make();
+  assert.equal(tutor.rest(state(), [ev("count")], { human: 1 }), "thirds");
+  assert.equal(tutor.follow("scoring-full"), true);
+  assert.deepEqual(opened, [["thirds", false], ["scoring-full", true]]);
+  assert.deepEqual(prefs.seen, ["thirds", "scoring-full"]);
+  assert.equal(tutor.current(), "scoring-full");
+  tutor.helpClosed("scoring-full");
+  assert.equal(tutor.current(), null);
+  // the page that was owed with it still opens at the next rest
+  assert.equal(tutor.rest(state(), [], { human: 1 }), "scoring");
+});
+
+test("a link from a Help page opens the other and leaves the first as it was", () => {
+  const { tutor, prefs, opened } = make();
+  tutor.help("thirds");
+  assert.equal(tutor.follow("scoring-full"), true);
+  assert.deepEqual(opened, [["thirds", true], ["scoring-full", true]]);
+  assert.deepEqual(prefs.seen, ["thirds", "scoring-full"]);
+  assert.equal(tutor.follow("no-such-page"), false);
+});
+
 test("Help marks the page seen", () => {
   const { tutor, prefs } = make();
   tutor.help("thirds");
@@ -173,7 +204,7 @@ test("pacing: the count and the scoring are explained before the first count", (
 
 test("pacing: the pages of one moment come in the order they are needed", () => {
   const i = (k) => PAGE_KEYS.indexOf(k);
-  const order = ["packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension"];
+  const order = ["packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension", "scoring-full"];
   assert.deepEqual(PAGE_KEYS, order);
   assert.ok(i("bidding") < i("playing"));
 });

@@ -10,18 +10,20 @@ import { parseTutorial } from "../../kit/js/tutorial.js";
 
 // The page keys, in the order they are due when more than one could be
 // (the table of TABLE3D 6.2.2; web3d/test/tutorial.test.js holds them to it).
-export const PAGE_KEYS = ["packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension"];
+// The last, `scoring-full`, is never due: it is read from Help or from a link.
+export const PAGE_KEYS = ["packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension", "scoring-full"];
 
 // The pages of a tutorial file for the sitting's rule settings. A block of
 // lines between `<!-- if name=value -->` and `<!-- end -->` is kept when the
 // setting `name` is `value`, and dropped, markers and all, when it is not
-// (the bidding page says what happens when both pass, by `both_pass`).
+// (the bidding page says what happens when both pass, by `both_pass`). Several
+// settings may be named, `<!-- if values=2/3/4 both_pass=play -->`: all must hold.
 export function tutorialPages(markdown, keys, settings = {}) {
   let keep = true;
   const lines = [];
   for (const line of markdown.split("\n")) {
-    const open = /^<!-- if (\w+)=(\S+) -->$/.exec(line.trim());
-    if (open) keep = String(settings[open[1]]) === open[2];
+    const open = /^<!-- if ((?:\w+=\S+ ?)+) -->$/.exec(line.trim());
+    if (open) keep = open[1].trim().split(" ").every((c) => String(settings[c.slice(0, c.indexOf("="))]) === c.slice(c.indexOf("=") + 1));
     else if (line.trim() === "<!-- end -->") keep = true;
     else if (keep) lines.push(line);
   }
@@ -71,6 +73,7 @@ export function createTutor({ prefs, patch, open = () => {}, speak = () => {} })
   let shown = new Set(); // opened since the last deal began (a reminder waits for the next)
   let introduced = false;
   let current = null; // the page open now
+  let fromHelp = false; // ... and it was asked for (Help, a link), not due
   let slate = false;
   let seen = [];
 
@@ -87,6 +90,7 @@ export function createTutor({ prefs, patch, open = () => {}, speak = () => {} })
       owed = new Set();
       shown = new Set();
       current = null;
+      fromHelp = false;
       slate = false;
       introduced = false;
     },
@@ -115,6 +119,7 @@ export function createTutor({ prefs, patch, open = () => {}, speak = () => {} })
       owed.delete(key);
       shown.add(key);
       current = key;
+      fromHelp = false;
       if (!introduced) {
         introduced = true;
         speak("kibitz");
@@ -134,9 +139,19 @@ export function createTutor({ prefs, patch, open = () => {}, speak = () => {} })
     help(key) {
       if (!PAGE_KEYS.includes(key)) return false;
       current = key;
+      fromHelp = true;
       if (!(prefs().seen ?? []).includes(key)) patch({ seen: [...(prefs().seen ?? []), key] });
       open(key, { help: true });
       return true;
+    },
+
+    // A link on the page open now (kit parseTutorial `[text](#key)`): the page
+    // that opened by itself is dismissed as "Not now" (seen), a Help page is
+    // left as it was; the linked page opens as a Help page.
+    follow(key) {
+      if (!PAGE_KEYS.includes(key)) return false;
+      if (current && !fromHelp) api.close(current);
+      return api.help(key);
     },
 
     // The Help list closed.

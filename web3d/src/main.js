@@ -25,7 +25,7 @@ import { choreograph, initialPlacement, LAST_TRICK, opening } from "./choreograp
 import { dragKind, sameSpot, shake } from "./gesture.js";
 import { handRange } from "./layout.js";
 import { TRULL, KINGS } from "./cardinfo.js";
-import { bonusLines, countGame, countLines, edgeOf } from "./counting.js";
+import { bonusLines, countGame, countLines, edgeOf, runningTally } from "./counting.js";
 import { loadEngine } from "./engine.js";
 import { createMirror } from "./mirror.js";
 import { createNewSitting } from "./newsitting.js";
@@ -230,7 +230,8 @@ async function main() {
   });
   let tutorBuf = []; // events the tutor has not yet reckoned with
   let reviewChip = null; // null, "deal" or "sitting"
-  let pageHelp = false; // the page open now came from the Help list
+  let pageHelp = false; // the page open now came from the Help list or a link
+  let pageLinked = false; // ... and it was reached by a link from a page that was due
   let pastSittings = []; // the sittings kept before this one, for the sitting's review
   const showTutor = () => {
     ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip });
@@ -290,16 +291,18 @@ async function main() {
     director.at(Math.max(4000, 250 + 70 * text.length), () => ui.kibitzNote(null), "linger");
   }
 
-  // The pages, for the sitting's both-pass rule (6.2.2).
+  // The pages, for the sitting's rules: both-pass, game values and ultimo (6.2.2).
   function pagesNow() {
     const begun = log.find((e) => e.type === "sitting_start");
-    const both_pass = begun?.settings?.both_pass ?? prefs.both_pass;
-    return tutorialPages(getLang() === "de" ? TUTORIAL_DE : TUTORIAL_EN, PAGE_KEYS, { both_pass });
+    const settings = begun?.settings ?? {};
+    const rule = (k) => settings[k] ?? prefs[k];
+    return tutorialPages(getLang() === "de" ? TUTORIAL_DE : TUTORIAL_EN, PAGE_KEYS, { both_pass: rule("both_pass"), values: rule("values"), ultimo: rule("ultimo") });
   }
   function openPage(key, { help }) {
     const page = pagesNow().find((p) => p.key === key);
     if (!page) return tutor.helpClosed(key);
     pageHelp = help;
+    if (!help) pageLinked = false;
     ui.dialog({
       id: "page",
       title: page.title,
@@ -318,10 +321,13 @@ async function main() {
     if (!key) return;
     if (pageHelp) tutor.helpClosed(key);
     else tutor.close(key, remind);
-    // A second page of the same moment follows (not after a Help page); then
-    // the bar and the prompts a page was holding back.
+    const linked = pageLinked;
+    pageLinked = false;
+    // A second page of the same moment follows (not after a Help page, unless
+    // a link led to it from a page that was due); then the bar and the
+    // prompts a page was holding back.
     if (S) {
-      if (!pageHelp) tutorStep();
+      if (!pageHelp || linked) tutorStep();
       refresh();
     }
   }
@@ -472,6 +478,14 @@ async function main() {
     for (const m of momentsOf({ events, since, beats: timing.beats, count: countEvent ? timing.count : null })) {
       later(m.ms, () => (m.synthetic ? talk.onEvent(m.event, { human }) : onEvent(m.event, m.index, model, timing)));
     }
+    // The tally moves as each trick's cards reach the pile (2.1), not as the trick is complete.
+    for (const [at, ms] of Object.entries(timing.landed ?? {})) {
+      later(ms, () => {
+        showTally(log.slice(0, Number(at) + 1));
+        const tally = hud.totals();
+        ui.live(t("sr.tally", { a: thirds(tally.you), b: thirds(tally.opp) }));
+      });
+    }
     if (countEvent) schedulePopups(timing.count, lines, since + events.indexOf(countEvent), events.find((e) => e.type === "game_scored"));
     persist(reply);
     refresh();
@@ -495,6 +509,7 @@ async function main() {
   function schedulePopups(count, lines, at, scored) {
     if (!count) return;
     const events = countEvents(game, lines, { at, hand: 1 });
+    if (count.lines.length) later(Math.max(0, count.lines[0] - 1), () => hud.reset({ hands: [], live: countLedger(game, []) })); // the count begins from nothing
     for (const ev of events) {
       later(ev.end ? count.end : (count.lines[ev.line] ?? count.end), () => (ev.end ? hud.endHand(1) : hud.score(ev)));
     }
@@ -505,6 +520,22 @@ async function main() {
     });
     const paid = bonusLines(scored?.credits ?? [], human, (cause) => t(`slate.cause.${cause}`));
     for (const ev of countEvents(game, paid, { at, hand: 1 })) if (!ev.end) later(count.end + 700, () => hud.score(ev));
+  }
+
+  // The running tally (2.5.3): the HUD's lines hold the take so far, counted as the count
+  // will count it. The count starts again from nothing and lands on the same numbers.
+  // Whether this deal's count has begun: a `count` since the last `deal_start`.
+  function countBegun() {
+    for (let i = log.length - 1; i >= 0; i--) {
+      if (log[i].type === "count") return true;
+      if (log[i].type === "deal_start") return false;
+    }
+    return false;
+  }
+  function showTally(events = log) {
+    const ledger = countLedger(game, []);
+    ledger.count = runningTally(events, human);
+    hud.reset({ hands: [], live: ledger });
   }
 
   // ---- what is shown at an event's moment ------------------------------------------
@@ -875,6 +906,12 @@ async function main() {
       case "review":
         return openReview();
       case "page":
+        // From the Help list, or a link on the page that is open (6.2.4).
+        if (ui.dialogOpen("page")) {
+          if (!pageHelp) pageLinked = true; // a page that was due: the next due page follows the linked one
+          return tutor.follow(data.page);
+        }
+        pageLinked = false;
         return tutor.help(data.page);
       default:
     }
@@ -1014,7 +1051,8 @@ async function main() {
     restModel = model;
     trickShown = r.state.deal?.playing ? r.state.deal.trick_number : 0;
     showTour();
-    hud.reset({ hands: [], live: null });
+    showTally(); // a deal under way shows its take so far
+    if (countBegun()) hud.endHand(1); // a counted deal is not live
     ui.root.classList.toggle("left", prefs.leftHanded);
     if (r.state.over) {
       const end = [...log].reverse().find((e) => e.type === "sitting_end");
@@ -1117,9 +1155,12 @@ async function main() {
     ui.hudSlot.replaceChildren();
     game = countGame(hudWords());
     hud = createHud(ui.hudSlot, game, { later: (ms, fn) => director.at(ms, fn), reduced: () => calm() });
-    const ledger = countLedger(game, []);
-    ledger.count = { you: totals.you, opp: totals.opp };
-    hud.reset({ hands: [ledger], live: null });
+    if (log.some((e) => e.type === "deal_start") && !countBegun()) showTally(); // a deal under way keeps its live ledger
+    else {
+      const ledger = countLedger(game, []);
+      ledger.count = { you: totals.you, opp: totals.opp };
+      hud.reset({ hands: [ledger], live: null });
+    }
     hud.node.classList.toggle("edge", edgeOf(totals).tick); // the tick (2.5.4) is on the old HUD's node
     if (wasm) {
       refresh();
