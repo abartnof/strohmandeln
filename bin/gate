@@ -63,6 +63,19 @@ if [ -f kit/STAMP ]; then
   done < <(awk '/^files:/ {on = 1; next} on && $3 == "verbatim" && $1 ~ /\.js$/ {print $1}' kit/STAMP)
 fi
 
+# ---- The wasm module is built before the Node tests, which load it -----
+# engine.js loads the module, so a fresh checkout needs it built first. Built
+# once here; the smoke test below runs on this build. Needs web3d/node_modules
+# like the Node tests do.
+wasm_built=""
+if [ -d crates/strohmandeln-wasm ] && [ -d web3d/node_modules ]; then
+  if ! out=$(cargo build --quiet --release -p strohmandeln-wasm --lib --target wasm32-unknown-unknown 2>&1); then
+    echo "$out" | head -20 >&2
+    fail "building the wasm module"
+  fi
+  wasm_built=1
+fi
+
 # ---- Node: the kit's tests and the game's ------------------------------
 dirs=()
 [ -d kit/test ] && dirs+=(kit/test)
@@ -82,13 +95,7 @@ else
 fi
 
 # ---- The wasm module, in Node: golden sittings, random sittings, no leaks -
-# Built first so that the smoke test never runs against an old module. Needs
-# web3d/node_modules like the other Node tests (the kit's engine.js loads it).
-if [ -d crates/strohmandeln-wasm ] && [ -d web3d/node_modules ]; then
-  if ! out=$(cargo build --quiet --release -p strohmandeln-wasm --lib --target wasm32-unknown-unknown 2>&1); then
-    echo "$out" | head -20 >&2
-    fail "building the wasm module"
-  fi
+if [ -n "$wasm_built" ]; then
   if ! smoke_out=$(node crates/strohmandeln-wasm/tests/smoke.mjs 2 2>&1); then
     echo "$smoke_out" | tail -15 >&2
     fail "wasm smoke test"

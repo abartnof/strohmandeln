@@ -21,10 +21,10 @@ const words = (s) => s.split(/\s+/).filter(Boolean).length;
 const PAGE_WORDS = 150;
 const LINE_WORDS = 25;
 
-test("the spec lists eleven page keys", () => {
-  assert.equal(KEYS.length, 11);
+test("the spec lists thirteen page keys", () => {
+  assert.equal(KEYS.length, 13);
   assert.equal(KEYS[0], "packets");
-  assert.equal(KEYS[10], "extension");
+  assert.equal(KEYS[12], "extension");
 });
 
 for (const lang of ["en", "de"]) {
@@ -89,10 +89,10 @@ test("the spec and the pages state the count as RULES 8.1 does: value less two-t
 
 test("the pages hold to RULES 5.4, 6.1, 7.1 and 12.1: trump beats suit, the last card goes to hand, the Pagat is simply paid", () => {
   const page = (lang, key) => pages(lang).find((p) => p.key === key).blocks.flatMap((b) => (b.spans ? [b.spans] : b.items)).map((s) => s.map((x) => x.text).join("")).join("\n");
-  assert.match(page("en", "following"), /tarock beats any suit card/);
-  assert.match(page("de", "following"), /Tarock sticht jede Farbkarte/);
-  assert.match(page("en", "from-a-packet"), /last of its packet/);
-  assert.match(page("de", "from-a-packet"), /letzte des Pakets/);
+  assert.match(page("en", "playing"), /tarock beats any suit card/);
+  assert.match(page("de", "playing"), /Tarock sticht jede Farbkarte/);
+  assert.match(page("en", "the-pull"), /last card of a packet/);
+  assert.match(page("de", "the-pull"), /letzte Karte eines Pakets/);
   for (const l of ["en", "de"]) assert.doesNotMatch(page(l, "from-a-packet"), /before it is shown|ehe sie gezeigt/);
   assert.doesNotMatch(page("en", "pagat-ultimo"), /turn up higher/);
 });

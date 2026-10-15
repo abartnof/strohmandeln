@@ -5,8 +5,9 @@
 // fetched.
 //
 // Suit cards: the rank over the suit in the corner index; courts (K Q C J)
-// a large rank letter over the suit; pips (10 9 8 7 in clubs and spades,
-// 1 2 3 4 in hearts and diamonds) that many suit symbols.
+// and, in Large Text, every other card too, a large rank over the suit; in
+// Classic the others show pips (10 9 8 7 in clubs and spades, 1 2 3 4 in
+// hearts and diamonds), that many suit symbols.
 // Tarocks: a tinted field (TAROCK.field) with a darker band down the strip;
 // the Roman numeral in the strip at the top left and, turned, at the bottom
 // right, as on the real pack, and large in the middle. Only the 4 is
@@ -315,8 +316,9 @@ function suitFace(ctx, u, { rank: code, suit }, labels) {
   const ink = suitInkHeight(ctx) * s;
   glyph(ctx, u, suit, { x: AXIS, y: base + dip(ctx, rank, r.size) + JUMBO.gap + ink / 2, size: s, colour });
 
-  if (!/^\d/.test(code)) {
-    // A court: the rank letter large, the suit large under it.
+  if (!/^\d/.test(code) || indexScale === INDEX_SCALE.jumbo) {
+    // A court, or in Large Text any card: the rank large, the suit large under
+    // it, right of the strip, as Cassino's (a 10 is condensed to the room).
     const f = fitText(ctx, rank, { room: BODY_W, maxSize: 5, minCondense: 0.62, font: rankFont });
     const cap = CAP(ctx, rankFont, f.size);
     const sz = suitSize(ctx, BODY_W, 3.4);

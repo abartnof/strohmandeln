@@ -47,6 +47,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 9 | Tutor: tutorial pages, the kibitzer's hints and explanations, end-of-deal review | 5, 8 | done |
 | 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | done; published 15 Oct 2026 at abartnof.github.io/strohmandeln |
 | 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | done (built across 3, 8, 9; language_switch passes) |
+| 12 | Play-through fixes (15 Oct 2026): tutorial pacing and wording; high-visibility faces as in Cassino, numerals that clip in the fan, the stripes on the backs; play by a second click, the HUD's `{n}`, the Kibitzer and § 13 labels, tarocks sorted high to low; hints that give their reasons | 9, 8, 7, 5 | in progress (four agents) |
 
 ## Open
 
