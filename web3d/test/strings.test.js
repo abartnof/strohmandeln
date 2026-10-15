@@ -213,14 +213,13 @@ const messageRows = (from, to) => {
 
 test("every review key of docs/MESSAGES.md has a review.say.* string with the text the doc gives", () => {
   const rows = messageRows("\n## Review keys", "\n## Explanation keys");
-  assert.equal(rows.length, 14);
+  assert.equal(rows.length, 13);
   for (const r of rows) {
     const s = TABLE["review.say." + r.key];
     assert.ok(s, r.key);
     assert.equal(s.en, r.en, r.key);
     assert.equal(s.de, r.de, r.key);
   }
-  for (const lead of ["count", "decided", "try", "sitting"]) assert.ok(TABLE["review.lead." + lead], lead);
 });
 
 test("every explanation key of docs/MESSAGES.md has an explain.* string with the text the doc gives", () => {
@@ -232,6 +231,21 @@ test("every explanation key of docs/MESSAGES.md has an explain.* string with the
     assert.equal(s.en, r.en, r.key);
     assert.equal(s.de, r.de, r.key);
   }
+});
+
+test("every tutor key of docs/MESSAGES.md has the string the doc gives, and every tutor.* string is in the doc", () => {
+  const part = doc("MESSAGES.md").split("\n## Tutor keys")[1];
+  const rows = [...part.matchAll(/^\| `(tutor\.[a-z0-9.-]+)` \| [^|]*\| ([^|]*) \| ([^|]*) \|/gm)].map((m) => ({ key: m[1], en: m[2].trim(), de: m[3].trim() }));
+  assert.ok(rows.length >= 95, rows.length);
+  for (const r of rows) {
+    assert.ok(TABLE[r.key], r.key);
+    assert.equal(TABLE[r.key].en, r.en, r.key);
+    assert.equal(TABLE[r.key].de, r.de, r.key);
+  }
+  const documented = new Set(rows.map((r) => r.key));
+  // the Kibitzer's other strings (tabs, mute, pages, settings) are the page's, not the brief's
+  const page = /^tutor\.(tab|mute|unmute|muted|help|page|speech|off|progress)/;
+  for (const key of Object.keys(TABLE)) if (key.startsWith("tutor.") && !page.test(key)) assert.ok(documented.has(key), `${key} is not in docs/MESSAGES.md`);
 });
 
 test("the declarer is the Aufnehmer in German, as in the books", () => {

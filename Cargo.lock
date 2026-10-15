@@ -84,6 +84,7 @@ name = "strohmandeln-ai"
 version = "0.1.0"
 dependencies = [
  "kit-learner",
+ "serde_json",
  "strohmandeln-core",
 ]
 
@@ -106,6 +107,7 @@ dependencies = [
 name = "strohmandeln-wasm"
 version = "0.1.0"
 dependencies = [
+ "kit-learner",
  "serde",
  "serde_json",
  "strohmandeln-ai",

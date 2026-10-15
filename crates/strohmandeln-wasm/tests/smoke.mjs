@@ -194,8 +194,8 @@ for (let n = 0; n < 60; n++) {
 assert.ok(hinted > 10, "several hints were taken");
 console.log(`${hinted} hints, each legal and playable (slowest ${worst.toFixed(0)} ms)`);
 
-// 5. The review: null before a deal is scored, then up to three bullets of
-//    keys with parameters, and three for the sitting at its end.
+// 5. The review: null before a deal is scored, then two bullets of keys with
+//    parameters, and two for the sitting at its end.
 create({ seed: 91, touren: 3, human: 1 });
 w.strohmandeln_review();
 assert.equal(out().review, null);
@@ -212,14 +212,136 @@ for (let n = 0; n < 4000; n++) {
   if (out().events?.some((e) => e.type === "game_scored")) {
     w.strohmandeln_review();
     const r = out().review;
-    assert.ok(r.bullets.length >= 2 && r.bullets.length <= 3, JSON.stringify(r));
+    assert.equal(r.bullets.length, 2, JSON.stringify(r));
     assert.equal(r.bullets[0].lead, "count");
     for (const b of r.bullets) assert.match(b.key, /^[a-z]+(-[a-z]+)*$/);
     reviewed++;
   }
 }
 w.strohmandeln_review_sitting();
-assert.equal(out().review.bullets.length, 3);
+assert.equal(out().review.bullets.length, 2);
 assert.equal(out().review.bullets[0].key, "sitting-tally");
 assert.ok(reviewed >= 3, "every scored deal had a review");
 console.log(`${reviewed} deal reviews and a sitting review`);
+
+// 6. The tutor: the record of each scored deal, its evidence, the learner
+//    over the summaries, the brief of the deal and of the sitting, the
+//    nudge. Stateless calls take text; none moves the game.
+create({ seed: 91, touren: 3, human: 1 });
+assert.equal(w.strohmandeln_set_focus(write("nonsense")), 0);
+assert.equal(w.strohmandeln_set_focus(write("worth")), 1);
+w.strohmandeln_deal_record();
+assert.equal(out().record, null);
+const records = [];
+const summaries = [];
+const details = [];
+let nudged = 0;
+for (let n = 0; n < 4000; n++) {
+  w.strohmandeln_render();
+  const s = out().state;
+  if (s.prompt === "over") break;
+  if (s.prompt === "opponent") assert.equal(w.strohmandeln_step(), 1);
+  else {
+    if (s.phase === "play" && n % 3 === 0) {
+      w.strohmandeln_nudge();
+      const r = out();
+      assert.equal(r.deal_action, s.deal_actions);
+      if (r.nudge) {
+        nudged++;
+        assert.deepEqual(r.nudge, { key: "tutor.nudge.worth", skill: "worth" });
+      }
+      w.strohmandeln_render();
+      assert.deepEqual(out().state, s, "a nudge moves nothing");
+    }
+    const a = s.legal[0];
+    assert.ok(send(a.action === "extend" ? { action: "extend", accept: false } : wire(a)));
+  }
+  if (out().events?.some((e) => e.type === "game_scored")) {
+    w.strohmandeln_deal_record();
+    const record = out().record;
+    assert.equal(typeof record, "string");
+    records.push(record);
+    w.strohmandeln_evidence_of(write(`${record}\n==\n`));
+    const e = out();
+    assert.match(e.summary, /^strohmandeln evidence v\d+\nworth \d+ \d+ [\d.]+\n/);
+    summaries.push(e.summary);
+    details.push(JSON.stringify(e.detail));
+    w.strohmandeln_learner(write(summaries.join("\n--\n")));
+    const learnt = out();
+    assert.equal(learnt.deals, summaries.length);
+    assert.deepEqual(learnt.stale, []);
+    const history = summaries.slice(0, -1).join("\n--\n");
+    w.strohmandeln_brief_of_record(write(`level 3\n${record}\n==\n--\n${history}`));
+    const b = out().brief;
+    assert.ok(b.bullets.length >= 1 && b.bullets.length <= 3, JSON.stringify(b));
+    for (const x of b.bullets) assert.match(x.key, /^tutor\.[a-z.1-9-]+$/);
+    assert.equal(b.summary, e.summary, "one advisor pass serves both");
+    assert.equal(b.method, "tutor.method");
+  }
+}
+assert.ok(records.length >= 3, "deals were scored");
+console.log(`${records.length} deals through the tutor's calls, ${nudged} nudges`);
+const sittingDeals = details.map((d, i) => `deal ${i + 1}\n${d}`).join("\n++\n");
+w.strohmandeln_brief_sitting(write(`level 3\n${sittingDeals}\n--\n`));
+assert.ok(out().brief.bullets.length <= 3);
+w.strohmandeln_brief_sitting(write(`level 3\n${details[0]}\n--\n`));
+assert.equal(out().error, "bad-input", "a sitting's deal has its number");
+w.strohmandeln_brief_of_record(write("level 3\nnot a record\n==\n"));
+assert.equal(out().error, "bad-input");
+
+// 7. No input traps the module. A panic in the module is an `unreachable`
+//    that kills every later call, the live game's included, so each of these
+//    runs on an instance of its own and must answer a JSON object.
+{
+  const bytes = readFileSync(path);
+  const stored = JSON.parse(records[0]);
+  const changed = (f) => {
+    const v = JSON.parse(records[0]);
+    f(v);
+    return JSON.stringify(v);
+  };
+  const doubled = changed((v) => (v.deal.actions = [...v.deal.actions, ...v.deal.actions]));
+  const trailing = (action, seat) => changed((v) => v.deal.actions.push({ seat, action: { action } }));
+  const recordsOdd = [
+    "", "\n\n\n", "nonsense", records[0],
+    changed((v) => (v.deal.deck = [])),
+    changed((v) => (v.deal.deck = ["T1", "T1"])),
+    changed((v) => (v.deal.deck = v.deal.deck.slice(0, 40))),
+    changed((v) => (v.deal.deck[1] = v.deal.deck[0])),
+    changed((v) => (v.deal.actions = [])),
+    changed((v) => (v.human = 1 - stored.human)),
+    changed((v) => (v.human = 5)),
+    changed((v) => (v.deal.settings = {})),
+    changed((v) => (v.deal.dealer = 7)),
+    changed((v) => (v.deal.multiplier = 0)),
+    changed((v) => (v.deal.multiplier = 4294967295)),
+    changed((v) => (v.deal.actions[0].seat = 5)),
+    doubled,
+    trailing("take", 0), trailing("take", 1), trailing("pass", 0), trailing("pass", 1),
+  ];
+  const tails = ["", "1 2 3", "-1 x", Array(50000).fill("99999999999999999999").join(" "), Array(200000).fill("1").join(" ")];
+  const oddText = ["", "\n", "==", "--", "++", "level", "level 3", "level 3\n==", "level 3\n++\n++", "level 3\n--\n--", "deal 1\n{}", "level 1e999\n", "level NaN\n"];
+  const calls = ["evidence_of", "learner", "brief_of_record", "brief_sitting"];
+  let tried = 0;
+  const attempt = async (call, text) => {
+    const { exports: x, out: o, write: wr } = await loadWasm(bytes, "strohmandeln");
+    x[`strohmandeln_${call}`](wr(text));
+    assert.equal(typeof o(), "object", `${call}: ${text.slice(0, 60)}`);
+    // the module still answers afterwards
+    x.strohmandeln_new(wr(JSON.stringify({ seed: 1, touren: 3 })));
+    assert.equal(o().ok, true);
+    tried++;
+  };
+  for (const r of recordsOdd) {
+    for (const call of calls) {
+      const body = call === "learner" || call === "brief_sitting" ? r : `${r}\n==\n${tails[tried % tails.length]}`;
+      await attempt(call, call.startsWith("brief") ? `level 3\n${body}` : body);
+    }
+  }
+  for (const t of oddText) for (const call of calls) await attempt(call, t);
+  const x = await loadWasm(bytes, "strohmandeln");
+  for (const slug of ["", " ", "worth ", "WORTH", "w".repeat(100000)]) x.exports.strohmandeln_set_focus(x.write(slug));
+  x.exports.strohmandeln_nudge();
+  assert.equal(x.out().error, "no-sitting");
+  console.log(`${tried} odd inputs answered, none trapped`);
+}

@@ -52,6 +52,7 @@ export const SECTIONS = [
     rows: [
       choice("talk", "now", TALKS),
       toggle("tutor", { noteKey: "settings.tutor.note" }),
+      toggle("tips", { noteKey: "settings.tips.note" }),
       toggle("hints"),
       toggle("tracker", { noteKey: "settings.tracker.note" }),
       toggle("explain"),
@@ -68,6 +69,7 @@ export const SECTIONS = [
       { name: "save", labelKey: "settings.save" },
       { name: "load", labelKey: "settings.load" },
       { name: "progress-export", labelKey: "settings.progress.export" },
+      { name: "progress-import", labelKey: "settings.progress.import" },
       { name: "progress-clear", labelKey: "settings.progress.clear" },
     ],
   },
@@ -92,7 +94,7 @@ export function settingsModel(prefs, { inSitting = false, surfaces = [] } = {}) 
 
 // rootEl: where the menu is drawn (hidden until opened). t: the strings.
 // onChange(key, value): a choice made. onAction(name): "save", "load",
-// "progress-export" or "progress-clear". onLang(fn): redraw on a switch.
+// "progress-export", "progress-import" or "progress-clear". onLang(fn): redraw on a switch.
 export function createSettings(rootEl, { t, prefs, onChange = () => {}, onAction = () => {}, onLang = sharedOnLang, surfaces = [] }) {
   const doc = rootEl.ownerDocument;
   let current = { ...prefs };

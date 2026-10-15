@@ -2,6 +2,7 @@
 // and one function a call. A fault in the module (a panic) is told once to
 // `onTrap` and the engine is still after it (kit/js/engine.js `guard`).
 import { guard, loadWasm } from "../../kit/js/engine.js";
+import { tutorApi } from "./tutorwire.js";
 
 export async function loadEngine(bytes, onTrap) {
   const { exports: ex, out, write } = await loadWasm(bytes, "strohmandeln");
@@ -11,6 +12,7 @@ export async function loadEngine(bytes, onTrap) {
     return out();
   };
   // A play is sent as the card alone, with its announcements (PROTOCOL.md).
+  const callNumber = (name, text) => ex[`strohmandeln_${name}`](write(text));
   const wire = (a) => (a.action === "play" ? { action: "play", card: a.card, ...(a.announce?.length ? { announce: a.announce } : {}) } : a);
   return guard(
     {
@@ -27,6 +29,8 @@ export async function loadEngine(bytes, onTrap) {
       explain: () => call("explain"),
       tracker: () => call("tracker"),
       audit: () => call("audit"),
+      // The tutor (docs/PROTOCOL.md "The tutor"); stateless but for the focus.
+      ...tutorApi(call, callNumber),
     },
     onTrap,
   );

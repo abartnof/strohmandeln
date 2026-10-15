@@ -3,6 +3,7 @@
 // (target/wasm32-unknown-unknown/release/strohmandeln_wasm.wasm).
 import { readFileSync } from "node:fs";
 import { loadWasm } from "../../kit/js/engine.js";
+import { tutorApi } from "../src/tutorwire.js";
 
 const WASM = new URL("../../target/wasm32-unknown-unknown/release/strohmandeln_wasm.wasm", import.meta.url);
 let loaded = null;
@@ -21,6 +22,7 @@ export async function engineInNode() {
     audit: () => call("audit"),
     hint: () => call("hint"),
     tracker: () => call("tracker"),
+    ...tutorApi(call, (name, text) => w[`strohmandeln_${name}`](write(text))),
   };
 }
 

@@ -1,7 +1,10 @@
 # The tutor: specification
 
-> Status: **proposed**, 15 Oct 2026. Specifies the post-game tutor that replaces
-> the heuristic `try` bullet of the end-of-deal review. Nothing here is built.
+> Status: **proposed**, 15 Oct 2026; the evidence (3, 4), the lessons and the
+> brief (6, 9), the wasm calls (10) and the table (14) are built (15 Oct 2026);
+> the measurements (11) are not, and every rule is provisional until M5. Specifies
+> the post-game tutor that replaces the heuristic `try` bullet of the end-of-deal
+> review.
 > Layout: desktop. The phone layout is deferred (maintainer, 15 Oct 2026).
 
 The tutor finds the one stage of the game the player is ready for next, says one
@@ -86,7 +89,7 @@ was assisted. Everything after is a function of the record.
 
 A deal record is: the 54 cards in deal order, the dealer, the doubling in force,
 the three settings, and the deal's actions in the short form of the protocol
-(about 1 KB). It needs one engine addition: replaying a deal from its deck
+(about 2 KB). It needs one engine addition: replaying a deal from its deck
 (`Deal::new(deck, dealer, multiplier, settings)` exists; `Sitting::with_decks`
 is `pub(crate)`). A sitting `Record` (seed, settings, every move) is too large to
 keep per deal and replays only from its start.
@@ -207,6 +210,13 @@ here; Cassino's values are starting points only, to be re-tested):
 | `LOWER`, `UPPER` | Quantiles for mastery and for "surely short" | M6; Cassino: 0.2 and 0.9 |
 | `MIN_GAIN`, `COSTLY_GAIN`, `COSTLY_CHANCES` | When a skill is worth a focus | M3, M4, M6 |
 
+As built, `Ladder::check` and `Params::check` run once when the wasm tutor is first
+used, in the release module too (`learn` asserts them in debug builds only); an
+error value (`bad-constants`) if they cannot work. **That they work says nothing
+of whether the focus is right: the focus is unvalidated until M6** (the lesioned
+students must be named within K deals and whole rung 4 not); the constants
+(`PARAMS`) are Cassino's ratios, provisional.
+
 The rare skills (`announce`, `pagat`, `bid`) will have fewer than one chance a
 deal and cannot be certified in a sitting from their chances alone (Cassino saw
 the same for its rarest). `announce` and `bid` carry no advisor noise or little,
@@ -215,8 +225,9 @@ so their `MIN_CHANCES` may be set lower; M3 decides, from the chances a deal.
 ## 6. The brief
 
 After each scored deal, and at the sitting's end, at most **three bullets and
-about 45 words**. How it is worked out is a link, never in the bullets. Each
-bullet is `{lead, key, params}` (section 9).
+about 45 words** of body (the leads and the skill's name besides: the longest brief
+that can be made is 62 words with them, a test holds it). How it is worked out is
+a link, never in the bullets. Each bullet is `{lead, key, params}` (section 9).
 
 1. **What went well** (at most 12 words): a skill just mastered (only after at
    least two earlier deals; after one a mastery is luck of the draw), else a
@@ -227,7 +238,11 @@ bullet is `{lead, key, params}` (section 9).
 2. **Next: the skill, and its rule** (at most 18 words): the focus's name and the
    rule of at most 15 words, chosen by the direction of this deal's costliest
    miss when there is one. The rule is the first suggestion. Where no rule has
-   passed its gate, one plain fact in its place.
+   passed its gate, one plain fact in its place. **Decision, 15 Oct 2026 (review
+   of the brief, finding 2; the spec's own text): until M5 sets a rule's gate to
+   passed, no rule is told and every focus is told as its fact**; the rules in the
+   code stay provisional. The `bid` and `pagat` rules are, besides, told only
+   under the default settings until M5 has checked others.
 3. **This deal** (at most 18 words): the costliest miss at the focus this deal,
    with the card played and the better one, in the kibitzer's voice ("This deal
    your Q of hearts fell under his king in trick 14; play it at once next time");
@@ -245,8 +260,12 @@ nothing about the person. The strings pass the phrase bank's kindness test
 
 **The sitting's brief** (at the sitting's end, the "Review the sitting" chip) is
 the same function over the sitting's deals as one game: the strongest strength,
-the focus and its rule, the costliest miss of the sitting at the focus. It is
-shown beside the sitting's tally.
+the focus and its rule, the costliest miss of the sitting at the focus (with the
+number of its deal). It is shown beside the sitting's tally. As built: it is made
+of what was kept when each deal was scored (its **detail**, section 8) and runs no
+advisor; the deals are learned one by one, and a mastery is told in the brief of
+the deal that earned it, not again in the sitting's. The Mond caught is praise of
+a single deal and is not said of a sitting.
 
 **Teaching is two touches** (Cassino 12.8): the rule in the brief, and in the next
 deal one **nudge** at the first clear chance at the focus (the nudge words,
@@ -296,8 +315,34 @@ everything works as one deal (the brief then rests on this deal alone).
 - Settings: "Your progress": Export (JSON), Import (a bad file refused in a
   sentence, changing nothing), Clear. Tests must not write the real key (open
   item, `PLAN.md`): the store is injected.
+- As built, an entry may also carry `n` (the number the table gave the deal) and
+  `sit` (the sitting's seed), so that the sitting's brief covers its own deals
+  and names the deal of its example, and `detail` (the engine's JSON of the deal's
+  decisions, facts, costliest misses and settings, under 4,000 bytes, handed back
+  by `evidence_of` and the brief of a record): the sitting's brief is made of it
+  and does not run the advisor again. A record is one line of JSON of the engine's
+  version (the wire frames its parts with lines `==`, `++`, `--`). "Clear" asks
+  first and leaves a newer page's store alone (that store is not ours to clear); an import file is `{strohmandeln: "tutor",
+  v: 1, deals}`.
 
 ## 9. Words
+
+**As built (15 Oct 2026): `docs/MESSAGES.md` "Tutor keys" is the source of the
+words, with `web3d/strings.json` equal to it (a test holds it); the drafts below
+are the first proposal and are superseded wherever they differ.** The changes: a
+skill is named by the act (`tutor.name.*`: "judging a trick's worth", "paying
+with the cheapest card", "playing your covers off", "leading tarocks from a run",
+"timing the Pagat", "not leading into suits your opponent lacks", "not opening
+your weak suits", "counting to the finish", "taking up or passing", "announcing
+honours"); no line stacks a second colon, and English goes on in lower case after
+one; the card on a packet is a "cover"; a try stands alone under "To try:" (at most
+14 words); rules are no stronger than the sources (void: "think twice", bid: "at
+least", the Pagat's in plain words); the nudges are shown after "If I may:"; the
+example key is `tutor.miss.off.figure-plain`; keys added: `tutor.lead.try`,
+`tutor.lead.deal-n`, `tutor.well.mastered-two`, `tutor.well.announced`,
+`tutor.well.ultimo`, `tutor.well.mond`; `tutor.method` says that the rules are the
+standard books' advice, checked against the strongest computer level where that is
+measured, and names no ladder. The method in force is the one in `strings.json`.
 
 The engine emits keys with parameters (`docs/MESSAGES.md`, "Tutor keys", to be
 added with the code). Cards are codes, thirds integers, honours `trull` or
@@ -429,10 +474,16 @@ stateless (`_of`) so a Worker with an instance of its own can run them.
 | `strohmandeln_nudge()` | | `{skill, key}` or `null`: whether this decision is a clear chance at the focus (one advisor run, asked once per position, keyed like the hint). |
 
 The hint (`strohmandeln_hint`) is unchanged. The page asks for `evidence` and the
-brief once the deal's ending has settled, in a Worker where there is one
-(`docs/TABLE3D.md` 6.4.3; section 11, M7: one deal's evidence is short enough for
-the main thread as the fallback, the history recompute is not), and sends nothing to the engine for a hint shown: it adds
-the action number to its assisted list.
+brief once the deal's ending has settled and the cards are still, on the main
+thread (`docs/TABLE3D.md` 6.4.3; section 11, M7: 60 to 120 ms in the module), and
+sends nothing to the engine for a hint shown: it adds the action number
+(`deal_action`) to its assisted list.
+
+As built (`docs/PROTOCOL.md` "The tutor" has the formats): the record text holds
+the human's seat, since the evidence is of one seat's decisions; the brief calls
+begin with a line `level n` (whether "the next opponent up" can be said); the
+sitting's deals are separated by a line `++`, each with its number; the nudge
+answers `{deal_action, nudge}`; errors are `bad-input` or `replay`.
 
 ## 11. Measurements, each planned before its first batch
 
@@ -534,7 +585,7 @@ Test first (`CLAUDE.md`). Engine (`cargo test`, deterministic):
 - **Purity.** The same record and assisted list give the same summary and brief;
   the evidence never reads a hidden card (twin deals, `testutil::blind_check`).
 - **Assisted.** An assisted decision is no evidence.
-- **Brief.** At most three bullets, at most 45 words, every key present in English
+- **Brief.** At most three bullets, at most 45 words of body (62 with the leads), every key present in English
   and German, rules at most 15 words, no focus and mastery never in one brief, a
   short deal says so, every parameter named in a template is supplied, the
   kindness test passes. The keys of the code equal the keys of
@@ -682,9 +733,10 @@ The brief replaces the bullets of the dialog "How the deal went" (`docs/TABLE3D.
 6.4.1): the header line is the count (kept), then up to three bullets with bold
 leads, then the folded "How is this worked out?" (`tutor.how`, `tutor.method`).
 The chip, the sitting review and the mute are as in 6.4 and 6.1; the tips shown
-by the nudge go in the Kibitzer's tab. `TABLE3D.md` 6.4.4 (what is kept) and 6.4.3
-(the Worker) are rewritten to this document when the table work is done. The
-progress settings are in section 8. **The phone layout of the dialog and the
+by the nudge go in the Kibitzer's tab. `TABLE3D.md` 6.4 is written to this document
+(15 Oct 2026; no Worker is built). The progress settings are in section 8, and
+"Tips from the Kibitzer" (section 6, "Mute and setting") is a setting of its own
+beside the Kibitzer's. **The phone layout of the dialog and the
 nudge is deferred** (maintainer, 15 Oct 2026): nothing here specifies it, and the
 open phone items of `PLAN.md` are not touched.
 

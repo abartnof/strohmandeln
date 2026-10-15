@@ -5,12 +5,12 @@
 //! can say nothing the human's view does not hold. After the last trick every
 //! card is in the log, the opponent's included, and all of it is public.
 //!
-//! A review is up to three bullets, each with a lead: `count` (the count
-//! against the 107-third line), `decided` (the moment that moved the deal
-//! most) and `try` (one thing to try). It notes what happened; it does not
-//! score the play.
+//! A review is two bullets, each with a lead: `count` (the count against the
+//! 107-third line) and `decided` (the moment that moved the deal most). It
+//! notes what happened; it does not score the play. What to work on is the
+//! brief's (`brief.rs`, `docs/TUTOR.md` 7).
 
-use strohmandeln_core::cards::{Card, Honour};
+use strohmandeln_core::cards::Card;
 use strohmandeln_core::types::{Cause, Event, GameResult, Seat, UltimoResult};
 
 /// A parameter of a bullet's key.
@@ -22,7 +22,7 @@ pub enum Param {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Bullet {
-    /// `count`, `decided`, `try`, `sitting` or (an explanation) `explain`.
+    /// `count`, `decided`, `sitting` or (an explanation) `explain`.
     pub lead: &'static str,
     /// A message key from [`KEYS`].
     pub key: &'static str,
@@ -48,10 +48,9 @@ pub const KEYS: &[&str] = &[
     "mond-lost",
     "trick-lost-rich",
     "trick-won-rich",
+    "valat-you",
+    "valat-opp",
     "level",
-    "try-pagat",
-    "try-announce",
-    "try-count",
 ];
 
 /// A trick is rich from 9 value points between its two cards (a king and a
@@ -76,10 +75,8 @@ struct Deal {
     tricks: Vec<Trick>,
     ultimo: Option<(Seat, UltimoResult)>,
     count: Option<[u32; 2]>,
-    /// Honours the human held together at some moment (RULES 11.2).
-    held: Vec<Honour>,
-    announced: Vec<Honour>,
-    pagat_led_early: bool,
+    /// Who took all 27 tricks (RULES 10).
+    valat: Option<Seat>,
     result: GameResult,
     /// The human's net Points of the deal, all causes.
     net: i32,
@@ -88,15 +85,12 @@ struct Deal {
 }
 
 fn read(events: &[Event], human: Seat) -> Option<Deal> {
-    let mut hand: Vec<Card> = Vec::new();
     let mut d = Deal {
         number: 0,
         tricks: Vec::new(),
         ultimo: None,
         count: None,
-        held: Vec::new(),
-        announced: Vec::new(),
-        pagat_led_early: false,
+        valat: None,
         result: GameResult::Draw,
         net: 0,
         winner: None,
@@ -105,19 +99,10 @@ fn read(events: &[Event], human: Seat) -> Option<Deal> {
     for e in events {
         match e {
             Event::DealStart { deal_number, .. } => d.number = *deal_number,
-            Event::Dealt { seat, cards } if *seat == human => hand = cards.clone(),
-            Event::CardPulled { seat, card, .. } if *seat == human => hand.push(*card),
             Event::CardPlayed {
                 seat, card, trick, ..
             } => {
-                if *seat == human {
-                    hand.retain(|c| c != card);
-                }
                 if d.tricks.last().map(|t| t.n) != Some(*trick) {
-                    // The first card of a trick is its lead, which is free (RULES 5.4).
-                    if *seat == human && *card == Card::PAGAT && *trick < 27 {
-                        d.pagat_led_early = true;
-                    }
                     d.tricks.push(Trick {
                         n: *trick,
                         plays: Vec::new(),
@@ -133,7 +118,7 @@ fn read(events: &[Event], human: Seat) -> Option<Deal> {
                     t.winner = Some(*winner);
                 }
             }
-            Event::Announcement { seat, honour, .. } if *seat == human => d.announced.push(*honour),
+            Event::Valat { seat } => d.valat = Some(*seat),
             Event::PagatUltimo { seat, result } => d.ultimo = Some((*seat, *result)),
             Event::Count { thirds, .. } => d.count = Some(*thirds),
             Event::GameScored {
@@ -151,11 +136,6 @@ fn read(events: &[Event], human: Seat) -> Option<Deal> {
             }
             _ => {}
         }
-        for h in [Honour::Trull, Honour::Kings] {
-            if !d.held.contains(&h) && h.cards().iter().all(|c| hand.contains(c)) {
-                d.held.push(h);
-            }
-        }
     }
     scored.then_some(d)
 }
@@ -167,14 +147,22 @@ fn text(name: &'static str, s: impl Into<String>) -> (&'static str, Param) {
     (name, Param::Text(s.into()))
 }
 
-/// The moment that moved the deal most: the Pagat ultimo, a caught Mond, the
-/// richest trick lost, the richest trick won; else a level deal.
+/// The moment that moved the deal most: a Valat, the Pagat ultimo, a caught
+/// Mond, the richest trick lost, the richest trick won; else a level deal.
 fn decided(d: &Deal, human: Seat) -> Bullet {
     let bullet = |key, params| Bullet {
         lead: "decided",
         key,
         params,
     };
+    if let Some(seat) = d.valat {
+        let key = if seat == human {
+            "valat-you"
+        } else {
+            "valat-opp"
+        };
+        return bullet(key, Vec::new());
+    }
     if let Some((seat, result)) = d.ultimo {
         let key = match (result, seat == human) {
             (UltimoResult::Won, true) => "ultimo-won-you",
@@ -230,27 +218,6 @@ fn decided(d: &Deal, human: Seat) -> Bullet {
     bullet("level", Vec::new())
 }
 
-/// One thing to try: keep the Pagat for the last trick; announce an honour
-/// held; else count the tarocks out (RULES 13.6, `genaues Tarokzählen`).
-fn try_this(d: &Deal) -> Bullet {
-    let bullet = |key, params| Bullet {
-        lead: "try",
-        key,
-        params,
-    };
-    if d.pagat_led_early {
-        return bullet("try-pagat", Vec::new());
-    }
-    if let Some(h) = d.held.iter().find(|h| !d.announced.contains(h)) {
-        let name = match h {
-            Honour::Trull => "trull",
-            Honour::Kings => "kings",
-        };
-        return bullet("try-announce", vec![text("honour", name)]);
-    }
-    bullet("try-count", Vec::new())
-}
-
 fn deal_review(d: &Deal, human: Seat) -> Review {
     let mut bullets = Vec::new();
     if let Some(thirds) = d.count {
@@ -264,7 +231,6 @@ fn deal_review(d: &Deal, human: Seat) -> Review {
         });
     }
     bullets.push(decided(d, human));
-    bullets.push(try_this(d));
     Review {
         deal: d.number,
         bullets,
@@ -384,9 +350,8 @@ pub fn review_last(events: &[Event], human: Seat) -> Option<Review> {
     review_deal(&events[start..=end], human)
 }
 
-/// The review of every scored deal in `events`: the tally, the deal that
-/// went worst (else best) and what it showed, and the most frequent thing to
-/// try.
+/// The review of every scored deal in `events`: the tally, and the deal that
+/// went worst (else best) with what it showed.
 pub fn review_sitting(events: &[Event], human: Seat) -> Option<Review> {
     let starts: Vec<usize> = events
         .iter()
@@ -430,15 +395,6 @@ pub fn review_sitting(events: &[Event], human: Seat) -> Option<Review> {
     }
     let mut moment = decided(pick, human);
     moment.params.push(num("deal", pick.number));
-    let tries: Vec<Bullet> = deals.iter().map(try_this).collect();
-    let mut common = &tries[0];
-    let mut most = 0;
-    for b in &tries {
-        let n = tries.iter().filter(|x| x.key == b.key).count();
-        if n > most {
-            (common, most) = (b, n);
-        }
-    }
     let net: i32 = deals.iter().map(|d| d.net).sum();
     Some(Review {
         deal: 0,
@@ -454,7 +410,6 @@ pub fn review_sitting(events: &[Event], human: Seat) -> Option<Review> {
                 ],
             },
             moment,
-            common.clone(),
         ],
     })
 }
@@ -644,90 +599,24 @@ mod tests {
     }
 
     #[test]
-    fn leading_the_pagat_early_is_the_thing_to_try() {
-        let mut b = Build::new(1, &["T1", "T9"]);
+    fn a_valat_is_the_deciding_moment_for_whoever_took_every_trick() {
+        let mut b = Build::new(1, &["T4"]);
+        b.trick(ME, "T4", "T3", ME).push(Event::Valat { seat: ME });
+        let ev = b.end(210, 0, ME);
+        let r = review_deal(&ev, ME).unwrap();
+        assert_eq!(lead_keys(&r)[1], ("decided", "valat-you"));
+        let r = review_deal(&ev, HE).unwrap();
+        assert_eq!(r.bullets[1].key, "valat-opp");
+    }
+
+    #[test]
+    fn a_review_has_no_advice_in_it() {
+        let mut b = Build::new(1, &["T1", "T9", "SK", "T21"]);
         b.trick(ME, "T1", "T2", HE);
         let r = review_deal(&b.end(100, 110, HE), ME).unwrap();
-        assert_eq!(lead_keys(&r)[2], ("try", "try-pagat"));
-    }
-
-    #[test]
-    fn the_pagat_played_in_the_last_trick_is_not_early() {
-        let mut b = Build::new(1, &["T1"]);
-        b.n = 26;
-        b.trick(ME, "T1", "T2", ME);
-        let r = review_deal(&b.end(110, 100, ME), ME).unwrap();
-        assert_ne!(r.bullets[2].key, "try-pagat");
-    }
-
-    #[test]
-    fn following_with_the_pagat_early_is_not_called_a_choice() {
-        // Following may be forced; only a lead is free (5.4).
-        let mut b = Build::new(1, &["T1", "T9"]);
-        b.trick(HE, "T5", "T1", HE);
-        let r = review_deal(&b.end(100, 110, HE), ME).unwrap();
-        assert_ne!(r.bullets[2].key, "try-pagat");
-    }
-
-    #[test]
-    fn an_honour_held_and_never_announced_is_the_thing_to_try() {
-        let mut b = Build::new(1, &["SK", "T21", "T1", "T9"]);
-        b.trick(ME, "T9", "T3", ME);
-        let r = review_deal(&b.end(110, 100, ME), ME).unwrap();
-        assert_eq!(r.bullets[2].key, "try-announce");
-        assert_eq!(text(&r.bullets[2], "honour"), "trull");
-    }
-
-    #[test]
-    fn an_honour_that_was_announced_is_not_missed() {
-        let mut b = Build::new(1, &["Kh", "Kd", "Kc", "Ks"]);
-        b.push(Event::Announcement {
-            seat: ME,
-            honour: Honour::Kings,
-            cards: Honour::Kings.cards(),
-        });
-        let r = review_deal(&b.end(110, 100, ME), ME).unwrap();
-        assert_eq!(r.bullets[2].key, "try-count");
-    }
-
-    #[test]
-    fn a_pulled_card_completes_an_honour_held() {
-        let mut b = Build::new(1, &["SK", "T21"]);
-        b.push(Event::CardPulled {
-            seat: ME,
-            packet: 1,
-            card: c("T1"),
-            last: false,
-        });
-        let r = review_deal(&b.end(110, 100, ME), ME).unwrap();
-        assert_eq!(r.bullets[2].key, "try-announce");
-    }
-
-    #[test]
-    fn the_opponents_pulled_cards_are_not_the_humans() {
-        let mut b = Build::new(1, &["SK", "T21"]);
-        b.push(Event::CardPulled {
-            seat: HE,
-            packet: 1,
-            card: c("T1"),
-            last: false,
-        });
-        let r = review_deal(&b.end(110, 100, ME), ME).unwrap();
-        assert_eq!(r.bullets[2].key, "try-count");
-    }
-
-    #[test]
-    fn a_trull_split_across_time_is_not_held() {
-        // SK is played before T1 is pulled: never held together (11.2).
-        let mut b = Build::new(1, &["SK", "T21"]);
-        b.trick(ME, "SK", "T5", ME).push(Event::CardPulled {
-            seat: ME,
-            packet: 1,
-            card: c("T1"),
-            last: false,
-        });
-        let r = review_deal(&b.end(110, 100, ME), ME).unwrap();
-        assert_eq!(r.bullets[2].key, "try-count");
+        assert_eq!(r.bullets.len(), 2);
+        assert!(r.bullets.iter().all(|b| b.lead != "try"));
+        assert!(KEYS.iter().all(|k| !k.starts_with("try-")));
     }
 
     #[test]
@@ -769,7 +658,7 @@ mod tests {
         assert_eq!(lead_keys(&r)[0], ("sitting", "sitting-tally"));
         let t = &r.bullets[0];
         assert_eq!((num(t, "won"), num(t, "lost"), num(t, "drawn")), (2, 1, 0));
-        assert_eq!(r.bullets.len(), 3);
+        assert_eq!(r.bullets.len(), 2, "the tally and the deal that went worst");
         assert_eq!(r.bullets[1].lead, "decided");
         assert_eq!(
             num(&r.bullets[1], "deal"),
@@ -804,9 +693,9 @@ mod tests {
             for human in Seat::BOTH {
                 let mine = filter_events(&all, human);
                 let sitting = review_sitting(&mine, human).expect("deals were scored");
-                assert_eq!(sitting.bullets.len(), 3);
+                assert_eq!(sitting.bullets.len(), 2);
                 let last = review_last(&mine, human).expect("a last deal");
-                assert!((2..=3).contains(&last.bullets.len()));
+                assert_eq!(last.bullets.len(), 2);
                 for b in sitting.bullets.iter().chain(&last.bullets) {
                     assert!(KEYS.contains(&b.key), "{}", b.key);
                 }
@@ -893,6 +782,7 @@ mod tests {
         }
         let doc = include_str!("../../../docs/MESSAGES.md");
         let section = doc.split("\n## Explanation keys").nth(1).expect("section");
+        let section = section.split("\n## Tutor keys").next().expect("section");
         let documented: Vec<&str> = section
             .lines()
             .filter(|l| l.starts_with("| `"))

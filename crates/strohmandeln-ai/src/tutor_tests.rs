@@ -9,7 +9,8 @@ use crate::testutil::{blind_check_values, c};
 use kit_learner::Tally;
 use std::sync::OnceLock;
 use strohmandeln_core::agents::{Player, RandomPlayer};
-use strohmandeln_core::deal::TrickRecord;
+use strohmandeln_core::cards::Honour;
+use strohmandeln_core::deal::{HonourState, TrickRecord};
 use strohmandeln_core::session::Sitting;
 use strohmandeln_core::types::Settings;
 use strohmandeln_core::types::Source;
@@ -655,6 +656,19 @@ fn a_record_that_does_not_replay_is_an_error_not_evidence() {
 }
 
 #[test]
+fn the_nudge_never_reads_a_hidden_card() {
+    // The same twins for the skills a view is open to: what the nudge shows
+    // may depend on nothing the seat cannot see.
+    let tiny = Budget {
+        worlds: 2,
+        nodes: 1_500,
+        bid_worlds: 4,
+    };
+    let twins = blind_check_values(&|v: &View| open_skills(v, tiny), 6);
+    assert!(twins > 100, "{twins}");
+}
+
+#[test]
 fn the_evidence_never_reads_a_hidden_card() {
     // Twin deals that differ only in what the seat cannot see give it the
     // same view; the verdicts on every legal action (the fields the `Miss`
@@ -736,6 +750,215 @@ fn the_skills_are_ten_in_ladder_order_and_the_prerequisites_come_first() {
     assert!(Skill::Worth.needs().is_empty());
     assert_eq!(Skill::Behind.needs(), &[Skill::Off, Skill::Void]);
     assert_eq!(Skill::Endgame.needs(), &[Skill::Cheap, Skill::Void]);
+}
+
+/// The nudge is a clear chance whatever is played: every skill the evidence
+/// judges a move on is open in the view the move was made in, and a decision
+/// open at a skill is one the nudge shows it on (`docs/TUTOR.md` 6).
+#[test]
+fn every_chance_the_evidence_judges_is_open_to_the_nudge() {
+    let mut judged = [0u32; SKILLS];
+    let mut open_n = [0u32; SKILLS];
+    for rec in one_sitting()
+        .whole
+        .iter()
+        .chain(&one_sitting().no_cover)
+        .take(8)
+    {
+        rec.replay(|_, d, seat, a| {
+            if seat != HUMAN {
+                return;
+            }
+            let view = bare_view(d, seat);
+            let open = open_skills(&view, small());
+            for s in &open {
+                open_n[s.index()] += 1;
+                assert!(nudge(*s, &view, small()));
+            }
+            // announce is open only where a legal card belongs to an honour that
+            // may be announced: the decision the evidence judges the honour at
+            if open.contains(&Skill::Announce) {
+                let k = Knowledge::from_view(&view).unwrap();
+                assert!(
+                    k.announceable
+                        .iter()
+                        .any(|h| k.legal.iter().any(|c| h.cards().contains(c))),
+                    "announce is open where no honour card can be played"
+                );
+            }
+            for v in decision_verdicts(&view, a, small()) {
+                judged[v.skill.index()] += 1;
+                // an announcing action on its own can be judged where no honour
+                // card is legal; the nudge is for the play of the card
+                if v.skill == Skill::Announce && matches!(a, Action::Announce { .. }) {
+                    continue;
+                }
+                assert!(
+                    open.contains(&v.skill),
+                    "{} judged but not open",
+                    v.skill.slug()
+                );
+            }
+        })
+        .unwrap();
+    }
+    assert!(judged.iter().sum::<u32>() > 20, "{judged:?}");
+    assert!(open_n[Skill::Worth.index()] > 0, "{open_n:?}");
+}
+
+/// A record is untrusted (`dealrec.rs`): a bid after the bidding, an action out
+/// of turn or a doubled action is an error, never a panic and never judged.
+#[test]
+fn a_record_with_a_bid_after_the_bidding_is_an_error_not_a_panic() {
+    use strohmandeln_core::session::Move;
+    let rec = &one_sitting().whole[0];
+    for action in [Action::Take, Action::Pass] {
+        for seat in Seat::BOTH {
+            let mut bad = rec.clone();
+            bad.actions.push(Move {
+                seat,
+                action: action.clone(),
+            });
+            let r = evidence(&bad, HUMAN, &[], small());
+            assert!(matches!(r, Err(ReplayError::Refused { .. })), "{r:?}");
+        }
+    }
+    // the actions doubled: the second round is refused at its first action
+    let mut twice = rec.clone();
+    twice.actions.extend(rec.actions.clone());
+    assert!(evidence(&twice, HUMAN, &[], small()).is_err());
+    // and the judge itself says nothing of a bid made where none is legal
+    let done = rec.replay_to_end(|_, _, _, _| {}).unwrap();
+    for seat in Seat::BOTH {
+        let view = bare_view(&done, seat);
+        assert!(decision_verdicts(&view, &Action::Take, small()).is_empty());
+        assert!(decision_verdicts(&view, &Action::Pass, small()).is_empty());
+    }
+}
+
+#[test]
+fn a_view_with_no_move_to_make_opens_nothing() {
+    let rec = &one_sitting().whole[0];
+    let done = rec.replay_to_end(|_, _, _, _| {}).unwrap();
+    let view = bare_view(&done, HUMAN);
+    assert!(open_skills(&view, small()).is_empty());
+    assert!(!nudge(Skill::Worth, &view, small()));
+}
+
+/// What the brief needs besides the tallies: the unassisted decisions with a
+/// choice, and the lucky or praiseworthy things of the deal (`docs/TUTOR.md` 6).
+#[test]
+fn the_evidence_counts_the_decisions_with_a_choice_and_reads_the_deals_facts() {
+    use strohmandeln_core::deal::DealEnd;
+    use strohmandeln_core::types::UltimoResult;
+    let (mut ultimo, mut announced, mut mond) = (0, 0, 0);
+    for rec in one_sitting().whole.iter().chain(&one_sitting().no_cover) {
+        let mut choices = 0;
+        let deal = rec
+            .replay_to_end(|_, d, seat, _| {
+                if seat == HUMAN && bare_view(d, seat).legal_actions.len() >= 2 {
+                    choices += 1;
+                }
+            })
+            .unwrap();
+        let e = evidence(rec, HUMAN, &[], small()).unwrap();
+        assert_eq!(e.decisions, choices);
+        let won = matches!(deal.end(), Some(DealEnd::Played(s)) if s.ultimo == Some((HUMAN, UltimoResult::Won)));
+        assert_eq!(e.facts.ultimo_won, won);
+        ultimo += usize::from(won);
+        let said: Vec<Honour> = [Honour::Trull, Honour::Kings]
+            .into_iter()
+            .filter(|&h| deal.honour_state(HUMAN, h) == HonourState::Announced)
+            .collect();
+        let mut got = e.facts.announced.clone();
+        got.sort_by_key(|h| matches!(h, Honour::Kings));
+        assert_eq!(got, said);
+        announced += said.len();
+        if let Some(t) = e.facts.mond_caught {
+            mond += 1;
+            let trick = deal.tricks()[t as usize - 1];
+            assert!(trick.cards.contains(&Card::MOND) && trick.cards.contains(&Card::SKUS));
+            assert_eq!(trick.winner, HUMAN);
+            assert_eq!(trick.cards[usize::from(trick.leader != HUMAN)], Card::SKUS);
+        }
+    }
+    eprintln!("ultimo {ultimo}, announced {announced}, mond {mond}");
+}
+
+/// The Mond caught and the ultimo won are found in the tricks and the score,
+/// for either seat, over deals played by random legal actions.
+#[test]
+fn the_facts_of_a_deal_follow_its_tricks_from_either_seat() {
+    let (mut mond, mut ultimo) = (0, 0);
+    for seed in 0..40u64 {
+        let mut last = None;
+        let mut deals = Vec::new();
+        crate::testutil::walk(seed, |s, _| {
+            if s.last_deal() != last.as_ref() {
+                last = s.last_deal().cloned();
+                deals.extend(last.clone());
+            }
+        });
+        for rec in deals {
+            let deal = rec.replay_to_end(|_, _, _, _| {}).unwrap();
+            for human in Seat::BOTH {
+                let f = Facts::of(&deal, human);
+                let by_hand = deal.tricks().iter().position(|t| {
+                    let mine = |c: Card| {
+                        let at = t.cards.iter().position(|&x| x == c).unwrap();
+                        (at == 0) == (t.leader == human)
+                    };
+                    t.cards.contains(&Card::SKUS)
+                        && t.cards.contains(&Card::MOND)
+                        && mine(Card::SKUS)
+                        && t.winner == human
+                });
+                assert_eq!(f.mond_caught, by_hand.map(|i| i as u32 + 1));
+                mond += usize::from(f.mond_caught.is_some());
+                let last_trick = deal.tricks().last().unwrap();
+                let pagat_won = last_trick.winner == human
+                    && last_trick.cards.contains(&Card::PAGAT)
+                    && last_trick.cards[usize::from(last_trick.leader != human)] == Card::PAGAT;
+                if f.ultimo_won {
+                    assert!(
+                        pagat_won,
+                        "the ultimo won is the Pagat winning the last trick"
+                    );
+                    ultimo += 1;
+                }
+            }
+        }
+    }
+    assert!(mond > 0 && ultimo > 0, "mond {mond}, ultimo {ultimo}");
+}
+
+/// The honour praised is one announced at a decision that counted, not at one
+/// a nudge was shown for.
+#[test]
+fn an_honour_announced_at_an_assisted_decision_is_not_praised() {
+    let mut seen = 0;
+    for rec in one_sitting().whole.iter().chain(&one_sitting().no_cover) {
+        let plain = evidence(rec, HUMAN, &[], small()).unwrap();
+        if plain.facts.announced.is_empty() {
+            continue;
+        }
+        seen += 1;
+        let every: Vec<usize> = (0..rec.actions.len()).collect();
+        let none = evidence(rec, HUMAN, &every, small()).unwrap();
+        assert!(none.facts.announced.is_empty(), "{:?}", none.facts);
+        assert_eq!(none.facts.ultimo_won, plain.facts.ultimo_won, "luck stays");
+    }
+    assert!(seen > 0, "no deal with an announced honour in the fixture");
+}
+
+#[test]
+fn an_assisted_decision_is_not_counted_as_a_decision() {
+    let rec = &one_sitting().whole[0];
+    let all = evidence(rec, HUMAN, &[], small()).unwrap();
+    let every: Vec<usize> = (0..rec.actions.len()).collect();
+    let none = evidence(rec, HUMAN, &every, small()).unwrap();
+    assert!(all.decisions >= 4, "{}", all.decisions);
+    assert_eq!(none.decisions, 0);
 }
 
 /// The evidence over whole deals, native:

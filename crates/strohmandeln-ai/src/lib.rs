@@ -4,10 +4,12 @@
 //! (`docs/OPPONENT.md`). Every decision is a pure function of a seed and
 //! the player's own view, so a record replays.
 
+pub mod brief;
 pub mod cardset;
 pub mod explain;
 pub mod hint;
 pub mod know;
+pub mod lessons;
 pub mod measure;
 pub mod opponent;
 pub mod review;

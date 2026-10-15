@@ -43,10 +43,11 @@ import { ALL_CODES, backTexture, COURT_CODES, faceTextures } from "./tarockfaces
 import { createUi } from "./ui.js";
 import { trackerFits, trackerModel, trackerOpen, trackerVisible } from "./tracker.js";
 import { trackerPanel } from "./trackerview.js";
-import { addSitting, clearProgress, exportText, loadProgress, summaryOf } from "./progress.js";
-import { explainText, reviewBlocks } from "./review.js";
+import { createBriefing } from "./briefing.js";
+import { explainText, briefBlocks, nudgeText } from "./review.js";
+import { MAX_IMPORT, clearTutor, exportText, importText, loadDeals, refreshOne } from "./tutorstore.js";
 import { createTutor, extendPromptDue, PAGE_KEYS, tutorialPages } from "./tutor.js";
-import { helpBody, pageBody, reviewBody, trendBody } from "./tutorview.js";
+import { helpBody, pageBody, reviewBody } from "./tutorview.js";
 import TUTORIAL_DE from "../tutorial.md";
 import TUTORIAL_EN from "../tutorial.en.md";
 import { EYE, EYE_PORTRAIT, EYE_TOUCH, ZONES, ZONES_PORTRAIT, ZONES_TOUCH } from "./zones.js";
@@ -64,6 +65,15 @@ const storage = () => {
     return null;
   }
 };
+
+// What the tutor keeps (docs/TUTOR.md 8): the browser's storage, but not in a
+// test run, which must never write the real key (`keep` in the URL does).
+const memoryStore = () => {
+  const m = new Map();
+  return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, v), removeItem: (k) => m.delete(k) };
+};
+const testStore = memoryStore();
+const tutorStore = () => (TEST && !params.has("keep") ? testStore : storage());
 
 async function main() {
   document.getElementById("loading").textContent = t("ui.loading");
@@ -232,12 +242,24 @@ async function main() {
   let reviewChip = null; // null, "deal" or "sitting"
   let pageHelp = false; // the page open now came from the Help list or a link
   let pageLinked = false; // ... and it was reached by a link from a page that was due
-  let pastSittings = []; // the sittings kept before this one, for the sitting's review
+  // The brief (docs/TUTOR.md 6, 8): the deals' records and summaries are kept, the evidence is
+  // worked out once the deal has settled, on this thread (a tenth of a second in the module).
+  const briefing = createBriefing({ store: tutorStore(), engine, level: () => wasm?.level ?? prefs.skill });
+  let assisted = []; // the actions of the deal in progress a hint or a nudge was shown for (TUTOR 3)
+  let scored = null; // the deal just scored: its kept entry, briefed when the cards are still
+  let owed = []; // entries whose evidence is not yet worked out
+  let settling = false; // ... and being worked out now
+  let sitId = null; // the sitting's seed, to tell its deals from the earlier ones
+  let focusNow = null; // the skill the nudge shows, from what is kept
+  let focusGiven; // ... and what the module was last told
+  let nudgeKey = null; // the position (events so far) the nudge was last asked for
+  let nudgedDeal = false; // one nudge a deal
+  const tried = new Set(); // records whose summary was recomputed this page
   const showTutor = () => {
-    ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip });
+    ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip, working: owed.length > 0 || settling });
     showTracker(); // the Kibitzer's mute is the slate's too (6.6.2)
   };
-  const tutorWords = () => ({ t, cardName: romanName, thirds, signed, suitName: (c) => (getLang() === "en" ? suitName(c).toLowerCase() : suitName(c)) });
+  const tutorWords = () => ({ t, lang: getLang(), cardName: romanName, thirds, signed, suitName: (c) => (getLang() === "en" ? suitName(c).toLowerCase() : suitName(c)) });
   showTutor();
 
   // ---- the cards-out tracker (docs/TABLE3D.md 6.6) ----------------------------------
@@ -335,18 +357,95 @@ async function main() {
     tutor.intro();
     ui.dialog({ id: "help", title: t("tutor.help.title"), body: helpBody(document, pagesNow(), { intro: t("tutor.help.intro"), seen: prefs.seen }), buttons: [{ label: t("ui.close"), act: "close", primary: true, focus: true }] });
   }
-  // The review of the deal, or of the sitting once it is over (6.4).
+  // The brief of the deal, or of the sitting once it is over (6.4): the count as the header, at most
+  // three bullets, the folded method. Not shown when muted (the chip is not there either).
   function openReview() {
-    if (!wasm) return;
+    if (!wasm || (prefs.tutor && prefs.muted)) return;
     const whole = sittingOver;
     const r = whole ? engine.reviewSitting() : engine.review();
-    const blocks = reviewBlocks(r?.review, tutorWords(), { whole });
+    const brief = whole ? briefing.sittingBrief(sitting()) : briefing.briefOf(scored);
+    const blocks = briefBlocks(brief, r?.review, tutorWords(), { whole, tips: prefs.tips });
     if (!blocks) return ui.setAid(t("review.empty"));
-    const body = reviewBody(document, blocks);
-    if (whole && pastSittings.length) {
-      body.append(trendBody(document, t("tutor.progress.title"), pastSittings.slice(-5).map((s) => t("review.say.sitting-tally", { ...s, net: signed(s.net) }))));
-    }
-    ui.dialog({ id: "review", title: blocks.title, body, wide: true, buttons: [{ label: t("ui.close"), act: "close", primary: true, focus: true }] });
+    ui.dialog({ id: "review", title: blocks.title, body: reviewBody(document, blocks), wide: true, buttons: [{ label: t("ui.close"), act: "close", primary: true, focus: true }] });
+    if (!whole) settleFocus();
+  }
+  // The sitting's id: its seed, which its kept deals carry.
+  function sitting() {
+    sitId ??= String(engine.export()?.record?.seed ?? "");
+    return sitId;
+  }
+  // The number the table gave the deal that was just scored (the last deal_start before its score).
+  function scoredNumber() {
+    const end = log.findLastIndex((e) => e.type === "game_scored");
+    return log.slice(0, end).findLast((e) => e.type === "deal_start")?.deal_number;
+  }
+  // The deal just scored is kept at once (its record is the engine's only until another deal ends); its
+  // evidence waits for the cards to be still.
+  function keepScored() {
+    scored = briefing.recordDeal({ assisted, n: scoredNumber(), sit: sitting() });
+    assisted = [];
+    nudgedDeal = false;
+    nudgeKey = null;
+    if (scored && prefs.tutor) owed.push(scored);
+    showTutor(); // the chip waits for the evidence
+  }
+  // Works out what is owed, once the cards are still: the deal's evidence and brief, then the focus.
+  function settleOwed() {
+    if (!owed.length || director.busy() || pending > 0) return;
+    const todo = owed;
+    owed = [];
+    settling = true;
+    setTimeout(() => {
+      for (const entry of todo) briefing.briefOf(entry);
+      settling = false;
+      settleFocus();
+      showTutor();
+    }, 0);
+  }
+  // The skill to work on, from everything kept; the nudge shows it in the next deal.
+  function settleFocus() {
+    focusNow = prefs.tutor && prefs.tips ? briefing.focus() : null;
+  }
+  // The Kibitzer's nudge at the first clear chance at the focus (6.4.5): once a position, once a deal,
+  // and that decision then counts as assisted.
+  function askNudge() {
+    if (!wasm || wasm.prompt !== "you" || sittingOver || !prefs.tutor || !prefs.tips || prefs.muted) return;
+    if (nudgedDeal || !focusNow || !["play", "bid"].includes(wasm.phase)) return;
+    const key = log.length; // every move adds events: a new position
+    if (key === nudgeKey) return;
+    nudgeKey = key;
+    if (focusGiven !== focusNow) briefing.setFocus((focusGiven = focusNow));
+    const n = briefing.nudge();
+    if (!n) return;
+    nudgedDeal = true;
+    if (Number.isInteger(n.deal_action) && !assisted.includes(n.deal_action)) assisted.push(n.deal_action);
+    kibitzNote(nudgeText(n.key, tutorWords()));
+    persist({ state: wasm }); // a reload must not take back the mark, or show a second nudge
+  }
+  // Recomputes stale summaries one at a time while the table is idle (a change to the evidence never
+  // drops a deal); the engine's own learner says which are stale.
+  let staleTimer = null;
+  let staleDone = false;
+  function refreshStale() {
+    staleDone = false;
+    if (staleTimer || !prefs.tutor) return;
+    const store = tutorStore();
+    const api = { learner: (h) => engine.learner(h), evidenceOf: (r, a) => engine.evidenceOf(r, a), stopped: () => engine.stopped() };
+    // One record at a time, and only with the cards at rest and no dialog open: a step is up to a
+    // tenth of a second. It looks again at each rest (`rested`).
+    const step = () => {
+      staleTimer = null;
+      if (staleDone || !prefs.tutor) return;
+      if (director.busy() || pending > 0 || ui.dialogOpen() || owed.length || settling) return;
+      refreshOne(store, api, tried).then((more) => {
+        if (more) staleTimer = setTimeout(step, 250);
+        else {
+          staleDone = true;
+          settleFocus();
+        }
+      });
+    };
+    staleTimer = setTimeout(step, 400);
   }
   // At rest the tutor may open the page that is due.
   function tutorStep() {
@@ -461,6 +560,8 @@ async function main() {
     log = [...log, ...events];
     tutorBuf.push(...events);
     wasm = reply.state;
+    if (events.some((e) => e.type === "game_scored")) keepScored();
+    else if (events.some((e) => e.type === "thrown_in")) assisted = [];
     const { model, counted } = events.length || first ? fold(events) : { model: S.model, counted: null };
     const next = { model, events: log };
     const begun = events.find((e) => e.type === "sitting_start");
@@ -558,7 +659,6 @@ async function main() {
         hud.dealt(1);
         showTour();
         ui.hideBanner();
-        reviewChip = null;
         showTutor();
         break;
       case "trick_won":
@@ -665,11 +765,6 @@ async function main() {
     // The sitting's review, offered by the chip; its tally is kept for trends (6.4.2, 6.4.4).
     reviewChip = "sitting";
     showTutor();
-    if (live) {
-      pastSittings = loadProgress(storage());
-      const summary = summaryOf(engine.reviewSitting()?.review);
-      if (summary) addSitting(storage(), summary);
-    }
     stage.reveal({ instant: calm() || prefs.speed === "instant" });
     ui.dialog({
       id: "over",
@@ -687,6 +782,9 @@ async function main() {
     updateTracker();
     tutorStep(); // a due page opens before the bar and the prompts are drawn
     refresh();
+    settleOwed();
+    askNudge();
+    if (!staleDone && !staleTimer && tutorAuto) refreshStale();
     armIdle();
     if (wasm.prompt === "opponent" && !sittingOver && !stepping) {
       stepping = true;
@@ -870,6 +968,11 @@ async function main() {
     if (prefs.tutor && prefs.muted) return ui.setAid(t("hint.muted")); // "§ 13": only his tap un-mutes (6.3.4)
     const r = engine.hint();
     if (!r?.hint) return ui.setAid(t("hint.none"));
+    const number = r.deal_action; // the action the hint is for (TUTOR 3)
+    if (Number.isInteger(number) && !assisted.includes(number)) {
+      assisted.push(number);
+      persist({ state: wasm }); // a reload must not take the mark back
+    }
     hintCard = r.hint.action === "play" ? r.hint.card : null;
     const lines = hintLines(r, { t, cardName: romanName, thirds, count });
     ui.setAid([lines.lead, lines.reason].filter(Boolean).join(" "), lines.more);
@@ -948,6 +1051,16 @@ async function main() {
         }
         newSitting({ touren: prefs.touren });
       }
+    } else if (id === "clear") {
+      ui.closeDialog("clear");
+      if (rest[0] === "yes") {
+        clearTutor(tutorStore());
+        briefing.forget(); // the page's own memory too, or the focus would come back from it
+        focusNow = null;
+        focusGiven = undefined;
+        owed = [];
+        ui.chip(t("settings.progress.cleared"), { x: window.innerWidth / 2, y: 120, ms: 3000 });
+      }
     } else if (id === "over") {
       ui.closeDialog("over");
       askNew();
@@ -974,6 +1087,12 @@ async function main() {
     tutor.reset();
     tutorBuf = [];
     reviewChip = null;
+    assisted = [];
+    scored = null;
+    owed = [];
+    sitId = null;
+    nudgeKey = null;
+    nudgedDeal = false;
     showTutor();
     stage.unreveal();
     sittingOver = false;
@@ -1000,6 +1119,7 @@ async function main() {
     settings.setSitting(true);
     ui.root.classList.toggle("left", prefs.leftHanded);
     talk.restore({});
+    settleFocus();
     S = null;
     advance(r, { first: true });
   }
@@ -1012,7 +1132,7 @@ async function main() {
   }
 
   // ---- keeping the sitting -----------------------------------------------------------------------
-  const extras = () => ({ lang: getLang(), slate: slate.snapshot(), talk: talk.snapshot(), human, touren: sittingLength });
+  const extras = () => ({ lang: getLang(), slate: slate.snapshot(), talk: talk.snapshot(), human, touren: sittingLength, assisted, nudged: nudgedDeal });
   let warned = false;
   function persist(reply) {
     if (TEST && !params.has("keep")) return;
@@ -1042,6 +1162,9 @@ async function main() {
     if (check(model, r.state).length) console.error("the restored model differs from the state", check(model, r.state));
     S = { model, events: log };
     if (ex.lang && ex.lang !== getLang()) changed("lang", ex.lang);
+    if (Array.isArray(ex.assisted) && ex.assisted.every(Number.isInteger)) assisted = ex.assisted.slice(0, 200);
+    nudgedDeal = ex.nudged === true;
+    settleFocus();
     if (ex.touren) sittingLength = ex.touren;
     else sittingLength = log.find((e) => e.type === "sitting_start")?.touren ?? r.state.touren_total;
     if (ex.slate) slate.restore(ex.slate);
@@ -1077,15 +1200,33 @@ async function main() {
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } else if (name === "progress-export") {
-      const url = URL.createObjectURL(new Blob([exportText(storage())], { type: "application/json" }));
+      const url = URL.createObjectURL(new Blob([exportText(tutorStore())], { type: "application/json" }));
       const link = Object.assign(document.createElement("a"), { href: url, download: "strohmandeln-progress.json" });
       document.body.append(link);
       link.click();
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } else if (name === "progress-import") {
+      const input = Object.assign(document.createElement("input"), { type: "file", accept: "application/json" });
+      input.addEventListener("change", async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        if (file.size > MAX_IMPORT) return ui.setRefusal(t("error.progress-big"));
+        const got = importText(tutorStore(), await file.text());
+        if (!got.ok) return ui.setRefusal(t(`error.${got.error}`));
+        briefing.forget();
+        ui.chip(tn("settings.progress.loaded", got.count), { x: window.innerWidth / 2, y: 120, ms: 3000 });
+        refreshStale();
+        settleFocus();
+      });
+      input.click();
     } else if (name === "progress-clear") {
-      clearProgress(storage());
-      pastSittings = [];
+      ui.dialog({
+        id: "clear",
+        title: t("settings.progress.clear"),
+        body: t("settings.progress.confirm"),
+        buttons: [{ label: t("settings.progress.clear"), act: "yes", primary: true }, { label: t("ui.new.cancel"), act: "no", focus: true }],
+      });
     } else if (name === "load") {
       const input = Object.assign(document.createElement("input"), { type: "file", accept: "application/json" });
       input.addEventListener("change", async () => {
@@ -1118,7 +1259,12 @@ async function main() {
         break;
       case "tutor":
         if (value && prefs.muted) tutor.unmute(); // the setting un-mutes (6.1)
+        settleFocus();
+        if (value) refreshStale(); // deals kept while it was off have no summary yet
         showTutor();
+        break;
+      case "tips":
+        settleFocus();
         break;
       case "surface":
         stage.setSurface(chooseSurface({ chosen: value === "random" ? null : value, saved: null }));
@@ -1357,6 +1503,10 @@ async function main() {
   } else askNew();
 
   // ---- for the browser test --------------------------------------------------------------------------------------
+  // What was kept is read once the table is up; stale summaries are recomputed while it is idle.
+  settleFocus();
+  if (tutorAuto) setTimeout(refreshStale, 3000);
+
   if (TEST || params.has("hook")) window.strohmandeln3d = {
     engine,
     state: () => wasm,
@@ -1374,6 +1524,8 @@ async function main() {
     said: () => ui.said(),
     tutor: () => ({ page: tutor.current(), muted: prefs.muted, seen: prefs.seen, note: ui.root.querySelector(".tutor-note")?.dataset.text ?? "", chip: reviewChip }),
     openPage: (key) => tutor.help(key),
+    briefing: () => ({ assisted: [...assisted], focus: focusNow, owed: owed.length, kept: loadDeals(tutorStore()).map((d) => ({ n: d.n, sit: d.sit, assisted: d.assisted, summary: Boolean(d.summary) })) }),
+    openReview,
     live: () => ui.lived(),
     hud: () => ({ totals: hud.totals(), shown: hud.shown(), idle: hud.idle() }),
     zoneRects,
