@@ -170,7 +170,7 @@ test("the cards page says what the tarocks and the C are, with the dates, in bot
   assert.match(de, /ab 1781 die Rede, in Frankreich/);
   assert.match(de, /Tarock[^\n]*Tarot/);
   assert.match(de, /C ist der Cavall[^\n]*Reiter[^\n]*3 Augen wert/);
-  assert.match(de, /Französische Blatt zu 52 Karten nicht/);
+  assert.match(de, /französische Blatt zu 52 Karten nicht/);
   assert.match(de, /Buchstaben und Eckzahlen sind für den raschen Blick/);
   assert.doesNotMatch(de, /Points/, "a card's value is in Augen; a Point is a payment");
   assert.doesNotMatch(en, /\bPoints?\b/);

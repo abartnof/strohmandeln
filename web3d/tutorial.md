@@ -40,7 +40,7 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 
 ## Das C
 
-- Das C ist der Cavall, ein Reiter zu Pferd, 3 Augen wert. Tarockblätter haben ihn, das Französische Blatt zu 52 Karten nicht.
+- Das C ist der Cavall, ein Reiter zu Pferd, 3 Augen wert. Tarockblätter haben ihn, das französische Blatt zu 52 Karten nicht.
 - Auf einem echten Blatt tragen die Hofkarten Bilder statt Buchstaben. Unsere großen Buchstaben und Eckzahlen sind für den raschen Blick.
 
 # Die Pakete

@@ -139,7 +139,7 @@ The page `the-cards` (`web3d/tutorial.en.md`, `tutorial.md`) says these lines, a
 4. **Tarock, tarot.** German keeps two words: Tarock for the game, Tarot for the fortune-telling deck. English uses one for both, hence the mix-ups. [15-S7][15-S8]
    - Im Deutschen heißt das Spiel Tarock und das Blatt zum Wahrsagen Tarot. Das Englische hat für beides ein Wort, daher die Verwechslung.
 5. **The C.** The C is the Cavall, a knight on horseback, worth 3 points. Tarock packs kept him; the 52-card pack dropped him. [15-S12][15-S1, p. 6][15-S14]
-   - Das C ist der Cavall, ein Reiter zu Pferd, 3 Augen wert. Tarockblätter haben ihn, das Französische Blatt zu 52 Karten nicht.
+   - Das C ist der Cavall, ein Reiter zu Pferd, 3 Augen wert. Tarockblätter haben ihn, das französische Blatt zu 52 Karten nicht.
 6. **Our faces.** On a real pack the courts carry pictures, not letters. These big letters and corner numbers are for a quick look. [08-S9][08-S10][15-S1, p. 6]
    - Auf einem echten Blatt tragen die Hofkarten Bilder statt Buchstaben. Unsere großen Buchstaben und Eckzahlen sind für den raschen Blick.
 
