@@ -133,7 +133,7 @@ each skill whose question applies it works out the best value of each class.
   of the difference over the sampled worlds (the per-world values of the two
   classes' best cards, paired, as `hint.rs` `odds_for`): a one-sided trigger on a
   noisy gap would otherwise pick the positive noise (rung 4 met 58% of its `off`
-  chances before the rule, 91% after). The margin is `EXACT_MARGIN` (the least
+  chances before the rule, 26 of 28 after (93%, `print_students`, 9 sittings)). The margin is `EXACT_MARGIN` (the least
   loss the review counts) only where the search is **complete**: nothing is face
   down and it reached the last trick (`depth >= 28 - trick`); a known position
   searched only a few tricks deep is not exact. A decision whose search finished
@@ -150,9 +150,14 @@ each skill whose question applies it works out the best value of each class.
   of the same kind; met unless the card played is clearly (as above) worse than
   the best. `run` judges which tarock only, not whether to lead one.
 - **`pagat`** counts only when following. Leading the Pagat is almost always
-  worse than a tarock by the margin, so keeping it is trivial: over nine
-  sittings a random player met 83 of 91 leads against rung 4's 107 of 107, but
-  following 15 of 29 against 32 of 34 (`print_pagat_variants`).
+  worse than a tarock by the margin, so keeping it is trivial. A dated
+  measurement, at b3ffb01 (before the gate; 9 sittings, default budget): rung 4
+  met 107 of 107 leads and a random player 83 of 91; it is not reproducible at
+  HEAD, where a lead is no chance. Following, reproducible with
+  `cargo test -p strohmandeln-ai --release print_pagat_variants -- --ignored
+  --nocapture` (9 sittings): rung 4 32 of 34, a random player 15 of 29
+  (Fisher one-sided p about 1e-4). The rare skills need several sittings:
+  `pagat` and `bid` have `min_chances` 4.
 - **Deterministic skills.** `announce` needs no advisor; `bid` takes the mean of
   `rung4::bid_samples` over its own sampled worlds (40, `Budget`), per unit of
   doubling, and needs it beyond `BID_MARGIN` and twice its standard error.
@@ -450,6 +455,44 @@ relies on has a test or a check that reproduces it.
 | M7 | **Latency.** `hint_latency` (ignored test, `hint.rs`) and the evidence over a deal, native and in the wasm module. Native done (below); wasm still to measure. | Whether the main thread is enough; the cap on advisor worlds |
 | M8 | **The split suit.** The share of a suit's points at which rung 4 starts to prefer another lead. | The `behind` trigger |
 
+**The knock-outs built** (`strohmandeln-ai/src/students.rs`; EVIDENCE_VERSION 3):
+rung 4 with one thing made not to happen, total unless noted. `worth` lets
+every trick go it can; `cheap` plays the dearest card of the outcome chosen;
+`off` never plays a cover while a hand card is legal; `run` leads a random
+tarock; `pagat` tosses a coin (halved); `void` leads into a suit he has shown
+void; `behind` opens the split suit; `endgame` plays rung 2 once nothing is
+face down; `bid` bids by a coin (halved), or always passes, or always takes up;
+`announce` never announces. The met chances of every skill (met/chances) for
+each, 9 sittings (54 deals), default budget, seat A against rung 4
+(`cargo test -p strohmandeln-ai --release print_lesions -- --ignored
+--nocapture`); the target is the diagonal:
+
+```
+              worth   cheap   off     run     pagat   void    behind  endgame bid     announce
+whole         78/81  133/138  26/28   67/74   32/34   42/44   53/58   77/83   21/21    6/6
+Worth          1/79  113/117  19/21   34/42   29/34   37/38   43/44   31/34   21/21    6/6
+Cheap         69/73   15/99   17/28   15/18    8/16   19/19   46/49   12/24   21/21    5/5
+Off           57/62   96/110   0/69   29/31   15/15   20/23   39/47   10/10   22/22    4/4
+Run           69/71  146/153  22/24   41/58   24/25   40/42   49/52   68/70   21/21    6/6
+Pagat         74/80  118/136  23/26   45/51   15/28   44/46   54/59   59/68   21/21    7/7
+Void          88/92  143/147  27/30   64/68   32/33    0/27   49/55   90/98   21/21    6/6
+Behind        66/69  124/126  20/20   55/60   27/28   35/38    0/56   79/90   21/21    5/5
+Endgame       72/84  134/143  26/28   55/62   29/35   38/41   53/58   57/78   21/21    6/6
+Bid           71/74  134/137  22/26   77/85   39/39   50/52   63/66   74/82   11/21    8/8
+AlwaysPass    71/74  129/134  25/27   69/74   27/29   38/41   52/57   70/77   18/21    6/6
+AlwaysTake    78/80  130/133  24/27   79/84   41/41   59/60   57/60   68/76    3/21    7/7
+Announce      77/80  129/133  25/28   64/71   31/32   42/44   52/57   74/80   21/21    0/6
+```
+
+Each knock-out hurts its own skill most (a test holds this), and not only it: a
+forced hand card is a miss of `cheap`, `void` or `behind` where the cover was the
+best of its kind, so `Off` also shows `cheap` 96/110 and `endgame` with 10
+chances against 83 (packets stay face down longer). That is inherent to a class
+lesion; the prerequisites (section 2) are what absorb it. `AlwaysPass` meets
+18 of 21 bids: taking up is rarely clearly right. The coin lesions (`Pagat`,
+`Bid`) are halved, not removed; a partial lesion that shows in one sitting is
+not claimed (M6).
+
 **Compute estimate**, for the maintainer before any run (`CLAUDE.md`): rung 4's
 median is 7 ms a decision in wasm (`docs/OPPONENT.md`), about 3.5 s a 3-Touren
 sitting, so a mirrored pair is about 7 s and 50 pairs about 6 minutes a
@@ -468,7 +511,16 @@ confirmed by timing one pair before the first batch.
 
 Test first (`CLAUDE.md`). Engine (`cargo test`, deterministic):
 
-- **Lesioned students.** For each of `worth`, `cheap`, `off`, `run`, `void`,
+- **Lesioned students.** `bin/lesions` runs them (about 75 s native) and writes
+  `target/lesions.stamp`, the hash of the sources they judge (the advisor, the
+  classifiers, the students, the deal record, the tests); `bin/gate` fails with
+  "run bin/lesions" when the stamp is missing or stale, so a commit that does
+  not touch those sources pays nothing and one that does cannot skip the check.
+  The merge to main runs `bin/lesions` unconditionally. The gate itself keeps
+  one lesion (`off`, one sitting). Each test asserts that the knocked-out
+  skill's met rate falls well below rung 4's on the same deals, that its
+  misses cost several times as much, and that no other skill with five
+  chances falls lower. The learner-level acceptance follows. For each of `worth`, `cheap`, `off`, `run`, `void`,
   `behind`, `endgame`, `bid`, `announce`: a rung-4 student with that skill knocked
   out is given that skill as focus within `K` deals (K from M6). A student missing
   `worth` is not given `endgame` first (prerequisites). Whole rung 4 gets no focus

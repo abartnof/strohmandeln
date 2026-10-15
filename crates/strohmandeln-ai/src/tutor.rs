@@ -35,7 +35,7 @@ use strohmandeln_core::view::{bare_view, View};
 /// The version of what [`evidence`] computes. Bump it whenever a classifier,
 /// a constant or the advisor changes, so that a stored summary made before is
 /// recomputed from its record (`docs/TUTOR.md` 3).
-pub const EVIDENCE_VERSION: u32 = 2;
+pub const EVIDENCE_VERSION: u32 = 3;
 
 /// The resolution of the evidence: a player who loses less than this on a
 /// decision is perfect in it, and a miss costs at least this (so `top_cost` is
@@ -462,11 +462,14 @@ pub fn classify_play(k: &Knowledge, card: Card, advice: &Advice) -> Vec<Verdict>
         }
     }
 
-    // pagat: play it now or keep it. Only when following: leading the Pagat
-    // is almost always worse than a tarock by the margin, so "keep" is
-    // trivially right and a random player meets it (rung 4 107 of 107, random
-    // 83 of 91 leads over 9 sittings each, default budget); following, rung 4
-    // meets 32 of 34 and a random player 15 of 29 (`print_pagat_variants`).
+    // pagat: play it now or keep it. Only when following. Leading the Pagat
+    // is almost always worse than a tarock by the margin, so keeping it is
+    // trivial: measured at b3ffb01 (before the gate; the leader row of
+    // `print_pagat_variants` at that commit, 9 sittings, default budget), rung 4
+    // met 107 of 107 leads and a random player 83 of 91. Not reproducible at
+    // HEAD, where a lead is no chance. Following, at HEAD and reproducible
+    // (`cargo test -p strohmandeln-ai --release print_pagat_variants --
+    // --ignored --nocapture`, 9 sittings): rung 4 32 of 34, random 15 of 29.
     if let (true, Some(p), Some(o)) = (
         k.lead.is_some(),
         best(scores, |c| c == Card::PAGAT),
@@ -625,24 +628,25 @@ impl Verdict {
 /// The ladder the learner folds (`docs/TUTOR.md` 13). Prerequisites are those
 /// of [`Skill::needs`] (a test holds them equal).
 ///
-/// **Provisional.** `top_rate` and `top_cost` are what rung 4 met and lost
-/// per deal in 18 deals against itself with the default budget (indicative
-/// only); M3 (rung 4 against rung 3, both seats) sets them. `min_chances` is
-/// Cassino's 4 for the skills that come up several times a deal, lower for
-/// the rare ones; M3 sets it from the chances a deal.
+/// **Provisional.** `top_rate` and `top_cost` are what rung 4 met and lost per
+/// deal against a rung-4 opponent over 54 deals (9 sittings, default budget,
+/// `print_students`), after the noise rule; `top_cost` is conditional on the
+/// resolution (a miss costs at least `MARGIN`). M3 (rung 4 against rung 3, both
+/// seats) sets them finally. `min_chances` is Cassino's 4, except `announce`
+/// (2: six chances in 54 deals); M3 sets it from the chances a deal.
 pub const LADDER: Ladder = Ladder {
     name: "strohmandeln",
     version: EVIDENCE_VERSION,
     skills: &[
-        spec("worth", &[], 0.85, 2.4, 4.0),
-        spec("cheap", &[0], 0.92, 2.9, 4.0),
-        spec("off", &[0], 0.58, 5.9, 4.0),
-        spec("run", &[1], 0.95, 1.3, 4.0),
-        spec("pagat", &[3], 1.0, 0.0, 2.0),
-        spec("void", &[0], 0.88, 1.6, 4.0),
-        spec("behind", &[2, 5], 0.91, 1.0, 4.0),
-        spec("endgame", &[1, 5], 0.84, 2.1, 4.0),
-        spec("bid", &[0], 1.0, 0.0, 2.0),
+        spec("worth", &[], 0.96, 0.96, 4.0),
+        spec("cheap", &[0], 0.96, 1.22, 4.0),
+        spec("off", &[0], 0.93, 0.95, 4.0),
+        spec("run", &[1], 0.91, 1.92, 4.0),
+        spec("pagat", &[3], 0.94, 0.57, 4.0),
+        spec("void", &[0], 0.96, 0.32, 4.0),
+        spec("behind", &[2, 5], 0.91, 1.76, 4.0),
+        spec("endgame", &[1, 5], 0.93, 1.00, 4.0),
+        spec("bid", &[0], 1.0, 0.0, 4.0),
         spec("announce", &[], 1.0, 0.0, 2.0),
     ],
 };
