@@ -43,6 +43,13 @@ if [ -f Cargo.toml ]; then
   rust_passed=$(echo "$out" | grep -oE "test result: ok\. [0-9]+ passed" | awk '{s += $4} END {print s + 0}' || true)
   [ "${rust_passed:-0}" -gt 0 ] || fail "cargo test ran no tests (its output was not recognised)"
   parts+=("$rust_passed in Rust")
+  # The lesion tests take ~100 s and are #[ignore]d; bin/lesions runs them and
+  # stamps the hash of the sources they judge. Stale or missing: run it.
+  if [ -x bin/lesions ]; then
+    [ "$(cat target/lesions.stamp 2>/dev/null || true)" = "$(bin/lesions --hash)" ] \
+      || fail "the lesion tests have not passed on these sources: run bin/lesions (docs/TUTOR.md 12)"
+    parts+=("lesions current")
+  fi
 else
   parts+=("no Cargo.toml, Rust skipped")
 fi

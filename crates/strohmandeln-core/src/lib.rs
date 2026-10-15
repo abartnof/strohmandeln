@@ -6,6 +6,7 @@
 pub mod agents;
 pub mod cards;
 pub mod deal;
+pub mod dealrec;
 pub mod rng;
 pub mod session;
 pub mod types;
