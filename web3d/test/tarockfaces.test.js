@@ -210,8 +210,24 @@ test("pips: each symbol is drawn once at its layout size", () => {
   // The index's suit and one glyph for each pip.
   for (const [code, n] of [["7s", 7], ["10c", 10], ["3h", 3], ["4d", 4], ["1h", 1]]) {
     const ctx = recorder();
-    drawFace(ctx, 700, code);
+    drawFace(ctx, 700, code, "en", "classic");
     assert.equal(textsOf(ctx).filter((c) => /[♠♥♦♣]/.test(c[1])).length, n + 1, code);
+  }
+});
+
+test("jumbo: a numbered suit card is a big rank over a big suit, right of the strip, as Cassino's", () => {
+  for (const code of ["7s", "10c", "3h", "4d", "1h"]) {
+    const ctx = recorder();
+    drawFace(ctx, 700, code);
+    const t = textsOf(ctx);
+    assert.equal(t.filter((c) => /[♠♥♦♣]/.test(c[1])).length, 2, `${code}: the index's suit and one big suit`);
+    const rank = code.slice(0, -1);
+    const sizes = t.filter((c) => c[1] === rank).map(sizeOf);
+    assert.equal(sizes.length, 2, code);
+    assert.ok(Math.max(...sizes) > Math.min(...sizes) * 1.5, `${code}: the big rank is much larger than the index's`);
+    const at = ctx.calls.findIndex((c) => c[0] === "fillText" && c[1] === rank && sizeOf(c) === Math.max(...sizes));
+    const moved = ctx.calls.slice(0, at).reverse().find((c) => c[0] === "translate");
+    assert.ok(moved[1] >= (JUMBO.strip / JUMBO.w) * 700, `${code}: the big rank is clear of the strip`);
   }
 });
 

@@ -130,7 +130,7 @@ by at least a card's half-height.
 
 1.5.7 **Pulled cards enter the hand in place**: the hand reflows (fan or row) to
 make room; public cards (pulled, [R 13.4]) carry a small mark in the hand: a
-thin outline on the lower edge, so the human can tell the cards the opponent
+ringed gold dot at the card's lower left, so the human can tell the cards the opponent
 has seen (3.7 explains it).
 
 1.5.8 **Opponent's hand count** (`opponent_hand_size`) shown as cards, never as a
@@ -954,8 +954,11 @@ running; the next text drawn is in the new language.
 ### 7.6 Faces
 
 Our own faces, drawn at runtime (`web3d/src/tarockfaces.js`, [PLAN]); the court
-labels (K Q C J / K D C B) are the language's. "Jumbo" enlarges the ranks;
-"Auto" picks large on phone and tablet.
+labels (K Q C J / K D C B) are the language's. "Jumbo" (Large Text) draws every
+suit card as a big rank over a big suit beside the index strip, as Cassino's
+(Classic keeps the pips on numbered cards); "Auto" picks large on phone and tablet.
+The desktop hand fan spreads wide enough (spacing 3.6 cm, width 62 cm) that an
+18-card hand shows each card's whole index strip.
 
 ### 7.7 Persistence of settings: versioned localStorage with try/catch
 

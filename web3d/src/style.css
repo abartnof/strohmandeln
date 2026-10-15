@@ -46,7 +46,7 @@ button { font: inherit; }
 .tag { position: absolute; left: 0; top: 0; }
 .tag.badge { min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 10px; background: #1d2433; color: #fff; border: 2px solid #fff; font: 700 12px/16px system-ui; text-align: center; }
 .tag.dealer, .tag.declarer { padding: 3px 9px; border-radius: 12px; background: var(--dark); color: #fff; font-size: 12px; border: 2px solid #fff; }
-.tag.public { background: var(--gold); border-radius: 2px; }
+.tag.public { background: var(--gold); border: 2px solid #1d2433; border-radius: 50%; box-sizing: border-box; }
 .chip { position: absolute; transform: translate(-50%, 0); padding: 6px 14px; border-radius: 16px; background: var(--dark); color: #fff; font-size: 15px; white-space: nowrap; animation: rise 0.5s ease-out both; transition: opacity 0.5s; }
 .chip.gone { opacity: 0; }
 .chip.announce { background: var(--accent); }

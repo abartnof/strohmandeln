@@ -68,7 +68,7 @@ function arrangement({ eye, yours, theirs, packets, trick, won, pack, count, hel
 
 export const ZONES = arrangement({
   eye: EYE,
-  yours: hand([0, 2.5, 10], EYE, { fan: true, radius: 40, spacing: 2.9, width: 46 }),
+  yours: hand([0, 2.5, 10], EYE, { fan: true, radius: 40, spacing: 3.6, width: 62 }),
   theirs: hand([0, 7, -44], EYE, { fan: true, radius: 40, spacing: 1.4, width: 30 }),
   packets: { you: -3, them: -27, xs: [-17, 0, 17] },
   trick: { x: 0, z: -15, gap: 0.8, offset: 2.4 },
