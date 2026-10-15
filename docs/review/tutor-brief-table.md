@@ -257,3 +257,136 @@ record-only. Words, as a new player reads them: the structure (count, then at mo
 three labelled bullets, the method folded) is clear and kind, no line judges the
 person; the stumbling blocks are the stacked colons, the skill names used as
 labels, tries that do not stand alone, and the German grammar slips above.
+
+## Second pass (2026-10-15)
+
+Scope: `git diff 5395639 6eee7c4` for `web3d/src/{briefing,review,main,tutorstore,
+tutorwire,ui}.js`, `web3d/strings.json`, `docs/{MESSAGES,TABLE3D,TUTOR}.md`,
+`tools/test_tutor_strings.py`, `web3d/test/*`. Branch
+`worktree-agent-abd5f18ed8764998e`.
+
+Run: `node --test` on tutorstore, briefing, review, strings, tutorview, settings,
+persist, prefs (108 pass; the briefing tests need the wasm built);
+`python3 -m unittest tools.test_tutor_strings` (5 pass); `bin/browser-full
+deal_brief` ok (63 s; run with a short `TMPDIR`, Chromium's socket path is limited).
+Beyond the suite, a Node script played a sitting through the real module and the
+page's `briefing.js`, rendered the briefs in both languages, then damaged the store
+(finding 1).
+
+### First-pass findings, checked
+
+Fixed: 1 (the German file error); 2 (`rule.off.figure` is a passive sentence;
+`worth.poor` and `off.figure` recast, no card gender guessed); 3 (`briefing.forget()`
+is called by Clear and by a load, and the browser check confirms the focus does not
+come back); 4 and 5 (no line stacks a second colon, examples say who led and put
+"the" before a card); 7 (tries stand alone, at most 14 words); 9 ("cover"/"Decke");
+10 (`refreshStale` waits for a rested table with no dialog, re-arms at each rest, and
+starts when the Kibitzer is turned on and after a load); 11 (a hint's and a nudge's
+number are persisted at once and `nudged` is in the extras; `persist` runs after
+`keepScored` has reset them, so a reload at a deal boundary restores nothing stale);
+12 and 13 (plain words, "the earliest, in the order the books teach them"); 16, 17,
+20. Clear asks first and says it is done. The working chip runs from `keepScored` to
+the end of `settleOwed`. Finding 6 and 8 are addressed below (8 partly: finding 4).
+
+The lowercase after a colon (`review.js` `after`) was checked against every English
+body that can follow a lead ending in ":" or "If I may:" (`well.*`, `miss.*`, `try.*`,
+`rule.*`, `nudge.*`): each begins "A", "Do", "Win", "In", "Your", "You", a verb or a
+`{skill}` (all English skill names begin in lower case), so no card name, "I", Roman
+numeral or proper noun is lowered, and names inside a line ("the Pagat", "your Sküs",
+"the Mond") are untouched. German is not touched. It is safe by the strings' shape
+only (finding 9).
+
+What the brief shows today, every rule told as its fact, from a played sitting:
+"Next: judging a trick's worth. A trick is worth the points of its two cards."; "This
+deal: in trick 14, your opponent led the tarock XVIII; the Mond would have taken its
+4⅔ points."; with no example, "To try: a king can wait for a queen or a cavall." That
+is useful to a learner: the fact names the idea, the example names the trick and the
+cards of their own deal, the try gives a thing to do. The `worth` fact alone is nearly
+a definition and gives no direction; the direction is in the example. It is honest,
+kind and as TUTOR 6 asked; nothing judges the person.
+
+Five words spot-checked against `research/16-skill-ladder.md` and its sources:
+`rule.worth.poor` (MS "den König schinden") faithful; `rule.off.figure` (U 74, MS)
+faithful, the exception now a standalone try; `rule.void` ("think twice", Be 150)
+faithful; `rule.announce` (W 133) and `try.announce.2` (W 135) faithful; `name.behind`
+with its fact and miss are not (finding 4).
+
+### New findings
+
+1. **should** `web3d/src/briefing.js:84`, `web3d/src/tutorstore.js:70,85`,
+   `crates/strohmandeln-wasm/src/tutor.rs` `parse_kept`. One bad stored deal makes
+   the whole sitting's brief `null`, and nothing heals it: the engine answers
+   `bad-input` for the call, `sittingBrief` returns `r?.brief ?? null`, and the
+   sitting's review shows the count and no bullets. Reproduced four causes on a played
+   sitting: a stored `n` of 0 (`sound()` keeps any integer `>= 0`, and `d.n ?? i + 1`
+   keeps the 0, which the engine refuses as "deal number"); an `n` of 2^33; a detail
+   with a damaged miss (`detailOk` checks only the summary and the size); a detail
+   whose summary is of an older evidence version (until `refreshStale` reaches it; the
+   engine requires a current summary), which is routine after any `EVIDENCE_VERSION`
+   bump. Fix: `n: d.n > 0 && d.n < 10000 ? d.n : i + 1` and the same bound in
+   `sound()`; in `sittingBrief` treat a detail whose summary version is not the
+   learner's as missing (`summaryVersion` exists), and on `bad-input` recompute the
+   details once with `evidenceOf` and retry; one test per cause in `briefing.test.js`.
+2. **should** `web3d/src/main.js:1054-1063`, `web3d/src/tutorstore.js:150`. Clear on
+   a newer page's store now does nothing, but the chip still says "What the Kibitzer
+   kept is cleared." `clearTutor` should return whether it cleared and the handler
+   show `error.progress-newer` otherwise. The handler also sets `owed = []` without
+   `showTutor()`, so a chip that was "Working..." stays disabled until the next
+   `showTutor` call; add it.
+3. **should** `web3d/src/main.js:395-403`. `settling` is cleared after the loop, not in
+   a `finally`: if `briefOf` throws (a wasm trap, a malformed reply), the chip is
+   disabled with "Working..." for the life of the page, and `refreshStale` never runs
+   again (`settling` is in its guard). Wrap the loop in try/finally.
+4. **should** words, `tutor.name.behind`, `tutor.fact.behind`, `tutor.miss.behind`
+   (en/de). `research/16` and the engine judge `behind` at the opening of a suit whose
+   points the two hands share about evenly (30 to 70 percent; a suit mostly his or
+   mostly mine is "not split", test `behind_a_suit_that_is_mostly_mine_or_his_is_not_split`;
+   W 134 "gleichmäßig vertheilt", MS "umkämpfte Farbe"). "Not opening your weak suits"
+   names another thing, "where your opponent holds more points" is not the trigger,
+   and the commit message's "what the measurement shows" has no measurement behind it
+   in TUTOR 11. Fix, by the act as the first pass suggested: name "leaving a shared
+   suit for your opponent to open" (de "Eine geteilte Farbe den Gegner eröffnen
+   lassen"); fact "A suit whose points the two hands share about evenly is better
+   opened by your opponent."; miss "In trick {trick}, you opened {suit}, whose points
+   the two hands shared about evenly; the {better} led better." (de likewise). Mind the
+   word limits (name 8, fact 15, example 18).
+5. **nit** words. `tutor.miss.cheap` (en): "the {better} would have done the
+   {played}'s job" reads badly with real names ("the 4 of hearts's job", "the Mond's
+   job"); "would have done what the {played} did, for less" is plain.
+   `tutor.miss.worth.poor` (en): "would have kept it back" leaves "it" open (the
+   played card); "the {better} would have saved your {played} for a bigger trick" says
+   it. `tutor.rule.bid` (en/de): "at least 20-25 points" reads as a floor with a range;
+   the sources say about 25 is very good and 20 is thin (MS), 20 to 25 unhesitatingly
+   (Be): "Take up with about 25 points of sure winners and at least 6 or 7 tarocks."
+6. **nit** `web3d/src/tutorstore.js:195`. `refreshOne` drops a kept deal whenever
+   `evidenceOf` returns no summary and the engine has not stopped. A reply of
+   `bad-constants` (impossible in a tested build) would drop every kept deal in turn.
+   Drop only on `error === "replay"` (the record cannot be restored).
+7. **nit** `web3d/src/main.js:441-451`. `step` clears `staleTimer` before it awaits
+   `refreshOne`; a rest during the await would start a second chain. Today the engine
+   is synchronous and the promise resolves before the next task; when the Worker is
+   built, guard with an in-flight flag.
+8. **nit** A load of a file replaces what is kept, the current sitting's deals
+   included; the sitting's `sit` ids then match nothing and its review shows the count
+   only. The label says "(replaces it)"; say so in TABLE3D 6.4.4, or keep the current
+   sitting's deals through a load.
+9. **nit** `tools/test_tutor_strings.py`. The English lowering is safe today by the
+   strings' shape only. Add a check that no English body used after a lead or "If I
+   may:" begins with "I ", a card name, a Roman numeral or Pagat/Mond/Sküs/Trull, so
+   a later string cannot be mangled. German keeps the capital after "Als Nächstes:"
+   before an infinitive phrase ("Den Wert eines Stichs abschätzen"); acceptable.
+10. **nit** No automated test restores a persisted `assisted`/`nudged` (`persist`
+    returns early under `TEST` unless `?keep`). `deal_brief` covers the hint's number
+    reaching the kept deal, not a reload. A `?keep` reload step would close it.
+11. **nit** `docs/TUTOR.md:349` says tries are at most 12 (code and MESSAGES: 14).
+    The 62-word total is the longest brief with the leads and full names (a test
+    holds it), and "about 45 words of body" is the sum of the limits (12 + 15 + 18),
+    so those sentences are true.
+
+### Verdict
+
+The first-pass bugs and should items are fixed, the tests and the browser check pass,
+and the brief is useful, kind and in the sources' voice, with one exception: `behind`
+is named and explained for something other than what is judged (finding 4). Findings
+1 to 3 are small, real failure paths in the new storage and chip code and should be
+fixed before the work package is called done; 5 to 11 can be recorded as open.
