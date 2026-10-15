@@ -70,3 +70,11 @@ test("the review is gentle: no bullet names a fault or a person", () => {
     assert.ok(!bad.test(v.en), key);
   }
 });
+
+test("review and explanation name tarocks by Roman numeral; the plain cardName keeps Arabic", () => {
+  const x = createStrings(TABLE, "en");
+  const f = { t: x.t, cardName: x.romanName, thirds, signed, suitName: x.suitName };
+  assert.equal(words({ lead: "decided", key: "trick-lost-rich", params: { trick: 4, mine: "T12", theirs: "T19", thirds: 23 } }, f), "Trick 4 was the rich one you lost: tarock XII against tarock XIX, 7⅔ between them.");
+  assert.equal(explainText({ lead: "explain", key: "explain-won-you", params: { winner: "T21", loser: "T4" } }, f), "Your trick: Mond beat tarock IIII.");
+  assert.equal(x.cardName("T12"), "tarock 12");
+});
