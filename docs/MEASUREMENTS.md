@@ -330,3 +330,43 @@ hidden fraction of the suit.
 
 **Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m8`
 (defaults: `--seed 80000000 --sittings 100`).
+
+## M3 What the strongest rung meets
+
+### Plan (2026-10-15, before the run)
+
+**Question.** Judged by the tutor's own evidence, what share of its clear chances
+does rung 4 meet, how many chances a deal does each skill offer, and what does a
+deal lose to each skill? These are `top_rate` and `top_cost` of the ladder, and
+the chances a deal that set `MIN_CHANCES`. The run uses the constants as they
+stand after M1, M2 and M8 (`MARGIN` 10, `THIRDS_PER_POINT` 23, `SPLIT_SHARE`
+(0.1, 0.6)).
+
+**Data.** Rung 4 (the player, default budget) against rung 3, sittings of 3
+Touren; the player sits in seat A in the even sittings and in seat B in the odd
+ones (both seats); every deal's evidence is worked out for the player with no
+assisted decisions (`tutor::evidence`). Rule sets: the default (values 2/3/4,
+both pass: play, ultimo 1 Point), 200 sittings (1,200 deals) from seed
+30,000,000; and each other setting alone (values 1/2/3, values 1/2/4, both pass:
+throw in, ultimo 2 Points), 40 sittings (240 deals) each, from seeds
+31,000,000, 32,000,000, 33,000,000, 34,000,000. Fixed counts.
+
+**Reported, by skill** (default rule set): chances a deal; met and the met
+rate, with a standard error clustered by sitting (the ratio estimator); the
+missed thirds a deal. For the other rule sets, the chances and the met rate.
+
+**Decision rules (fixed now).**
+
+- `top_rate(skill)` = met / chances, default rule set, to two decimals.
+- `top_cost(skill)` = missed thirds a deal, default rule set, to two decimals.
+  (It is conditional on the resolution: a miss costs at least `MARGIN`.)
+- `min_chances(skill)` = the whole number of chances a skill offers in six deals
+  (a sitting), halved and rounded down, at least 2 and at most 4.
+- `DISCOUNT` = 1 - 1/6 = 0.83: a window of about a sitting of six deals
+  (`docs/TUTOR.md` 5). M6 may change it, tuned against the lesioned students.
+- A rule set whose met rate for a skill differs from the default's by more than
+  twice the larger of the two standard errors is reported as differing (the
+  rules for that skill are told only under the settings they were confirmed
+  under, `docs/TUTOR.md` 2).
+
+**Stopping.** A descriptive count, no looks.
