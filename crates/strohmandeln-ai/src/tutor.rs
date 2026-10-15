@@ -24,6 +24,7 @@ use crate::rung2::Weights;
 use crate::rung4::{self, Budget};
 use crate::seed::view_seed;
 use crate::sim::ULTIMO_THIRDS;
+use kit_learner::{Chance, Ladder, SkillSpec, Summary};
 use strohmandeln_core::cards::{Card, Suit};
 use strohmandeln_core::deal::TrickRecord;
 use strohmandeln_core::dealrec::{DealRecord, ReplayError};
@@ -495,17 +496,9 @@ pub fn decision_verdicts(view: &View, action: &Action, budget: Budget) -> Vec<Ve
     out
 }
 
-/// A clear chance in the shape `kit/learner` takes (`learner::Chance`):
-/// `skill` indexes [`Skill::ALL`], `gap` is the thirds a miss cost (0 when
-/// met), in thirds of the count margin (1 Point = [`THIRDS_PER_POINT`]).
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Chance {
-    pub skill: usize,
-    pub met: bool,
-    pub gap: f64,
-}
-
 impl Verdict {
+    /// The clear chance in the learner's shape: the skill's index in
+    /// [`LADDER`] and the thirds a miss cost.
     pub fn chance(&self) -> Chance {
         Chance {
             skill: self.skill.index(),
@@ -515,45 +508,44 @@ impl Verdict {
     }
 }
 
-/// What one deal showed of one skill: the clear chances, how many were met,
-/// and the thirds the missed ones cost. Field names and types are those of
-/// `kit/learner`'s `Tally` (Cassino's).
-#[derive(Copy, Clone, Debug, Default, PartialEq)]
-pub struct Tally {
-    pub chances: u32,
-    pub met: u32,
-    pub missed: f64,
-}
+/// The ladder the learner folds (`docs/TUTOR.md` 13). Prerequisites are those
+/// of [`Skill::needs`] (a test holds them equal).
+///
+/// **Provisional.** `top_rate` and `top_cost` are what rung 4 met and lost
+/// per deal in 18 deals against itself with the default budget (indicative
+/// only); M3 (rung 4 against rung 3, both seats) sets them. `min_chances` is
+/// Cassino's 4 for the skills that come up several times a deal, lower for
+/// the rare ones; M3 sets it from the chances a deal.
+pub const LADDER: Ladder = Ladder {
+    name: "strohmandeln",
+    version: EVIDENCE_VERSION,
+    skills: &[
+        spec("worth", &[], 0.85, 2.4, 4.0),
+        spec("cheap", &[0], 0.92, 2.9, 4.0),
+        spec("off", &[0], 0.58, 5.9, 4.0),
+        spec("run", &[1], 0.95, 1.3, 4.0),
+        spec("pagat", &[3], 1.0, 0.0, 2.0),
+        spec("void", &[0], 0.88, 1.6, 4.0),
+        spec("behind", &[2, 5], 0.91, 1.0, 4.0),
+        spec("endgame", &[1, 5], 0.84, 2.1, 4.0),
+        spec("bid", &[0], 1.0, 0.0, 2.0),
+        spec("announce", &[], 1.0, 0.0, 2.0),
+    ],
+};
 
-/// What one deal showed of each skill, in [`Skill::ALL`] order (as
-/// `learner::Summary`).
-#[derive(Clone, Debug, PartialEq)]
-pub struct Summary {
-    pub version: u32,
-    pub tallies: Vec<Tally>,
-}
-
-impl Summary {
-    /// As `learner::Summary::from_chances` for this ladder.
-    pub fn from_chances(chances: &[Chance]) -> Summary {
-        let mut tallies = vec![Tally::default(); SKILLS];
-        for c in chances {
-            let t = &mut tallies[c.skill];
-            t.chances += 1;
-            if c.met {
-                t.met += 1;
-            } else {
-                t.missed += c.gap;
-            }
-        }
-        Summary {
-            version: EVIDENCE_VERSION,
-            tallies,
-        }
-    }
-
-    pub fn tally(&self, skill: Skill) -> Tally {
-        self.tallies[skill.index()]
+const fn spec(
+    slug: &'static str,
+    needs: &'static [usize],
+    top_rate: f64,
+    top_cost: f64,
+    min_chances: f64,
+) -> SkillSpec {
+    SkillSpec {
+        slug,
+        needs,
+        top_rate,
+        top_cost,
+        min_chances,
     }
 }
 
@@ -658,7 +650,7 @@ pub fn evidence(
             miss.consequence = fell_under(deal.tricks(), figure, human);
         }
     }
-    let summary = Summary::from_chances(&chances);
+    let summary = Summary::from_chances(&LADDER, &chances);
     Ok(Evidence {
         chances,
         summary,

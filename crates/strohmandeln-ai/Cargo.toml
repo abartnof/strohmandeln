@@ -8,3 +8,4 @@ description = "The computer opponent for Strohmandeln: a ladder of four rungs, t
 
 [dependencies]
 strohmandeln-core = { path = "../strohmandeln-core" }
+kit-learner = { path = "../../kit/learner" }

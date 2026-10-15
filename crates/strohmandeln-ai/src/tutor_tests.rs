@@ -6,6 +6,7 @@ use crate::know::Knowledge;
 use crate::opponent::{Config, Level, Opponent};
 use crate::rung2::play_card;
 use crate::testutil::{blind_check_values, c};
+use kit_learner::Tally;
 use std::sync::OnceLock;
 use strohmandeln_core::agents::{Player, RandomPlayer};
 use strohmandeln_core::deal::TrickRecord;
@@ -257,7 +258,7 @@ fn the_costliest_miss_is_a_real_decision_of_the_human_in_the_deal() {
     let mut seen = 0;
     for rec in &s.no_cover {
         let e = evidence(rec, HUMAN, &[], small()).unwrap();
-        let off = e.summary.tally(Skill::Off);
+        let off = e.summary.of(Skill::Off.index());
         let Some(m) = &e.costliest[Skill::Off.index()] else {
             assert_eq!(off.chances, off.met, "a miss is kept when there is one");
             continue;
@@ -331,7 +332,7 @@ fn the_evidence_is_a_function_of_the_record() {
     assert_eq!(a, evidence(rec, HUMAN, &[2], small()).unwrap());
     assert_eq!(a.summary.version, EVIDENCE_VERSION);
     assert_eq!(a.summary.tallies.len(), SKILLS);
-    assert_eq!(a.summary, Summary::from_chances(&a.chances));
+    assert_eq!(a.summary, Summary::from_chances(&LADDER, &a.chances));
 }
 
 #[test]
@@ -394,6 +395,19 @@ fn a_figure_that_fell_under_a_higher_card_of_its_suit_is_found() {
     // a trump over a suit card is not a higher card of its suit
     let trumped = [trick(Seat::B, ["Qs", "T3"], Seat::A)];
     assert_eq!(fell_under(&trumped, c("Qs"), Seat::B), None);
+}
+
+#[test]
+fn the_ladder_is_well_formed_and_matches_the_skills() {
+    LADDER.check().unwrap();
+    assert_eq!(LADDER.skills.len(), SKILLS);
+    assert_eq!(LADDER.version, EVIDENCE_VERSION);
+    for s in Skill::ALL {
+        let spec = LADDER.skills[s.index()];
+        assert_eq!(spec.slug, s.slug());
+        let needs: Vec<usize> = s.needs().iter().map(|n| n.index()).collect();
+        assert_eq!(spec.needs, &needs[..], "{}", s.slug());
+    }
 }
 
 #[test]
