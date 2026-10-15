@@ -370,3 +370,66 @@ missed thirds a deal. For the other rule sets, the chances and the met rate.
   under, `docs/TUTOR.md` 2).
 
 **Stopping.** A descriptive count, no looks.
+
+### Result (2026-10-15)
+
+Rung 4 against rung 3, 200 sittings (1,200 deals) at the default settings (seeds
+30,000,000 to 30,000,199), 92 seconds; four other rule sets of 40
+sittings (240 deals) each. Descriptive, a fixed count. The evidence is the
+player's (rung 4), with the constants after M1, M2 and M8.
+
+| Skill | Chances | Met | Met rate (se) | Chances a deal | Lost a deal, thirds |
+|---|---|---|---|---|---|
+| worth | 2,026 | 2,006 | 0.990 (0.002) | 1.69 | 0.322 |
+| cheap | 2,200 | 2,107 | 0.958 (0.004) | 1.83 | 1.346 |
+| off | 587 | 542 | 0.923 (0.011) | 0.49 | 0.716 |
+| run | 1,324 | 1,252 | 0.946 (0.007) | 1.10 | 0.927 |
+| pagat | 1,017 | 996 | 0.979 (0.005) | 0.85 | 0.223 |
+| void | 1,190 | 1,148 | 0.965 (0.006) | 0.99 | 0.616 |
+| behind | 2,029 | 1,948 | 0.960 (0.004) | 1.69 | 1.416 |
+| endgame | 1,357 | 1,264 | 0.931 (0.008) | 1.13 | 0.855 |
+| bid | 665 | 657 | 0.988 (0.005) | 0.55 | 0.093 |
+| announce | 94 | 94 | 1.000 (0.000) | 0.08 | 0.000 |
+
+The met rate (chances in brackets) under each rule set; `*` marks a difference
+of more than twice the larger standard error from the default:
+
+| Skill | Default | Values 1/2/3 | Values 1/2/4 | Throw in | Ultimo 2 |
+|---|---|---|---|---|---|
+| worth | 0.990 (2026) | 0.974 (392) | 0.989 (373) | 0.989 (187) | 0.989 (376) |
+| cheap | 0.958 (2200) | 0.941 (457) | 0.959 (369) | 0.963 (216) | 0.957 (414) |
+| off | 0.923 (587) | 0.915 (106) | 0.881 (109) | 0.908 (76) | 0.966 (117) `*` |
+| run | 0.946 (1324) | 0.945 (274) | 0.973 (298) `*` | 0.953 (191) | 0.962 (212) |
+| pagat | 0.979 (1017) | 0.963 (191) | 0.991 (217) | 0.969 (96) | 0.989 (188) |
+| void | 0.965 (1190) | 0.965 (256) | 0.946 (260) | 0.955 (132) | 0.954 (219) |
+| behind | 0.960 (2029) | 0.974 (431) | 0.970 (434) | 0.957 (231) | 0.975 (360) |
+| endgame | 0.931 (1357) | 0.921 (254) | 0.947 (262) | 0.891 (110) | 0.943 (227) |
+| bid | 0.988 (665) | 0.985 (137) | 0.981 (156) | 0.976 (126) | 1.000 (135) `*` |
+| announce | 1.000 (94) | 1.000 (25) | 1.000 (19) | 1.000 (11) | 1.000 (22) |
+
+Three of 36 comparisons are flagged (`off` and `bid` under ultimo 2, `run` under
+values 1/2/4), about what chance alone gives at this threshold; none is large
+(0.04 at most). The settings change little of what rung 4 meets; the rules that
+depend on them (`bid`, `pagat`) are confirmed under each in M5.
+
+**Constants set** (`tutor::LADDER`, `tutor::PARAMS`):
+
+| Skill | `top_rate` was -> now | `top_cost` was -> now | `min_chances` was -> now |
+|---|---|---|---|
+| worth | 0.96 -> **0.99** | 0.96 -> **0.32** | 4 -> **4** |
+| cheap | 0.96 -> **0.96** | 1.22 -> **1.35** | 4 -> **4** |
+| off | 0.93 -> **0.92** | 0.95 -> **0.72** | 4 -> **2** |
+| run | 0.91 -> **0.95** | 1.92 -> **0.93** | 4 -> **3** |
+| pagat | 0.94 -> **0.98** | 0.57 -> **0.22** | 4 -> **2** |
+| void | 0.96 -> **0.96** | 0.32 -> **0.62** | 4 -> **2** |
+| behind | 0.91 -> **0.96** | 1.76 -> **1.42** | 4 -> **4** |
+| endgame | 0.93 -> **0.93** | 1.00 -> **0.86** | 4 -> **3** |
+| bid | 1.00 -> **0.99** | 0.00 -> **0.09** | 4 -> **2** |
+| announce | 1.00 -> **1.00** | 0.00 -> **0.00** | 2 -> **2** |
+
+`PARAMS.discount` = **0.83** (new; the other constants of `PARAMS` are
+provisional until M4 and M6). The earlier values were fitted to 54 deals against a
+rung-4 opponent with the margin of 6.
+
+**Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m3`
+(defaults: `--sittings 200 --other-sittings 40`; the ladder lines are printed).

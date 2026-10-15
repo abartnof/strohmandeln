@@ -475,6 +475,9 @@ fn m3(args: &Args) {
     ];
     let mut results = Vec::new();
     for (name, seed, settings, n) in sets {
+        if n == 0 {
+            continue;
+        }
         let r = player_sittings(seed, n, settings);
         println!(
             "{name}: {n} sittings, {} deals (seeds {seed}..{}), {:.0}s",
@@ -504,6 +507,17 @@ fn m3(args: &Args) {
             se,
             per,
             lost,
+            measure::min_chances_rule(per)
+        );
+    }
+    println!("\nthe ladder, by the rules of the plan:");
+    for sk in Skill::ALL {
+        let (rate, _, per, lost) = base.skill(sk.index());
+        println!(
+            "        spec(\"{}\", ..., {:.2}, {:.2}, {:.1}),",
+            sk.slug(),
+            (rate * 100.0).round() / 100.0,
+            (lost * 100.0).round() / 100.0,
             measure::min_chances_rule(per)
         );
     }

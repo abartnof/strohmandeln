@@ -23,7 +23,7 @@ use crate::know::Knowledge;
 use crate::rung2::Weights;
 use crate::rung4::{self, Budget};
 use crate::seed::view_seed;
-use kit_learner::{Chance, Ladder, SkillSpec, Summary};
+use kit_learner::{Chance, Ladder, Params, SkillSpec, Summary};
 use strohmandeln_core::cards::{Card, Suit};
 use strohmandeln_core::deal::TrickRecord;
 use strohmandeln_core::dealrec::{DealRecord, ReplayError};
@@ -710,27 +710,41 @@ impl Verdict {
 /// The ladder the learner folds (`docs/TUTOR.md` 13). Prerequisites are those
 /// of [`Skill::needs`] (a test holds them equal).
 ///
-/// **Provisional.** `top_rate` and `top_cost` are what rung 4 met and lost per
-/// deal against a rung-4 opponent over 54 deals (9 sittings, default budget,
-/// `print_students`), after the noise rule; `top_cost` is conditional on the
-/// resolution (a miss costs at least `MARGIN`). M3 (rung 4 against rung 3, both
-/// seats) sets them finally. `min_chances` is Cassino's 4, except `announce`
-/// (2: six chances in 54 deals); M3 sets it from the chances a deal.
+/// **Measured, M3** (`docs/MEASUREMENTS.md`): `top_rate` and `top_cost` are
+/// what rung 4 met and lost per deal against rung 3, both seats, 1,200 deals
+/// (200 sittings) at the default settings, after the noise rule and the margin
+/// of M1; `top_cost` is conditional on the resolution (a miss costs at least
+/// `MARGIN`). `min_chances` is half the chances a skill offers in six deals,
+/// rounded down, between 2 and 4.
 pub const LADDER: Ladder = Ladder {
     name: "strohmandeln",
     version: EVIDENCE_VERSION,
     skills: &[
-        spec("worth", &[], 0.96, 0.96, 4.0),
-        spec("cheap", &[0], 0.96, 1.22, 4.0),
-        spec("off", &[0], 0.93, 0.95, 4.0),
-        spec("run", &[1], 0.91, 1.92, 4.0),
-        spec("pagat", &[3], 0.94, 0.57, 4.0),
-        spec("void", &[0], 0.96, 0.32, 4.0),
-        spec("behind", &[2, 5], 0.91, 1.76, 4.0),
-        spec("endgame", &[1, 5], 0.93, 1.00, 4.0),
-        spec("bid", &[0], 1.0, 0.0, 4.0),
+        spec("worth", &[], 0.99, 0.32, 4.0),
+        spec("cheap", &[0], 0.96, 1.35, 4.0),
+        spec("off", &[0], 0.92, 0.72, 2.0),
+        spec("run", &[1], 0.95, 0.93, 3.0),
+        spec("pagat", &[3], 0.98, 0.22, 2.0),
+        spec("void", &[0], 0.96, 0.62, 2.0),
+        spec("behind", &[2, 5], 0.96, 1.42, 4.0),
+        spec("endgame", &[1, 5], 0.93, 0.86, 3.0),
+        spec("bid", &[0], 0.99, 0.09, 2.0),
         spec("announce", &[], 1.0, 0.0, 2.0),
     ],
+};
+
+/// The learner's constants. **Provisional** except `discount`: a window of
+/// about a sitting of six deals, 1 - 1/6 (M3; M6 tunes it); the gains are set
+/// by M4 and the quantiles and mastery by M6.
+pub const PARAMS: Params = Params {
+    discount: 0.83,
+    min_gain: 1.0,
+    costly_gain: 4.0,
+    costly_chances: 8.0,
+    lower: 0.2,
+    upper: 0.9,
+    master_of_top: 0.85,
+    lose_below: 0.2,
 };
 
 const fn spec(

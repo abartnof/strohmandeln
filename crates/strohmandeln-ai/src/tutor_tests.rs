@@ -711,6 +711,7 @@ fn a_figure_that_fell_under_a_higher_card_of_its_suit_is_found() {
 #[test]
 fn the_ladder_is_well_formed_and_matches_the_skills() {
     LADDER.check().unwrap();
+    PARAMS.check().unwrap();
     assert_eq!(LADDER.skills.len(), SKILLS);
     assert_eq!(LADDER.version, EVIDENCE_VERSION);
     for s in Skill::ALL {
