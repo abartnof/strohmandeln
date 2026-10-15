@@ -56,6 +56,21 @@ pub fn move_scores(
     budget: Budget,
     wt: &Weights,
 ) -> (Vec<(Card, f64)>, f64) {
+    let t = move_table(k, rng, budget, wt);
+    (t.scores, t.depth)
+}
+
+/// The search's working: the averages of [`move_scores`] and, for each world
+/// searched, every legal card's margin there (the tutor compares two cards
+/// world by world, `hint.rs`).
+pub struct MoveTable {
+    pub scores: Vec<(Card, f64)>,
+    pub depth: f64,
+    pub per_world: Vec<Vec<(Card, i32)>>,
+}
+
+pub fn move_table(k: &Knowledge, rng: &mut Rng, budget: Budget, wt: &Weights) -> MoveTable {
+    let mut per_world = Vec::new();
     let mut sums: Vec<(Card, f64)> = k.legal.iter().map(|&c| (c, 0.0)).collect();
     let share = (budget.nodes / budget.worlds.max(1) as u64).max(1);
     let mut solver = Solver::new(14);
@@ -77,6 +92,7 @@ pub fn move_scores(
         let Some((values, depth)) = best else {
             continue;
         };
+        per_world.push(values.clone());
         for (c, v) in values {
             sums.iter_mut()
                 .find(|(x, _)| *x == c)
@@ -89,12 +105,20 @@ pub fn move_scores(
     if counted == 0 {
         // The budget was too small to finish even one trick: rung 3's choice.
         let scored = rung3::score_cards(k, rng, rung3::WORLDS, wt);
-        return (scored.iter().map(|c| (c.card, c.score)).collect(), 0.0);
+        return MoveTable {
+            scores: scored.iter().map(|c| (c.card, c.score)).collect(),
+            depth: 0.0,
+            per_world: Vec::new(),
+        };
     }
     let n = counted as f64;
     let mut out: Vec<(Card, f64)> = sums.into_iter().map(|(c, s)| (c, s / n)).collect();
     out.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap().then(a.0.cmp(&b.0)));
-    (out, f64::from(depth_sum) / n)
+    MoveTable {
+        scores: out,
+        depth: f64::from(depth_sum) / n,
+        per_world,
+    }
 }
 
 /// The card to play, ties (and near ties) settled by rung 2's maxims.
