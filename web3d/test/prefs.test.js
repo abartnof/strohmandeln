@@ -15,6 +15,8 @@ test("an empty store gives the defaults of the spec", () => {
   assert.equal(p.talk, "all");
   assert.equal(p.tutor, true);
   assert.equal(p.hints, false);
+  assert.equal(p.tracker, true, "the tracker is on, and shows once Hints is");
+  assert.equal(p.trackerFolded, null, "its fold is unset: open on a large window");
   assert.equal(p.slateAuto, true);
   assert.equal(p.faces, "auto");
   assert.equal(p.lang, "en");
@@ -102,4 +104,14 @@ test("speed scales: slow longer, instant nothing", () => {
   assert.equal(speedScale("normal"), 1);
   assert.ok(speedScale("fast") < 1);
   assert.equal(speedScale("instant"), 0);
+});
+
+test("the tracker's setting and fold are read field by field", () => {
+  const read = (o) => loadPrefs(fakeStore({ [KEY]: JSON.stringify({ v: 1, ...o }) }));
+  assert.equal(read({ tracker: false }).tracker, false);
+  assert.equal(read({ tracker: "no" }).tracker, true);
+  assert.equal(read({ trackerFolded: true }).trackerFolded, true);
+  assert.equal(read({ trackerFolded: false }).trackerFolded, false);
+  assert.equal(read({ trackerFolded: null }).trackerFolded, null);
+  assert.equal(read({ trackerFolded: "yes" }).trackerFolded, null);
 });

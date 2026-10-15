@@ -41,9 +41,12 @@ export function createUi(root, { t, onAct }) {
     el(
       "div",
       { class: "top-right" },
+      el("button", { class: "tab tracker-tab", type: "button", "data-act": "tracker", "aria-expanded": "false", hidden: "" }),
       el("button", { class: "tab slate-tab", type: "button", "data-act": "slate", "aria-expanded": "false" }),
       el("button", { class: "tab cog", type: "button", "data-act": "settings" }),
     ),
+    // The cards-out panel (6.6): after the tabs in the tab order, so its Fold button follows them.
+    el("div", { class: "tracker-root" }),
     // The Kibitzer's tab (docs/TABLE3D.md 6): Help, the mute, the review chip, his note.
     el(
       "div",
@@ -82,6 +85,8 @@ export function createUi(root, { t, onAct }) {
     for (const node of root.querySelectorAll("[data-i18n-label]")) node.setAttribute("aria-label", t(node.dataset.i18nLabel));
     for (const node of root.querySelectorAll("[data-i18n]")) node.textContent = t(node.dataset.i18n);
     q(".slate-tab").textContent = t("ui.menu.slate");
+    q(".tracker-tab").textContent = t("tracker.tab");
+    q(".tracker-tab").title = t("tracker.tab.title");
     q(".cog").textContent = t("ui.menu.settings");
     drawTutor();
   }
@@ -108,6 +113,7 @@ export function createUi(root, { t, onAct }) {
     root,
     hudSlot: q(".hud-slot"),
     slateRoot: q(".slate-root"),
+    trackerRoot: q(".tracker-root"),
     settingsRoot: q(".settings-root"),
     controls: q(".controls"),
     relabel,
@@ -136,6 +142,16 @@ export function createUi(root, { t, onAct }) {
       note.textContent = text ?? "";
       note.dataset.text = text ?? "";
       return note;
+    },
+    // The cards-out tab (docs/TABLE3D.md 6.6): `tab` shows it, `open` is the
+    // panel's state, `node` the panel to put on the table (null: none).
+    setTracker({ tab, open = false, node = null }) {
+      const button = q(".tracker-tab");
+      button.hidden = !tab;
+      button.setAttribute("aria-expanded", String(Boolean(tab && open)));
+      const root = q(".tracker-root");
+      if (tab && open && node) root.replaceChildren(node);
+      else root.replaceChildren();
     },
     // One line of help under the prompt; `more` adds lines under it (the hint's
     // rule and odds), each its own block so a long hint wraps tidily.

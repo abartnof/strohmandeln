@@ -43,6 +43,7 @@ Text goes in and out through linear memory, as in Cassino. `kit/js/engine.js`
 | `strohmandeln_review()` | | | `{protocol, review}`: the review of the last scored deal, or `review: null` before one is scored. Does not move the game. See "The review" |
 | `strohmandeln_review_sitting()` | | | the same shape, over every deal scored so far |
 | `strohmandeln_explain()` | | | `{protocol, explain}`: what the last trick showed, one bullet, or `explain: null` before a trick is won. See "The review" |
+| `strohmandeln_tracker()` | | | `{protocol, tracker}`: where each of the 54 cards is from the human's view, and what is still out; `tracker: null` with no deal in progress. Does not move the game. See "The tracker" |
 | `strohmandeln_audit()` | | | `{hidden: [codes]}`: test aid, see below |
 
 To call: `at = alloc(n); copy the UTF-8 bytes to memory[at..at+n]; send(n)`,
@@ -381,3 +382,37 @@ setting "Explanations", `docs/TABLE3D.md` 6.3.3): one bullet
 "Explanation keys" table of `docs/MESSAGES.md`. It deduces from the rule of
 following only what the rule gives (a trump on a suit led: none of that suit in
 hand or showing), from the human's filtered events.
+
+## The tracker
+
+`strohmandeln_tracker` answers for the table's card tracker (`docs/TABLE3D.md`
+6.6). It is built from the human's view alone (`strohmandeln_ai::tracker`, over
+`Knowledge::from_view`), so it holds nothing the view does not: an unseen card
+is `unseen` and no more. Asking changes nothing.
+
+```json
+{"protocol": 1, "tracker": {
+  "human": 0, "trick": 5,
+  "cards": {"T21": {"place": "hand"}, "T1": {"place": "played", "by": 1, "trick": 3},
+            "Kh": {"place": "unseen"}, "...": "all 54 codes"},
+  "groups": [{"kind": "h", "mine": ["Qh"], "out": ["Kh", "Ch", "2h"], "unseen": 2,
+              "void": false, "best": "Qh", "top_out": "Kh", "master": false},
+             "... d, c, s, then trump"],
+  "out_count": 31, "out_thirds": 110, "unseen_count": 27, "unseen_thirds": 96}}
+```
+
+`place` is one of `hand` and `cover` (mine), `opp_cover` (his face-up packet
+card), `opp_hand` (in his hand and shown: pulled and not yet played, or part of
+an announced honour), `played` (with `by`, a seat, and `trick`, 1 to 27, the
+open trick included) and `unseen` (his private hand cards and every face-down
+packet card, both players'). `groups` are the four suits `h d c s` and
+`trump`, each with: `mine` (my hand and covers of the kind) and `out` (the
+cards of the kind that are not mine and not played; `opp_cover`, `opp_hand` and
+`unseen` together), both high to low; `unseen`, how many of `out` are strictly
+unseen; `void`, the opponent failed to follow the kind and no card of it has
+been shown in his hand or on his covers since (a packet can refill a hand);
+`best`, my highest card of the kind; `top_out`, the highest card out; `master`,
+I hold the kind and nothing out is higher. `out_count` and `out_thirds` cover
+the cards out, `unseen_count` and `unseen_thirds` the unseen ones; thirds of a
+point, so the whole pack is 210 (70 points, RULES 8.1). `trick` stops at 27 once
+the last trick is won.

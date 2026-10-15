@@ -41,6 +41,8 @@ import { cardName, count, getLang, onLang, romanName, setLang, signed, suitName,
 import { createTalk } from "./talk.js";
 import { ALL_CODES, backTexture, COURT_CODES, faceTextures } from "./tarockfaces.js";
 import { createUi } from "./ui.js";
+import { trackerFits, trackerModel, trackerOpen, trackerVisible } from "./tracker.js";
+import { trackerPanel } from "./trackerview.js";
 import { addSitting, clearProgress, exportText, loadProgress, summaryOf } from "./progress.js";
 import { explainText, reviewBlocks } from "./review.js";
 import { createTutor, extendPromptDue, PAGE_KEYS, tutorialPages } from "./tutor.js";
@@ -107,6 +109,8 @@ async function main() {
   let sel = { chosen: null, scroll: -1e9 }; // a row of cards starts at its left end
   let focus = null; // { row: "hand" | "packets", index }
   let hintCard = null;
+  let trackerData = null; // the engine's tracker at the last rest (6.6)
+  let trackerSig = "";
   let pending = 0; // scheduled moments not yet come
   let restModel = null; // the model at the last rest, for the tags
   let sittingOver = false;
@@ -228,9 +232,57 @@ async function main() {
   let reviewChip = null; // null, "deal" or "sitting"
   let pageHelp = false; // the page open now came from the Help list
   let pastSittings = []; // the sittings kept before this one, for the sitting's review
-  const showTutor = () => ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip });
+  const showTutor = () => {
+    ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip });
+    showTracker(); // the Kibitzer's mute is the slate's too (6.6.2)
+  };
   const tutorWords = () => ({ t, cardName: romanName, thirds, signed, suitName: (c) => (getLang() === "en" ? suitName(c).toLowerCase() : suitName(c)) });
   showTutor();
+
+  // ---- the cards-out tracker (docs/TABLE3D.md 6.6) ----------------------------------
+  // Drawn from the engine's payload taken with the cards at rest; redrawn when a
+  // setting, the language or the fold changes.
+  // Wanted by the preferences, and a window it fits (an upright phone is not asked).
+  function trackerShown() {
+    return trackerVisible(prefs) && trackerFits({ width: window.innerWidth, height: window.innerHeight });
+  }
+  function showTracker() {
+    const on = Boolean(wasm?.deal) && trackerShown();
+    const open = on && trackerOpen(prefs, { width: window.innerWidth, height: window.innerHeight });
+    if (on && !trackerData && !director.busy() && pending === 0) trackerData = engine.tracker()?.tracker ?? null;
+    const sig = JSON.stringify([on, open, trackerData, getLang()]);
+    if (sig === trackerSig) return placeTracker();
+    trackerSig = sig;
+    const model = open && trackerData ? trackerModel(trackerData, { t, lang: getLang(), cardName, romanName, thirds }) : null;
+    const node = model ? trackerPanel(document, model, { foldLabel: t("tracker.fold"), foldTitle: t("tracker.fold.title") }) : null;
+    const hadFocus = document.activeElement?.dataset?.act === "tracker-fold";
+    ui.setTracker({ tab: on, open, node });
+    placeTracker();
+    if (hadFocus) ui.trackerRoot.querySelector("[data-act=tracker-fold]")?.focus();
+  }
+  function updateTracker() {
+    trackerData = wasm?.deal && trackerShown() ? (engine.tracker()?.tracker ?? null) : null;
+    showTracker();
+  }
+  // The panel lies below the HUD and above the Kibitzer's tabs, with a height to
+  // scroll inside (6.6.6).
+  function placeTracker() {
+    const root = ui.trackerRoot;
+    if (!root.firstChild) return;
+    const top = document.querySelector(".info").getBoundingClientRect().bottom + 6;
+    let limit = ui.root.querySelector(".tutor-row").getBoundingClientRect().top;
+    // The fan's outer cards reach up beside the panel on a narrower window.
+    const lane = root.getBoundingClientRect();
+    if (S) for (const r of cardRectsOf("your-hand")) if (r.left < lane.right && r.right > lane.left) limit = Math.min(limit, r.top);
+    root.style.setProperty("--tracker-top", `${Math.round(top)}px`);
+    root.style.setProperty("--tracker-max", `${Math.max(120, Math.round(limit - top - 6))}px`);
+  }
+  // The fold is the person's, and kept.
+  function toggleTracker() {
+    const open = trackerOpen(prefs, { width: window.innerWidth, height: window.innerHeight });
+    save({ trackerFolded: open });
+    showTracker();
+  }
 
   // The Kibitzer's note, in his tab and not in the opponent's box (6.5).
   function kibitzNote(text) {
@@ -601,6 +653,7 @@ async function main() {
     if (pending > 0 || director.busy() || !S) return;
     restModel = S.model;
     placeTags();
+    updateTracker();
     tutorStep(); // a due page opens before the bar and the prompts are drawn
     refresh();
     armIdle();
@@ -805,6 +858,9 @@ async function main() {
         if (!r.ok) return showRefusal(r.refusal);
         return advance(r);
       }
+      case "tracker":
+      case "tracker-fold":
+        return toggleTracker();
       case "slate":
         return toggleSlate();
       case "settings":
@@ -890,6 +946,8 @@ async function main() {
     S = null;
     log = [];
     restModel = null;
+    trackerData = null;
+    showTracker();
   }
 
   function newSitting({ touren = prefs.touren, seed = over.seed, humanSeat = over.human } = {}) {
@@ -1033,6 +1091,7 @@ async function main() {
         break;
       default:
     }
+    showTracker();
     if (wasm) refresh();
   }
 
@@ -1226,11 +1285,13 @@ async function main() {
     // Upright, the Kibitzer's tabs lie in a row above the controls (tutor.css).
     const tabs = window.matchMedia("(max-aspect-ratio: 85/100)").matches ? ui.root.querySelector(".tutor-row").getBoundingClientRect().top : Infinity;
     stage.setStrips({ top: hud.bottom + 6, foot: window.innerHeight - Math.min(controls.top, tabs) + 6, raised: 0 });
+    placeTracker();
   }
   new ResizeObserver(() => {
     fitStrips();
     sel = { ...sel, at: null }; // cards move on a resize
     if (S) director.relayout();
+    showTracker(); // a window that no longer fits it, or now does
   }).observe(document.getElementById("overlay"));
   fitStrips();
   stage.onReframe = () => S && director.relayout();
@@ -1265,6 +1326,7 @@ async function main() {
     faces: () => director.placement().filter((m) => m.code).map((m) => m.code),
     shown: () => director.meshes.map((m) => m.userData.code),
     hidden: () => engine.audit().hidden,
+    tracker: () => ({ data: trackerData, open: Boolean(ui.trackerRoot.firstChild) }),
     busy: () => director.busy() || pending > 0 || stage.reframing(),
     timing: () => lastTiming,
     debug: () => ({ pending, dbusy: director.busy(), reframing: stage.reframing(), held: director.held(), stepping, prompt: wasm?.prompt, events: log.length }),

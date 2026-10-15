@@ -501,8 +501,8 @@ the speech and the holds are unchanged, so nothing is missed.
 
 3.10.1 The page is operable by keyboard alone. `Tab` order: the move bar; the hand
 (one tab stop, arrow keys move within it, left/right, `Home`/`End`); the
-packets (one stop, `1 2 3` choose a packet, or arrows); the slate tab; the
-settings. Keys: `Enter` or `Space` choose or play the focused card; `A`
+packets (one stop, `1 2 3` choose a packet, or arrows); the cards-out tab (6.6);
+the slate tab; the settings; then the cards-out panel, whose Fold button follows them. Keys: `Enter` or `Space` choose or play the focused card; `A`
 announce (first held honour); `T` take, `W` weiter; `S` the slate; `H` the hint;
 `M` mute the tutor (6.3); `?` the keys list; `Esc` closes a sheet or cancels the
 prompt. Keys are discoverable under `?`.
@@ -890,6 +890,93 @@ kibitzer may buy supper, not advise" is his; tips are offered as "if I may".
 He is never the opponent's voice and is never in a dialogue box of the
 opponent's: the tab's bubble is a different shape (a ruled paper note).
 
+### 6.6 The tracker ("Cards out" / "Ausgespielt")
+
+6.6.1 **What.** The Kibitzer's count of what has gone: the 54 cards by place, and
+the counts a player who keeps count would keep. It is the engine's
+`strohmandeln_tracker()` (`docs/PROTOCOL.md`, "The tracker"), built from the human's
+view alone: for each card, in your hand, your cover, his cover, shown in his hand,
+played (by whom, in which trick) or unseen; per suit and for the tarocks, the cards
+out, his shown void, your best card and whether it is a master; the cards out in
+thirds. The page draws it and adds no rule: the masters, the voids and the points
+come from the engine, and an unseen card is only ever "still out". ("Point" with a
+capital is what is paid; the count is points, Augen. The Slate is the score slate, 4:
+the tracker is never called a slate.)
+
+6.6.2 **When it shows.** Hints on (7.1), the setting "Cards out" on (default on), the
+tutor not muted (as the hint, 6.3.4), and a deal under way. A tab "Cards out" /
+"Ausgespielt" in the top row, left of the slate's, folds and unfolds it
+(`aria-expanded`); so does the panel's own "Fold" button. The fold is kept
+(`trackerFolded` in the preferences, 7.7): unset, the panel starts open when the
+window is at least 900 × 600 px and folded on a smaller one. On a phone it is not
+shown at all, and the engine is not asked for it (6.6.6, `trackerFits`).
+
+6.6.3 **When it changes.** With the cards at rest (the director's `rested`, as 6.3.4):
+after each trick and each turned packet card, never in an animation. A language
+switch redraws it. A restored sitting shows it at the first rest.
+
+6.6.4 **The grid.** Eight columns, a suit mark at the left of each row: the four suits
+(hearts, diamonds, clubs, spades), each from the king down (K Q C J, then 1 2 3 4 in
+red suits and 10 9 8 7 in black, as printed); then the 22 tarocks from the Sküs down
+to I in rows of 8, 8 and 6. Labels follow the faces (`tarockfaces.js`): K Q C J in
+English, K D C B in German; Roman numerals with IIII; "Sküs". A cell's state is
+carried by more than colour: **yours** (hand or cover) is filled; **played** is
+dimmed on a grey field, and under `prefers-contrast: more` struck through; **still
+out** (unseen, or face up in his hand or on his cover) is outlined. A legend names
+the three; its "Still out" says it holds your own face-down packet cards ("Still
+out, with your face-down packet cards"), which a beginner would otherwise take for
+his. Who played a card, and in which trick, is in the cell's title (the faces'
+numerals: "tarock V: played by your opponent, trick 3") and in the screen reader's
+sentences, not in the cell.
+
+6.6.5 **The lines.** Two to four sentences over the grid, from the counts, in this
+order, each only when it has something to say:
+
+1. Tarocks out: "Tarocks still out: 7 — Sküs, XXI, XIX…" (the highest four, then
+   "…" when there are more); with none, "No tarock is out: every one is yours or
+   played".
+2. Masters: one is "Your ♠K is the highest spade left"; several, one line listing
+   them ("Your highest cards, nothing higher out: XXI, ♥Q, ♠K"). Yours is the
+   strongest tarock you hold and the highest card of each suit you hold; a card is
+   a master when nothing higher is out, the unseen cards counted as out. A master
+   is rank only, so a suit master he can trump is marked: he has shown that suit
+   void and a tarock is still out ("Your ♠K is the highest spade left, but he may
+   trump it"; in a list, "♠K (he may trump)"). A tarock master is never marked.
+3. Shown voids: "Your opponent has shown no hearts" ("... no hearts or clubs"; "no
+   tarocks"). He has failed to follow the kind, and no card of it has since been
+   shown in his hand or on his covers; a packet card pulled later lifts it.
+4. The points still out: "Still out: 31⅓ of 70 points" (the cards out, in the count's thirds, so
+   it includes your face-down packet cards). Each side's take so far is the HUD's
+   (2.5), not repeated here.
+
+The first and the last are always shown while a deal is under way, so there are
+two to four. The words are strings (8) in both languages; the
+Kibitzer's byline under the title is "The Kibitzer keeps count" / "Der Kiebitz zählt
+mit" (6.5).
+
+6.6.6 **Where it lies.** It must not cover the hand, the move bar, the prompt, the
+HUD or the Kibitzer's tabs, and it lies under the dialogs and the slate (z-order). A
+card of 300 px at the left, under the HUD, scrolling inside if it is taller;
+mirrored at the right in left-handed mode. Held upright, or in a window under
+700 px wide, it is not shown at all: **the phone layout is deferred** until the
+maintainer has played the game on a phone and decided what the table should carry
+there. Nothing in the tracker is phone-specific. Browser checks hold the rectangles
+apart at 1280 × 720 and 1024 × 768 (`tracker_clear`, 10.4).
+
+6.6.7 **Accessibility.** The panel is a labelled region; the lines are a list; the grid
+is hidden from the screen reader and replaced by one visually hidden sentence per
+suit and for the tarocks ("Hearts: yours queen; still out king, cavall"). It does
+not announce itself on every update. The tab and the Fold button are 44 px targets
+with visible focus. Colours are the table's tokens (`--md-sys-color-*`, the
+human's `--cassino-you` and the opponent's `--cassino-them`); under
+`prefers-contrast: more` borders are solid and tints are dropped; under
+`prefers-reduced-motion` nothing animates.
+
+6.6.8 **Tests.** The engine's (hidden-card twins, places, masters, voids, thirds)
+in `strohmandeln-ai`; the wire in `strohmandeln-wasm` and `smoke.mjs`; the page's
+model (`web3d/src/tracker.js`: what it shows for a payload, in both languages, the
+fold, hidden when Hints is off) in `web3d/test/tracker.test.js`.
+
 ## 7. Settings
 
 ### 7.1 The menu
@@ -908,6 +995,7 @@ numbered (7.7).
 | Table talk | All / Calls only / None | All | now |
 | Tutor | On / Off (off: no pages, no tips, no review chip) | On | now |
 | Hints | On / Off (the hint chip) | Off | now |
+| Cards out | On / Off (the tracker, 6.6; shown only with Hints on) | On | now |
 | Explanations | On / Off | Off | now |
 | Announce automatically | Off / On (an honour is announced before it is played, with no prompt) | Off | now |
 | Slate opens by itself | On / Off | On | now |
@@ -1182,6 +1270,15 @@ motion are saved to `web3d/test/out/`.
   unmute restores them.
 - `hint_and_explain`: the hint chip lights a card and shows a rendered key; explanations
   off leaves the line empty.
+- `tracker_clear`: with Hints on, the cards-out panel is open at rest, of the trick at
+  rest, with two to four lines and the 54-cell grid, and its rectangle meets none of
+  the hand, the move bar, the prompt, the HUD or the Kibitzer's tabs at the window
+  sizes of 6.6.6, with the whole legend inside it (no scrolling).
+- `tracker_fold_and_settings`: the tab and Fold fold and open it and the fold is
+  kept; it follows the cards at rest; Hints off, its own setting off, or the
+  Kibitzer muted takes it away, and back on returns it.
+- `tracker_languages`: the tab, the lines and the court labels are German in
+  German, and the German legend is whole inside the panel; held upright it is not shown.
 - `deal_review`: after a scored deal the chip opens "How the deal went" with up to
   three bullets; none after a void deal or a throw-in.
 

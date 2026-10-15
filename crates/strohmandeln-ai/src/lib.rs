@@ -22,3 +22,4 @@ pub mod stats;
 #[cfg(test)]
 mod testutil;
 pub mod tournament;
+pub mod tracker;
