@@ -4,7 +4,7 @@
 
 use crate::cardset::leader_wins;
 use crate::know::Knowledge;
-use crate::rung2::{reserved_packet, STRONG_TAROCKS};
+use crate::rung2::{reserved_packet, spend, Weights, STRONG_TAROCKS};
 use strohmandeln_core::cards::Card;
 
 /// A parameter of a reason: a card (sent as its code) or a whole number.
@@ -70,7 +70,10 @@ pub fn explain_play(k: &Knowledge, card: Card, maxim: &Maxim, sampled: &Sampled)
         .iter()
         .filter(|c| c.is_tarock())
         .min_by_key(|c| c.strength());
+    // On a lead the Pagat is a rival only for another tarock: a king led with
+    // a strong hand is not "instead of the Pagat".
     if card != Card::PAGAT
+        && (k.lead.is_some() || card.is_tarock())
         && lowest_tarock == Some(&Card::PAGAT)
         && k.my_tarocks() >= STRONG_TAROCKS
     {
@@ -125,7 +128,7 @@ fn follow(k: &Knowledge, led: Card, card: Card) -> Reason {
                     ("alt", Param::Card(alt)),
                     ("trick_thirds", trick),
                 ],
-                Some("cheapest"),
+                None,
             )
         } else {
             reason(
@@ -137,6 +140,21 @@ fn follow(k: &Knowledge, led: Card, card: Card) -> Reason {
     }
     let given = int(card.thirds());
     if let Some(&alt) = winners.first() {
+        // "Poor" is the maxim's own measure: the lead's points do not repay
+        // the burden of leading next and the cost of spending the winner.
+        if f64::from(led.thirds()) > Weights::default().burden + spend(alt) {
+            return reason(
+                "decline-rich",
+                &[
+                    ("card", cd),
+                    ("led", ld),
+                    ("alt", Param::Card(alt)),
+                    ("trick_thirds", int(led.thirds() + alt.thirds())),
+                    ("given_thirds", given),
+                ],
+                None,
+            );
+        }
         return reason(
             "decline-poor",
             &[
@@ -284,7 +302,9 @@ mod tests {
         assert_eq!(p(&r, "led"), Param::Card(c("Jh")));
         assert_eq!(p(&r, "alt"), Param::Card(c("Kh")));
         assert_eq!(p(&r, "trick_thirds"), Param::Int(14));
-        assert_eq!(r.rule, Some("cheapest"));
+        // The sources say not to spend a king on a poor trick, not that the
+        // cheapest winner is a rule: no rule is named.
+        assert_eq!(r.rule, None);
     }
 
     #[test]
@@ -310,6 +330,25 @@ mod tests {
         let r = why(&k, "Kh");
         assert_eq!(r.key, "win-sole");
         assert_eq!(p(&r, "trick_thirds"), Param::Int(23));
+    }
+
+    #[test]
+    fn a_rich_trick_given_up_is_not_called_poor() {
+        // The queen led is worth 10 thirds: not a poor trick, so the
+        // "poor trick" reason must not be given for declining the king.
+        let k = know(&["Kh", "4h", "9c"], NO, NO, &[], Some("Qh"));
+        let r = why(&k, "4h");
+        assert_eq!(r.key, "decline-rich");
+        assert_eq!(p(&r, "alt"), Param::Card(c("Kh")));
+        assert_eq!(p(&r, "trick_thirds"), Param::Int(23));
+    }
+
+    #[test]
+    fn leading_a_king_is_not_instead_of_the_pagat() {
+        let hand = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "Kh"];
+        let k = know(&hand, NO, NO, &[], None);
+        assert_ne!(why(&k, "Kh").key, "hold-pagat");
+        assert_eq!(why(&k, "T2").key, "hold-pagat");
     }
 
     #[test]

@@ -335,7 +335,7 @@ asking twice gives the same answer, and asking changes nothing.
 {"protocol": 1, "hint": {"action": "play", "card": "T19", "source": "hand"},
  "reason": "win-cheapest",
  "params": {"card": "T19", "led": "T15", "alt": "T21", "trick_thirds": 2},
- "rule": "cheapest",
+ "rule": null,
  "odds": {"alt": "T21", "better": 7, "worlds": 10, "gain_thirds": 4}}
 ```
 
