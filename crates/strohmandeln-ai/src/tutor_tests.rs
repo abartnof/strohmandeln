@@ -426,6 +426,60 @@ fn an_assisted_decision_is_no_evidence() {
 }
 
 #[test]
+fn an_assisted_announcement_covers_the_play_it_belongs_to() {
+    // A hint is shown for the position; the human may then announce and play
+    // in the same turn. Marking the announcement marks the play too.
+    use strohmandeln_core::session::Move;
+    let (rec, at) = students()
+        .whole
+        .iter()
+        .find_map(|r| {
+            let at = r.actions.iter().position(|m| {
+                m.seat == HUMAN
+                    && matches!(&m.action, Action::Play { announce, .. } if !announce.is_empty())
+            })?;
+            Some((r.clone(), at))
+        })
+        .expect("a deal in which the human announces with a card");
+    // split the announcing play in two: Announce, then the card alone
+    let Action::Play { card, announce } = rec.actions[at].action.clone() else {
+        unreachable!()
+    };
+    let mut split = rec.clone();
+    split.actions[at].action = Action::play(card);
+    for (n, honour) in announce.iter().enumerate() {
+        split.actions.insert(
+            at + n,
+            Move {
+                seat: HUMAN,
+                action: Action::Announce { honour: *honour },
+            },
+        );
+    }
+    let play_at = at + announce.len();
+    let full = evidence(&split, HUMAN, &[], small()).unwrap();
+    // the chances of the announcements and of the play
+    let count = |range: std::ops::Range<usize>| {
+        let mut n = 0;
+        split
+            .replay(|i, d, seat, a| {
+                if seat == HUMAN && range.contains(&i) {
+                    n += decision_verdicts(&bare_view(d, seat), a, small()).len();
+                }
+            })
+            .unwrap();
+        n
+    };
+    let turn = count(at..play_at + 1);
+    assert!(turn >= 1);
+    let only_first = evidence(&split, HUMAN, &[at], small()).unwrap();
+    assert_eq!(only_first.chances.len(), full.chances.len() - turn);
+    // asking at the play alone leaves the announcement counted
+    let play_only = evidence(&split, HUMAN, &[play_at], small()).unwrap();
+    assert!(play_only.chances.len() > only_first.chances.len());
+}
+
+#[test]
 fn the_evidence_is_a_function_of_the_record() {
     let rec = &students().whole[1];
     let a = evidence(rec, HUMAN, &[2], small()).unwrap();

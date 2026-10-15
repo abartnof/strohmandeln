@@ -691,10 +691,34 @@ fn fell_under(tricks: &[TrickRecord], figure: Card, human: Seat) -> Option<Conse
     })
 }
 
+/// The actions a hint or a nudge was shown for, and the rest of the turn they
+/// were shown in: a hint is for the position, and the human may announce
+/// (any number of times) before the card the hint was about, so an
+/// assisted `Announce` also covers the actions of the same seat that follow
+/// it up to and including the card played.
+fn assisted_actions(record: &DealRecord, assisted: &[usize]) -> Vec<bool> {
+    let mut covered = vec![false; record.actions.len()];
+    for &first in assisted {
+        let mut at = first;
+        while let Some(m) = record.actions.get(at) {
+            covered[at] = true;
+            let next = record.actions.get(at + 1);
+            if matches!(m.action, Action::Announce { .. }) && next.is_some_and(|n| n.seat == m.seat)
+            {
+                at += 1;
+            } else {
+                break;
+            }
+        }
+    }
+    covered
+}
+
 /// The evidence of one scored deal for `human`: the record replayed, and at
-/// every decision of the human's that is not in `assisted` (the numbers of
-/// the actions a hint or a nudge was shown for, counted from 0 over both
-/// seats' actions) the verdicts of [`decision_verdicts`].
+/// every decision of the human's that is not assisted (`assisted` holds the
+/// numbers of the actions a hint or a nudge was shown for, counted from 0
+/// over both seats' actions, `Sitting::deal_action_count`; see
+/// [`assisted_actions`]) the verdicts of [`decision_verdicts`].
 pub fn evidence(
     record: &DealRecord,
     human: Seat,
@@ -703,8 +727,9 @@ pub fn evidence(
 ) -> Result<Evidence, ReplayError> {
     let mut chances = Vec::new();
     let mut costliest: [Option<Miss>; SKILLS] = Default::default();
-    let deal = record.replay(|index, deal, seat, action| {
-        if seat != human || assisted.contains(&index) {
+    let covered = assisted_actions(record, assisted);
+    let deal = record.replay_to_end(|index, deal, seat, action| {
+        if seat != human || covered[index] {
             return;
         }
         let view = bare_view(deal, seat);

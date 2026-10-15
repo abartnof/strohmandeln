@@ -187,6 +187,14 @@ impl Sitting {
         self.deal.as_ref()
     }
 
+    /// The number of actions made so far in the deal in progress, both seats'
+    /// (0 before the first bid): the number the next action will have in the
+    /// deal's record. The table keeps it with a hint, so that the tutor can
+    /// tell which decisions were assisted (`docs/TUTOR.md` 3).
+    pub fn deal_action_count(&self) -> usize {
+        self.deal_actions.len()
+    }
+
     /// The record of the last deal that ended, thrown in or scored: replays
     /// that deal without the sitting.
     pub fn last_deal(&self) -> Option<&DealRecord> {
