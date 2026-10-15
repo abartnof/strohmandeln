@@ -3,7 +3,7 @@
 // table's card values (cardinfo.js thirdsOf) are the engine's for every card that is won.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { runningTally } from "../src/counting.js";
+import { liveTally, runningTally } from "../src/counting.js";
 import { playSitting, random, taker } from "./sim.js";
 
 test("before a trick is won the tally is nothing; a trick adds its cards' thirds to its winner only", () => {
@@ -74,3 +74,15 @@ for (const [name, policy] of [["a declarer", taker], ["random play", random]]) {
     assert.ok(counts >= 4, `${counts} counts checked`);
   });
 }
+
+// Which ledger a language switch rebuilds the HUD with (TABLE3D 7.5.2): the live tally only while a deal is being
+// played; before its first trick is won, or once it is counted, the HUD shows the last count and keeps it.
+test("a live tally is on only between a deal's first won trick and its count", () => {
+  const won = { type: "trick_won", winner: 0, cards: ["Kh", "4d"] };
+  assert.equal(liveTally([]), false);
+  assert.equal(liveTally([{ type: "deal_start" }]), false, "dealt, nothing won");
+  assert.equal(liveTally([{ type: "deal_start" }, won]), true);
+  assert.equal(liveTally([{ type: "deal_start" }, won, { type: "count" }]), false, "counted");
+  assert.equal(liveTally([{ type: "deal_start" }, won, { type: "count" }, { type: "game_scored" }, { type: "deal_start" }, { type: "dealt" }]), false, "the next deal is dealt: the HUD still shows the last count");
+  assert.equal(liveTally([{ type: "deal_start" }, won, { type: "count" }, { type: "deal_start" }, won]), true);
+});
