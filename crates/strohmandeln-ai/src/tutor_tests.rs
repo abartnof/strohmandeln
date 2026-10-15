@@ -656,6 +656,19 @@ fn a_record_that_does_not_replay_is_an_error_not_evidence() {
 }
 
 #[test]
+fn the_nudge_never_reads_a_hidden_card() {
+    // The same twins for the skills a view is open to: what the nudge shows
+    // may depend on nothing the seat cannot see.
+    let tiny = Budget {
+        worlds: 2,
+        nodes: 1_500,
+        bid_worlds: 4,
+    };
+    let twins = blind_check_values(&|v: &View| open_skills(v, tiny), 6);
+    assert!(twins > 100, "{twins}");
+}
+
+#[test]
 fn the_evidence_never_reads_a_hidden_card() {
     // Twin deals that differ only in what the seat cannot see give it the
     // same view; the verdicts on every legal action (the fields the `Miss`
@@ -761,8 +774,24 @@ fn every_chance_the_evidence_judges_is_open_to_the_nudge() {
                 open_n[s.index()] += 1;
                 assert!(nudge(*s, &view, small()));
             }
+            // announce is open only where a legal card belongs to an honour that
+            // may be announced: the decision the evidence judges the honour at
+            if open.contains(&Skill::Announce) {
+                let k = Knowledge::from_view(&view).unwrap();
+                assert!(
+                    k.announceable
+                        .iter()
+                        .any(|h| k.legal.iter().any(|c| h.cards().contains(c))),
+                    "announce is open where no honour card can be played"
+                );
+            }
             for v in decision_verdicts(&view, a, small()) {
                 judged[v.skill.index()] += 1;
+                // an announcing action on its own can be judged where no honour
+                // card is legal; the nudge is for the play of the card
+                if v.skill == Skill::Announce && matches!(a, Action::Announce { .. }) {
+                    continue;
+                }
                 assert!(
                     open.contains(&v.skill),
                     "{} judged but not open",
@@ -774,6 +803,36 @@ fn every_chance_the_evidence_judges_is_open_to_the_nudge() {
     }
     assert!(judged.iter().sum::<u32>() > 20, "{judged:?}");
     assert!(open_n[Skill::Worth.index()] > 0, "{open_n:?}");
+}
+
+/// A record is untrusted (`dealrec.rs`): a bid after the bidding, an action out
+/// of turn or a doubled action is an error, never a panic and never judged.
+#[test]
+fn a_record_with_a_bid_after_the_bidding_is_an_error_not_a_panic() {
+    use strohmandeln_core::session::Move;
+    let rec = &one_sitting().whole[0];
+    for action in [Action::Take, Action::Pass] {
+        for seat in Seat::BOTH {
+            let mut bad = rec.clone();
+            bad.actions.push(Move {
+                seat,
+                action: action.clone(),
+            });
+            let r = evidence(&bad, HUMAN, &[], small());
+            assert!(matches!(r, Err(ReplayError::Refused { .. })), "{r:?}");
+        }
+    }
+    // the actions doubled: the second round is refused at its first action
+    let mut twice = rec.clone();
+    twice.actions.extend(rec.actions.clone());
+    assert!(evidence(&twice, HUMAN, &[], small()).is_err());
+    // and the judge itself says nothing of a bid made where none is legal
+    let done = rec.replay_to_end(|_, _, _, _| {}).unwrap();
+    for seat in Seat::BOTH {
+        let view = bare_view(&done, seat);
+        assert!(decision_verdicts(&view, &Action::Take, small()).is_empty());
+        assert!(decision_verdicts(&view, &Action::Pass, small()).is_empty());
+    }
 }
 
 #[test]
@@ -810,7 +869,9 @@ fn the_evidence_counts_the_decisions_with_a_choice_and_reads_the_deals_facts() {
             .into_iter()
             .filter(|&h| deal.honour_state(HUMAN, h) == HonourState::Announced)
             .collect();
-        assert_eq!(e.facts.announced, said);
+        let mut got = e.facts.announced.clone();
+        got.sort_by_key(|h| matches!(h, Honour::Kings));
+        assert_eq!(got, said);
         announced += said.len();
         if let Some(t) = e.facts.mond_caught {
             mond += 1;
@@ -868,6 +929,25 @@ fn the_facts_of_a_deal_follow_its_tricks_from_either_seat() {
         }
     }
     assert!(mond > 0 && ultimo > 0, "mond {mond}, ultimo {ultimo}");
+}
+
+/// The honour praised is one announced at a decision that counted, not at one
+/// a nudge was shown for.
+#[test]
+fn an_honour_announced_at_an_assisted_decision_is_not_praised() {
+    let mut seen = 0;
+    for rec in one_sitting().whole.iter().chain(&one_sitting().no_cover) {
+        let plain = evidence(rec, HUMAN, &[], small()).unwrap();
+        if plain.facts.announced.is_empty() {
+            continue;
+        }
+        seen += 1;
+        let every: Vec<usize> = (0..rec.actions.len()).collect();
+        let none = evidence(rec, HUMAN, &every, small()).unwrap();
+        assert!(none.facts.announced.is_empty(), "{:?}", none.facts);
+        assert_eq!(none.facts.ultimo_won, plain.facts.ultimo_won, "luck stays");
+    }
+    assert!(seen > 0, "no deal with an announced honour in the fixture");
 }
 
 #[test]

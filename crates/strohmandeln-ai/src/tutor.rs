@@ -599,6 +599,10 @@ fn bid_estimate(k: &Knowledge, view: &View, budget: Budget) -> Option<(f64, f64)
 /// pure function of the view and `budget`). A decision whose search finished
 /// no trick (a budget too small) gives no play verdict.
 pub fn decision_verdicts(view: &View, action: &Action, budget: Budget) -> Vec<Verdict> {
+    // Only the seat to move has a decision (a record is untrusted).
+    if view.to_move != Some(view.seat) {
+        return Vec::new();
+    }
     let Some(k) = Knowledge::from_view(view) else {
         return Vec::new();
     };
@@ -609,6 +613,10 @@ pub fn decision_verdicts(view: &View, action: &Action, budget: Budget) -> Vec<Ve
             Action::Pass => false,
             _ => return out,
         };
+        // A bid where none is legal has no worlds to sample.
+        if !view.legal_actions.contains(action) {
+            return out;
+        }
         if let Some((mean, se)) = bid_estimate(&k, view, budget) {
             out.extend(classify_bid(&k, take, mean, se));
         }
@@ -629,7 +637,8 @@ pub fn decision_verdicts(view: &View, action: &Action, budget: Budget) -> Vec<Ve
 
 /// The skills `view` holds a clear chance at, whatever is played: the union
 /// of what [`decision_verdicts`] could say of each legal move, from one
-/// advisor run. What the nudge is shown on (`docs/TUTOR.md` 6). Nothing for a
+/// advisor run (and, for `announce`, a position where an honour's card can be
+/// played). What the nudge is shown on (`docs/TUTOR.md` 6). Nothing for a
 /// seat with no move to make.
 pub fn open_skills(view: &View, budget: Budget) -> Vec<Skill> {
     let Some(k) = Knowledge::from_view(view) else {
@@ -645,7 +654,12 @@ pub fn open_skills(view: &View, budget: Budget) -> Vec<Skill> {
         }
         return open;
     }
-    if !k.announceable.is_empty() {
+    // `announce` is judged at the play of an honour's card (or at the
+    // announcement), so it is open where such a card can be played now.
+    if k.announceable
+        .iter()
+        .any(|h| k.legal.iter().any(|c| h.cards().contains(c)))
+    {
         open.push(Skill::Announce);
     }
     if let Some(table) = play_table(&k, view, budget) {
@@ -864,6 +878,17 @@ fn assisted_actions(record: &DealRecord, assisted: &[usize]) -> Vec<bool> {
     covered
 }
 
+/// The honour an announcing action announced: the `Announce` itself, or the
+/// announcements made with a play.
+fn announced_by(action: &Action) -> impl Iterator<Item = Honour> + '_ {
+    let (one, many): (Option<Honour>, &[Honour]) = match action {
+        Action::Announce { honour } => (Some(*honour), &[]),
+        Action::Play { announce, .. } => (None, announce.as_slice()),
+        _ => (None, &[]),
+    };
+    one.into_iter().chain(many.iter().copied())
+}
+
 /// The evidence of one scored deal for `human`: the record replayed, and at
 /// every decision of the human's that is not assisted (`assisted` holds the
 /// numbers of the actions a hint or a nudge was shown for, counted from 0
@@ -878,6 +903,7 @@ pub fn evidence(
     let mut chances = Vec::new();
     let mut costliest: [Option<Miss>; SKILLS] = Default::default();
     let mut decisions = 0;
+    let mut announced: Vec<Honour> = Vec::new();
     let covered = assisted_actions(record, assisted);
     let deal = record.replay_to_end(|index, deal, seat, action| {
         if seat != human || covered[index] {
@@ -887,6 +913,13 @@ pub fn evidence(
         decisions += u32::from(view.legal_actions.len() >= 2);
         for ch in decision_verdicts(&view, action, budget) {
             chances.push(ch.chance());
+            if ch.met && ch.skill == Skill::Announce {
+                for h in announced_by(action) {
+                    if !announced.contains(&h) {
+                        announced.push(h);
+                    }
+                }
+            }
             if ch.met {
                 continue;
             }
@@ -920,12 +953,16 @@ pub fn evidence(
         }
     }
     let summary = Summary::from_chances(&LADDER, &chances);
+    // The praise is for an honour announced at a decision that counted.
+    let mut facts = Facts::of(&deal, human);
+    announced.sort_by_key(|h| matches!(h, Honour::Kings));
+    facts.announced = announced;
     Ok(Evidence {
         chances,
         summary,
         costliest,
         decisions,
-        facts: Facts::of(&deal, human),
+        facts,
     })
 }
 
