@@ -39,6 +39,9 @@ export const EYE_PORTRAIT = Object.freeze({
   position: over(TARGET_PORTRAIT, 96),
   target: TARGET_PORTRAIT,
   reach: Object.freeze({ up: 0.32, down: -0.34, across: 0.24 }),
+  // Your hand's reach across (test/eye.test.js measures it): 0.203 at its own
+  // length, and 0.204 more for each unit `fill` lengthens it.
+  hand: Object.freeze({ across: 0.21, still: 0.21, perFill: 0.21 }),
 });
 
 // The shape of every arrangement.
@@ -90,7 +93,7 @@ export const ZONES_TOUCH = arrangement({
 
 export const ZONES_PORTRAIT = arrangement({
   eye: EYE_PORTRAIT,
-  yours: hand([0, 2, 13], EYE_PORTRAIT, { fan: false, pitch: 3.2, width: 26 }),
+  yours: hand([0, 2, 13], EYE_PORTRAIT, { fan: false, pitch: 3.6, minPitch: 2.8, width: 34, rows: 2, rowLift: 5.4 }),
   theirs: hand([0, 6, -38], EYE_PORTRAIT, { fan: true, radius: 30, spacing: 1.1, width: 20 }),
   packets: { you: -3, them: -27, xs: [-11, 0, 11] },
   trick: { x: 0, z: -15, gap: 0.8, offset: 2.2 },

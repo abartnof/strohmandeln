@@ -60,3 +60,12 @@
 @media (max-width: 520px) {
   .tutor { bottom: 112px; }
 }
+
+/* A phone held upright (below PORTRAIT_BELOW): the hand fills the width, so
+   the tabs take a row of their own above the controls, which the table is
+   framed above (main.js fitStrips); his note floats over the table. */
+@media (max-aspect-ratio: 85/100) {
+  .tutor, .left .tutor { left: 8px; right: 8px; bottom: 102px; max-width: none; flex-direction: row; align-items: flex-end; }
+  .left .tutor { justify-content: flex-end; }
+  .tutor-note { position: absolute; left: 0; right: 0; bottom: calc(100% + 6px); }
+}

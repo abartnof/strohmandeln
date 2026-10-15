@@ -41,12 +41,31 @@ const toward = (centre, side) => centre.clone().add(new Vector3(0, 0, 300 * side
 export const spacingFor = (n, spacing, width) => (n < 2 ? spacing : Math.min(spacing, (width - CARD.width) / (n - 1)));
 
 // Your hand: fanned (a computer) or in a row (a touch screen). A row wider
-// than the screen scrolls: `scroll` cm.
-export function handRange(n, zone) {
-  if (zone.fan) return 0;
-  const total = (n - 1) * zone.pitch + CARD.width;
-  return Math.max(0, (total - zone.width) / 2);
+// than the screen scrolls: `scroll` cm. On a phone held upright (`rows`) a
+// hand too long for one row is laid in two, the first half behind and above
+// the second, each card's index (`minPitch` wide) clear of its neighbour, so
+// that it never scrolls. `fill` (framing.js) draws such a row out where the
+// window has width to spare (a phone on its side).
+export function handShape(n, zone, fill = 1) {
+  if (!(zone.rows > 1)) return { rows: 1, perRow: n, pitch: zone.pitch, width: zone.width };
+  const width = zone.width * fill;
+  const rows = (n - 1) * zone.minPitch + CARD.width > width ? zone.rows : 1;
+  const perRow = Math.ceil(n / rows);
+  const open = Math.min(zone.pitch * fill, CARD.width + 0.6);
+  const pitch = perRow > 1 ? Math.min(open, (width - CARD.width) / (perRow - 1)) : zone.pitch;
+  return { rows, perRow, pitch, width };
 }
+
+export function handRange(n, zone, fill = 1) {
+  if (zone.fan) return 0;
+  const { perRow, pitch, width } = handShape(n, zone, fill);
+  const total = (perRow - 1) * pitch + CARD.width;
+  return Math.max(0, (total - width) / 2);
+}
+
+// A card a hair nearer the eye than the one before it, so overlapping cards
+// of a row do not share a plane (they would z-fight, and the faces smear).
+const LAYER = 0.06;
 
 function yourHand(cards, view, Z) {
   const zone = Z.yourHand;
@@ -60,9 +79,22 @@ function yourHand(cards, view, Z) {
     const angles = Array.from({ length: n }, (_, i) => (i - (n - 1) / 2) * step);
     poses = fan({ count: n, angles, centre, facing: toward(centre, 1), radius: zone.radius, tilt: zone.lean * DEG });
   } else {
-    const range = handRange(n, zone);
+    const fill = view.fill ?? 1;
+    const { rows, perRow, pitch } = handShape(n, zone, fill);
+    const range = handRange(n, zone, fill);
     const at = centre.clone().add(new Vector3(-Math.max(-range, Math.min(range, view.scroll ?? 0)), 0, 0));
-    poses = row({ count: n, centre: at, facing: toward(at, 1), gap: zone.pitch - CARD.width, tilt: zone.lean * DEG });
+    poses = [];
+    for (let r = 0; r < rows; r++) {
+      const count = Math.min(perRow, n - r * perRow);
+      const line = row({ count, centre: at, facing: toward(at, 1), gap: pitch - CARD.width, tilt: zone.lean * DEG });
+      const behind = rows - 1 - r; // the first row lies behind and above the last
+      line.forEach((pose, i) => {
+        const up = new Vector3(0, 1, 0).applyQuaternion(pose.quaternion);
+        const out = new Vector3(0, 0, 1).applyQuaternion(pose.quaternion);
+        pose.position.addScaledVector(up, behind * (zone.rowLift ?? 0)).addScaledVector(out, i * LAYER - behind * 0.5);
+        poses.push(pose);
+      });
+    }
   }
   return cards.map((c, i) => {
     const pose = poses[i];
@@ -229,9 +261,9 @@ function pack(model, Z) {
 
 // `view`: { chosen, scroll, left } -- the hand card chosen, the row scrolled,
 // left-handed mode (the piles on the other side).
-export function layout(model, { zones = ZONES, chosen = null, scroll = 0, left = false } = {}) {
+export function layout(model, { zones = ZONES, chosen = null, scroll = 0, left = false, fill = 1 } = {}) {
   const Z = zones;
-  const view = { chosen, scroll };
+  const view = { chosen, scroll, fill };
   const mirrored = left ? mirrorZones(Z) : Z;
   return [
     ...pack(model, mirrored),

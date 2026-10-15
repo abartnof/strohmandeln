@@ -118,7 +118,7 @@ async function main() {
   let lastTiming = null;
 
   const lit = new Set();
-  const view = () => ({ chosen: sel.chosen, scroll: sel.scroll, zones: zonesNow(), left: prefs.leftHanded, reduced: calm() });
+  const view = () => ({ chosen: sel.chosen, scroll: sel.scroll, zones: zonesNow(), left: prefs.leftHanded, fill: stage.portrait ? stage.fill() : 1, reduced: calm() });
 
   function decorate(placement, d, meshes) {
     const mine = wasm?.prompt === "you" && !sittingOver;
@@ -1088,7 +1088,7 @@ async function main() {
   // A row of cards wider than the screen scrolls.
   let dragFrom = null;
   const clampScroll = (v) => {
-    const range = handRange(S ? S.model.hand.length : 0, zonesNow().yourHand);
+    const range = handRange(S ? S.model.hand.length : 0, zonesNow().yourHand, view().fill);
     return Math.max(-range, Math.min(range, v));
   };
   canvas.addEventListener("pointerdown", (e) => {
@@ -1220,7 +1220,9 @@ async function main() {
   function fitStrips() {
     const hud = document.querySelector(".info").getBoundingClientRect();
     const controls = ui.controls.getBoundingClientRect();
-    stage.setStrips({ top: hud.bottom + 6, foot: window.innerHeight - controls.top + 6, raised: 0 });
+    // Upright, the Kibitzer's tabs lie in a row above the controls (tutor.css).
+    const tabs = window.matchMedia("(max-aspect-ratio: 85/100)").matches ? ui.root.querySelector(".tutor-row").getBoundingClientRect().top : Infinity;
+    stage.setStrips({ top: hud.bottom + 6, foot: window.innerHeight - Math.min(controls.top, tabs) + 6, raised: 0 });
   }
   new ResizeObserver(() => {
     fitStrips();

@@ -90,9 +90,18 @@ placement of piles, slate and move bar.
 Top to bottom: HUD strip; the opponent's hand as a short overlapped row of
 backs; their packets (three stacks); the trick; your packets; the move bar (the
 announce chip and the bid buttons live here); your hand as a **row**, not a fan,
-spaced wide (`kinematics.row`), 15 cards as a single row that scrolls
-horizontally when it exceeds the width, never wrapping; won piles as two small
-squared stacks beside the trick. The slate opens as a sheet from the bottom.
+spaced wide (`kinematics.row`). A hand whose indices (2.9 card units wide)
+would overlap on one row of the table's width is laid in **two rows** (`rows`,
+`layout.handShape`): the first half behind and above the second (`rowLift`, the
+height of an index), so up to 18 cards fit the window with every index clear
+and the hand never scrolls. Each card lies a hair nearer the eye than the one
+before (`LAYER`), so overlapping cards do not z-fight. `framing.fill` draws the
+row out where the window has width to spare (an upright tablet). The Kibitzer's
+tabs take a row of their own above the controls (tutor.css; `fitStrips` frames
+the table above them) and his note floats over the table. Tested in
+`layout.test.js` (corners inside the window, indices uncovered, at 390×844,
+360×740, 768×1024; and the touch arrangement at 844×390). Won piles as two
+small squared stacks beside the trick. The slate opens as a sheet from the bottom.
 Cards on the table are the hand's size ("make the cards on the table the same
 size", Cassino's play-testing).
 
@@ -1074,7 +1083,7 @@ motion are saved to `web3d/test/out/`.
 - `cover_legibility`: a cover's screen size is within a tenth of a hand card's.
 - `no_face_leak`: at every rest of a whole sitting by clicking, no mesh shows a face
   the view does not give; `strohmandeln_audit` agrees (0.2).
-- `phone_row`: portrait hand is a row, scrolls, never wraps; 15 cards reachable.
+- `phone_row`: portrait hand of 15 is two overlapped rows, every card inside the window, none under the Kibitzer's tabs.
 - `window_resize`: a resize mid-deal re-lays the table without losing a card.
 
 ### 10.2 Choreography

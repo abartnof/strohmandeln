@@ -244,26 +244,21 @@ def check_no_face_leak(browser, failures):
 
 
 def check_phone_row(browser, failures):
+    """The whole hand of 15 shows at once on a phone: two overlapped rows, every
+    card inside the window, none under the Kibitzer's tabs, nothing to scroll."""
     page = open_page(browser, "seed=7&speed=instant&human=1", PORTRAIT)
     hand = js(page, "cardRects('your-hand')")
-    ys = {round(c["top"]) for c in hand}
-    fail_if(max(ys) - min(ys) > 4, failures, f"phone_row: the hand is not one row: tops {sorted(ys)}")
     fail_if(len(hand) != 15, failures, f"phone_row: {len(hand)} cards")
-    # It scrolls: wheel over the hand until the last card is on the screen.
-    seen = set()
-    for step in [300] * 6 + [-300] * 12:
-        for code in js(page, "model().hand.map(c => c.code)"):
-            p = js(page, f"screenPoint('{code}')")
-            if p and 10 <= p["x"] <= PORTRAIT["width"] - 10:
-                seen.add(code)
-        page.mouse.move(195, 640)
-        page.mouse.wheel(0, step)
-        page.wait_for_timeout(250)
-    for code in js(page, "model().hand.map(c => c.code)"):
-        p = js(page, f"screenPoint('{code}')")
-        if p and 10 <= p["x"] <= PORTRAIT["width"] - 10:
-            seen.add(code)
-    fail_if(len(seen) < 15, failures, f"phone_row: only {len(seen)} of 15 cards reached by scrolling")
+    tops = sorted({round(c["top"]) for c in hand})
+    fail_if(len(tops) < 2, failures, f"phone_row: a hand of 15 is not in two rows: tops {tops}")
+    for c in hand:
+        fail_if(c["left"] < 0 or c["right"] > PORTRAIT["width"] or c["top"] < 0 or c["bottom"] > PORTRAIT["height"], failures, f"phone_row: a card runs off the window: {c}")
+    tabs = page.evaluate("[...document.querySelectorAll('.tutor-row > button:not([hidden])')].map(b => { const r = b.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; })")
+    for t in tabs:
+        for c in hand:
+            hit = c["left"] < t["right"] and t["left"] < c["right"] and c["top"] < t["bottom"] and t["top"] < c["bottom"]
+            fail_if(hit, failures, f"phone_row: a tab {t} covers a card {c}")
+    shot(page, "phone_row")
 
 
 def check_window_resize(browser, failures):

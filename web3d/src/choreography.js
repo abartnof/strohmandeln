@@ -89,7 +89,7 @@ const onTable = (pose) => {
 const samePlace = (a, b) => Math.abs(a.position.x - b.position.x) < 1e-9 && Math.abs(a.position.z - b.position.z) < 1e-9;
 const samePose = (a, b) => a.position.equals(b.position) && a.quaternion.equals(b.quaternion);
 
-const layoutOf = (model, view = {}) => layout(model, { zones: view.zones ?? ZONES, chosen: view.chosen ?? null, scroll: view.scroll ?? 0, left: view.left ?? false });
+const layoutOf = (model, view = {}) => layout(model, { zones: view.zones ?? ZONES, chosen: view.chosen ?? null, scroll: view.scroll ?? 0, left: view.left ?? false, fill: view.fill ?? 1 });
 
 // The meshes placed straight onto a layout, the first time a state is seen.
 export function initialPlacement(state, view = {}) {
