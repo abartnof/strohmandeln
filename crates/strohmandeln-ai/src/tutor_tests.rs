@@ -761,3 +761,64 @@ fn evidence_latency() {
         ms[ms.len() - 1]
     );
 }
+
+/// M1 re-draws a position under other streams: stream 0 is the evidence's own,
+/// the others differ and are reproducible.
+#[test]
+fn the_advisor_streams_are_the_evidence_for_zero_and_independent_otherwise() {
+    let rec = &one_sitting().whole[0];
+    let mut checked = 0;
+    let mut differed = 0;
+    rec.replay(|_, d, seat, a| {
+        let view = bare_view(d, seat);
+        let Some(k) = Knowledge::from_view(&view) else {
+            return;
+        };
+        if !k.playing || k.legal.len() < 2 || k.hidden_total() == 0 {
+            return;
+        }
+        let Action::Play { card, .. } = a else {
+            return;
+        };
+        let t0 = play_table(&k, &view, small(), 0).unwrap();
+        let again = play_table(&k, &view, small(), 0).unwrap();
+        assert_eq!(t0.scores, again.scores, "a stream replays");
+        // stream 0 gives the verdicts the evidence gives
+        let via = classify_play(&k, *card, &advice_of(&k, &t0));
+        let direct: Vec<Verdict> = decision_verdicts(&view, a, small())
+            .into_iter()
+            .filter(|v| v.skill != Skill::Announce)
+            .collect();
+        assert_eq!(via, direct);
+        let t1 = play_table(&k, &view, small(), 1).unwrap();
+        differed += usize::from(t0.scores != t1.scores);
+        checked += 1;
+    })
+    .unwrap();
+    assert!(checked >= 10, "{checked}");
+    assert!(
+        differed * 2 > checked,
+        "{differed} of {checked} differ under another stream"
+    );
+}
+
+#[test]
+fn a_bid_estimate_replays_and_differs_by_stream() {
+    let rec = &one_sitting().whole[0];
+    let mut seen = 0;
+    rec.replay(|_, d, seat, a| {
+        let view = bare_view(d, seat);
+        let Some(k) = Knowledge::from_view(&view) else {
+            return;
+        };
+        if k.playing || !matches!(a, Action::Take | Action::Pass) {
+            return;
+        }
+        let e0 = bid_estimate(&k, &view, small(), 0).unwrap();
+        assert_eq!(e0, bid_estimate(&k, &view, small(), 0).unwrap());
+        assert_ne!(e0, bid_estimate(&k, &view, small(), 3).unwrap());
+        seen += 1;
+    })
+    .unwrap();
+    assert!(seen >= 1);
+}
