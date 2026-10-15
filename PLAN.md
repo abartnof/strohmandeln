@@ -58,7 +58,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 
 - Table DOM modules (review, docs/review/table-dom-modules.md): a save refused as too big leaves the older save, so Continue offers an earlier state; a quota error reports "unavailable", not "too-big"; `seen` lives in `strohmandeln.prefs`, not the separate `strohmandeln.seen` of TABLE3D 7.7.1; URL overrides must be gated to test runs by the page (7.7.4); the folded slate's backdrop ignores taps (4.1.1); the ultimo setting's note names no source (7.2).
 
-- Opponent (review, docs/review/opponent.md): rung 4's `bid_margin` is in fixed Points, so a doubled deal clears it more easily; the step from rung 2 to 3 is thin (+1.39 ± 0.59 Points per pair, stopped on the boundary).
+- Opponent (review, docs/review/opponent.md): rung 4's `bid_margin` is in fixed Points, so a doubled deal clears it more easily; the step from rung 2 to 3 is the smallest (rerun 15 Oct 2026 on fresh deals: +1.53 ± 0.40 Points per pair, 300 pairs, clear at look 3).
 
 - Tutor (review, docs/review/tutor.md): a valat is invisible to the review (needs `valat-won-you`/`valat-lost-you`); TABLE3D 6.2.3 (pages opened from the review) and 6.4.3 (a Worker, `?noworker`) not built — the review takes milliseconds and the slowest hint ~160 ms on the main thread; the sitting review's `deal` parameter is not shown; unused strings tutor.muted, tutor.page.close, tutor.speech, tutor.off; on a tie `try-count` beats a specific tip; test runs write to the real `strohmandeln.progress`; the `kibitz` group's lines read as said to a kibitzer, not by him; the tutor tab's placement on phones is unchecked in a browser.
 

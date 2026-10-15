@@ -35,10 +35,12 @@ O'Brien-Fleming boundaries fixed before the first batch, futility stop off.
 |---|---|---|---|---|---|
 | 2 vs 1 | 50 x 4 | look 1 (z 19.4 > 4.05) | 50 | +18.36 +- 0.95 | +16.50 to +20.22 |
 | 3 vs 2 | 50 x 4 | look 3 (z 2.35 > 2.34) | 150 | +1.39 +- 0.59 | +0.23 to +2.56 |
+| 3 vs 2, rerun (15 Oct 2026, first seed 2 000 000, `--negligible 0.5`) | 100 x 6 | look 3 (z 3.88 > 2.90) | 300 | +1.53 +- 0.40 | +0.76 to +2.31 |
 | 4 vs 3 | 20 x 5 | look 2 (z 5.81 > 3.23) | 40 | +6.73 +- 1.16 | +4.46 to +8.99 |
 
-Rung 3 over rung 2 is the thinnest step (stopped on the boundary at the third
-look); the interval excludes zero but a later tuning pass may widen it.
+Rung 3 over rung 2 is the thinnest step. The first run stopped on the boundary
+at its third look; the rerun on fresh deals (twice the pairs) agrees and stops
+clear of it: +1.53 Points per pair, interval +0.76 to +2.31.
 
 ## Speed
 
