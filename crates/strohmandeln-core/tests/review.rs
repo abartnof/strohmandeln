@@ -115,7 +115,7 @@ fn expected_credits(log: &DealLog, settings: Settings) -> (GameResult, [u32; 2],
         (None, Some(_)) => GameResult::SimpleWin,
         (Some(d), None) => {
             if t[d.index()] * 3 >= 321 {
-                // 107 thirds; written as 35 2/3 Points = 107/3
+                // 107 thirds; written as 35 2/3 points = 107/3
                 out.push(Credit {
                     seat: d,
                     cause: Cause::Game,
