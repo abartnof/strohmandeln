@@ -53,7 +53,13 @@ export function createStrings(table, initial = "en") {
     return m && m[1] !== "1" && m[1] !== "21" ? t("card.tarock", { n: tarockNumeral(+m[1]) }) : cardName(code);
   }
 
-  return { t, tn, getLang: () => lang, setLang, onLang, suitName, cardName, romanName };
+  // A whole count as the language writes it: 1,000 in English, 1.000 in
+  // German (four digits and more are grouped, a smaller count is as it is);
+  // anything that is not a whole number is left as it is.
+  const GROUPING = { en: new Intl.NumberFormat("en-US"), de: new Intl.NumberFormat("de-DE") };
+  const count = (n) => (Number.isInteger(n) ? GROUPING[lang].format(n + 0) : String(n));
+
+  return { t, tn, getLang: () => lang, setLang, onLang, suitName, cardName, romanName, count };
 }
 
 // Roman numerals as on the real pack: standard subtractive numerals, except 4, which is IIII.
@@ -90,4 +96,4 @@ export const signed = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "0");
 // ---- the shipped table ----------------------------------------------------
 
 const shared = createStrings(TABLE);
-export const { t, tn, getLang, setLang, onLang, suitName, cardName, romanName } = shared;
+export const { t, tn, getLang, setLang, onLang, suitName, cardName, romanName, count } = shared;

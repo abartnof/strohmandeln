@@ -131,6 +131,18 @@ test("tn picks the plural form", () => {
   assert.equal(s.tn("x", 3), "3 Touren");
 });
 
+test("count groups four digits and more as the language writes them", () => {
+  const s = createStrings(TABLE);
+  const all = [0, -0, 7, 999, 1000, 12345, 1234567, -999, -1000, -1234567];
+  assert.deepEqual(all.map(s.count), ["0", "0", "7", "999", "1,000", "12,345", "1,234,567", "-999", "-1,000", "-1,234,567"]);
+  s.setLang("de");
+  assert.deepEqual(all.map(s.count), ["0", "0", "7", "999", "1.000", "12.345", "1.234.567", "-999", "-1.000", "-1.234.567"]);
+  s.setLang("en");
+  assert.equal(s.count(1000), "1,000", "a language switch is followed");
+  // Only whole counts are grouped.
+  assert.equal(s.count(1234.5), "1234.5");
+});
+
 test("thirds are written with the fraction glyphs", () => {
   assert.equal(thirds(107), "35⅔");
   assert.equal(thirds(106), "35⅓");

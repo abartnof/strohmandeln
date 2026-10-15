@@ -4,12 +4,13 @@
 // prompt: the card, why, and (when there is one) the rule and the odds.
 
 // A parameter's value as it is told: a card code by name, a `_thirds` count
-// as points with their unit ("4⅔ points", "⅔ point"), anything else as it is.
+// as points with their unit ("4⅔ points", "⅔ point"), a count as the language
+// groups it ("1,000" / "1.000", strings.js `count`; without `count`, as it is).
 // Shown names come from the caller's cardName (strings.js `romanName`).
-export function hintParams(params, { t, cardName, thirds }) {
+export function hintParams(params, { t, cardName, thirds, count }) {
   const out = {};
   for (const [name, v] of Object.entries(params ?? {})) {
-    out[name] = typeof v === "string" ? cardName(v) : name.endsWith("_thirds") ? `${thirds(v)} ${t(v >= 1 && v <= 3 ? "hint.unit.one" : "hint.unit.other")}` : v;
+    out[name] = typeof v === "string" ? cardName(v) : name.endsWith("_thirds") ? `${thirds(v)} ${t(v >= 1 && v <= 3 ? "hint.unit.one" : "hint.unit.other")}` : count && typeof v === "number" ? count(v) : v;
   }
   return out;
 }
@@ -21,8 +22,8 @@ const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 // { lead, reason, more: [rule, odds] }: `lead` names the card to play (empty
 // for a bid or a decline), `reason` is the key's sentence, `more` the
 // clauses that follow it. The words come from `t`.
-export function hintLines(r, { t, cardName, thirds }) {
-  const words = { t, cardName, thirds };
+export function hintLines(r, { t, cardName, thirds, count }) {
+  const words = { t, cardName, thirds, count };
   const play = r.hint?.action === "play" ? r.hint.card : null;
   const lead = play ? cap(t("hint.play", { card: cardName(play) })) : "";
   const reason = cap(t(`hint.reason.${r.reason}`, hintParams(r.params, words)));

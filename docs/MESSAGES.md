@@ -46,7 +46,7 @@ why. It carries a reason key with parameters, optionally a rule key (a second
 clause naming the maxim the move follows) and, at the top rung, `odds`. The
 table translates all three. A parameter naming a card is a code (the table
 names it), one ending `_thirds` is thirds of a point told with its unit ("4⅔ points",
-"⅔ point"; 107 is "35⅔"), the rest are counts. The move is never changed by its explanation. The text is the
+"⅔ point"; 107 is "35⅔"), the rest are counts, which the table writes as the language does: 1,000 in English, 1.000 in German (a count of 1 000 or more is grouped, a smaller one is not). `worlds` is the deals sampled: 1 000 for `lead-rate` and `lead-cheap`, at most 50 for `odds` (fewer when a search does not finish; `docs/OPPONENT.md`, "Hint evidence"). The move is never changed by its explanation. The text is the
 English and German the table shows.
 
 | Key | Parameters | English | Deutsch |
