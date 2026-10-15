@@ -352,14 +352,20 @@ fn points_in(cards: impl IntoIterator<Item = Card>, suit: Suit) -> u32 {
 /// cannot tell from his (so the share is biased low by about my hidden
 /// fraction of the suit).
 pub(crate) fn is_split(k: &Knowledge, suit: Suit) -> bool {
-    let mine = points_in(k.playable().iter(), suit);
-    let theirs = points_in(k.opp_possible().iter(), suit);
-    let total = mine + theirs;
+    let (mine, total) = suit_share(k, suit);
     if total < SPLIT_MIN_POINTS {
         return false;
     }
     let share = f64::from(mine) / f64::from(total);
     (SPLIT_SHARE.0..=SPLIT_SHARE.1).contains(&share)
+}
+
+/// My value points of `suit` among the unplayed cards, and all of them (mine
+/// and "his", see [`is_split`]).
+pub fn suit_share(k: &Knowledge, suit: Suit) -> (u32, u32) {
+    let mine = points_in(k.playable().iter(), suit);
+    let theirs = points_in(k.opp_possible().iter(), suit);
+    (mine, mine + theirs)
 }
 
 /// A suit he has shown he is out of: he could not follow, and no cover of his

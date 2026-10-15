@@ -446,6 +446,163 @@ pub fn deal_margin_points(record: &DealRecord) -> Option<(f64, f64)> {
     Some((x, net / f64::from(score.multiplier)))
 }
 
+// ---- M8: the split suit --------------------------------------------------------
+
+/// The mean of `values` and its standard error with the values grouped in
+/// clusters (the cluster sums of deviations, G / (G - 1)).
+pub fn clustered_mean(values: &[f64], cluster: &[usize]) -> (f64, f64) {
+    assert_eq!(values.len(), cluster.len());
+    let n = values.len() as f64;
+    let m = mean(values);
+    let mut sums: std::collections::BTreeMap<usize, f64> = Default::default();
+    for (v, c) in values.iter().zip(cluster) {
+        *sums.entry(*c).or_default() += v - m;
+    }
+    let g = sums.len() as f64;
+    let var = sums.values().map(|v| v * v).sum::<f64>() * g / (g - 1.0).max(1.0) / (n * n);
+    (m, var.sqrt())
+}
+
+/// One suit of one lead decision: my share of its unplayed points, their
+/// total, and how the best lead in the suit compares with the best lead
+/// outside it (thirds; negative: another lead is better).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct LeadRow {
+    pub share: f64,
+    pub total: u32,
+    pub gap: f64,
+    /// The lead actually made was in this suit.
+    pub opened: bool,
+    pub cluster: usize,
+}
+
+/// The rows of a lead decision, one per suit that has a legal lead and
+/// leaves another kind of lead to compare with.
+pub fn lead_rows(k: &Knowledge, card: Card, advice: &Advice, cluster: usize) -> Vec<LeadRow> {
+    use crate::tutor::suit_share;
+    use strohmandeln_core::cards::Suit;
+    if k.lead.is_some() {
+        return Vec::new();
+    }
+    let best = |class: &dyn Fn(Card) -> bool| {
+        advice
+            .scores
+            .iter()
+            .filter(|(c, _)| class(*c))
+            .map(|&(_, v)| v)
+            .fold(f64::NEG_INFINITY, f64::max)
+    };
+    let mut out = Vec::new();
+    for suit in Suit::ALL {
+        let (inside, outside) = (
+            best(&|c| c.suit() == Some(suit)),
+            best(&|c| c.suit() != Some(suit)),
+        );
+        if inside == f64::NEG_INFINITY || outside == f64::NEG_INFINITY {
+            continue;
+        }
+        let (mine, total) = suit_share(k, suit);
+        if total == 0 {
+            continue;
+        }
+        out.push(LeadRow {
+            share: f64::from(mine) / f64::from(total),
+            total,
+            gap: inside - outside,
+            opened: card.suit() == Some(suit),
+            cluster,
+        });
+    }
+    out
+}
+
+/// A bin of rows: how many, the mean gap with its cluster standard error, the
+/// share in which another lead is clearly better (the gap below minus
+/// `margin`), and the share that opened the suit.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Bin {
+    pub n: usize,
+    pub mean: f64,
+    pub se: f64,
+    pub other_clearly_better: f64,
+    pub opened: f64,
+}
+
+pub fn bin_of(rows: &[&LeadRow], margin: f64) -> Bin {
+    let gaps: Vec<f64> = rows.iter().map(|r| r.gap).collect();
+    let cl: Vec<usize> = rows.iter().map(|r| r.cluster).collect();
+    let (m, se) = if rows.len() >= 2 {
+        clustered_mean(&gaps, &cl)
+    } else {
+        (mean(&gaps), f64::INFINITY)
+    };
+    let n = rows.len() as f64;
+    Bin {
+        n: rows.len(),
+        mean: m,
+        se,
+        other_clearly_better: rows.iter().filter(|r| r.gap < -margin).count() as f64 / n,
+        opened: rows.iter().filter(|r| r.opened).count() as f64 / n,
+    }
+}
+
+impl Bin {
+    /// Another lead is surely better on average (the upper end of the 95%
+    /// interval of the mean gap is below 0) and clearly so often enough: in
+    /// at least a quarter of the rows the gap is below minus the margin.
+    pub fn prefers_other(&self) -> bool {
+        self.n >= 2 && self.mean + 1.96 * self.se < 0.0 && self.other_clearly_better >= 0.25
+    }
+}
+
+/// The M8 band: the contiguous run of bins (of equal width over the share,
+/// from 0) that prefer another lead, around the bin of the lowest mean gap,
+/// without the lowest bins in which rung 4 itself opens the suit in less
+/// than `min_opened` of the rows (a suit it has no mind to open is his, not
+/// contested); its edges as (low, high) shares. `None` if the lowest bin does
+/// not prefer another lead.
+pub fn split_band(bins: &[Bin], min_opened: f64) -> Option<(f64, f64)> {
+    let width = 1.0 / bins.len() as f64;
+    let lowest = (0..bins.len())
+        .filter(|&i| bins[i].n >= 2)
+        .min_by(|&a, &b| bins[a].mean.total_cmp(&bins[b].mean))?;
+    if !bins[lowest].prefers_other() {
+        return None;
+    }
+    let (mut lo, mut hi) = (lowest, lowest);
+    while lo > 0 && bins[lo - 1].prefers_other() {
+        lo -= 1;
+    }
+    while hi + 1 < bins.len() && bins[hi + 1].prefers_other() {
+        hi += 1;
+    }
+    while lo < hi && bins[lo].opened < min_opened {
+        lo += 1;
+    }
+    Some((lo as f64 * width, (hi + 1) as f64 * width))
+}
+
+/// The classes of the suit's total points M8 compares: [0,3), [3,6), [6,9),
+/// [9,12), [12, ...).
+pub const TOTAL_CLASSES: [(u32, u32); 5] = [(0, 3), (3, 6), (6, 9), (9, 12), (12, u32::MAX)];
+
+/// `SPLIT_MIN_POINTS` by the rule of M8: the start of the lowest class from
+/// which that class and every higher class with at least `min_rows` rows
+/// prefer another lead; `None` if no class does.
+pub fn min_points_rule(classes: &[Bin], min_rows: usize) -> Option<u32> {
+    for start in 0..classes.len() {
+        let rest = &classes[start..];
+        let seen: Vec<&Bin> = rest.iter().filter(|b| b.n >= min_rows).collect();
+        if !seen.is_empty()
+            && classes[start].n >= min_rows
+            && seen.iter().all(|b| b.prefers_other())
+        {
+            return Some(TOTAL_CLASSES[start].0);
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -645,5 +802,126 @@ mod tests {
             }
         }
         assert!(seen >= 3);
+    }
+
+    fn row(share: f64, total: u32, gap: f64, cluster: usize) -> LeadRow {
+        LeadRow {
+            share,
+            total,
+            gap,
+            opened: gap > 0.0,
+            cluster,
+        }
+    }
+
+    #[test]
+    fn a_clustered_mean_has_its_hand_computed_error() {
+        // clusters {1, 3} and {5, 7}: means 2 and 6, overall 4; cluster sums
+        // of deviations -0 (1-4 + 3-4 = -4)... computed: -4 and +4, so
+        // var = (16 + 16) * 2 / 1 / 16 = 4
+        let (m, se) = clustered_mean(&[1.0, 3.0, 5.0, 7.0], &[0, 0, 1, 1]);
+        assert_eq!(m, 4.0);
+        assert!((se - 2.0).abs() < 1e-12, "{se}");
+    }
+
+    #[test]
+    fn bins_say_where_another_lead_is_surely_better() {
+        let bad: Vec<LeadRow> = (0..40)
+            .map(|i| row(0.5, 10, -12.0 - (i % 3) as f64, i))
+            .collect();
+        let good: Vec<LeadRow> = (0..40)
+            .map(|i| row(0.9, 10, 6.0 + (i % 3) as f64, i))
+            .collect();
+        let b = bin_of(&bad.iter().collect::<Vec<_>>(), 10.0);
+        let g = bin_of(&good.iter().collect::<Vec<_>>(), 10.0);
+        assert!(b.prefers_other() && !g.prefers_other());
+        assert_eq!(b.other_clearly_better, 1.0);
+        assert_eq!(g.opened, 1.0);
+        // ten bins: 0.4 to 0.7 prefer another lead (bins 4, 5, 6)
+        let mut bins = vec![g; 10];
+        for i in 4..7 {
+            bins[i] = b;
+        }
+        bins[5].mean = -20.0;
+        let (lo, hi) = split_band(&bins, 0.0).unwrap();
+        assert!(
+            (lo - 0.4).abs() < 1e-12 && (hi - 0.7).abs() < 1e-12,
+            "{lo} {hi}"
+        );
+        // no band when the lowest bin does not prefer another lead
+        assert_eq!(split_band(&vec![g; 10], 0.0), None);
+        // the lowest bins in which the suit is hardly ever opened are left out
+        bins[4].opened = 0.05;
+        bins[5].opened = 0.3;
+        bins[6].opened = 0.3;
+        let (lo, _) = split_band(&bins, 0.1).unwrap();
+        assert!((lo - 0.5).abs() < 1e-12, "{lo}");
+    }
+
+    #[test]
+    fn the_least_total_is_where_the_effect_holds_from_there_up() {
+        let bad = |n| Bin {
+            n,
+            mean: -9.0,
+            se: 1.0,
+            other_clearly_better: 0.8,
+            opened: 0.2,
+        };
+        let flat = |n| Bin {
+            n,
+            mean: 1.0,
+            se: 1.0,
+            other_clearly_better: 0.1,
+            opened: 0.5,
+        };
+        // [0,3) flat, from [3,6) up bad
+        let classes = [flat(100), bad(100), bad(100), bad(100), bad(100)];
+        assert_eq!(min_points_rule(&classes, 30), Some(3));
+        // a class with too few rows is neither for nor against
+        let classes = [flat(100), bad(100), flat(5), bad(100), bad(100)];
+        assert_eq!(min_points_rule(&classes, 30), Some(3));
+        // a flat class above a bad one breaks the run from there down
+        let classes = [bad(100), bad(100), flat(100), bad(100), bad(100)];
+        assert_eq!(min_points_rule(&classes, 30), Some(9));
+        let none = [flat(100); 5];
+        assert_eq!(min_points_rule(&none, 30), None);
+    }
+
+    #[test]
+    fn a_lead_gives_a_row_for_each_suit_with_something_else_to_lead() {
+        use crate::testutil::{c, know};
+        let k = know(
+            &["Kh", "Qh", "9c", "T3"],
+            ["", "", ""],
+            ["T2", "", ""],
+            &[],
+            None,
+        );
+        let scores = vec![
+            (c("9c"), 10.0),
+            (c("T3"), 4.0),
+            (c("Kh"), 0.0),
+            (c("Qh"), 1.0),
+        ];
+        let per_world: Vec<Vec<(Card, i32)>> = Vec::new();
+        let advice = Advice {
+            scores: &scores,
+            per_world: &per_world,
+            exact: false,
+            known: false,
+        };
+        let rows = lead_rows(&k, c("Kh"), &advice, 7);
+        // hearts and clubs have legal leads; diamonds and spades have none
+        assert_eq!(rows.len(), 2);
+        let hearts = rows.iter().find(|r| r.opened).unwrap();
+        assert_eq!(hearts.gap, 1.0 - 10.0, "best heart 1 against best other 10");
+        assert_eq!(hearts.cluster, 7);
+        let clubs = rows.iter().find(|r| !r.opened).unwrap();
+        assert_eq!(clubs.gap, 10.0 - 4.0);
+        // mine: K+Q of hearts; the share is of mine and everything unseen
+        assert!(hearts.share > 0.0 && hearts.share < 1.0 && hearts.total >= 9);
+        // a follower has no lead to compare
+        let f = know(&["Kh", "Qh"], ["", "", ""], ["T2", "", ""], &[], Some("3h"));
+        assert!(lead_rows(&f, c("Kh"), &advice, 0).is_empty());
     }
 }

@@ -41,6 +41,7 @@ fn main() {
     match which.as_str() {
         "m1" => m1(&args),
         "m2" => m2(&args),
+        "m8" => m8(&args),
         other => panic!("unknown measurement {other}"),
     }
 }
@@ -261,4 +262,114 @@ fn m2(args: &Args) {
             measure::mean(&ys)
         );
     }
+}
+
+fn m8(args: &Args) {
+    use strohmandeln_ai::tutor::{self, advice_of, play_table};
+    let first = args.num("--seed", 80_000_000);
+    let sittings = args.num("--sittings", 100);
+    let started = Instant::now();
+    let budget = Budget::default();
+    let mut rows: Vec<measure::LeadRow> = Vec::new();
+    for i in 0..sittings {
+        for rec in measure::rung4_deals(first + i, Config::default()) {
+            let (plays, _) = measure::decisions(&rec);
+            for pos in plays {
+                let k = Knowledge::from_view(&pos.view).expect("a deal");
+                let Action::Play { card, .. } = &pos.action else {
+                    continue;
+                };
+                if k.lead.is_some() {
+                    continue;
+                }
+                if let Some(table) = play_table(&k, &pos.view, budget, 0) {
+                    rows.extend(measure::lead_rows(
+                        &k,
+                        *card,
+                        &advice_of(&k, &table),
+                        i as usize,
+                    ));
+                }
+            }
+        }
+    }
+    println!(
+        "M8: {} rows (a suit of a lead decision) from {sittings} sittings of rung 4 against rung 4 (seeds {first}..{}), {:.0}s",
+        rows.len(),
+        first + sittings - 1,
+        started.elapsed().as_secs_f64()
+    );
+    let margin = tutor::MARGIN;
+    let show = |name: &str, b: &measure::Bin| {
+        println!(
+            "  {name}: n {:>5} mean gap {:>7.2} +- {:>5.2}  other clearly better {:.3}  opened {:.3}",
+            b.n, b.mean, b.se, b.other_clearly_better, b.opened
+        );
+    };
+    let share_bins = |min_total: u32| -> Vec<measure::Bin> {
+        (0..10)
+            .map(|i| {
+                let (lo, hi) = (f64::from(i) / 10.0, f64::from(i + 1) / 10.0);
+                let part: Vec<&measure::LeadRow> = rows
+                    .iter()
+                    .filter(|r| {
+                        r.total >= min_total
+                            && r.share >= lo
+                            && (r.share < hi || (i == 9 && r.share <= 1.0))
+                    })
+                    .collect();
+                measure::bin_of(&part, margin)
+            })
+            .collect()
+    };
+    println!("\nby my share of the suit, suits with at least 6 points unplayed:");
+    let bins = share_bins(6);
+    for (i, b) in bins.iter().enumerate() {
+        show(
+            &format!(
+                "share {:.1} to {:.1}",
+                i as f64 / 10.0,
+                (i + 1) as f64 / 10.0
+            ),
+            b,
+        );
+    }
+    println!("\nby my share of the suit, all suits:");
+    for (i, b) in share_bins(0).iter().enumerate() {
+        show(
+            &format!(
+                "share {:.1} to {:.1}",
+                i as f64 / 10.0,
+                (i + 1) as f64 / 10.0
+            ),
+            b,
+        );
+    }
+    let band = measure::split_band(&bins, 0.10);
+    println!("\nSPLIT_SHARE by the rule: {band:?}");
+    let Some((lo, hi)) = band else { return };
+    println!("\nrows with the share in the band, by the suit's points unplayed:");
+    let classes: Vec<measure::Bin> = measure::TOTAL_CLASSES
+        .iter()
+        .map(|&(a, b)| {
+            let part: Vec<&measure::LeadRow> = rows
+                .iter()
+                .filter(|r| r.total >= a && r.total < b && r.share >= lo && r.share < hi)
+                .collect();
+            measure::bin_of(&part, margin)
+        })
+        .collect();
+    for (c, b) in measure::TOTAL_CLASSES.iter().zip(&classes) {
+        let to = if c.1 == u32::MAX {
+            "..".to_string()
+        } else {
+            c.1.to_string()
+        };
+        show(&format!("points {} to {to}", c.0), b);
+    }
+    println!(
+        "SPLIT_MIN_POINTS by the rule: {:?}",
+        measure::min_points_rule(&classes, 30)
+    );
+    println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
 }
