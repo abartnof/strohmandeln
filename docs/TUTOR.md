@@ -94,8 +94,13 @@ keep per deal and replays only from its start.
 **Assisted.** A decision is *assisted* when a hint was shown for it
 (`strohmandeln_hint`) or the tutor's nudge was (section 7). Assisted decisions
 are not evidence: teaching would otherwise spoil the measuring. The table keeps
-the list for the deal as the numbers of the human's actions (action *n* of the
-deal) and stores it with the record; the engine takes it as an input. Asking for
+the list for the deal as action numbers, counted from 0 over **both seats'**
+actions of the deal (bids and announcements included), and stores it with the
+record; the engine takes it as an input. The number is the engine's, not the
+table's count: `state.deal_actions` and the hint's `action`
+(`docs/PROTOCOL.md`). An assisted `Announce` also covers the actions of the same
+turn up to the card played (a hint is for the position, and the human may
+announce before the card it was about). Asking for
 a hint stays free and changes nothing in the game; `docs/TABLE3D.md` 6.3.2 says
 asking "is never counted" and is amended to "is not counted as evidence".
 

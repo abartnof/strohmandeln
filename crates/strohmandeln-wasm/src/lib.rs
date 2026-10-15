@@ -279,6 +279,9 @@ impl Table {
             m.insert("phase".into(), json!(self.phase()));
             m.insert("human".into(), json!(self.human));
             m.insert("level".into(), json!(self.level));
+            // The actions made in this deal, both seats': the number the next
+            // action will have in the deal's record (`docs/TUTOR.md` 3).
+            m.insert("deal_actions".into(), json!(self.sitting.deal_action_count()));
             // `legal` replaces the view's own list: the same actions, with the
             // source of each playable card.
             m.remove("legal_actions");
@@ -371,6 +374,7 @@ impl Table {
         let Some(legal) = self.my_hint_legal() else {
             return json!({
                 "protocol": PROTOCOL,
+                "action": null,
                 "hint": null,
                 "reason": "not-your-turn",
                 "params": {},
@@ -405,6 +409,7 @@ impl Table {
         });
         json!({
             "protocol": PROTOCOL,
+            "action": self.sitting.deal_action_count(),
             "hint": action,
             "reason": h.key,
             "params": params,
@@ -806,6 +811,41 @@ mod tests {
         assert_eq!(r["events"][0]["type"], "sitting_start");
         assert_eq!(r["state"]["human"], 0);
         assert!(r["state"]["deal"]["own_hand"].as_array().unwrap().len() == 15);
+    }
+
+    #[test]
+    fn the_state_and_the_hint_carry_the_number_of_the_next_action_of_the_deal() {
+        // `deal_actions` counts both seats' actions of the deal in progress;
+        // a hint says which action it is for (docs/TUTOR.md 3).
+        let mut h = host(CONFIG);
+        assert_eq!(out(&h)["state"]["deal_actions"], 0);
+        let mut seen = 0;
+        for _ in 0..40 {
+            h.render();
+            let s = out(&h)["state"].clone();
+            if s["prompt"] == "you" {
+                h.show(|t| t.hint());
+                let r = out(&h);
+                assert_eq!(r["action"], s["deal_actions"], "{r}");
+                let a = r["hint"].to_string();
+                assert_eq!(h.send(&a), 1);
+                assert_eq!(out(&h)["state"]["deal_actions"], seen + 1);
+            } else if s["prompt"] == "opponent" {
+                assert_eq!(h.step(), 1);
+                assert_eq!(out(&h)["state"]["deal_actions"], seen + 1);
+            } else {
+                break;
+            }
+            seen += 1;
+        }
+        assert!(seen >= 20);
+        // not the human's turn: the hint has no action number
+        let mut h = host(r#"{"seed":7,"touren":3,"human":1}"#);
+        h.show(|t| t.hint());
+        let r = out(&h);
+        if r["reason"] == "not-your-turn" {
+            assert_eq!(r["action"], Value::Null);
+        }
     }
 
     #[test]

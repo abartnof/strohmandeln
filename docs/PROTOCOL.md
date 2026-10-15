@@ -138,6 +138,7 @@ parts are shown in the next section):
 | `legal` | the human's legal actions, empty unless `prompt` is `"you"` (below) |
 | `deal` | the deal in progress, or `null` when there is none |
 | `events` | the events of the deal in progress, filtered; lets a client rebuild after a reload |
+| `deal_actions` | the actions made so far in the deal in progress, both seats' (0 before the first bid): the number the next action will have in the deal's record. The tutor's assisted list holds such numbers (`docs/TUTOR.md` 3) |
 | `level` | the opponent's level after clamping to half steps (a number, e.g. `2.5`) |
 
 ### `deal`
@@ -333,14 +334,16 @@ whole), whatever the opponent's level. It is a function of the position, so
 asking twice gives the same answer, and asking changes nothing.
 
 ```json
-{"protocol": 1, "hint": {"action": "play", "card": "T19", "source": "hand"},
+{"protocol": 1, "action": 41,
+ "hint": {"action": "play", "card": "T19", "source": "hand"},
  "reason": "win-cheapest",
  "params": {"card": "T19", "led": "T15", "alt": "T21", "trick_thirds": 2},
  "rule": null,
  "odds": {"alt": "T21", "better": 35, "worlds": 50, "gain_thirds": 4}}
 ```
 
-`hint` is one of the entries of `state.legal` (send its card alone, as for any
+`action` is the number of the action the hint is for (`state.deal_actions`): the
+table stores it in the deal's assisted list. `hint` is one of the entries of `state.legal` (send its card alone, as for any
 play). `reason` is a message key from the hint table in `docs/MESSAGES.md` and
 `params` its parameters, named there: a card is a code, a name ending
 `_thirds` is thirds of a point, the rest are counts. `rule` is a key of the
@@ -349,7 +352,7 @@ search ranks the card against the best other legal card over freshly sampled
 deals, or `null` (not asked at a level below the top, a forced card, or the
 sample does not agree with the choice). The opponent's `step` and the hint
 share their rules: a hint is what the level-4 opponent would play; the
-explanation never changes the move. Without a move to make, `hint`, `rule` and
+explanation never changes the move. Without a move to make, `action`, `hint`, `rule` and
 `odds` are `null` and `reason` is `not-your-turn`.
 
 ## The review
