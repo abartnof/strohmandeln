@@ -48,6 +48,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | done; published 15 Oct 2026 at abartnof.github.io/strohmandeln |
 | 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | done (built across 3, 8, 9; language_switch passes) |
 | 12 | Play-through fixes (15 Oct 2026): tutorial pacing and wording; high-visibility faces as in Cassino, numerals that clip in the fan, the stripes on the backs; play by a second click, the HUD's `{n}`, the Kibitzer and § 13 labels, tarocks sorted high to low; hints that give their reasons | 9, 8, 7, 5 | done 15 Oct 2026; also: the phone's hand in two rows, the page chrome in Cassino's Material 3 colours, the gate builds the wasm before the Node tests (reviews: docs/review/faces-fan, colours, tutorial-pacing, tutorial-wording, table-interaction, portrait-hand, hint-reasons-engine, hint-reasons-table) |
+| 13 | Play-through notes (15 Oct 2026): scoring explained (fuller `thirds` and `scoring` pages, an optional "Scoring in full" page from Help and the pages); a page on the pack today (the tarocks are trumps, not fortune-telling cards; the Cavall), from a cited note `research/15-the-pack-today.md`; a card tracker shown with hints (cards played, unseen, voids, masters); larger samples behind the hints' "in x of n" lines, sized by measured cost | 9, 12 | in progress |
 
 ## Open
 
