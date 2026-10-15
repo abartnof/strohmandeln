@@ -24,7 +24,7 @@
 
 import { Vector3 } from "three";
 import { countSchedule } from "../../kit/js/count.js";
-import { bob, carryBlock, lying, peelOff, pull, rise, slide, still, toss, transfer } from "../../kit/js/kinematics.js";
+import { bob, carryBlock, chain, fan, lying, peelOff, pull, rise, slide, still, toss, transfer } from "../../kit/js/kinematics.js";
 import { CARD } from "../../kit/js/units.js";
 import { COUNT_RULES, countLines } from "./counting.js";
 import { jitter, layout } from "./layout.js";
@@ -61,10 +61,17 @@ export const TIMING = Object.freeze({
   collect: 480,
   collectStagger: 12,
   void: 1500,
+  valat: 2600, // the winner's whole pile fanned, held, laid back
+  valatUp: 700,
+  edge: 600, // the edge of the count seen (the tick, 35 1/3 one short) before the result is drawn
   banner: 3000, // the result held for a tap
   end: 900,
   direct: 420,
 });
+
+// The last trick (2.3.1) is played and rested slower.
+export const LAST_TRICK = 27;
+export const SLOW_LAST = 1.2;
 
 const REST = 0.02;
 const STEP = CARD.thickness + 0.02;
@@ -110,12 +117,13 @@ const KIND = {
   cover_set: "cover",
   card_played: "play",
   trick_won: "gather",
+  valat: "valat",
   count: "count",
   game_scored: "banner",
   sitting_end: "finish",
 };
 // How long a stage that moves no card takes.
-const BEAT = { bid: TIMING.say, pass: TIMING.say, both_pass: TIMING.say, reveal_start: TIMING.beat, packet_empty: TIMING.beat, announcement: 400, honour_forfeited: TIMING.beat, pagat_ultimo: 0, valat: 1200, doubling_set: TIMING.beat, doubling_applied: TIMING.beat, doubling_lapsed: TIMING.beat, tour_end: 600, extension_offered: TIMING.say, extension_decided: TIMING.say };
+const BEAT = { bid: TIMING.say, pass: TIMING.say, both_pass: TIMING.say, reveal_start: TIMING.beat, packet_empty: TIMING.beat, announcement: 400, honour_forfeited: TIMING.beat, pagat_ultimo: 0, doubling_set: TIMING.beat, doubling_applied: TIMING.beat, doubling_lapsed: TIMING.beat, tour_end: 600, extension_offered: TIMING.say, extension_decided: TIMING.say };
 
 export function stagesBetween(prev, next) {
   if (!prev || prev.model.human !== next.model.human || next.events.length < prev.events.length) return null;
@@ -464,10 +472,34 @@ class Plan {
     const start = Math.max(this.clock, this.end);
     if (!mesh || !slot) return this.stage(target, null, start);
     const path = fromPacket ? peelOff(mesh.pose, (lifted) => toss(lifted, slot.pose, PLAYED), { toward: new Vector3(0, 0, event.seat === model.human ? -1 : 1) }) : pull(mesh.pose, slot.pose, PLAYED);
-    const end = this.move(mesh.id, { ...slot, index: slot.index }, path, start, TIMING.play);
+    const end = this.move(mesh.id, { ...slot, index: slot.index }, path, start, TIMING.play * (event.trick === LAST_TRICK ? SLOW_LAST : 1));
     this.moments.start = start;
     this.stage(target, null, start);
     this.clock = Math.max(this.clock, end);
+  }
+
+  // A Valat (2.4): the winner's whole pile, which is every card of the deal,
+  // fanned in the air a moment and laid back.
+  valat({ model, event }) {
+    const zone = event.seat === model.human ? "your-won" : "their-won";
+    const pile = this.now.filter((m) => m.zone === zone).sort((a, b) => a.index - b.index);
+    const start = Math.max(this.clock, this.end);
+    this.moments.start = start;
+    if (pile.length) {
+      const base = pile[pile.length - 1].pose.position;
+      const centre = new Vector3(base.x, 14, base.z);
+      const toward = centre.clone().add(new Vector3(0, 8, 40)); // toward the human's eye
+      const poses = fan({ count: pile.length, centre, facing: toward, radius: 26, spread: (1.6 * Math.PI) / 180, tilt: (28 * Math.PI) / 180, step: 0.05 });
+      pile.forEach((mesh, k) => {
+        const there = poses[k];
+        const up = TIMING.valatUp;
+        const down = TIMING.valatUp;
+        const hold = TIMING.valat - up - down;
+        const path = chain([transfer(mesh.pose, there, { clearance: 2 }), up], [still(there), hold], [transfer(there, mesh.pose, { clearance: 2 }), down]);
+        this.add(mesh.id, path, start + k * 6, TIMING.valat);
+      });
+    }
+    this.clock = start + TIMING.valat + 54 * 6;
   }
 
   // The gather: the trick rests a moment, is squared into one heap, and
@@ -476,9 +508,10 @@ class Plan {
     const target = this.layout(model);
     const ultimo = ahead[0]?.type === "pagat_ultimo";
     const cards = event.cards.map((c) => this.now.find((m) => m.code === c)).filter(Boolean);
-    const start = Math.max(this.clock, this.end) + TIMING.rest + (ultimo ? TIMING.ultimo : 0);
-    this.moments.start = start - TIMING.rest;
-    this.moments.ultimo = start - TIMING.rest - (ultimo ? TIMING.ultimo : 0) + 200;
+    const start = Math.max(this.clock, this.end) + TIMING.rest * (event.trick === LAST_TRICK ? SLOW_LAST : 1) + (ultimo ? TIMING.ultimo : 0);
+    const rest = start - Math.max(this.clock, this.end) - (ultimo ? TIMING.ultimo : 0);
+    this.moments.start = start - rest;
+    this.moments.ultimo = start - rest - (ultimo ? TIMING.ultimo : 0) + 200;
     if (!cards.length) return this.stage(target, null, start);
     const base = cards[0].pose.position;
     const heapPose = (k) => lying({ x: base.x, z: base.z, height: REST + k * STEP });
@@ -526,7 +559,7 @@ class Plan {
 
   // The result is held for a tap.
   banner() {
-    this.moments.start = Math.max(this.clock, this.end) + TIMING.beat;
+    this.moments.start = Math.max(this.clock, this.end) + TIMING.edge;
     this.clock = this.moments.start + TIMING.banner;
   }
 
@@ -543,7 +576,7 @@ class Plan {
 
 // Stages heard as they begin (a call spoken as it is made); the rest when
 // they have landed, or at a moment of their own.
-const HEARD_AT_START = new Set(["collect", "count", "deal", "cut", "void", "pull", "cover", "beat", "banner", "turn"]);
+const HEARD_AT_START = new Set(["collect", "count", "valat", "deal", "cut", "void", "pull", "cover", "beat", "banner", "turn"]);
 const HEARD_WITHIN = { packet_turned: "raised", pagat_ultimo: "ultimo", trick_won: "start" };
 
 export function choreograph(prev, next, placement, view = {}, options = {}) {

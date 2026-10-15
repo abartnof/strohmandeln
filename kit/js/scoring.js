@@ -16,6 +16,8 @@
 //     lit?(units) -> n,                        // segments lit by a score (default: whole points;
 //                                              // 107 thirds, 35 2/3, reaches the finish of 36: units+1)
 //     total?: 70,                              // points in play, for the goal text
+//     apart?: ["bonus"],                       // categories paid beside the count: listed and shown
+//                                              // in the ledger, but in no total, segment or subtotal
 //     goal?: "to 21",                          // the target as the HUD says it
 //     names?: { you, opp },
 //     words?: { ... }                          // the HUD's own words (hud.js)
@@ -36,12 +38,16 @@ export function defineGame(def) {
   if (typeof def.line !== "function") throw new Error("a game needs `line`, which reads a count line into { side, cat, pts }");
   const scale = def.scale ?? 1;
   if (!(Number.isInteger(scale) && scale >= 1)) throw new Error("scale is a whole number of units to a point");
+  const apart = def.apart ?? [];
+  const unknown = apart.find((k) => !keys.includes(k));
+  if (unknown !== undefined) throw new Error(`apart names a category the game does not list: ${unknown}`);
   const labelOf = Object.fromEntries(def.categories);
   return Object.freeze({
     categories: Object.freeze(def.categories.map(([k, l]) => Object.freeze([k, l]))),
     target: def.target,
     segments: def.segments ?? def.target,
     total: def.total ?? null,
+    apart: Object.freeze([...apart]),
     scale,
     format: def.format ?? ((units) => String(units / scale)),
     // Strohmandeln kit change: how many segments a score lights. Whole points
@@ -62,7 +68,7 @@ export function defineGame(def) {
 // ---- the ledger ------------------------------------------------------------
 
 export const blank = (game) => Object.fromEntries(game.categories.map(([k]) => [k, { you: 0, opp: 0 }]));
-export const handTotal = (game, h, side) => game.categories.reduce((sum, [k]) => sum + h[k][side], 0);
+export const handTotal = (game, h, side) => game.categories.reduce((sum, [k]) => (game.apart.includes(k) ? sum : sum + h[k][side]), 0);
 
 // A line, read by the game and checked against its categories.
 function read(game, l) {

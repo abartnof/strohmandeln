@@ -34,26 +34,43 @@ export function countLines(counted, human) {
   return out;
 }
 
+// The edge of the count (2.5.3, 2.5.4): once a side has 107 thirds the target
+// is joined by a tick on both lines; a side on 106 (35 1/3) is one short.
+export const edgeOf = (totals) => ({
+  tick: totals.you >= TARGET || totals.opp >= TARGET,
+  short: ["you", "opp"].filter((side) => totals[side] === TARGET - 1),
+});
+
+// The bonuses (honours, ultimo, valat) a deal paid, as lines of the bonus
+// category: Points, in the credit's own words (`label(cause)`), over the
+// player credited. `credits` are the `game_scored` credits (the game's own
+// Points are not bonuses).
+const BONUS_CAUSES = new Set(["trull", "kings", "ultimo_won", "ultimo_lost", "valat"]);
+export function bonusLines(credits, human, label) {
+  return credits.filter((c) => BONUS_CAUSES.has(c.cause)).map((c) => ({ side: c.seat === human ? "you" : "opp", bonus: true, points: c.points, label: label(c.cause) }));
+}
+
 // What the choreography needs of the game: which side a line is, which cards it turns up.
 export const COUNT_RULES = Object.freeze({
-  line: (l) => ({ side: l.side, cat: "count", pts: l.thirds }),
-  cards: (l) => l.codes,
+  line: (l) => (l.bonus ? { side: l.side, cat: "bonus", pts: l.points } : { side: l.side, cat: "count", pts: l.thirds }),
+  cards: (l) => l.codes ?? [],
 });
 
 // The HUD's game, for a language: `words` are the strings (hud.*).
 export function countGame(words) {
   return defineGame({
-    categories: [["count", words.category]],
+    categories: [["count", words.category], ["bonus", words.bonus]],
+    apart: ["bonus"], // Points beside the count in thirds, never part of the line to 107
     target: TARGET,
     segments: SEGMENTS,
     scale: 3,
     total: 210,
     lit: (units) => (units >= TARGET ? SEGMENTS : Math.floor(units / 3)),
-    format: (units) => thirds(units),
+    format: (units, cat) => (cat === "bonus" ? String(units) : thirds(units)),
     goal: words.goal,
     names: words.names,
     words: words.hud,
     ...COUNT_RULES,
-    popup: (l) => ({ pts: l.thirds, label: words.group(l.group + 1) }),
+    popup: (l, i, lines, info) => (l.bonus ? { pts: info.pts, label: l.label } : { pts: l.thirds, label: words.group(l.group + 1) }),
   });
 }

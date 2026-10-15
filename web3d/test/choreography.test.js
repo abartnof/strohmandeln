@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { cardCorners } from "../../kit/js/kinematics.js";
-import { choreograph, initialPlacement, opening, stagesBetween } from "../src/choreography.js";
+import { choreograph, initialPlacement, LAST_TRICK, opening, SLOW_LAST, stagesBetween, TIMING } from "../src/choreography.js";
 import { layout } from "../src/layout.js";
 import { emptyModel, fromState, reduce } from "../src/model.js";
 import { ZONES, ZONES_PORTRAIT } from "../src/zones.js";
@@ -115,4 +115,55 @@ test("a void deal and a throw-in choreograph", async () => {
   const stages = stagesBetween(prev, next).map((s) => s.kind);
   assert.ok(stages.includes("void"));
   void fromState;
+});
+
+// 2.3.1: trick 27 is slower, 1.2 times.
+test("the plays of trick 27 take 1.2 times as long as any other", async () => {
+  const seq = await states({ seed: 7, touren: 3, human: 1, level: 1 }, taker(7));
+  let prev = opening(seq[0].state);
+  let placement = initialPlacement(prev, view);
+  const lasting = { last: new Set(), other: new Set() };
+  for (const { state, fresh } of seq) {
+    const result = choreograph(prev, state, placement, view);
+    const only = fresh.length === 1 && fresh[0].type === "card_played";
+    if (only) lasting[fresh[0].trick === LAST_TRICK ? "last" : "other"].add(Math.max(...result.motions.map((m) => m.duration)));
+    placement = result.placement;
+    prev = state;
+  }
+  assert.equal(LAST_TRICK, 27);
+  assert.ok(lasting.last.size > 0, "the last trick's plays were seen");
+  assert.deepEqual([...lasting.other].map((d) => Math.round(d)), [TIMING.play], "other plays last TIMING.play");
+  assert.deepEqual([...lasting.last].map((d) => Math.round(d)), [Math.round(TIMING.play * SLOW_LAST)]);
+  assert.equal(SLOW_LAST, 1.2);
+});
+
+// 2.4: on a Valat the winner's whole pile is fanned a moment, then laid back.
+test("a Valat fans the winner's won pile and lays it back where it was", async () => {
+  const seq = await states({ seed: 7, touren: 3, human: 1, level: 1 }, taker(7));
+  const at = seq.find((s) => s.state.model.won[0].length >= 6 && s.state.model.trick.length === 0);
+  assert.ok(at, "a state with a pile to fan");
+  const prev = at.state;
+  const next = { model: prev.model, events: [...prev.events, { type: "valat", seat: 0 }] };
+  const placement = initialPlacement(prev, view);
+  const result = choreograph(prev, next, placement, view);
+  const zone = prev.model.human === 0 ? "your-won" : "their-won";
+  const pile = placement.filter((m) => m.zone === zone);
+  assert.equal(pile.length, prev.model.won[0].length);
+  const moved = new Set(result.motions.map((m) => m.id));
+  for (const m of pile) assert.ok(moved.has(m.id), "every card of the pile moves");
+  const top = Math.max(...result.motions.filter((m) => pile.some((p) => p.id === m.id)).map((m) => m.path(0.5).position.y));
+  const rest = Math.max(...pile.map((m) => m.pose.position.y));
+  assert.ok(top > rest + 2, "the pile is lifted into a fan");
+  for (const m of pile) {
+    const end = result.placement[m.id].pose.position;
+    assert.ok(end.distanceTo(m.pose.position) < 1e-6, "laid back in place");
+  }
+  for (const m of result.motions) {
+    for (let k = 0; k <= 20; k++) {
+      const low = Math.min(...cardCorners(m.path(k / 20)).map((c) => c.y));
+      assert.ok(low > -0.05, `a fanned card ${low.toFixed(1)} cm below the table`);
+    }
+  }
+  assert.ok(result.beats[prev.events.length] !== undefined, "the Valat has its moment");
+  assert.ok(result.duration >= TIMING.valat);
 });

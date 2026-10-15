@@ -148,3 +148,15 @@ test("a game says how many segments a score lights: 107 thirds (35 2/3) reaches 
   const plain = defineGame({ categories: [["a", "A"]], target: 21, line: () => ({ side: "you", cat: "a", pts: 0 }) });
   assert.equal(plain.lit(7), 7, "without `lit`, whole points");
 });
+
+test("an `apart` category is listed and shown but is not part of any total", () => {
+  const g = defineGame({ ...counting, apart: ["bonus"] });
+  assert.deepEqual(g.apart, ["bonus"]);
+  assert.deepEqual(defineGame(counting).apart, [], "none by default");
+  assert.throws(() => defineGame({ ...counting, apart: ["nothing"] }), /apart/);
+  const h = blank(g);
+  h.count.you = 12;
+  h.bonus.you = 2;
+  assert.equal(handTotal(g, h, "you"), 12);
+  assert.deepEqual(ledgerTotals(g, { hands: [h], live: null }), { you: 12, opp: 0 });
+});

@@ -13,7 +13,7 @@
 // The structure is cassino's layout.js (jitter, hands, piles), for this
 // table's zones.
 
-import { Vector3 } from "three";
+import { Quaternion, Vector3 } from "three";
 import { fan, lying, row } from "../../kit/js/kinematics.js";
 import { CARD, facingEye } from "../../kit/js/units.js";
 import { ZONES } from "./zones.js";
@@ -22,6 +22,9 @@ const DEG = Math.PI / 180;
 const REST = 0.02;
 export const CHOSEN_LIFT = 1.6;
 const STEP = CARD.thickness + 0.02;
+// A cover is propped toward the eye (1.5.2): flat on the stack it is
+// foreshortened and farther than a hand card, so it would read smaller.
+export const COVER_TILT = 14;
 
 // A small fixed turn for each card, so piles look placed by a hand, the same
 // every time that card lands there.
@@ -93,6 +96,16 @@ export const sideOf = (model, seat) => (seat === model.human ? "you" : "them");
 // Where packet i of `seat` is, and the stack's cards: the hidden ones face
 // down (a hair off square, so the thickness reads), the cover face up and
 // square on top.
+// A lying pose tipped toward the eye about its centre (its near edge kept
+// off the stack).
+function propped(pose, degrees) {
+  const a = degrees * DEG;
+  const q = new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), a).multiply(pose.quaternion);
+  const position = pose.position.clone();
+  position.y += (CARD.height / 2) * Math.sin(a);
+  return { position, quaternion: q };
+}
+
 export function packetPlace(model, seat, i, Z) {
   const side = sideOf(model, seat);
   return { x: Z.packets.xs[i], z: Z.packets[side], side };
@@ -120,7 +133,7 @@ function packets(model, Z) {
       }
       if (p.cover) {
         const key = `pk:${seat}:${i}:${p.hidden}`;
-        slots.push({ key, zone, index: p.hidden, code: p.cover, faceUp: true, pose: lying({ x, z, height: REST + p.hidden * STEP }), packet: { seat, i }, cover: true });
+        slots.push({ key, zone, index: p.hidden, code: p.cover, faceUp: true, pose: propped(lying({ x, z, height: REST + p.hidden * STEP }), COVER_TILT), packet: { seat, i }, cover: true });
       }
     }
   }

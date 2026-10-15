@@ -288,3 +288,22 @@ test("court labels: another language is a table of the four letters; a bad one i
   assert.throws(() => courtLabels({ K: "K", Q: "Q", C: "C" }), RangeError);
   assert.throws(() => drawFace(recorder(), 700, "Kh", "xx"), RangeError);
 });
+
+// 7.1, 7.6: Classic and Jumbo are two sizes of the index.
+test("classic draws the index smaller than jumbo, on every kind of face", () => {
+  const corner = (code, size) => {
+    const ctx = recorder();
+    drawFace(ctx, 700, code, "en", size);
+    return Math.max(...textsOf(ctx).slice(0, 2).map(sizeOf));
+  };
+  for (const code of ["7c", "Kh", "4d", "T7", "T21", "SK"]) {
+    const classic = corner(code, "classic");
+    const jumbo = corner(code, "jumbo");
+    assert.ok(classic > 0 && classic < jumbo, `${code}: ${classic} < ${jumbo}`);
+  }
+  const ctx = recorder();
+  drawFace(ctx, 700, "Kh");
+  const again = recorder();
+  drawFace(again, 700, "Kh", "en", "jumbo");
+  assert.deepEqual(textsOf(ctx), textsOf(again), "jumbo is the default");
+});

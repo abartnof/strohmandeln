@@ -25,12 +25,6 @@ export function createUi(root, { t, onAct }) {
     el("div", { class: "tags", "aria-hidden": "true" }),
     el("div", { class: "floats", "aria-hidden": "true" }),
     el("div", { class: "info" }, el("div", { class: "hud-slot" }), el("p", { class: "tour-line" })),
-    el(
-      "div",
-      { class: "top-right" },
-      el("button", { class: "tab slate-tab", type: "button", "data-act": "slate", "aria-expanded": "false" }),
-      el("button", { class: "tab cog", type: "button", "data-act": "settings" }),
-    ),
     el("div", { class: "slate-root" }),
     el("div", { class: "settings-root" }),
     el("div", { class: "banner", role: "status", hidden: "" }),
@@ -42,6 +36,13 @@ export function createUi(root, { t, onAct }) {
       el("p", { class: "refusal", role: "status" }),
       el("p", { class: "aid-line", hidden: "" }),
       el("div", { class: "move-bar", role: "group", "data-i18n-label": "ui.movebar", hidden: "" }),
+    ),
+    // Tab order (3.10.1): the move bar, the cards, then the slate tab and the settings.
+    el(
+      "div",
+      { class: "top-right" },
+      el("button", { class: "tab slate-tab", type: "button", "data-act": "slate", "aria-expanded": "false" }),
+      el("button", { class: "tab cog", type: "button", "data-act": "settings" }),
     ),
     el("p", { class: "sr-live", "aria-live": "polite", "aria-atomic": "true" }),
     el("div", { class: "dialogs" }),
