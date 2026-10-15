@@ -8,7 +8,9 @@ from-a-packet 5.2 6.1 6.2; honours 11.1-11.5; pagat-ultimo 1.4 12.1-12.4;
 thirds 1.7 8.1 8.2; draw 8.4 9.2 11.7 14.1-14.4; touren-slate 15.2 15.3 15.5 15.8
 15.9 (Rekonstruktion: 15 Einleitung, TABLE3D 4.6); extension 15.6. Ausdrücke der
 Zeit: 03-S12 (Werner), 03-S14 (Ulmann), 05c headline 1 (Kiebitz). Stimme:
-TABLE3D 6.5. Text vor der ersten Überschrift überliest der Parser.
+TABLE3D 6.5. Text vor der ersten Überschrift überliest der Parser. Mit einer
+if-Zeile auf eine Einstellung gekennzeichnete Blöcke gelten nur für diese
+(tutor.js, tutorialPages): bidding und draw haben je einen für beide both_pass (RULES 3.4, 14.6).
 -->
 
 # Die Pakete
@@ -31,7 +33,12 @@ TABLE3D 6.5. Text vor der ersten Überschrift überliest der Parser.
 - **Weiter** heißt: Sie lassen es sein.
 - Der Aufnehmer braucht 36 der 70 Points. Wer sie verfehlt, verliert.
 - Mit den Standardwerten gewinnt der Aufnehmer 3 Points oder verliert 4.
+<!-- if both_pass=play -->
 - Sagen beide weiter, wird eine einfache Partie gespielt. Der Sieger erhält 2 Points.
+<!-- end -->
+<!-- if both_pass=throw_in -->
+- Sagen beide weiter, wird eingeworfen: nichts wird gezählt, und kein Paket wird aufgedeckt.
+<!-- end -->
 - Wenn ich mir erlauben darf: Was gesagt ist, gilt. Überbieten kann niemand.
 
 # Das Aufdecken
@@ -101,7 +108,12 @@ TABLE3D 6.5. Text vor der ersten Überschrift überliest der Parser.
 
 ## Wenn keiner 36 erreicht
 
+<!-- if both_pass=play -->
 - In einer einfachen Partie ist das Spiel unentschieden, wenn keiner von Ihnen 35⅔ erreicht. Niemand gewinnt es.
+<!-- end -->
+<!-- if both_pass=throw_in -->
+- Beim Einwerfen wird nur eine angesagte Partie gespielt, und die hat immer einen Sieger. Unentschieden gibt es nicht.
+<!-- end -->
 - Honneurs und der Pagat werden trotzdem bezahlt.
 - Die nächste gespielte Partie zählt doppelt, mit allem darin. Eine eingeworfene Partie verbraucht es nicht.
 - Der Tisch zeigt **×2**, wenn es gilt.
