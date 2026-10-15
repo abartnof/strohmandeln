@@ -827,8 +827,8 @@ const fn spec(
     }
 }
 
-/// A skill that is judged and praised but never the focus: M4 found it worth
-/// nothing against the strongest rung (`docs/MEASUREMENTS.md`).
+/// A skill that is judged and praised but never the focus: M4 did not show it
+/// to be worth anything against the strongest rung (`docs/MEASUREMENTS.md`).
 const fn praise_only(
     slug: &'static str,
     needs: &'static [usize],

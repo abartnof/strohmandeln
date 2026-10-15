@@ -4,8 +4,12 @@ Runs M1 to M8 of `docs/TUTOR.md` 11, in the style of Cassino's
 `measurements/README.md`. Each section has its **plan**, committed before the
 first batch of the run it describes, then its **result** and the **command**
 that reproduces it. Binary: `cargo run --release -p strohmandeln-ai --bin
-measure -- <m1|m2|...>`; its computations are unit-tested in
-`crates/strohmandeln-ai/src/measure.rs`.
+measure -- <m1|m2|m3|m4|m4report|m5|m6|m8>` (M7 is timed by
+`strohmandeln-wasm/tests/evidencebench.mjs` and `examples/evidencebench.rs`);
+its computations are unit-tested in `crates/strohmandeln-ai/src/measure.rs`.
+The printed output of each run is kept in `docs/measurements/`. Each result says
+which constants were in force when it ran: a later measurement can change one
+that an earlier result reads, and where that happened the result was repeated.
 
 Standing rules (`CLAUDE.md`): comparisons use mirrored pairs (each seed's
 sitting played twice, seats swapped), sequential batches, O'Brien-Fleming
@@ -98,7 +102,9 @@ the same world, so the expected spread is zero.
 
 **Stopping.** A descriptive count, no looks.
 
-### Result (2026-10-15)
+### M1 result (2026-10-15)
+
+Constants in force at the first run: `MARGIN` 6, `EXACT_MARGIN` 1, `BID_MARGIN` 0.5, `SPLIT_SHARE` (0.3, 0.7), `THIRDS_PER_POINT` 12. The results below do not read the margins (they set them) and read `SPLIT_SHARE` only in the `behind` row; see the re-run.
 
 596 plays (4 of the 600 finished no trick under some stream and are skipped) and
 200 bids, from 37 sittings (seeds 10,000,000 to 10,000,036), 8 streams. 22
@@ -168,6 +174,25 @@ chances need more deals).
 **Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m1`
 (defaults: `--seed 10000000 --plays 600 --bids 200 --streams 8`).
 
+### M1 result at HEAD (re-run, 2026-10-15)
+
+Constants in force: `MARGIN` 10, `EXACT_MARGIN` 1, `BID_MARGIN` 0.45, `SPLIT_SHARE`
+(0.1, 0.6), `THIRDS_PER_POINT` 23. The same command on the same seeds
+(`docs/measurements/m1.txt`, 19 seconds to read the sittings, 29 in all). Every
+row and replication table equals the first run to the digit except `behind`,
+whose trigger reads `SPLIT_SHARE` (changed by M8 after the first run):
+
+| Skill | Positions | Exact | Median | 90th | 95th | cal | cal rms | select |
+|---|---|---|---|---|---|---|---|---|
+| behind, first run (0.3, 0.7) | 177 | 0 | 6.76 | 11.48 | 14.06 | 0.99 | 1.01 | 2.59 |
+| behind, at HEAD (0.1, 0.6) | 205 | 1 | 6.19 | 11.66 | 14.13 | 1.03 | 1.03 | 2.67 |
+
+Replication of `behind` at 2 standard errors beyond 10 thirds at HEAD: 410 clear
+cases, 404 with the same sign (0.985), clear again 0.568 (first run: 371, 362,
+0.976, 0.548). `MARGIN` stays **10** (twice the pooled median spread still
+rounds to 10), `EXACT_MARGIN` 1, `BID_MARGIN`
+0.45, the standard-error multiple 2; no constant moves.
+
 ## M2 Thirds per Point
 
 ### Plan (2026-10-15, before the first deal)
@@ -197,7 +222,9 @@ nearest whole third (delta-method 95% interval reported).
 
 **Stopping.** A descriptive count, no looks.
 
-### Result (2026-10-15)
+### M2 result (2026-10-15)
+
+Constants in force: none read (rung 4's own sittings and the score).
 
 1,800 played deals (none thrown in), 300 sittings (seeds 20,000,000 to
 20,000,299), 116 seconds. Descriptive, a fixed count.
@@ -222,6 +249,13 @@ the margins rung 4 meets. Mean net Points by decile of the margin:
 | 32 to 48 | 39.7 | 2.67 |
 | 48 to 70 | 58.3 | 2.72 |
 | 70 to 170 | 92.1 | 2.88 |
+
+The observation's `y` is the credit difference, which includes the ultimo and
+announcement credits that `x` (the count margin, the ultimo excluded) leaves
+out; they correlate with the margin, so the slope is slightly overstated and
+1/slope slightly understated (22 and 23 are both inside the interval). The slope
+is an average over a step: near the threshold a third is worth more Points, so 23
+prices a bid's Points in thirds by the typical rate, not the marginal one.
 
 **Constant set.** `THIRDS_PER_POINT` 12 (the solver's ultimo weight) -> **23**
 (rule: the reciprocal of the slope, rounded). A forfeited honour now costs 23
@@ -279,7 +313,9 @@ minus `MARGIN`.
 
 **Stopping.** A descriptive count, no looks.
 
-### Result (2026-10-15)
+### M8 result (2026-10-15)
+
+Constants in force: `MARGIN` 10 (only to count the rows with the gap beyond it); the split band is what it measures.
 
 36,665 rows (suits of lead decisions) from 100 sittings (seeds 80,000,000 to
 80,000,099), 92 seconds. Descriptive, a fixed count. Suits with at least 6
@@ -371,7 +407,9 @@ missed thirds a deal. For the other rule sets, the chances and the met rate.
 
 **Stopping.** A descriptive count, no looks.
 
-### Result (2026-10-15)
+### M3 result (2026-10-15)
+
+Constants in force: `MARGIN` 10, `EXACT_MARGIN` 1, `BID_MARGIN` 0.45, `THIRDS_PER_POINT` 23, `SPLIT_SHARE` (0.1, 0.6), the standard-error multiple 2 (M1, M2, M8). The ladder it replaced was not read by the evidence.
 
 Rung 4 against rung 3, 200 sittings (1,200 deals) at the default settings (seeds
 30,000,000 to 30,000,199), 92 seconds; four other rule sets of 40
@@ -487,6 +525,103 @@ found for its own.
 **Stopping.** As above; the maximum is 160 pairs for a single knock-out and 120
 for an edge.
 
+### M4 result (2026-10-15)
+
+Constants in force: the opponent and the students only; `SPLIT_SHARE` (0.1, 0.6) in the `Behind` knock-out; `THIRDS_PER_POINT` 23 in the conversion of Points to thirds.
+
+Singles: the program ran as planned (batches of 40, at most 4 looks). The pairs
+ran as a second process of the same program (`--only pairs --bid coin`), to keep
+each run under half an hour; the `Bid` coin knock-out has the larger single
+effect (the `bid` edge uses it). A first launch of the program was started
+twice by mistake and killed after about three minutes, having finished three
+single knock-outs (Worth, Cheap, Off, each clear at look 1) that the full run
+repeated exactly; the results are a deterministic function of the plan (the same
+seeds), so nothing was seen twice. Singles about 25 minutes, pairs 1,073 seconds (the machine was
+shared with builds).
+
+**What a knock-out costs rung 4** (Points per mirrored pair of 12 deals, the
+student's less rung 4's; `worth` is minus this, in thirds a deal x 23 / 12):
+
+| Knock-out | Verdict (look, pairs) | Effect +- se | 95% interval | Worth, thirds a deal |
+|---|---|---|---|---|
+| Worth | clear, look 1 (40) | -6.300 +- 1.153 | -8.56 to -4.04 | 12.1 |
+| Cheap | clear, look 1 (40) | -13.675 +- 0.998 | -15.63 to -11.72 | 26.2 |
+| Off | clear, look 1 (40) | -14.025 +- 1.103 | -16.19 to -11.86 | 26.9 |
+| Run | clear, look 3 (120) | -1.300 +- 0.556 | -2.39 to -0.21 | 2.5 |
+| Pagat (coin) | clear, look 2 (80) | -2.438 +- 0.842 | -4.09 to -0.79 | 4.7 |
+| Void | inconclusive, look 4 (160) | +0.487 +- 0.446 | -0.39 to +1.36 | none shown |
+| Behind | inconclusive, look 4 (160) | -0.494 +- 0.469 | -1.41 to +0.43 | none shown |
+| Endgame | clear, look 4 (160) | -1.575 +- 0.489 | -2.53 to -0.62 | 3.0 |
+| Bid (coin) | clear, look 2 (80) | -2.650 +- 0.814 | -4.25 to -1.06 | 5.1 |
+| AlwaysPass | inconclusive, look 4 (160) | -0.062 +- 0.479 | -1.00 to +0.88 | none shown |
+| Announce | clear, look 4 (160) | -1.106 +- 0.511 | -2.11 to -0.11 | 2.1 |
+
+Two skills the tutor teaches, `void` and `behind`, are **not shown to be worth
+anything** in Points against the strongest rung: a student made to lead into a
+shown void or into the split suit loses nothing 160 pairs can show. The
+intervals are +1.36 to -0.39 (`void`) and +0.43 to -1.41 (`behind`) Points a
+pair; the second reaches 2.7 thirds a deal, more than `announce`, the least
+clear worth (2.1), which is taught. 160 pairs cannot tell "nothing" from "as much
+as `announce`". Always passing costs nothing either: rung 4 rarely finds taking
+up clearly right. The derived numbers (the worth in thirds, the drops below,
+`min_gain`) come from `measure m4report` over the logs in `docs/measurements/`
+(`m4-singles.txt`, `m4-pairs.txt`), a tested function.
+
+**The prerequisites** (the skill's worth alone, and with its prerequisite
+already knocked out; the drop is alone less with, in Points a pair; the edge
+holds if the drop exceeds twice the standard error of the difference). The two
+estimates compared come from runs that stopped at their own looks (an early stop
+at a boundary overstates an effect), the error of the difference treats two runs
+that share seeds as independent, and ten edges are tested with no adjustment
+(about half a false "holds" is expected):
+
+| Skill | Needs | Alone | With the prerequisite out | Drop +- se | Verdict |
+|---|---|---|---|---|---|
+| Cheap | Worth | 13.68 | 14.30 (look 1) | -0.62 +- 1.42 | not shown |
+| Off | Worth | 14.03 | 8.70 (look 1) | +5.33 +- 1.48 | **holds** |
+| Run | Cheap | 1.30 | 3.01 (look 2) | -1.71 +- 0.98 | not shown |
+| Pagat | Run | 2.44 | 1.99 (look 2) | +0.45 +- 1.08 | not shown |
+| Void | Worth | -0.49 | -0.06 (look 3, inconclusive) | -0.43 +- 0.69 | not shown |
+| Behind | Off | 0.49 | -3.33 (look 1, a gain of 3.3) | +3.82 +- 0.91 | not shown (a sign reversal of a skill with no shown worth, not a dependence) |
+| Behind | Void | 0.49 | 2.10 (look 3) | -1.61 +- 0.82 | not shown |
+| Endgame | Cheap | 1.57 | 1.38 (look 3) | +0.20 +- 0.80 | not shown |
+| Endgame | Void | 1.57 | 1.70 (look 3) | -0.12 +- 0.81 | not shown |
+| Bid | Worth | 2.65 | 4.62 (look 1) | -1.98 +- 1.43 | not shown |
+
+One edge is shown: `off` needs `worth` (the drop is 5.33 +- 1.48 Points a pair).
+The `behind` needs `off` drop passes the same test (3.82 +- 0.91) but is a sign
+reversal of a skill with no shown worth, which is not a dependence, so it is not
+counted. In no other pair did the second skill lose its worth, and in several it
+was worth more with the first gone (the skills stand in for one another, as in
+Cassino). The other nine edges are **not shown**: the prerequisites of
+`docs/TUTOR.md` 2 stay as the logical order of the sources (`research/16`), not
+contradicted at this power.
+
+**Constants set.**
+
+| Constant | Was | Now | Rule |
+|---|---|---|---|
+| `PARAMS.min_gain` | 1.0 (provisional) | **1.1** | half the least clear worth (`announce`, 2.12 thirds a deal), to 0.1 |
+| `PARAMS.costly_gain` | 4.0 (provisional) | **4.4** | four times `min_gain` |
+| `PARAMS.costly_chances` | 8 | **8** | twice the largest `min_chances` (4) |
+
+**Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m4 --only
+singles` and `... m4 --only pairs --bid coin` (defaults: `--seed 40000000
+--batch 40 --looks 4 --pair-looks 3`).
+
+### Decision on M4's result (15 Oct 2026, from M4's result)
+
+`void` and `behind` were not shown to be worth anything in Points against whole
+rung 4 (M4; the interval for `behind` reaches 2.7 thirds a deal), so a learner is
+not sent to work on them until a measurement shows a worth: they are
+**praise-only**, judged, counted and praised, never the focus
+(`SkillSpec::may_focus` false in `kit/learner`; `docs/TUTOR.md` 2). This was
+decided after the result and was not in M4's plan; it removes two of the twelve
+students from M6's detection. Only one of the 10 prerequisite edges was shown;
+the rest are kept as the logical order.
+M5 therefore needs no gate for their rules; they are reported below as not
+applicable.
+
 ## M5 Rule precision
 
 ### Plan (2026-10-15, before the selection run)
@@ -552,86 +687,9 @@ Wilson interval (z = 1.96) at `n_eff`.
 
 **Stopping.** Descriptive fixed counts, no looks.
 
-### Result (2026-10-15)
+### M5 result (2026-10-15)
 
-Singles: the program ran as planned (batches of 40, at most 4 looks). The pairs
-ran as a second process of the same program (`--only pairs --bid coin`), to keep
-each run under half an hour; the `Bid` coin knock-out has the larger single
-effect (the `bid` edge uses it). A first launch of the program was started
-twice by mistake and killed within minutes, before any look was read; the
-results are a deterministic function of the plan (the same seeds), so nothing
-was seen twice. Singles about 25 minutes, pairs 1,073 seconds (the machine was
-shared with builds).
-
-**What a knock-out costs rung 4** (Points per mirrored pair of 12 deals, the
-student's less rung 4's; `worth` is minus this, in thirds a deal x 23 / 12):
-
-| Knock-out | Verdict (look, pairs) | Effect +- se | 95% interval | Worth, thirds a deal |
-|---|---|---|---|---|
-| Worth | clear, look 1 (40) | -6.300 +- 1.153 | -8.56 to -4.04 | 12.1 |
-| Cheap | clear, look 1 (40) | -13.675 +- 0.998 | -15.63 to -11.72 | 26.2 |
-| Off | clear, look 1 (40) | -14.025 +- 1.103 | -16.19 to -11.86 | 26.9 |
-| Run | clear, look 3 (120) | -1.300 +- 0.556 | -2.39 to -0.21 | 2.5 |
-| Pagat (coin) | clear, look 2 (80) | -2.438 +- 0.842 | -4.09 to -0.79 | 4.7 |
-| Void | inconclusive, look 4 (160) | +0.487 +- 0.446 | -0.39 to +1.36 | none shown |
-| Behind | inconclusive, look 4 (160) | -0.494 +- 0.469 | -1.41 to +0.43 | none shown |
-| Endgame | clear, look 4 (160) | -1.575 +- 0.489 | -2.53 to -0.62 | 3.0 |
-| Bid (coin) | clear, look 2 (80) | -2.650 +- 0.814 | -4.25 to -1.06 | 5.1 |
-| AlwaysPass | inconclusive, look 4 (160) | -0.062 +- 0.479 | -1.00 to +0.88 | none shown |
-| Announce | clear, look 4 (160) | -1.106 +- 0.511 | -2.11 to -0.11 | 2.1 |
-
-Two skills the tutor teaches, `void` and `behind`, have no measurable worth in
-Points against the strongest rung (a student made to lead into a shown void or
-into the split suit loses nothing it can show in 160 pairs: the interval for
-`void` includes a gain of up to 1.4 a pair). Always passing costs nothing
-either: rung 4 rarely finds taking up clearly right.
-
-**The prerequisites** (the skill's worth alone, and with its prerequisite
-already knocked out; the drop is alone less with, in Points a pair; the edge
-holds if the drop exceeds twice the standard error of the difference):
-
-| Skill | Needs | Alone | With the prerequisite out | Drop +- se | Verdict |
-|---|---|---|---|---|---|
-| Cheap | Worth | 13.68 | 14.30 (look 1) | -0.62 +- 1.42 | not shown |
-| Off | Worth | 14.03 | 8.70 (look 1) | +5.33 +- 1.48 | **holds** |
-| Run | Cheap | 1.30 | 3.01 (look 2) | -1.71 +- 0.98 | not shown |
-| Pagat | Run | 2.44 | 1.99 (look 2) | +0.45 +- 1.08 | not shown |
-| Void | Worth | -0.49 | -0.06 (look 3, inconclusive) | -0.43 +- 0.69 | not shown |
-| Behind | Off | 0.49 | -3.33 (look 1, a gain of 3.3) | +3.82 +- 0.91 | **holds** |
-| Behind | Void | 0.49 | 2.10 (look 3) | -1.61 +- 0.82 | not shown |
-| Endgame | Cheap | 1.57 | 1.38 (look 3) | +0.20 +- 0.80 | not shown |
-| Endgame | Void | 1.57 | 1.70 (look 3) | -0.12 +- 0.81 | not shown |
-| Bid | Worth | 2.65 | 4.62 (look 1) | -1.98 +- 1.43 | not shown |
-
-Two edges hold (`off` needs `worth`, `behind` needs `off`); in no pair did the
-second skill lose all its worth, and in several it was worth more with the
-first gone (the skills stand in for one another, as in Cassino). The other
-eight edges are **not shown**: the prerequisites of `docs/TUTOR.md` 2 stay as the
-logical order of the sources (`research/16`); they are not contradicted except
-that the data cannot support the claim that `void` or `behind` matter at all.
-
-**Constants set.**
-
-| Constant | Was | Now | Rule |
-|---|---|---|---|
-| `PARAMS.min_gain` | 1.0 (provisional) | **1.1** | half the least clear worth (`announce`, 2.12 thirds a deal), to 0.1 |
-| `PARAMS.costly_gain` | 4.0 (provisional) | **4.4** | four times `min_gain` |
-| `PARAMS.costly_chances` | 8 | **8** | twice the largest `min_chances` (4) |
-
-**Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m4 --only
-singles` and `... m4 --only pairs --bid coin` (defaults: `--seed 40000000
---batch 40 --looks 4 --pair-looks 3`).
-
-### Decision on M4's result (15 Oct 2026, the orchestrating session)
-
-`void` and `behind` showed no worth in Points against whole rung 4 (M4), so they
-are **praise-only**: judged, counted and praised, never the focus
-(`SkillSpec::may_focus` false in `kit/learner`; `docs/TUTOR.md` 2). Only 2 of
-the 10 prerequisite edges were shown; the rest are kept as the logical order.
-M5 therefore needs no gate for their rules; they are reported below as not
-applicable.
-
-### Result (2026-10-15)
+Constants in force: `SPLIT_SHARE` (0.1, 0.6) in the `behind` triggers and `THIRDS_PER_POINT` 23 in the announce cost; the rules do not read `MARGIN`.
 
 **Selection**: rung 4 against rung 3, 400 sittings (2,400 deals), default
 settings, seeds from 50,000,000, 78 seconds. Firings, those satisfied, precision
@@ -763,11 +821,14 @@ says which.
 a mastered skill is lost, which 18 deals seldom do; the grid reports whether it
 moved the scores, and if not the Cassino value 0.2 is kept.
 
-### Result (2026-10-15)
+### M6 result (2026-10-15)
+
+Constants in force: `MARGIN` 10, `EXACT_MARGIN` 1, `BID_MARGIN` 0.45, `THIRDS_PER_POINT` 23, `SPLIT_SHARE` (0.1, 0.6), the ladder of M3, `min_gain` 1.1, `costly_gain` 4.4, `costly_chances` 8 (`M6_BASE`); the five tuned constants are the grid.
 
 Twelve students, 6 windows of 18 deals each on the tuning seeds (60,000,000) and
 6 on the fresh seeds (65,000,000); 178 seconds to play and judge the 144
-windows, 500 seconds to score the 540 sets of the grid on the tuning windows.
+windows, about 320 seconds to score the 540 sets of the grid on the tuning windows
+(the log's 500 seconds is the time since the start).
 Descriptive, fixed counts. Detection is the share of the 6 windows in which the
 skill the student lacks was the focus within the limit (6 deals; 12 for
 `Pagat`, `Bid`, `AlwaysPass`; 18 for `Announce`).
@@ -782,6 +843,13 @@ skill the student lacks was the focus within the limit (6 deals; 12 for
 The chosen set by the rule of the plan: `discount` 0.88, `lower` 0.2, `upper`
 0.8, `master_of_top` 0.80, `lose_below` 0.2 (the three values of `lose_below`
 gave the same scores; the one nearest the provisional constants is kept).
+
+The change from the provisional constants is not an improvement the data can
+show: on the fresh windows the chosen set detects 0.556 against 0.537, a
+difference of one window of one student (`bid`), and the 540 sets were scored on
+6 windows of 9 detectable students, each detection a multiple of 1/6. The set
+stands for a window of about eight deals and a mastery bar of 0.80, not for a
+better learner.
 
 **Acceptance on the fresh windows: not met** (sensitivity 0.556 against 0.7;
 the false-focus rate 0.039 and the 6.33 skills mastered by rung 4 whole meet
@@ -850,7 +918,9 @@ not, the worlds are halved and the measurement repeated.
 **Stopping.** A descriptive count, no looks. The machine is shared with other
 processes; the load is recorded.
 
-### Result (2026-10-15)
+### M7 result (2026-10-15)
+
+Constants in force: all of the above except the M6 set (`discount` 0.83 at the time; the evidence does not read it).
 
 144 deals (24 sittings from seed 70,000,000), the same records timed in Node
 (V8) with the wasm module and natively, one process after the other; the load
