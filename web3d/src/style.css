@@ -32,6 +32,8 @@ button { font: inherit; }
 .controls { position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; height: 100px; padding: 4px 12px calc(8px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; pointer-events: none; }
 .controls > * { pointer-events: auto; }
 .prompt, .refusal, .aid-line { margin: 0; padding: 4px 12px; border-radius: 14px; font-size: 15px; background: rgba(255, 255, 255, 0.85); color: #1d2433; }
+.aid-line { max-width: min(100%, 44em); text-align: center; }
+.aid-more { display: block; margin-top: 2px; font-size: 13px; opacity: 0.85; }
 .prompt:empty, .refusal[hidden], .refusal:empty { display: none; }
 .refusal { background: #fff3cd; color: #5a4300; border: 1px solid #e6c34a; }
 .move-bar { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
