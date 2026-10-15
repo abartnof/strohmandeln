@@ -1043,6 +1043,7 @@ numbered (7.7).
 | Speed | Slow / Normal / Fast / Instant | Normal | now |
 | Table talk | All / Calls only / None | All | now |
 | Tutor | On / Off (off: no pages, no tips, no review chip) | On | now |
+| Tips from the Kibitzer | On / Off (off: no work to do and no nudge; the review keeps its first line, 6.4.6) | On | now |
 | Hints | On / Off (the hint chip) | Off | now |
 | Cards out | On / Off (the tracker, 6.6; shown only with Hints on) | On | now |
 | Explanations | On / Off | Off | now |

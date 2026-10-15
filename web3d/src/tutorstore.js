@@ -152,6 +152,7 @@ export async function refreshOne(store, engine, tried = new Set()) {
     console.error(error);
     return false;
   }
+  if (!learnt) return false; // the engine has stopped
   const newer = (i) => learnt.version != null && (summaryVersion(deals[i].summary) ?? 0) > learnt.version;
   const at = (learnt.stale ?? []).find((i) => deals[i] && !tried.has(deals[i].record) && !newer(i));
   if (at === undefined) return false;

@@ -1,24 +1,44 @@
-// The end-of-deal review for its dialog (docs/TABLE3D.md 6.4): the module's
-// bullets (docs/PROTOCOL.md "The review": a lead, a key, parameters) put into
-// the words of the current language, one to three bullets, each with a bold
-// lead, and a folded "How is this worked out?". The page adds no judgement of
-// its own: every sentence is a key of docs/MESSAGES.md "Review keys".
+// The end-of-deal brief for its dialog (docs/TABLE3D.md 6.4, docs/TUTOR.md 6):
+// the count as the header, then the module's bullets (docs/PROTOCOL.md "The
+// tutor": a lead key, a key, parameters) put into the words of the current
+// language, at most three, each with a bold lead, and a folded "How is this
+// worked out?". The page adds no judgement of its own: every sentence is a
+// key of docs/MESSAGES.md "Tutor keys" or "Review keys".
 //
 // Cassino's review.js (briefBlocks) is the pattern.
 
-// Parameters the table formats before they are put into a sentence: cards
-// are named, thirds written as points and thirds, the honour named, the net
-// of a sitting signed.
-export function words(bullet, { t, cardName, thirds, signed }) {
+const CARDS = ["played", "better", "led", "card", "king", "mine", "theirs"];
+const THIRDS = ["thirds", "sure"];
+
+// Parameters the table formats before they are put into a sentence: cards are
+// named, thirds written as points and thirds, a skill by its name, the honour
+// and the suit named, the net of a sitting signed.
+function params(bullet, { t, cardName, thirds, signed, suitName }) {
   const p = { ...bullet.params };
-  for (const k of ["mine", "theirs"]) {
+  for (const k of CARDS) {
     if (typeof p[k] === "string") p[k] = cardName(p[k]);
-    else if (typeof p[k] === "number") p[k] = thirds(p[k]);
+    else if (k !== "card" && typeof p[k] === "number") p[k] = thirds(p[k]);
   }
-  if (typeof p.thirds === "number") p.thirds = thirds(p.thirds);
+  for (const k of THIRDS) if (typeof p[k] === "number") p[k] = thirds(p[k]);
+  for (const k of ["skill", "skill2"]) if (typeof p[k] === "string") p[k] = t(`tutor.name.${p[k]}`);
   if (typeof p.honour === "string") p.honour = t(`card.honour.${p.honour}`);
+  if (typeof p.suit === "string") p.suit = suitName ? suitName(p.suit) : p.suit;
   if (typeof p.net === "number") p.net = signed(p.net);
-  return t(`review.say.${bullet.key}`, p);
+  return p;
+}
+
+// A review bullet (the count, the sitting's tally) in words.
+export function words(bullet, fmt) {
+  return fmt.t(`review.say.${bullet.key}`, params(bullet, fmt));
+}
+
+// A brief bullet's lead and text. A rule is told after "If I may:".
+export function tutorWords(bullet, fmt) {
+  const p = params(bullet, fmt);
+  const { t } = fmt;
+  const lead = bullet.lead ? t(bullet.lead, p) : "";
+  const body = t(bullet.key, p);
+  return { lead, text: bullet.key.startsWith("tutor.rule.") ? `${t("tutor.lead.rule")} ${body}` : body };
 }
 
 // The line under the prompt after a trick (docs/PROTOCOL.md `strohmandeln_explain`):
@@ -32,19 +52,25 @@ export function explainText(bullet, { t, cardName, suitName }) {
   return t("explain." + bullet.key.slice("explain-".length), p);
 }
 
-// { title, bullets: [{ lead, text }], method } for a review, or null when the
-// module had nothing to say. `whole` is the sitting's review.
-export function reviewBlocks(review, fmt, { whole = false } = {}) {
+// { title, header, bullets: [{ lead, text }], how, method } for a brief, or
+// null when there is nothing to say. `review` is the module's review of the
+// deal (or of the sitting with `whole`), whose first bullet (the count, or the
+// sitting's tally) is the header; `brief` is `{ bullets }`. With `tips` off
+// (the setting) the brief gives its first bullet only, and only if it is what
+// went well: no focus, no advice (docs/TUTOR.md 6).
+export function briefBlocks(brief, review, fmt, { whole = false, tips = true } = {}) {
   const { t } = fmt;
-  const bullets = (review?.bullets ?? [])
-    .filter((b) => b && b.key)
-    .slice(0, 3)
-    .map((b) => ({ lead: t(`review.lead.${b.lead}`), text: words(b, fmt) }));
-  if (!bullets.length) return null;
+  const first = review?.bullets?.[0];
+  const header = first?.key ? words(first, fmt) : null;
+  let list = (brief?.bullets ?? []).filter((b) => b && b.key);
+  if (!tips) list = list.filter((b) => b.lead === "tutor.lead.well").slice(0, 1);
+  const bullets = list.slice(0, 3).map((b) => tutorWords(b, fmt));
+  if (!header && !bullets.length) return null;
   return {
     title: t(whole ? "review.sitting" : "review.deal"),
+    header,
     bullets,
-    how: t("review.how"),
-    method: t("review.method"),
+    how: t("tutor.how"),
+    method: t(brief?.method ?? "tutor.method"),
   };
 }

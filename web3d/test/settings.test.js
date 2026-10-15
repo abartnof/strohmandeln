@@ -8,7 +8,7 @@ import { fakeRoot } from "./support/fakedom.js";
 
 const TABLE = JSON.parse(readFileSync(new URL("../strings.json", import.meta.url), "utf8"));
 
-const SPEC_ROWS = ["both_pass", "values", "ultimo", "touren", "skill", "speed", "talk", "tutor", "hints", "tracker", "explain", "announceAuto", "slateAuto", "faces", "leftHanded", "reducedMotion", "lang", "surface"];
+const SPEC_ROWS = ["both_pass", "values", "ultimo", "touren", "skill", "speed", "talk", "tutor", "tips", "hints", "tracker", "explain", "announceAuto", "slateAuto", "faces", "leftHanded", "reducedMotion", "lang", "surface"];
 
 test("every setting of spec 7.1 has a row, and every default is an option", () => {
   assert.deepEqual(ROWS.map((r) => r.key).sort(), [...SPEC_ROWS].sort());

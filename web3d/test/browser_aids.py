@@ -773,9 +773,93 @@ def check_tracker_languages(browser, failures):
     check_offline(upright, failures, f"{where}upright: ")
 
 
+# ---- 10.4 the brief after a scored deal (6.4) ----------------------------------------------------------
+
+BRIEF_KEPT = "(() => { const b = window.strohmandeln3d.briefing(); return b.kept.length >= 1 && b.kept.every((d) => d.summary) && b.owed === 0; })()"
+
+
+def brief_page(browser, prefs, query="seed=7&speed=instant&human=1"):
+    page = with_prefs(browser, {"hints": True, "slateAuto": False, **prefs}, query)
+    return page
+
+
+def scored_deal(page):
+    """Play on by the first legal action to the end of a deal and let the tutor settle."""
+    ok = drive(page, has("game_scored"))
+    rest(page)
+    page.wait_for_function(BRIEF_KEPT, timeout=60_000)
+    return ok
+
+
+def check_deal_brief(browser, failures):
+    page = brief_page(browser, {})
+    # a hint asked at the first decision marks it assisted: its number is the engine's, counted over both seats
+    page.wait_for_selector("[data-act=hint]", timeout=30_000)
+    number = state(page)["deal_actions"]
+    page.locator("[data-act=hint]").click()
+    page.wait_for_function("window.strohmandeln3d.briefing().assisted.length > 0", timeout=10_000)
+    fail_if(js(page, "briefing()")["assisted"] != [number], failures, f"deal_brief: the hint's number is {js(page, 'briefing()')['assisted']}, not [{number}]")
+    fail_if(not scored_deal(page), failures, "deal_brief: no deal was scored")
+    kept = js(page, "briefing()")["kept"]
+    fail_if(len(kept) != 1 or number not in kept[0]["assisted"], failures, f"deal_brief: the kept deal does not hold the assisted number: {kept}")
+    fail_if(js(page, "briefing()")["assisted"] != [], failures, "deal_brief: the assisted list was not cleared for the next deal")
+    # the chip opens the dialog: the count, at most three bullets, the folded method
+    page.wait_for_selector(".tutor-review:not([hidden])", timeout=10_000)
+    page.locator(".tutor-review").click()
+    page.wait_for_selector("[data-dialog=review]", timeout=10_000)
+    head = page.locator("[data-dialog=review] .tutor-count").inner_text()
+    fail_if(not head.startswith("You counted"), failures, f"deal_brief: the header is {head!r}")
+    bullets = page.locator("[data-dialog=review] li")
+    fail_if(bullets.count() > 3, failures, f"deal_brief: {bullets.count()} bullets")
+    for i in range(bullets.count()):
+        lead = bullets.nth(i).locator("b").inner_text()
+        fail_if(not lead.endswith(":") and not lead.endswith("."), failures, f"deal_brief: the lead {lead!r}")
+    fail_if(page.locator("[data-dialog=review] summary").inner_text() != t("tutor.how"), failures, "deal_brief: no folded method")
+    fail_if(page.locator("[data-dialog=review] details[open]").count(), failures, "deal_brief: the method is not folded")
+    shot_name = "deal_brief"
+    page.locator("[data-dialog=review] [data-dialog-act=close]").click()
+    page.wait_for_function("!document.querySelector('[data-dialog=review]')", timeout=10_000)
+    # muted: no chip, no dialog
+    page.keyboard.press("m")
+    fail_if(page.locator(".tutor-review:not([hidden])").count(), failures, "deal_brief: the chip shows while muted")
+    page.evaluate("window.strohmandeln3d.openReview()")
+    fail_if(page.locator("[data-dialog=review]").count(), failures, "deal_brief: the brief opened while muted")
+    # unmuted, the next deal brings the nudge at the first clear chance at the focus (one a deal);
+    # that decision then counts as assisted
+    page.keyboard.press("m")
+    focus = js(page, "briefing()")["focus"]
+    fail_if(focus is None, failures, "deal_brief: the first deal named no focus (the seed is chosen for one)")
+    if focus:
+        before = len(js(page, "briefing()")["kept"])
+        drive(page, lambda st, log: bool(js(page, "briefing()")["assisted"]) or sum(e["type"] == "game_scored" for e in log) > before or st["prompt"] == "over")
+        assisted = js(page, "briefing()")["assisted"]
+        if assisted:
+            note = js(page, "tutor()")["note"]
+            fail_if(note != t(f"tutor.nudge.{focus}"), failures, f"deal_brief: the nudge says {note!r}, not the focus's ({focus})")
+            fail_if(len(assisted) != 1, failures, f"deal_brief: the nudged decision is not assisted: {assisted}")
+    check_offline(page, failures, "deal_brief: ")
+    # the German, and the tips off: the count and what went well, nothing to work on
+    for prefs, check in (
+        ({"lang": "de"}, lambda h, n: (h.startswith("Sie zählten"), "German header")),
+        ({"tips": False}, lambda h, n: (n <= 1, "one bullet with the tips off")),
+    ):
+        other = brief_page(browser, prefs)
+        take_if_bidding(other)
+        scored_deal(other)
+        other.wait_for_selector(".tutor-review:not([hidden])", timeout=10_000)
+        other.locator(".tutor-review").click()
+        other.wait_for_selector("[data-dialog=review]", timeout=10_000)
+        ok, what = check(other.locator("[data-dialog=review] .tutor-count").inner_text(), other.locator("[data-dialog=review] li").count())
+        fail_if(not ok, failures, f"deal_brief: {what} ({prefs})")
+        if "tips" in prefs:
+            texts = other.locator("[data-dialog=review] li").all_inner_texts()
+            fail_if(any(x.startswith("Next:") for x in texts), failures, f"deal_brief: advice with the tips off: {texts}")
+        check_offline(other, failures, "deal_brief: ")
+
+
 CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_skill_speed,
     check_language_switch, check_language_switch_at_count, check_prefs_storage, check_save_restore, check_export_import_file,
-    check_tutor_pages, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages,
+    check_tutor_pages, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_deal_brief,
 ]

@@ -59,7 +59,7 @@
 .tutor-pages { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
 .tutor-pages .big { width: 100%; text-align: left; }
 .tutor-review-body details { margin-top: 10px; font-size: 14px; }
-.tutor-trend { margin: 10px 0 0; font-size: 14px; }
+.tutor-count { margin: 0 0 8px; font-weight: 600; line-height: 1.35; }
 
 @media (max-width: 520px) {
   .tutor { bottom: 112px; }
