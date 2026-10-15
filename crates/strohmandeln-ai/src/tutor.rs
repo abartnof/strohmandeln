@@ -72,13 +72,18 @@ pub const BID_MARGIN: f64 = 0.45;
 pub const THIRDS_PER_POINT: f64 = 23.0;
 
 /// A suit is split when my share (my value points over mine and everything
-/// unseen, of the suit) lies in this range. Rung 2 uses 30% to 70% of the
-/// suit's whole 18 points, a different quantity, so the range is a first
-/// guess here. Provisional; M8 sets it for this definition.
-pub const SPLIT_SHARE: (f64, f64) = (0.3, 0.7);
+/// unseen, of the suit) lies in this range. **Measured, M8**
+/// (`docs/MEASUREMENTS.md`): over 36,665 suit-leads of 100 sittings, rung 4
+/// surely prefers another lead for shares up to 0.6 (the mean gap crosses 0
+/// there), and opens the suit in at least a tenth of the cases from 0.1 (below
+/// it the suit is his). Rung 2 uses 30% to 70% of the suit's whole 18 points,
+/// a different quantity.
+pub const SPLIT_SHARE: (f64, f64) = (0.1, 0.6);
 
-/// Unplayed value points a suit needs to be worth contesting. Provisional;
-/// M8 sets it.
+/// Unplayed value points a suit needs to be worth contesting. **Measured,
+/// M8**: from 6 points unplayed, with the share in the band, another lead is
+/// clearly better (beyond `MARGIN`) in at least a quarter of the cases (26%,
+/// 35%, 52% for 6 to 9, 9 to 12, 12 and more; 15% and 19% below 6).
 pub const SPLIT_MIN_POINTS: u32 = 6;
 
 /// The stream the advisor's draws come from, mixed with the view.

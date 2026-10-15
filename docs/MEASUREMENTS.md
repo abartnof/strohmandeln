@@ -278,3 +278,55 @@ minus `MARGIN`.
   is told as its fact (`docs/TUTOR.md` 9).
 
 **Stopping.** A descriptive count, no looks.
+
+### Result (2026-10-15)
+
+36,665 rows (suits of lead decisions) from 100 sittings (seeds 80,000,000 to
+80,000,099), 92 seconds. Descriptive, a fixed count. Suits with at least 6
+points unplayed, by my share of the suit; the gap is the advisor's best lead in
+the suit less its best lead outside it, thirds, with the standard error
+clustered by sitting:
+
+| My share | Rows | Mean gap | Another lead clearly better | Opened by rung 4 |
+|---|---|---|---|---|
+| 0.0 to 0.1 | 976 | -31.85 +- 1.16 | 0.887 | 0.015 |
+| 0.1 to 0.2 | 3,584 | -17.91 +- 0.41 | 0.619 | 0.111 |
+| 0.2 to 0.3 | 4,124 | -14.56 +- 0.40 | 0.517 | 0.187 |
+| 0.3 to 0.4 | 4,931 | -12.28 +- 0.29 | 0.485 | 0.212 |
+| 0.4 to 0.5 | 3,239 | -7.22 +- 0.37 | 0.344 | 0.307 |
+| 0.5 to 0.6 | 4,324 | -5.05 +- 0.30 | 0.295 | 0.351 |
+| 0.6 to 0.7 | 2,203 | -1.10 +- 0.40 | 0.234 | 0.454 |
+| 0.7 to 0.8 | 1,138 | +3.01 +- 0.59 | 0.164 | 0.592 |
+| 0.8 to 0.9 | 922 | +3.52 +- 0.67 | 0.140 | 0.603 |
+| 0.9 to 1.0 | 998 | -1.79 +- 0.49 | 0.191 | 0.407 |
+
+The preference for another lead falls steadily as my share rises, with no dip
+in the middle: leading a suit gets better the more of it I hold. The bins from
+0.1 to 0.6 prefer another lead by the rule; 0.6 to 0.7 does not (its mean is
+-1.10 +- 0.40 but only 23% of its rows are clearly worse); 0.0 to 0.1 does, but
+rung 4 opens the suit in 1.5% of those rows (his suit). Rows with the share in
+the band (0.1 to 0.6), by the suit's points unplayed:
+
+| Points unplayed | Rows | Mean gap | Another lead clearly better |
+|---|---|---|---|
+| 0 to 3 | 1,192 | -3.80 +- 0.27 | 0.147 |
+| 3 to 6 | 2,288 | -3.95 +- 0.22 | 0.189 |
+| 6 to 9 | 3,185 | -5.79 +- 0.28 | 0.264 |
+| 9 to 12 | 3,242 | -7.59 +- 0.29 | 0.353 |
+| 12 and more | 13,942 | -13.44 +- 0.21 | 0.515 |
+
+**Constants set.** `SPLIT_SHARE` (0.3, 0.7) -> **(0.1, 0.6)**;
+`SPLIT_MIN_POINTS` 6 -> **6** (the lowest class that prefers another lead, with
+every class above it).
+
+**Reading.** The data do not show a contested middle: the cost of opening a
+suit is highest where I hold little and falls steadily with my share. "Split"
+in the sources' sense ("about evenly") is a weaker claim than what rung 4 does;
+the trigger is "a suit in which I hold at most 60% of the points unplayed and
+the opponent could hold more", and the example names the better lead, not a
+rule (`docs/TUTOR.md` 9, `behind` is a fact). The share counts my own
+face-down packet cards as the opponent's, which biases it low by about my
+hidden fraction of the suit.
+
+**Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m8`
+(defaults: `--seed 80000000 --sittings 100`).
