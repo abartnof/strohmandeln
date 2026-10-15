@@ -31,6 +31,7 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
   by counting cards. Strohmandeln supplies its categories, thirds format and
   36 of 70 (`kit/README.md`, "The score HUD").
 - 14 Oct 2026: "Mit einem guten Herzen gewinnt man kein Spiel" (Wander, Herz 239) stays in `trick-bad-yours`: a proverb about play, within the kindness rule (open question in docs/review/talk-and-phrases.md, closed).
+- 15 Oct 2026: the phone layout is on hold until the maintainer has looked at the game on a phone (the table may hold too many cards for one). New features are built for desktop and only must not break on a narrow screen.
 
 ## Work packages
 
