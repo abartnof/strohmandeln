@@ -547,11 +547,44 @@ pub fn classify_announce(k: &Knowledge, action: &Action) -> Option<Verdict> {
     Some(Verdict::new(Skill::Announce, met, THIRDS_PER_POINT))
 }
 
+/// The advisor's table for a playing decision with a choice (rung 4 from the
+/// view alone, the same draws for every card), or `None` for a forced card or
+/// a search that finished no trick (a budget too small: `MoveTable` then holds
+/// rung 3's scale, which is not thirds).
+fn play_table(k: &Knowledge, view: &View, budget: Budget) -> Option<rung4::MoveTable> {
+    if k.legal.len() < 2 {
+        return None;
+    }
+    let mut budget = budget;
+    if k.hidden_total() == 0 {
+        // Nothing is hidden: every world is the same one, so spend the nodes
+        // on it.
+        budget.nodes *= budget.worlds as u64;
+        budget.worlds = 1;
+    }
+    let mut rng = Rng::stream(EVIDENCE_SEED, view_seed(view) ^ 0x7001);
+    let table = rung4::move_table(k, &mut rng, budget, &Weights::default());
+    (!table.per_world.is_empty()).then_some(table)
+}
+
+/// The bid's expectation in Points over the sampled worlds: its mean and its
+/// standard error, or `None` with too few worlds.
+fn bid_estimate(k: &Knowledge, view: &View, budget: Budget) -> Option<(f64, f64)> {
+    let mut rng = Rng::stream(EVIDENCE_SEED, view_seed(view) ^ 0x7002);
+    let samples = rung4::bid_samples(k, &mut rng, budget.bid_worlds);
+    let n = samples.len() as f64;
+    if n < 2.0 {
+        return None;
+    }
+    let mean = samples.iter().sum::<f64>() / n;
+    let var = samples.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / (n - 1.0);
+    Some((mean, (var / n).sqrt()))
+}
+
 /// Every verdict on `action`, taken in `view` by the seat to move: the
 /// advisor runs on that seat's view alone (the same draws for every card, a
 /// pure function of the view and `budget`). A decision whose search finished
-/// no trick (a budget too small, `MoveTable` then holds rung 3's scale) gives
-/// no play verdict.
+/// no trick (a budget too small) gives no play verdict.
 pub fn decision_verdicts(view: &View, action: &Action, budget: Budget) -> Vec<Verdict> {
     let Some(k) = Knowledge::from_view(view) else {
         return Vec::new();
@@ -563,40 +596,66 @@ pub fn decision_verdicts(view: &View, action: &Action, budget: Budget) -> Vec<Ve
             Action::Pass => false,
             _ => return out,
         };
-        let mut rng = Rng::stream(EVIDENCE_SEED, view_seed(view) ^ 0x7002);
-        let samples = rung4::bid_samples(&k, &mut rng, budget.bid_worlds);
-        let n = samples.len() as f64;
-        if n >= 2.0 {
-            let mean = samples.iter().sum::<f64>() / n;
-            let var = samples.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / (n - 1.0);
-            out.extend(classify_bid(&k, take, mean, (var / n).sqrt()));
+        if let Some((mean, se)) = bid_estimate(&k, view, budget) {
+            out.extend(classify_bid(&k, take, mean, se));
         }
         return out;
     }
     out.extend(classify_announce(&k, action));
-    if let Action::Play { card, .. } = action {
-        if k.legal.len() >= 2 {
-            let mut budget = budget;
-            if k.hidden_total() == 0 {
-                // Nothing is hidden: every world is the same one, so spend
-                // the nodes on it.
-                budget.nodes *= budget.worlds as u64;
-                budget.worlds = 1;
-            }
-            let mut rng = Rng::stream(EVIDENCE_SEED, view_seed(view) ^ 0x7001);
-            let table = rung4::move_table(&k, &mut rng, budget, &Weights::default());
-            if table.per_world.is_empty() {
-                return out;
-            }
-            let advice = Advice {
-                scores: &table.scores,
-                per_world: &table.per_world,
-                exact: search_complete(&k, table.depth),
-            };
-            out.extend(classify_play(&k, *card, &advice));
-        }
+    if let (Action::Play { card, .. }, Some(table)) = (action, play_table(&k, view, budget)) {
+        let advice = Advice {
+            scores: &table.scores,
+            per_world: &table.per_world,
+            exact: search_complete(&k, table.depth),
+        };
+        out.extend(classify_play(&k, *card, &advice));
     }
     out
+}
+
+/// The skills `view` holds a clear chance at, whatever is played: the union
+/// of what [`decision_verdicts`] could say of each legal move, from one
+/// advisor run. What the nudge is shown on (`docs/TUTOR.md` 6). Nothing for a
+/// seat with no move to make.
+pub fn open_skills(view: &View, budget: Budget) -> Vec<Skill> {
+    let Some(k) = Knowledge::from_view(view) else {
+        return Vec::new();
+    };
+    let mut open = Vec::new();
+    if !k.playing {
+        let can_bid = view.legal_actions.contains(&Action::Take);
+        if can_bid {
+            if let Some((mean, se)) = bid_estimate(&k, view, budget) {
+                open.extend(classify_bid(&k, true, mean, se).map(|v| v.skill));
+            }
+        }
+        return open;
+    }
+    if !k.announceable.is_empty() {
+        open.push(Skill::Announce);
+    }
+    if let Some(table) = play_table(&k, view, budget) {
+        let advice = Advice {
+            scores: &table.scores,
+            per_world: &table.per_world,
+            exact: search_complete(&k, table.depth),
+        };
+        for &(card, _) in &table.scores {
+            for v in classify_play(&k, card, &advice) {
+                if !open.contains(&v.skill) {
+                    open.push(v.skill);
+                }
+            }
+        }
+    }
+    open.sort_by_key(|s| s.index());
+    open
+}
+
+/// Whether `view` is a decision to nudge on `skill` (the focus) at: a clear
+/// chance at it, one advisor run.
+pub fn nudge(skill: Skill, view: &View, budget: Budget) -> bool {
+    open_skills(view, budget).contains(&skill)
 }
 
 impl Verdict {

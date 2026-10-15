@@ -670,6 +670,48 @@ fn the_skills_are_ten_in_ladder_order_and_the_prerequisites_come_first() {
     assert_eq!(Skill::Endgame.needs(), &[Skill::Cheap, Skill::Void]);
 }
 
+/// The nudge is a clear chance whatever is played: every skill the evidence
+/// judges a move on is open in the view the move was made in, and a decision
+/// open at a skill is one the nudge shows it on (`docs/TUTOR.md` 6).
+#[test]
+fn every_chance_the_evidence_judges_is_open_to_the_nudge() {
+    let mut judged = [0u32; SKILLS];
+    let mut open_n = [0u32; SKILLS];
+    for rec in students().whole.iter().chain(&students().no_cover).take(8) {
+        rec.replay(|_, d, seat, a| {
+            if seat != HUMAN {
+                return;
+            }
+            let view = bare_view(d, seat);
+            let open = open_skills(&view, small());
+            for s in &open {
+                open_n[s.index()] += 1;
+                assert!(nudge(*s, &view, small()));
+            }
+            for v in decision_verdicts(&view, a, small()) {
+                judged[v.skill.index()] += 1;
+                assert!(
+                    open.contains(&v.skill),
+                    "{} judged but not open",
+                    v.skill.slug()
+                );
+            }
+        })
+        .unwrap();
+    }
+    assert!(judged.iter().sum::<u32>() > 20, "{judged:?}");
+    assert!(open_n[Skill::Worth.index()] > 0, "{open_n:?}");
+}
+
+#[test]
+fn a_view_with_no_move_to_make_opens_nothing() {
+    let rec = &students().whole[0];
+    let done = rec.replay_to_end(|_, _, _, _| {}).unwrap();
+    let view = bare_view(&done, HUMAN);
+    assert!(open_skills(&view, small()).is_empty());
+    assert!(!nudge(Skill::Worth, &view, small()));
+}
+
 /// The evidence over whole deals, native:
 /// `cargo test -p strohmandeln-ai --release evidence_latency -- --ignored --nocapture`
 #[test]
