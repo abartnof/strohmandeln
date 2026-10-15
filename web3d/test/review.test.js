@@ -3,13 +3,13 @@
 // thirds written, in both languages.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { briefBlocks, explainText, tutorWords, words } from "../src/review.js";
+import { briefBlocks, explainText, nudgeText, tutorWords, words } from "../src/review.js";
 import { createStrings, thirds, signed } from "../src/strings.js";
 import TABLE from "../strings.json" with { type: "json" };
 
 const fmt = (lang) => {
   const s = createStrings(TABLE, lang);
-  return { t: s.t, cardName: s.romanName, thirds, signed, suitName: (c) => (lang === "en" ? s.suitName(c).toLowerCase() : s.suitName(c)) };
+  return { t: s.t, lang, cardName: s.romanName, thirds, signed, suitName: (c) => (lang === "en" ? s.suitName(c).toLowerCase() : s.suitName(c)) };
 };
 
 const count = { lead: "count", key: "count", params: { mine: 120, theirs: 90 } };
@@ -37,11 +37,12 @@ test("a brief is a title, the count, up to three bullets with a lead each, and t
   const r = briefBlocks(brief, review, fmt("en"));
   assert.equal(r.title, "How the deal went");
   assert.equal(r.header, "You counted 40 to your opponent's 30; 35⅔ was the line.");
-  assert.deepEqual(r.bullets.map((b) => b.lead), ["Went well:", "Next: the cheapest card.", "This deal:"]);
+  assert.deepEqual(r.bullets.map((b) => b.lead), ["Went well:", "Next: paying with the cheapest card.", "This deal:"]);
+  // no second colon, no capital after one
   assert.deepEqual(r.bullets.map((b) => b.text), [
-    "You met all 3 chances: playing the packets off.",
-    "If I may: Win with the lowest card that wins; otherwise give the lowest.",
-    "Trick 9: your queen of hearts won only 7⅓ points; 4 of hearts would have saved it for a bigger trick.",
+    "playing your covers off – all 3 chances met.",
+    "If I may: win with the lowest card that wins; otherwise give the lowest.",
+    "in trick 9, your queen of hearts won only 7⅓ points; the 4 of hearts would have kept it back.",
   ]);
   assert.match(r.method, /compared afterwards/);
   assert.equal(r.how, "How is this worked out?");
@@ -50,8 +51,8 @@ test("a brief is a title, the count, up to three bullets with a lead each, and t
 test("the same brief in German: cards by their names, the rule after its prefix", () => {
   const r = briefBlocks(brief, review, fmt("de"), { whole: false });
   assert.equal(r.title, "Wie die Partie verlief");
-  assert.deepEqual(r.bullets.map((b) => b.lead), ["Gut gelaufen:", "Als Nächstes: die billigste Karte.", "In dieser Partie:"]);
-  assert.equal(r.bullets[0].text, "Sie nutzten alle 3 Gelegenheiten: das Abspielen der Pakete.");
+  assert.deepEqual(r.bullets.map((b) => b.lead), ["Gut gelaufen:", "Als Nächstes: Mit der billigsten Karte zahlen.", "In dieser Partie:"]);
+  assert.equal(r.bullets[0].text, "Die eigenen Decken abspielen – alle 3 Gelegenheiten genutzt.");
   assert.equal(r.bullets[1].text, "Wenn ich mir erlauben darf: Den Stich mit der kleinsten Karte holen, die ihn gewinnt; sonst die kleinste zugeben.");
   assert.match(r.bullets[2].text, /^Im 9\. Stich holte Herz-Dame nur 7⅓ Augen; /);
   assert.equal(r.how, "Wie kommt das zustande?");
@@ -61,19 +62,25 @@ test("a card, a suit, an honour and two skills are named in the language", () =>
   const e = fmt("en");
   const d = fmt("de");
   const miss = { lead: "tutor.lead.deal-n", key: "tutor.miss.void", params: { deal: 4, trick: 12, played: "Kh", suit: "h" } };
-  assert.deepEqual(tutorWords(miss, e), { lead: "Deal 4:", text: "Trick 12: you led king of hearts, though your opponent had already failed to follow hearts." });
+  assert.deepEqual(tutorWords(miss, e), { lead: "Deal 4:", text: "in trick 12, you led the king of hearts, though your opponent had already failed to follow hearts." });
   assert.equal(tutorWords(miss, d).lead, "Partie 4:");
   assert.match(tutorWords(miss, d).text, /^Im 12\. Stich spielten Sie Herz-König an, obwohl Ihr Gegner Herz schon nicht bedient hatte\.$/);
   const honour = { lead: "", key: "tutor.miss.announce", params: { card: "T21", honour: "trull" } };
-  assert.equal(tutorWords(honour, e).text, "You played Mond without announcing the Trull: a Point lost.");
-  assert.equal(tutorWords(honour, d).text, "Sie spielten Mond, ohne die Troule anzusagen: ein Point ging verloren.");
+  assert.equal(tutorWords(honour, e).text, "You played the Mond without announcing the Trull, and lost a Point.");
+  assert.equal(tutorWords(honour, d).text, "Sie spielten Mond, ohne die Troule anzusagen, und verloren einen Point.");
   assert.equal(tutorWords(honour, e).lead, "");
   const two = { lead: "tutor.lead.well", key: "tutor.well.mastered-two", params: { skill: "worth", skill2: "cheap" } };
-  assert.equal(tutorWords(two, e).text, "Mastered: judging a trick's worth and the cheapest card.");
+  assert.equal(tutorWords(two, e).text, "judging a trick's worth and paying with the cheapest card – mastered.");
   const fell = { lead: "tutor.lead.deal", key: "tutor.miss.off.figure", params: { card: "Qh", king: "Kh", late: 14 } };
-  assert.equal(tutorWords(fell, e).text, "Your queen of hearts fell under his king of hearts in trick 14; play it at once next time.");
+  assert.equal(tutorWords(fell, e).text, "your queen of hearts fell under your opponent's king of hearts in trick 14; play it at once next time.");
+  assert.equal(tutorWords(fell, d).text, "Im 14. Stich nahm Ihr Gegner Herz-Dame mit Herz-König; spielen Sie die Figur das nächste Mal gleich.");
   const tarock = { lead: "", key: "tutor.miss.run", params: { trick: 3, played: "T12", better: "T5" } };
   assert.match(tutorWords(tarock, e).text, /tarock XII.*tarock V/);
+});
+
+test("a nudge is told after \"If I may:\" like a rule, in lower case in English", () => {
+  assert.equal(nudgeText("tutor.nudge.pagat", fmt("en")), "If I may: mind the Pagat here.");
+  assert.equal(nudgeText("tutor.nudge.pagat", fmt("de")), "Wenn ich mir erlauben darf: Achtung auf den Pagat.");
 });
 
 test("with the tips off the brief gives what went well, one bullet, and no advice", () => {

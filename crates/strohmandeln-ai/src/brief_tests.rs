@@ -478,6 +478,11 @@ fn say(table: &serde_json::Value, lang: &str, b: &Bullet, long_cards: bool) -> S
         let mut out = text;
         for (name, p) in &b.params {
             let value = match p {
+                Param::Skill(i) if !long_cards => {
+                    // a name is one word where the limit of a key is held; it has its own
+                    let _ = i;
+                    "S".to_string()
+                }
                 Param::Skill(i) => get(&format!("tutor.name.{}", Skill::ALL[*i].slug())),
                 Param::Int(n) => n.to_string(),
                 Param::Num(n) => n.to_string(),
@@ -503,7 +508,7 @@ fn say(table: &serde_json::Value, lang: &str, b: &Bullet, long_cards: bool) -> S
 /// "About 45 words" (`docs/TUTOR.md` 6) with the leads, a card named in three
 /// words, a skill in full and the "If I may:" of a rule left out. The longest
 /// brief that can be made is measured below; this is the bound it must keep.
-const MAX_BRIEF_WORDS: usize = 55;
+const MAX_BRIEF_WORDS: usize = 62;
 
 fn count(s: &str) -> usize {
     s.split_whitespace().count()

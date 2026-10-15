@@ -32,14 +32,23 @@ export function words(bullet, fmt) {
   return fmt.t(`review.say.${bullet.key}`, params(bullet, fmt));
 }
 
-// A brief bullet's lead and text. A rule is told after "If I may:".
+// English goes on in lower case after a colon; German keeps the capital of a
+// full sentence (and of a noun).
+const after = (text, fmt) => (fmt.lang === "en" ? text.charAt(0).toLowerCase() + text.slice(1) : text);
+
+// A brief bullet's lead and text. A rule is told after "If I may:", and after
+// any lead that ends in a colon the English text begins in lower case.
 export function tutorWords(bullet, fmt) {
   const p = params(bullet, fmt);
   const { t } = fmt;
   const lead = bullet.lead ? t(bullet.lead, p) : "";
   const body = t(bullet.key, p);
-  return { lead, text: bullet.key.startsWith("tutor.rule.") ? `${t("tutor.lead.rule")} ${body}` : body };
+  if (bullet.key.startsWith("tutor.rule.")) return { lead, text: `${t("tutor.lead.rule")} ${after(body, fmt)}` };
+  return { lead, text: lead.endsWith(":") ? after(body, fmt) : body };
 }
+
+// The nudge in the Kibitzer's tab: "If I may: ...".
+export const nudgeText = (key, fmt) => `${fmt.t("tutor.lead.rule")} ${after(fmt.t(key), fmt)}`;
 
 // The line under the prompt after a trick (docs/PROTOCOL.md `strohmandeln_explain`):
 // the suit and the cards named in the language. `suitName` gives a suit letter's

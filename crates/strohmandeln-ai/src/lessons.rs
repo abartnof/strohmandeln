@@ -64,8 +64,10 @@ pub struct Lesson {
 
 /// The words of a rule and a fact: at most this many.
 pub const MAX_RULE_WORDS: usize = 15;
-pub const MAX_TRY_WORDS: usize = 12;
+pub const MAX_TRY_WORDS: usize = 14;
 pub const MAX_NUDGE_WORDS: usize = 10;
+/// A skill's name: it is the lead's `{skill}` and the praise's.
+pub const MAX_NAME_WORDS: usize = 8;
 
 fn any(_: &Context) -> bool {
     true
@@ -484,7 +486,7 @@ mod tests {
                     }
                 }
             };
-            check(l.name, 6);
+            check(l.name, MAX_NAME_WORDS);
             check(l.fact, MAX_RULE_WORDS);
             for r in l.rules {
                 check(r.key, MAX_RULE_WORDS);

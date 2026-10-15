@@ -29,7 +29,7 @@ GAME_WORDS_DE = {"dame", "damen", "man"}
 # "queen" is not banned; nothing in English is exempt.
 GAME_WORDS_EN: set = set()
 
-KEYS = re.findall(r"^\| `(tutor\.[a-z0-9.-]+)` \|", DOC.split("\n## Tutor keys")[1], re.M)
+KEYS = re.findall(r"^\| `([a-z0-9.-]+)` \|", DOC.split("\n## Tutor keys")[1], re.M)
 
 
 def texts(key):
@@ -38,7 +38,7 @@ def texts(key):
 
 class TutorKindness(unittest.TestCase):
     def test_there_are_tutor_keys(self):
-        self.assertGreaterEqual(len(KEYS), 95)
+        self.assertGreaterEqual(len(KEYS), 105)
 
     def test_banned_words_and_topics(self):
         for key in KEYS:
@@ -61,6 +61,16 @@ class TutorKindness(unittest.TestCase):
             for text in texts(key):
                 for flagged in test_phrases.FLAGGED:
                     self.assertNotIn(flagged.lower(), text.lower(), (key, text))
+
+    def test_no_second_colon_after_a_lead(self):
+        # These are shown after a lead that ends in a colon ("Went well:", "This deal:",
+        # "To try:", "If I may:"): they carry none of their own, and the names of the
+        # skills, which stand in "Next: {skill}.", none at all.
+        after_a_lead = ("tutor.well.", "tutor.miss.", "tutor.rule.", "tutor.try.", "tutor.nudge.", "tutor.name.")
+        for key in KEYS:
+            if key.startswith(after_a_lead):
+                for text in texts(key):
+                    self.assertNotIn(":", text, (key, text))
 
     def test_no_line_judges_the_person(self):
         bad = re.compile(r"\b(stupid|foolish|blunder|mistake|careless|lazy|bad player|dumm|blöd|Fehler|Anfänger|schlecht)", re.I)
