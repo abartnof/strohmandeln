@@ -232,3 +232,49 @@ not changed.
 
 **Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m2`
 (defaults: `--seed 20000000 --sittings 300`).
+
+## M8 The split suit
+
+### Plan (2026-10-15, before the run)
+
+**Question.** At what share of a suit's points does rung 4 start to prefer
+another lead to opening that suit, and from how many points unplayed? This
+sets `SPLIT_SHARE` and `SPLIT_MIN_POINTS`, the trigger of `behind` (`docs/TUTOR.md`
+2). The sources say "about evenly" without a number (`research/16`, `behind`).
+
+**Data.** Rung 4 against rung 4 (default budget), 100 sittings of 3 Touren from
+seed 80,000,000, every lead of either seat with at least two legal cards, the
+advisor under its own stream (salt 0). Fixed count. A program trial on 6
+sittings from seed 85,000,000 (not used) checked that it runs and showed the
+shape: the gap rises with my share, crossing 0 near 0.6; the rules below were
+completed after seeing it, so the run is on fresh seeds.
+
+**Rows.** For each lead decision and each suit with a legal lead in it and a
+legal lead outside it: my share `s` = my value points of the suit unplayed
+over all of them (mine, his hand and packets, and my own face-down packet
+cards, `tutor::suit_share`), the total `t`, and the gap = the advisor's best
+lead in the suit less its best lead outside it (thirds). Whether the lead made
+was in the suit.
+
+**Bins.** Ten bins of `s`, width 0.1, for suits with `t` at least 6 (the
+provisional minimum). Per bin: rows, mean gap with the standard error clustered
+by sitting, the share of rows with the gap below minus `MARGIN`, and the share
+opened. A bin **prefers another lead** if the upper end of its 95% interval
+for the mean gap is below 0 and at least a quarter of its rows have a gap below
+minus `MARGIN`.
+
+**Decision rules (fixed now).**
+
+- `SPLIT_SHARE` = (low, high): the contiguous run of bins that prefer another
+  lead around the bin of the lowest mean gap; its high edge is the share at
+  which rung 4 starts to prefer another lead; its low edge leaves out the
+  lowest bins in which rung 4 opens the suit in less than 10% of the rows (a
+  suit it has no mind to open is his, not contested).
+- `SPLIT_MIN_POINTS` = the start of the lowest class of `t` ([0,3), [3,6),
+  [6,9), [9,12), [12, ...)) from which that class and every higher class with
+  at least 30 rows, among rows with `s` in the band, prefer another lead (the
+  same test).
+- If the lowest bin does not prefer another lead, `behind` has no trigger and
+  is told as its fact (`docs/TUTOR.md` 9).
+
+**Stopping.** A descriptive count, no looks.
