@@ -849,3 +849,29 @@ not, the worlds are halved and the measurement repeated.
 
 **Stopping.** A descriptive count, no looks. The machine is shared with other
 processes; the load is recorded.
+
+### Result (2026-10-15)
+
+144 deals (24 sittings from seed 70,000,000), the same records timed in Node
+(V8) with the wasm module and natively, one process after the other; the load
+average was 0.8 to 1.0 (another agent's work on the 2 vCPUs).
+
+| | Median | 95th percentile | Maximum |
+|---|---|---|---|
+| Module (wasm, Node) | 58.9 ms | 77.2 ms | 149.9 ms |
+| Native, release | 32.1 ms | 42.0 ms | 78.7 ms |
+| Ratio | 1.8 | 1.8 | 1.9 |
+
+By the rule of the plan: one deal's evidence runs on the main thread (95th
+percentile 77 ms, well under 0.5 second). Recomputing the 60 deals the store
+keeps takes about 3.5 seconds in the module (60 x 58.9 ms), over the 2 seconds
+that call for a Worker: the history recompute goes to a Worker, as
+`docs/TUTOR.md` 1 has it. The advisor's worlds stay at `Budget::default()`
+(10). `hint_latency` no longer exists in `hint.rs`; the hint's latency is in
+`docs/OPPONENT.md` ("Hint evidence", `tests/hintbench.mjs`) and was not
+repeated.
+
+**Command.** `cargo build --release -p strohmandeln-wasm --lib --target
+wasm32-unknown-unknown`, then `node crates/strohmandeln-wasm/tests/evidencebench.mjs
+RECORDS 24 70000000` (writes the records to RECORDS), and `cargo run --release -p
+strohmandeln-wasm --example evidencebench -- RECORDS`.
