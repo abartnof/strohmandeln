@@ -227,7 +227,7 @@ test("a draw and the double (RULES 14) are said under play and absent under thro
   assert.doesNotMatch(text("de", "scoring-full", { both_pass: "throw_in" }), /zählt doppelt/);
   // 12 Points from the other player, in place of the game's value (core test rules_10_1_and_10_2_valat_is_12_and_replaces_the_game_value_only)
   assert.match(text("en", "scoring-full"), /Valat\. The other player pays 12 Points in place of the game's value, and honours and ultimo are paid as well\./);
-  assert.match(text("de", "scoring-full"), /Valat\. Der andere Spieler zahlt 12 Points anstelle des Wertes des Spiels, und Ansagen und Ultimo werden zusätzlich bezahlt\./);
+  assert.match(text("de", "scoring-full"), /Valat\. Der andere Spieler zahlt 12 Points anstelle des Wertes des Spiels, und Honneurs und Ultimo werden zusätzlich bezahlt\./);
 });
 
 test("the long page is titled by its string and listed in the spec's table", () => {

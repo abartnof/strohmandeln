@@ -248,8 +248,8 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - Die Zahl neben der Stand-Linie ist der laufende Stand in genauen Dritteln. Die Linie füllt je einen Abschnitt für jedes ganze Auge, bis 36.
 - Nach dem 27. Stich beginnt die Zählung von vorn. Die gewonnenen Karten jedes Spielers werden aufgedeckt, drei auf einmal, und über jeder Gruppe steigt eine Zahl auf: ihr Wert, etwa +6 für König, Bube und Sieben.
 - Sie endet bei denselben Zahlen wie der laufende Stand. Wer 35⅔ erreicht, lässt das Ziel leuchten; wer auf 35⅓ endet, bekommt „35⅓ ist nicht 36“.
-- Die Ansagen und das Ultimo kommen nach der Zählung, in Points. Sie haben eine eigene Zeile, „Ansagen und Ultimo“, und werden nicht zu den 36 gerechnet.
-- Der Pfeil neben dem Stand öffnet die Liste je Partie: die Zählung, dazu die Ansagen und das Ultimo. Eine Anzeige nennt dann das Ergebnis und die bezahlten Points.
+- Die Honneurs und das Ultimo kommen nach der Zählung, in Points. Sie haben eine eigene Zeile, „Honneurs und Ultimo“, und werden nicht zu den 36 gerechnet.
+- Der Pfeil neben dem Stand öffnet die Liste je Partie: die Zählung, dazu die Honneurs und das Ultimo. Eine Anzeige nennt dann das Ergebnis und die bezahlten Points.
 
 ## Was das Spiel wert ist
 
@@ -275,7 +275,7 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 <!-- if both_pass=throw_in -->
 - Sagen beide weiter, wird eingeworfen: nichts wird gezählt und nichts bezahlt.
 <!-- end -->
-- Gewinnt ein Spieler alle 27 Stiche, ist das ein Valat. Der andere Spieler zahlt 12 Points anstelle des Wertes des Spiels, und Ansagen und Ultimo werden zusätzlich bezahlt.
+- Gewinnt ein Spieler alle 27 Stiche, ist das ein Valat. Der andere Spieler zahlt 12 Points anstelle des Wertes des Spiels, und Honneurs und Ultimo werden zusätzlich bezahlt.
 
 ## Honneurs
 
