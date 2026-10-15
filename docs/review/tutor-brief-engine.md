@@ -212,3 +212,91 @@ the module the game runs in) and a decision is made and recorded on 2 and 3
 (tell facts until M5, or record that the books' advice is told, bounded to the
 default settings). The rest are documentation and small guards. The brief's logic
 matches the spec; the nudge does not leak.
+
+## Second pass (2026-10-15)
+
+Scope: `git diff 5395639 6eee7c4` (commits f3f0ab8, 9d85656, 83ba1d7, 6bbb9e9,
+b5dc8a9; the page rebuild skipped), engine and wasm half. Branch
+`worktree-agent-abd5f18ed8764998e`, built in a worktree of its own.
+
+Run: `cargo test -p strohmandeln-core -p strohmandeln-ai -p strohmandeln-wasm`
+(core 151, ai 219 with 16 ignored, wasm 43 + 12 + 7 + 2 + 3, all pass),
+`cargo fmt --check` clean, the wasm built for `wasm32-unknown-unknown` release and
+`node crates/strohmandeln-wasm/tests/smoke.mjs 2` passes ("136 odd inputs answered,
+none trapped"; 6 deals through the tutor's calls, 5 nudges). Beyond the suite, a
+Node script drove the release module with a played sitting's details: every tally
+and `decisions` set to 4294967295 (one deal, then three), a miss with every number
+at 4294967295 and `cost` 1e308, `deal 0` and `deal 4294967296`; all answered (an
+error value or a brief), and the module still rendered afterwards.
+
+### First-pass findings, checked
+
+1. **Fixed.** `DealRecord::replay` tries each action on a clone and calls `before`
+   only after the engine accepts it; `decision_verdicts` returns early for a seat not
+   to move and for a bid not in `legal_actions`. Cost: a `Deal` is a few hundred bytes
+   of small vectors and a record has at most about 60 actions, so the clone is
+   microseconds beside the advisor's 100 ms. Refused attempts are not in a record at
+   all (`session.rs:272-293` pushes to `deal_actions` only after `deal.apply` is
+   `Ok`), so no honest record has an action `before` now misses. The tests hold
+   it (`an_action_the_engine_refuses_is_never_shown_to_the_caller`,
+   `a_record_with_a_bid_after_the_bidding_is_an_error_not_a_panic`).
+2. **Fixed.** `lessons::TOLD = [Passed]`, `pick` and `taught` take the admitted
+   gates, `Played.told` carries it, and the `bid` and `pagat` rules are told only
+   under `Settings::default()`. A test shows no rule is told for any skill,
+   direction or tarock count today. TUTOR 6 records the decision with its date.
+3. **Fixed** except one stale line (new finding 2).
+4. **Fixed.** The advisor runs once per deal, when it is scored; the sitting's brief
+   is made of the kept `Detail`s and took 2 ms for six deals here (a deal's own
+   evidence took 114 to 227 ms at a load of 3 to 5, which bears out "can exceed 150
+   ms on a loaded machine" in PROTOCOL "Timing"). The table shows the chip as working.
+5. **Fixed as asked**: `constants()` checks the ladder and `PARAMS` once, in the
+   release module, and the docs say the focus stays unvalidated until M6.
+6. **Fixed**: `announce` is open only where a legal card belongs to an announceable
+   honour, and the test is two-directional.
+7. **Fixed**: `the_nudge_never_reads_a_hidden_card`.
+8. **Fixed**: a sitting's deal needs `deal N` with N of 1 or more.
+9. **Fixed**: `level` is 1 to 4.
+10. **Fixed**: the PROTOCOL slips (four stateless calls, `"version": 3`, 2 KB,
+    `no-sitting`).
+11. **Fixed** by learning the sitting deal by deal; the test shows a mastery told once.
+12. **Fixed**: the praised honour is one announced at a decision that counted
+    (`announced_by`), tested with every action marked assisted.
+
+### New findings
+
+1. **should** `crates/strohmandeln-ai/src/brief.rs:411,415` (and the wasm test gap).
+   `brief_from` adds the details' tallies and `decisions` with plain `+=` on `u32`,
+   and a detail comes from storage. The release module wraps (no trap; I fed it
+   three deals of 4294967295 each and it answered), but any build with overflow
+   checks, the test profile included, panics. The wasm smoke test and
+   `nothing_the_calls_are_given_panics` feed `brief_sitting` records only, never a
+   mutated detail, so "no input makes the module trap" (PROTOCOL) is held for a
+   detail by `detail.rs`'s own unit tests and by my run alone. Fix: `saturating_add`
+   in `brief_from`; add extreme-number and out-of-range details to
+   `nothing_the_calls_are_given_panics` and to the smoke test's section 7.
+2. **nit** `docs/TUTOR.md:349` still says "tries at most 12" (code `MAX_TRY_WORDS`
+   is 14, as MESSAGES.md and TUTOR 9's as-built note say). The sample sentence in
+   section 6 ("his king") is the first draft's; section 9's as-built note says where
+   the words are, so a line there would do.
+3. **nit** `from_json` (`wasm/src/detail.rs`) refuses a detail whose summary is of an
+   older evidence version, which fails the whole `brief_sitting` call. That is right
+   for the engine; the table must therefore not hand it a stale detail (table log,
+   finding 1).
+
+### Checked and correct
+
+- `detail.rs`: every field is read as `Option`/`Result`, no `unwrap`, a card must
+  `Card::parse`, `cost` is finite and not negative, settings go through serde, the
+  summary must read and be current; the sample goes to JSON and back unchanged and
+  stays under 1,500 bytes, and `brief_of_record`'s `detail` equals `evidence_of`'s.
+- `brief_from`: a sitting's `before` is its `after`, so a mastery is not announced
+  twice; the number 0 is the single deal's "this deal"; the costliest miss across
+  deals keeps the earlier deal on a tie.
+- Provisional rules are dead in the product until M5 sets a gate, as the spec says;
+  the method text says so truthfully.
+
+### Verdict
+
+Every first-pass engine finding is fixed and the tests hold the fixes. One should
+(the unchecked sums, and no mutated-detail case in the smoke test) and two nits
+remain; none blocks the work package if recorded as open.
