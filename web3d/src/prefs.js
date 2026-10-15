@@ -32,6 +32,9 @@ export const DEFAULTS = Object.freeze({
   speed: "normal",
   talk: "all",
   tutor: true,
+  // Tips from the Kibitzer (docs/TUTOR.md 6): off sets no focus and shows no
+  // nudge; the brief keeps its first line.
+  tips: true,
   hints: false,
   // The cards-out tracker (6.6): shown with Hints on; its fold is the person's
   // choice, null until made (open on a large window).
@@ -63,6 +66,7 @@ const CHECKS = {
   speed: oneOf(SPEEDS),
   talk: oneOf(TALKS),
   tutor: isBool,
+  tips: isBool,
   hints: isBool,
   tracker: isBool,
   trackerFolded: (x) => x === null || isBool(x),

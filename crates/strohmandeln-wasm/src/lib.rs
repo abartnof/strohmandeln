@@ -18,11 +18,15 @@ use strohmandeln_ai::hint::hint as ai_hint;
 use strohmandeln_ai::opponent::{Config as AiConfig, Level, Opponent};
 use strohmandeln_ai::review::{explain_last, review_last, review_sitting, Bullet, Param, Review};
 use strohmandeln_ai::tracker::{tracker as ai_tracker, Place};
+use strohmandeln_ai::tutor::Skill;
 use strohmandeln_core::agents::Player;
 use strohmandeln_core::cards::{Card, Honour};
 use strohmandeln_core::session::{Record, Sitting};
 use strohmandeln_core::types::{Action, Event, Seat, Settings, SetupError, Source};
 use strohmandeln_core::view::{filter_events, view, View};
+
+mod detail;
+pub mod tutor;
 
 /// Bumped whenever the wire format changes in a way a client would notice.
 pub const PROTOCOL: u32 = 1;
@@ -552,6 +556,9 @@ impl Table {
 pub struct Host {
     table: Option<Table>,
     out: Vec<u8>,
+    /// The skill the nudge shows (`strohmandeln_set_focus`); it outlives a
+    /// sitting, as the table sets it from the history, not from the sitting.
+    focus: Option<Skill>,
 }
 
 impl Host {
@@ -623,6 +630,30 @@ impl Host {
             }
             None => self.missing(),
         }
+    }
+
+    /// Writes a reply that needs no sitting (the tutor's stateless calls).
+    pub fn give_value(&mut self, v: &Value) {
+        self.give(v);
+    }
+
+    /// `strohmandeln_set_focus`: the skill the nudge shows, by slug (empty:
+    /// none); 0 for a slug that is not a skill, leaving the focus as it was.
+    pub fn set_focus(&mut self, slug: &str) -> u32 {
+        match tutor::skill_of(slug) {
+            Ok(skill) => {
+                self.focus = skill;
+                1
+            }
+            Err(_) => 0,
+        }
+    }
+
+    /// `strohmandeln_nudge`: whether the position now is a clear chance at
+    /// the focus.
+    pub fn nudge(&mut self) {
+        let focus = self.focus;
+        self.show(|t| t.nudge(focus));
     }
 
     /// `strohmandeln_render`: the state, with no events.
@@ -782,6 +813,66 @@ pub mod ffi {
     #[no_mangle]
     pub extern "C" fn strohmandeln_tracker() {
         HOST.with(|h| h.borrow_mut().show(|t| t.tracker()))
+    }
+
+    /// Renders the record of the deal that last ended (`{"record": text}` or
+    /// `"record": null`).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_deal_record() {
+        HOST.with(|h| h.borrow_mut().show(|t| t.deal_record()))
+    }
+
+    /// The evidence of the record in the `len` bytes just written (a record,
+    /// a line `==`, the assisted action numbers): `{"summary": text}`.
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_evidence_of(len: usize) {
+        let text = input(len);
+        HOST.with(|h| h.borrow_mut().give_value(&super::tutor::evidence_of(&text)))
+    }
+
+    /// The learner over the summaries in the `len` bytes just written
+    /// (oldest first, a line `--` between).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_learner(len: usize) {
+        let text = input(len);
+        HOST.with(|h| h.borrow_mut().give_value(&super::tutor::learner_of(&text)))
+    }
+
+    /// The brief of the deal in the `len` bytes just written (`level n`, a
+    /// record, `==`, the assisted numbers, `--`, the history).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_brief_of_record(len: usize) {
+        let text = input(len);
+        HOST.with(|h| {
+            h.borrow_mut()
+                .give_value(&super::tutor::brief_of_record(&text))
+        })
+    }
+
+    /// The brief of the sitting in the `len` bytes just written (`level n`,
+    /// the deals separated by `++`, `--`, the history before the sitting).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_brief_sitting(len: usize) {
+        let text = input(len);
+        HOST.with(|h| {
+            h.borrow_mut()
+                .give_value(&super::tutor::brief_sitting(&text))
+        })
+    }
+
+    /// Sets the skill the nudge shows (a slug in the `len` bytes just
+    /// written; empty for none); 0 if it is not a skill.
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_set_focus(len: usize) -> u32 {
+        let slug = input(len);
+        HOST.with(|h| h.borrow_mut().set_focus(&slug))
+    }
+
+    /// Renders the nudge for the position now (`{"nudge": {skill, key}}` or
+    /// `"nudge": null`, and the `action` number of the decision).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_nudge() {
+        HOST.with(|h| h.borrow_mut().nudge())
     }
 
     /// A test aid: the codes of the cards the human must not see.
@@ -1359,7 +1450,7 @@ mod tests {
             play_until(&mut h, |_| false);
             h.show(|t| t.review(true));
             let r = out(&h);
-            assert_eq!(r["review"]["bullets"].as_array().unwrap().len(), 3, "{r}");
+            assert_eq!(r["review"]["bullets"].as_array().unwrap().len(), 2, "{r}");
             assert_eq!(r["review"]["bullets"][0]["key"], "sitting-tally");
         }
     }

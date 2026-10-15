@@ -24,12 +24,12 @@ use crate::rung2::Weights;
 use crate::rung4::{self, Budget};
 use crate::seed::view_seed;
 use crate::sim::ULTIMO_THIRDS;
-use kit_learner::{Chance, Ladder, SkillSpec, Summary};
-use strohmandeln_core::cards::{Card, Suit};
-use strohmandeln_core::deal::TrickRecord;
+use kit_learner::{learn, Chance, Ladder, Learner, Params, SkillSpec, Summary};
+use strohmandeln_core::cards::{Card, Honour, Suit};
+use strohmandeln_core::deal::{Deal, DealEnd, HonourState, TrickRecord};
 use strohmandeln_core::dealrec::{DealRecord, ReplayError};
 use strohmandeln_core::rng::Rng;
-use strohmandeln_core::types::{Action, Seat};
+use strohmandeln_core::types::{Action, Seat, UltimoResult};
 use strohmandeln_core::view::{bare_view, View};
 
 /// The version of what [`evidence`] computes. Bump it whenever a classifier,
@@ -560,12 +560,49 @@ pub fn classify_announce(k: &Knowledge, action: &Action) -> Option<Verdict> {
     Some(Verdict::new(Skill::Announce, met, THIRDS_PER_POINT))
 }
 
+/// The advisor's table for a playing decision with a choice (rung 4 from the
+/// view alone, the same draws for every card), or `None` for a forced card or
+/// a search that finished no trick (a budget too small: `MoveTable` then holds
+/// rung 3's scale, which is not thirds).
+fn play_table(k: &Knowledge, view: &View, budget: Budget) -> Option<rung4::MoveTable> {
+    if k.legal.len() < 2 {
+        return None;
+    }
+    let mut budget = budget;
+    if k.hidden_total() == 0 {
+        // Nothing is hidden: every world is the same one, so spend the nodes
+        // on it.
+        budget.nodes *= budget.worlds as u64;
+        budget.worlds = 1;
+    }
+    let mut rng = Rng::stream(EVIDENCE_SEED, view_seed(view) ^ 0x7001);
+    let table = rung4::move_table(k, &mut rng, budget, &Weights::default());
+    (!table.per_world.is_empty()).then_some(table)
+}
+
+/// The bid's expectation in Points over the sampled worlds: its mean and its
+/// standard error, or `None` with too few worlds.
+fn bid_estimate(k: &Knowledge, view: &View, budget: Budget) -> Option<(f64, f64)> {
+    let mut rng = Rng::stream(EVIDENCE_SEED, view_seed(view) ^ 0x7002);
+    let samples = rung4::bid_samples(k, &mut rng, budget.bid_worlds);
+    let n = samples.len() as f64;
+    if n < 2.0 {
+        return None;
+    }
+    let mean = samples.iter().sum::<f64>() / n;
+    let var = samples.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / (n - 1.0);
+    Some((mean, (var / n).sqrt()))
+}
+
 /// Every verdict on `action`, taken in `view` by the seat to move: the
 /// advisor runs on that seat's view alone (the same draws for every card, a
 /// pure function of the view and `budget`). A decision whose search finished
-/// no trick (a budget too small, `MoveTable` then holds rung 3's scale) gives
-/// no play verdict.
+/// no trick (a budget too small) gives no play verdict.
 pub fn decision_verdicts(view: &View, action: &Action, budget: Budget) -> Vec<Verdict> {
+    // Only the seat to move has a decision (a record is untrusted).
+    if view.to_move != Some(view.seat) {
+        return Vec::new();
+    }
     let Some(k) = Knowledge::from_view(view) else {
         return Vec::new();
     };
@@ -576,41 +613,78 @@ pub fn decision_verdicts(view: &View, action: &Action, budget: Budget) -> Vec<Ve
             Action::Pass => false,
             _ => return out,
         };
-        let mut rng = Rng::stream(EVIDENCE_SEED, view_seed(view) ^ 0x7002);
-        let samples = rung4::bid_samples(&k, &mut rng, budget.bid_worlds);
-        let n = samples.len() as f64;
-        if n >= 2.0 {
-            let mean = samples.iter().sum::<f64>() / n;
-            let var = samples.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / (n - 1.0);
-            out.extend(classify_bid(&k, take, mean, (var / n).sqrt()));
+        // A bid where none is legal has no worlds to sample.
+        if !view.legal_actions.contains(action) {
+            return out;
+        }
+        if let Some((mean, se)) = bid_estimate(&k, view, budget) {
+            out.extend(classify_bid(&k, take, mean, se));
         }
         return out;
     }
     out.extend(classify_announce(&k, action));
-    if let Action::Play { card, .. } = action {
-        if k.legal.len() >= 2 {
-            let mut budget = budget;
-            if k.hidden_total() == 0 {
-                // Nothing is hidden: every world is the same one, so spend
-                // the nodes on it.
-                budget.nodes *= budget.worlds as u64;
-                budget.worlds = 1;
-            }
-            let mut rng = Rng::stream(EVIDENCE_SEED, view_seed(view) ^ 0x7001);
-            let table = rung4::move_table(&k, &mut rng, budget, &Weights::default());
-            if table.per_world.is_empty() {
-                return out;
-            }
-            let advice = Advice {
-                scores: &table.scores,
-                per_world: &table.per_world,
-                exact: search_complete(&k, table.depth),
-                known: k.hidden_total() == 0,
-            };
-            out.extend(classify_play(&k, *card, &advice));
-        }
+    if let (Action::Play { card, .. }, Some(table)) = (action, play_table(&k, view, budget)) {
+        let advice = Advice {
+            scores: &table.scores,
+            per_world: &table.per_world,
+            exact: search_complete(&k, table.depth),
+            known: k.hidden_total() == 0,
+        };
+        out.extend(classify_play(&k, *card, &advice));
     }
     out
+}
+
+/// The skills `view` holds a clear chance at, whatever is played: the union
+/// of what [`decision_verdicts`] could say of each legal move, from one
+/// advisor run (and, for `announce`, a position where an honour's card can be
+/// played). What the nudge is shown on (`docs/TUTOR.md` 6). Nothing for a
+/// seat with no move to make.
+pub fn open_skills(view: &View, budget: Budget) -> Vec<Skill> {
+    let Some(k) = Knowledge::from_view(view) else {
+        return Vec::new();
+    };
+    let mut open = Vec::new();
+    if !k.playing {
+        let can_bid = view.legal_actions.contains(&Action::Take);
+        if can_bid {
+            if let Some((mean, se)) = bid_estimate(&k, view, budget) {
+                open.extend(classify_bid(&k, true, mean, se).map(|v| v.skill));
+            }
+        }
+        return open;
+    }
+    // `announce` is judged at the play of an honour's card (or at the
+    // announcement), so it is open where such a card can be played now.
+    if k.announceable
+        .iter()
+        .any(|h| k.legal.iter().any(|c| h.cards().contains(c)))
+    {
+        open.push(Skill::Announce);
+    }
+    if let Some(table) = play_table(&k, view, budget) {
+        let advice = Advice {
+            scores: &table.scores,
+            per_world: &table.per_world,
+            exact: search_complete(&k, table.depth),
+            known: k.hidden_total() == 0,
+        };
+        for &(card, _) in &table.scores {
+            for v in classify_play(&k, card, &advice) {
+                if !open.contains(&v.skill) {
+                    open.push(v.skill);
+                }
+            }
+        }
+    }
+    open.sort_by_key(|s| s.index());
+    open
+}
+
+/// Whether `view` is a decision to nudge on `skill` (the focus) at: a clear
+/// chance at it, one advisor run.
+pub fn nudge(skill: Skill, view: &View, budget: Budget) -> bool {
+    open_skills(view, budget).contains(&skill)
 }
 
 impl Verdict {
@@ -650,6 +724,27 @@ pub const LADDER: Ladder = Ladder {
         spec("announce", &[], 1.0, 0.0, 2.0),
     ],
 };
+
+/// The learner's constants (`docs/TUTOR.md` 5). **Provisional**: Cassino's
+/// ratios (discount 0.8, mastery at 85% of what the strongest rung meets,
+/// the quantiles 0.2 and 0.9, a loss of mastery 0.2 below it) with the
+/// gains in thirds a deal; M3 (what rung 4 meets and loses), M4 (what a
+/// skill is worth) and M6 (the lesioned students) set them.
+pub const PARAMS: Params = Params {
+    discount: 0.8,
+    min_gain: 2.0,
+    costly_gain: 8.0,
+    costly_chances: 8.0,
+    lower: 0.2,
+    upper: 0.9,
+    master_of_top: 0.85,
+    lose_below: 0.2,
+};
+
+/// The learner over stored summaries, oldest first (stale ones skipped).
+pub fn learner(history: &[Summary]) -> Learner {
+    learn(&LADDER, &PARAMS, history)
+}
 
 const fn spec(
     slug: &'static str,
@@ -694,6 +789,45 @@ pub struct Miss {
     pub consequence: Option<Consequence>,
 }
 
+/// What a finished deal shows of the human besides the skills, for the
+/// brief's praise. Luck as much as skill: only ever praise.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Facts {
+    /// The human's Pagat took the last trick and the ultimo.
+    pub ultimo_won: bool,
+    /// The trick (1 to 27) in which the human's Sküs caught the Mond.
+    pub mond_caught: Option<u32>,
+    /// The honours the human announced.
+    pub announced: Vec<Honour>,
+}
+
+impl Facts {
+    fn of(deal: &Deal, human: Seat) -> Facts {
+        let ultimo_won = matches!(
+            deal.end(),
+            Some(DealEnd::Played(s)) if s.ultimo == Some((human, UltimoResult::Won))
+        );
+        let mond_caught = deal
+            .tricks()
+            .iter()
+            .position(|t| {
+                t.winner == human
+                    && t.cards.contains(&Card::MOND)
+                    && t.cards[usize::from(t.leader != human)] == Card::SKUS
+            })
+            .map(|i| i as u32 + 1);
+        let announced = [Honour::Trull, Honour::Kings]
+            .into_iter()
+            .filter(|&h| deal.honour_state(human, h) == HonourState::Announced)
+            .collect();
+        Facts {
+            ultimo_won,
+            mond_caught,
+            announced,
+        }
+    }
+}
+
 /// One deal's evidence: the summary and, for each skill, its costliest miss.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Evidence {
@@ -701,6 +835,10 @@ pub struct Evidence {
     pub chances: Vec<Chance>,
     pub summary: Summary,
     pub costliest: [Option<Miss>; SKILLS],
+    /// The human's unassisted decisions with a choice (two or more legal
+    /// actions): what a short deal is measured by.
+    pub decisions: u32,
+    pub facts: Facts,
 }
 
 /// Whether `figure`, played in the deal's tricks by `human`, was taken by a
@@ -740,6 +878,17 @@ fn assisted_actions(record: &DealRecord, assisted: &[usize]) -> Vec<bool> {
     covered
 }
 
+/// The honour an announcing action announced: the `Announce` itself, or the
+/// announcements made with a play.
+fn announced_by(action: &Action) -> impl Iterator<Item = Honour> + '_ {
+    let (one, many): (Option<Honour>, &[Honour]) = match action {
+        Action::Announce { honour } => (Some(*honour), &[]),
+        Action::Play { announce, .. } => (None, announce.as_slice()),
+        _ => (None, &[]),
+    };
+    one.into_iter().chain(many.iter().copied())
+}
+
 /// The evidence of one scored deal for `human`: the record replayed, and at
 /// every decision of the human's that is not assisted (`assisted` holds the
 /// numbers of the actions a hint or a nudge was shown for, counted from 0
@@ -753,14 +902,24 @@ pub fn evidence(
 ) -> Result<Evidence, ReplayError> {
     let mut chances = Vec::new();
     let mut costliest: [Option<Miss>; SKILLS] = Default::default();
+    let mut decisions = 0;
+    let mut announced: Vec<Honour> = Vec::new();
     let covered = assisted_actions(record, assisted);
     let deal = record.replay_to_end(|index, deal, seat, action| {
         if seat != human || covered[index] {
             return;
         }
         let view = bare_view(deal, seat);
+        decisions += u32::from(view.legal_actions.len() >= 2);
         for ch in decision_verdicts(&view, action, budget) {
             chances.push(ch.chance());
+            if ch.met && ch.skill == Skill::Announce {
+                for h in announced_by(action) {
+                    if !announced.contains(&h) {
+                        announced.push(h);
+                    }
+                }
+            }
             if ch.met {
                 continue;
             }
@@ -794,10 +953,16 @@ pub fn evidence(
         }
     }
     let summary = Summary::from_chances(&LADDER, &chances);
+    // The praise is for an honour announced at a decision that counted.
+    let mut facts = Facts::of(&deal, human);
+    announced.sort_by_key(|h| matches!(h, Honour::Kings));
+    facts.announced = announced;
     Ok(Evidence {
         chances,
         summary,
         costliest,
+        decisions,
+        facts,
     })
 }
 

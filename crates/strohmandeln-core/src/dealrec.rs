@@ -80,8 +80,10 @@ impl DealRecord {
 
     /// Plays the record through, as far as it goes. Before each action
     /// `before(index, deal, seat, action)` sees the deal as it stands, so a
-    /// caller can take the view of any seat (`view::deal_view`). Returns the
-    /// deal after the last action, finished or not.
+    /// caller can take the view of any seat (`view::deal_view`); it is called
+    /// only for an action the engine accepts, so no caller is handed a
+    /// position the action was not legal in. Returns the deal after the last
+    /// action, finished or not.
     pub fn replay(
         &self,
         mut before: impl FnMut(usize, &Deal, Seat, &Action),
@@ -89,9 +91,13 @@ impl DealRecord {
         let mut deal = self.start()?;
         let mut events = Vec::new();
         for (index, m) in self.actions.iter().enumerate() {
-            before(index, &deal, m.seat, &m.action);
-            deal.apply(m.seat, m.action.clone(), &mut events)
+            // Tried on a copy first: a refused action is an error before anyone
+            // judges the position it was made in.
+            let mut next = deal.clone();
+            next.apply(m.seat, m.action.clone(), &mut events)
                 .map_err(|refusal| ReplayError::Refused { index, refusal })?;
+            before(index, &deal, m.seat, &m.action);
+            deal = next;
         }
         Ok(deal)
     }
@@ -175,6 +181,30 @@ mod tests {
             }
         }
         assert!(checked >= 20, "{checked}");
+    }
+
+    #[test]
+    fn an_action_the_engine_refuses_is_never_shown_to_the_caller() {
+        // After the bidding, a bid is not legal: the caller's closure must not
+        // see the position it was made in (the tutor would judge a bid there).
+        let (rec, _, _) = deals(3).remove(0);
+        for action in [Action::Take, Action::Pass] {
+            for seat in Seat::BOTH {
+                let mut bad = rec.clone();
+                bad.actions.push(Move {
+                    seat,
+                    action: action.clone(),
+                });
+                let n = bad.actions.len();
+                let mut seen = Vec::new();
+                let r = bad.replay(|i, _, _, _| seen.push(i));
+                assert!(
+                    matches!(r, Err(ReplayError::Refused { index, .. }) if index == n - 1),
+                    "{r:?}"
+                );
+                assert_eq!(seen.len(), n - 1, "the refused action was shown");
+            }
+        }
     }
 
     #[test]

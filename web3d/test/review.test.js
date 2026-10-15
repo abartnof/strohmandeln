@@ -1,47 +1,116 @@
-// The review dialog's words: the module's bullets (docs/PROTOCOL.md "The
-// review") put into the current language with cards named and thirds written.
+// The brief's dialog: the module's bullets (docs/PROTOCOL.md "The tutor") and
+// the count put into the words of the current language, with cards named and
+// thirds written, in both languages.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { explainText, reviewBlocks, words } from "../src/review.js";
+import { briefBlocks, explainText, nudgeText, tutorWords, words } from "../src/review.js";
 import { createStrings, thirds, signed } from "../src/strings.js";
 import TABLE from "../strings.json" with { type: "json" };
 
 const fmt = (lang) => {
   const s = createStrings(TABLE, lang);
-  return { t: s.t, cardName: s.cardName, thirds, signed };
+  return { t: s.t, lang, cardName: s.romanName, thirds, signed, suitName: (c) => (lang === "en" ? s.suitName(c).toLowerCase() : s.suitName(c)) };
 };
 
-const bullets = [
-  { lead: "count", key: "count", params: { mine: 120, theirs: 90 } },
-  { lead: "decided", key: "trick-lost-rich", params: { trick: 4, mine: "Qs", theirs: "Ks", thirds: 23 } },
-  { lead: "try", key: "try-announce", params: { honour: "trull" } },
-];
+const count = { lead: "count", key: "count", params: { mine: 120, theirs: 90 } };
+const review = { deal: 3, bullets: [count, { lead: "decided", key: "level", params: {} }] };
+const brief = {
+  method: "tutor.method",
+  bullets: [
+    { lead: "tutor.lead.well", key: "tutor.well.met", params: { chances: 3, skill: "off" } },
+    { lead: "tutor.lead.next", key: "tutor.rule.cheap", params: { skill: "cheap" } },
+    { lead: "tutor.lead.deal", key: "tutor.miss.worth.poor", params: { trick: 9, played: "Qh", better: "4h", thirds: 22 } },
+  ],
+};
 
 test("the count is written in points and thirds", () => {
-  assert.equal(words(bullets[0], fmt("en")), "You counted 40 to your opponent's 30; 35⅔ was the line.");
+  assert.equal(words(count, fmt("en")), "You counted 40 to your opponent's 30; 35⅔ was the line.");
   assert.equal(words({ lead: "count", key: "count", params: { mine: 107, theirs: 103 } }, fmt("en")), "You counted 35⅔ to your opponent's 34⅓; 35⅔ was the line.");
 });
 
-test("cards are named in the language, the honour too", () => {
-  assert.equal(words(bullets[1], fmt("en")), "Trick 4 was the rich one you lost: queen of spades against king of spades, 7⅔ between them.");
-  assert.equal(words(bullets[1], fmt("de")), "Der 4. Stich war der reiche, den Sie abgaben: Pik-Dame gegen Pik-König, zusammen 7⅔.");
-  assert.match(words(bullets[2], fmt("en")), /you held the Trull and did not announce it/);
-  assert.match(words(bullets[2], fmt("de")), /Sie hielten die Troule und sagten nicht an/);
-});
-
-test("the sitting's net is signed", () => {
+test("the net of a sitting is signed", () => {
   const b = { lead: "sitting", key: "sitting-tally", params: { won: 3, lost: 2, drawn: 1, net: -4 } };
   assert.equal(words(b, fmt("en")), "Deals: 3 won, 2 lost, 1 drawn; −4 Points in all.");
 });
 
-test("a review is a title, up to three bullets with a lead each, and the method", () => {
-  const r = reviewBlocks({ deal: 3, bullets }, fmt("en"));
+test("a brief is a title, the count, up to three bullets with a lead each, and the method", () => {
+  const r = briefBlocks(brief, review, fmt("en"));
   assert.equal(r.title, "How the deal went");
-  assert.deepEqual(r.bullets.map((b) => b.lead), ["The count.", "Where it was decided.", "One thing to try."]);
-  assert.match(r.method, /thirds/);
+  assert.equal(r.header, "You counted 40 to your opponent's 30; 35⅔ was the line.");
+  assert.deepEqual(r.bullets.map((b) => b.lead), ["Went well:", "Next: paying with the cheapest card.", "This deal:"]);
+  // no second colon, no capital after one
+  assert.deepEqual(r.bullets.map((b) => b.text), [
+    "playing your covers off – all 3 chances met.",
+    "If I may: win with the lowest card that wins; otherwise give the lowest.",
+    "in trick 9, your queen of hearts won only 7⅓ points; the 4 of hearts would have kept it back.",
+  ]);
+  assert.match(r.method, /compared afterwards/);
   assert.equal(r.how, "How is this worked out?");
-  assert.equal(reviewBlocks({ bullets }, fmt("de"), { whole: true }).title, "Wie der Abend verlief");
-  assert.equal(reviewBlocks({ bullets: [...bullets, ...bullets] }, fmt("en")).bullets.length, 3);
+});
+
+test("the same brief in German: cards by their names, the rule after its prefix", () => {
+  const r = briefBlocks(brief, review, fmt("de"), { whole: false });
+  assert.equal(r.title, "Wie die Partie verlief");
+  assert.deepEqual(r.bullets.map((b) => b.lead), ["Gut gelaufen:", "Als Nächstes: Mit der billigsten Karte zahlen.", "In dieser Partie:"]);
+  assert.equal(r.bullets[0].text, "Die eigenen Decken abspielen – alle 3 Gelegenheiten genutzt.");
+  assert.equal(r.bullets[1].text, "Wenn ich mir erlauben darf: Den Stich mit der kleinsten Karte holen, die ihn gewinnt; sonst die kleinste zugeben.");
+  assert.match(r.bullets[2].text, /^Im 9\. Stich holte Herz-Dame nur 7⅓ Augen; /);
+  assert.equal(r.how, "Wie kommt das zustande?");
+});
+
+test("a card, a suit, an honour and two skills are named in the language", () => {
+  const e = fmt("en");
+  const d = fmt("de");
+  const miss = { lead: "tutor.lead.deal-n", key: "tutor.miss.void", params: { deal: 4, trick: 12, played: "Kh", suit: "h" } };
+  assert.deepEqual(tutorWords(miss, e), { lead: "Deal 4:", text: "in trick 12, you led the king of hearts, though your opponent had already failed to follow hearts." });
+  assert.equal(tutorWords(miss, d).lead, "Partie 4:");
+  assert.match(tutorWords(miss, d).text, /^Im 12\. Stich spielten Sie Herz-König an, obwohl Ihr Gegner Herz schon nicht bedient hatte\.$/);
+  const honour = { lead: "", key: "tutor.miss.announce", params: { card: "T21", honour: "trull" } };
+  assert.equal(tutorWords(honour, e).text, "You played the Mond without announcing the Trull, and lost a Point.");
+  assert.equal(tutorWords(honour, d).text, "Sie spielten Mond, ohne die Troule anzusagen, und verloren einen Point.");
+  assert.equal(tutorWords(honour, e).lead, "");
+  const two = { lead: "tutor.lead.well", key: "tutor.well.mastered-two", params: { skill: "worth", skill2: "cheap" } };
+  assert.equal(tutorWords(two, e).text, "judging a trick's worth and paying with the cheapest card – mastered.");
+  const fell = { lead: "tutor.lead.deal", key: "tutor.miss.off.figure", params: { card: "Qh", king: "Kh", late: 14 } };
+  assert.equal(tutorWords(fell, e).text, "your queen of hearts fell under your opponent's king of hearts in trick 14; play it at once next time.");
+  assert.equal(tutorWords(fell, d).text, "Im 14. Stich nahm Ihr Gegner Herz-Dame mit Herz-König; spielen Sie die Figur das nächste Mal gleich.");
+  const tarock = { lead: "", key: "tutor.miss.run", params: { trick: 3, played: "T12", better: "T5" } };
+  assert.match(tutorWords(tarock, e).text, /tarock XII.*tarock V/);
+});
+
+test("a nudge is told after \"If I may:\" like a rule, in lower case in English", () => {
+  assert.equal(nudgeText("tutor.nudge.pagat", fmt("en")), "If I may: mind the Pagat here.");
+  assert.equal(nudgeText("tutor.nudge.pagat", fmt("de")), "Wenn ich mir erlauben darf: Achtung auf den Pagat.");
+});
+
+test("with the tips off the brief gives what went well, one bullet, and no advice", () => {
+  const r = briefBlocks(brief, review, fmt("en"), { tips: false });
+  assert.equal(r.bullets.length, 1);
+  assert.equal(r.bullets[0].lead, "Went well:");
+  const advice = briefBlocks({ bullets: brief.bullets.slice(1), method: "tutor.method" }, review, fmt("en"), { tips: false });
+  assert.deepEqual(advice.bullets, []);
+  assert.ok(advice.header, "the count is still the header");
+});
+
+test("at most three bullets, and the sitting's dialog has the tally for a header", () => {
+  const r = briefBlocks({ ...brief, bullets: [...brief.bullets, ...brief.bullets] }, review, fmt("en"));
+  assert.equal(r.bullets.length, 3);
+  const tally = { bullets: [{ lead: "sitting", key: "sitting-tally", params: { won: 2, lost: 1, drawn: 0, net: 3 } }] };
+  const s = briefBlocks(brief, tally, fmt("de"), { whole: true });
+  assert.equal(s.title, "Wie der Abend verlief");
+  assert.equal(s.header, "Partien: 2 gewonnen, 1 verloren, 0 unentschieden; +3 Points im Ganzen.");
+});
+
+test("a brief with nothing to say and no count is null; a count alone is a dialog", () => {
+  assert.equal(briefBlocks(null, null, fmt("en")), null);
+  assert.equal(briefBlocks({ bullets: [] }, { bullets: [] }, fmt("en")), null);
+  const only = briefBlocks(null, review, fmt("en"));
+  assert.deepEqual(only.bullets, []);
+  assert.ok(only.header);
+});
+
+test("every sentence of a brief is a key the table has, in both languages", () => {
+  for (const b of brief.bullets) for (const key of [b.lead, b.key]) for (const lang of ["en", "de"]) assert.ok(TABLE[key]?.[lang], key);
 });
 
 test("an explanation names the suit and the cards in the language", () => {
@@ -58,20 +127,15 @@ test("an explanation names the suit and the cards in the language", () => {
   assert.equal(explainText(null, s("en")), "");
 });
 
-test("a review with nothing to say is null", () => {
-  assert.equal(reviewBlocks(null, fmt("en")), null);
-  assert.equal(reviewBlocks({ bullets: [] }, fmt("en")), null);
-});
-
-test("the review is gentle: no bullet names a fault or a person", () => {
+test("the review and the brief are gentle: no bullet names a fault or a person", () => {
   const bad = /\b(stupid|foolish|blunder|mistake|error|wrong|careless|bad player|fool)/i;
   for (const [key, v] of Object.entries(TABLE)) {
-    if (!key.startsWith("review.say.") && !key.startsWith("explain.")) continue;
+    if (!key.startsWith("review.say.") && !key.startsWith("explain.") && !key.startsWith("tutor.")) continue;
     assert.ok(!bad.test(v.en), key);
   }
 });
 
-test("review and explanation name tarocks by Roman numeral; the plain cardName keeps Arabic", () => {
+test("explanation names tarocks by Roman numeral; the plain cardName keeps Arabic", () => {
   const x = createStrings(TABLE, "en");
   const f = { t: x.t, cardName: x.romanName, thirds, signed, suitName: x.suitName };
   assert.equal(words({ lead: "decided", key: "trick-lost-rich", params: { trick: 4, mine: "T12", theirs: "T19", thirds: 23 } }, f), "Trick 4 was the rich one you lost: tarock XII against tarock XIX, 7⅔ between them.");

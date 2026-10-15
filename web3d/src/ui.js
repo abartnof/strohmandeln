@@ -104,7 +104,9 @@ export function createUi(root, { t, onAct }) {
     // the name is the visible label, which flips with the state (so no aria-pressed)
     const chip = q(".tutor-review");
     chip.hidden = !(tutor.on && !tutor.muted && tutor.review);
-    chip.textContent = t(tutor.review === "sitting" ? "review.chip.sitting" : "review.chip");
+    // while the evidence of the deal is being worked out the chip says so and waits
+    chip.disabled = Boolean(tutor.working);
+    chip.textContent = tutor.working ? t("review.chip.working") : t(tutor.review === "sitting" ? "review.chip.sitting" : "review.chip");
     chip.title = t("review.offer");
   }
   relabel();
@@ -130,7 +132,7 @@ export function createUi(root, { t, onAct }) {
       refusal.hidden = !text;
     },
     // The tutor's tab: `on` (the setting), `muted`, and the review chip,
-    // `review`: null, "deal" or "sitting".
+    // `review`: null, "deal" or "sitting"; `working`: the chip waits for the evidence.
     setTutor(next) {
       tutor = { ...tutor, ...next };
       drawTutor();

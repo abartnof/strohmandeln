@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { helpBody, pageBody, reviewBody, trendBody } from "../src/tutorview.js";
+import { helpBody, pageBody, reviewBody } from "../src/tutorview.js";
 import { tutorialPages, PAGE_KEYS } from "../src/tutor.js";
 import { fakeDocument } from "./support/fakedom.js";
 
@@ -34,17 +34,21 @@ test("the help list has a button for each page, the seen ones marked", () => {
   assert.doesNotMatch(buttons[0].textContent, /✓/);
 });
 
-test("the earlier sittings are a titled list of their tallies", () => {
-  const body = trendBody(doc, "Your sittings", ["Deals: 2 won.", "Deals: 1 won."]);
-  assert.equal(body.findAll((e) => e.tagName === "LI").length, 2);
-  assert.equal(body.textContent.startsWith("Your sittings"), true);
-});
-
-test("a review is bullets with a bold lead, and a folded method", () => {
-  const body = reviewBody(doc, { bullets: [{ lead: "The count.", text: "You counted 40." }, { lead: "One thing to try.", text: "If I may." }], how: "How?", method: "Thirds." });
+test("a brief is the count, bullets with a bold lead, and a folded method", () => {
+  const body = reviewBody(doc, { header: "You counted 40.", bullets: [{ lead: "Went well:", text: "All met." }, { lead: "To try:", text: "Look." }], how: "How?", method: "Thirds." });
   const items = body.findAll((e) => e.tagName === "LI");
   assert.equal(items.length, 2);
-  assert.equal(items[0].textContent, "The count. You counted 40.");
-  assert.equal(items[0].findAll((e) => e.tagName === "B")[0].textContent, "The count.");
+  assert.equal(items[0].textContent, "Went well: All met.");
+  assert.equal(items[0].findAll((e) => e.tagName === "B")[0].textContent, "Went well:");
   assert.equal(body.findAll((e) => e.tagName === "SUMMARY")[0].textContent, "How?");
+  const head = body.findAll((e) => e.tagName === "P" && e.className === "tutor-count");
+  assert.equal(head.length, 1);
+  assert.equal(head[0].textContent, "You counted 40.");
+});
+
+test("a brief without a bullet or a header draws neither a list nor a count", () => {
+  const body = reviewBody(doc, { header: null, bullets: [], how: "How?", method: "Thirds." });
+  assert.equal(body.findAll((e) => e.tagName === "UL").length, 0);
+  assert.equal(body.findAll((e) => e.className === "tutor-count").length, 0);
+  assert.equal(body.findAll((e) => e.tagName === "SUMMARY").length, 1);
 });
