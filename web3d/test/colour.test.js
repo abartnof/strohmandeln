@@ -47,6 +47,12 @@ for (const [name, set] of [["light", light], ["dark", dark]]) {
   });
 }
 
+test("locked setting rows keep full-contrast text (no opacity fade)", () => {
+  const table = readFileSync(new URL("../src/table.css", import.meta.url), "utf8");
+  const rule = table.match(/\.settings-locked \.settings-option\s*\{[^}]*\}/)[0];
+  assert.ok(!/opacity/.test(rule), rule);
+});
+
 test("the light tokens are cassino's", () => {
   assert.equal(light[M + "primary"], "#435e91");
   assert.equal(light[M + "surface-container-high"], "#e8e7ee");

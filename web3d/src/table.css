@@ -183,7 +183,7 @@
 .settings-action:focus-visible,
 .settings-close:focus-visible,
 .slate-close:focus-visible { outline: 3px solid var(--md-sys-color-primary); outline-offset: 2px; }
-.settings-locked .settings-option { opacity: 0.55; cursor: default; }
+.settings-locked .settings-option { cursor: default; } /* locked: full-contrast text; the row's "from the next sitting" note says why */
 .settings-note,
 .settings-when { font-size: 13px; color: var(--chalk-dim); }
 .settings-action { margin: 4px 6px 0 0; }
