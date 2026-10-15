@@ -31,6 +31,17 @@ inside it. A plain directory is in every worktree from the start.
 (`engine`, `tutorial`, `director`, `modules`) and `test_build.py` for
 `build.py`. `build.py`: the page builder, below. `STAMP`: provenance.
 
+`learner/` is a Rust crate (`kit-learner`, no dependencies, a workspace member of
+the game), the game-independent part of Cassino's learner: the discounted Beta
+fold, mastery with hysteresis, the focus over a prerequisite graph, the summary's
+text form and versions, and the brief's shape. A game supplies a `Ladder` (its
+skills as indexes, with `needs`, `top_rate`, `top_cost`, `min_chances`) and
+`Params`; the evidence, the words and the rules stay the game's.
+`docs/TUTOR.md` section 13 has the API. Its tests include an equivalence test
+against Cassino's own learner (`learner/tests/equivalence.rs`); `STAMP` lists
+its files. It is not JavaScript, so the origin-header and `kit/test` rules do not
+apply to it; `bin/gate` checks that every file under `learner/` is in `STAMP`.
+
 ## What was left out, and why
 
 - `prefs.js`, `progress.js`: generic in shape (versioned `localStorage`, try/catch,

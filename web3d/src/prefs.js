@@ -33,6 +33,10 @@ export const DEFAULTS = Object.freeze({
   talk: "all",
   tutor: true,
   hints: false,
+  // The cards-out tracker (6.6): shown with Hints on; its fold is the person's
+  // choice, null until made (open on a large window).
+  tracker: true,
+  trackerFolded: null,
   explain: false,
   announceAuto: false,
   slateAuto: true,
@@ -60,6 +64,8 @@ const CHECKS = {
   talk: oneOf(TALKS),
   tutor: isBool,
   hints: isBool,
+  tracker: isBool,
+  trackerFolded: (x) => x === null || isBool(x),
   explain: isBool,
   announceAuto: isBool,
   slateAuto: isBool,

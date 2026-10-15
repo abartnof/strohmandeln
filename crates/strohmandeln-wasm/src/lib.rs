@@ -12,10 +12,12 @@
 
 use serde::Deserialize;
 use serde_json::{json, Map, Value};
+use strohmandeln_ai::cardset::Kind;
 use strohmandeln_ai::explain::Param as HintParam;
 use strohmandeln_ai::hint::hint as ai_hint;
 use strohmandeln_ai::opponent::{Config as AiConfig, Level, Opponent};
 use strohmandeln_ai::review::{explain_last, review_last, review_sitting, Bullet, Param, Review};
+use strohmandeln_ai::tracker::{tracker as ai_tracker, Place};
 use strohmandeln_core::agents::Player;
 use strohmandeln_core::cards::{Card, Honour};
 use strohmandeln_core::session::{Record, Sitting};
@@ -439,6 +441,62 @@ impl Table {
         json!({"protocol": PROTOCOL, "explain": bullet})
     }
 
+    /// The card tracker for the human's seat (`docs/PROTOCOL.md`): where each
+    /// of the 54 cards is from the human's view, and the counts of what is
+    /// still out, as data and keys. `null` when no deal is in progress.
+    pub fn tracker(&self) -> Value {
+        let t = ai_tracker(&self.my_view()).map(|t| {
+            let cards: Map<String, Value> = t
+                .cards
+                .iter()
+                .map(|(c, place)| {
+                    let v = match place {
+                        Place::Hand => json!({"place": "hand"}),
+                        Place::Cover => json!({"place": "cover"}),
+                        Place::OppCover => json!({"place": "opp_cover"}),
+                        Place::OppHand => json!({"place": "opp_hand"}),
+                        Place::Unseen => json!({"place": "unseen"}),
+                        Place::Played { by, trick } => {
+                            json!({"place": "played", "by": by, "trick": trick})
+                        }
+                    };
+                    (c.code(), v)
+                })
+                .collect();
+            let groups: Vec<Value> = t
+                .groups
+                .iter()
+                .map(|g| {
+                    let kind = match g.kind {
+                        Kind::Suit(s) => s.letter().to_string(),
+                        Kind::Trump => "trump".to_string(),
+                    };
+                    json!({
+                        "kind": kind,
+                        "mine": g.mine,
+                        "out": g.out,
+                        "unseen": g.unseen,
+                        "void": g.void,
+                        "best": g.best,
+                        "top_out": g.top_out,
+                        "master": g.master,
+                    })
+                })
+                .collect();
+            json!({
+                "human": t.me,
+                "trick": t.trick,
+                "cards": cards,
+                "groups": groups,
+                "out_count": t.out_count,
+                "out_thirds": t.out_thirds,
+                "unseen_count": t.unseen_count,
+                "unseen_thirds": t.unseen_thirds,
+            })
+        });
+        json!({"protocol": PROTOCOL, "tracker": t})
+    }
+
     fn my_hint_legal(&self) -> Option<Vec<Value>> {
         let legal = self.legal();
         (!legal.is_empty()).then_some(legal)
@@ -709,6 +767,12 @@ pub mod ffi {
     #[no_mangle]
     pub extern "C" fn strohmandeln_explain() {
         HOST.with(|h| h.borrow_mut().show(|t| t.explain()))
+    }
+
+    /// Renders the card tracker (`{"tracker": {...}}` or `"tracker": null`).
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_tracker() {
+        HOST.with(|h| h.borrow_mut().show(|t| t.tracker()))
     }
 
     /// A test aid: the codes of the cards the human must not see.
@@ -1078,6 +1142,79 @@ mod tests {
             }
         }
         assert!(hinted > 150, "only {hinted} hints");
+    }
+
+    /// Plays the human's first legal action and steps the opponent for up to
+    /// `n` moves, calling `f` with the state, the human's tracker reply and
+    /// the module's audit (the cards he must not learn) before each.
+    fn walk_tracker(h: &mut Host, n: usize, mut f: impl FnMut(&Value, &Value, &Value)) {
+        for _ in 0..n {
+            h.render();
+            let s = out(h)["state"].clone();
+            h.show(|t| t.tracker());
+            let tr = out(h);
+            h.show(|t| t.audit());
+            let audit = out(h);
+            f(&s, &tr, &audit);
+            if s["prompt"] == "over" {
+                break;
+            }
+            if s["prompt"] == "opponent" {
+                h.step();
+            } else {
+                let a = match &s["legal"][0] {
+                    a if a["action"] == "play" => json!({"action":"play","card":a["card"]}),
+                    a => a.clone(),
+                };
+                assert_eq!(h.send(&a.to_string()), 1);
+            }
+        }
+    }
+
+    #[test]
+    fn the_tracker_places_every_card_and_names_no_hidden_one() {
+        let mut h = host(CONFIG);
+        let mut looked = 0;
+        walk_tracker(&mut h, 120, |s, tr, audit| {
+            let t = &tr["tracker"];
+            assert_eq!(tr["protocol"], PROTOCOL);
+            if s["deal"].is_null() {
+                assert!(t.is_null());
+                return;
+            }
+            assert_eq!(t["cards"].as_object().unwrap().len(), 54);
+            assert_eq!(t["groups"].as_array().unwrap().len(), 5);
+            for code in audit["hidden"].as_array().unwrap() {
+                let place = &t["cards"][code.as_str().unwrap()]["place"];
+                assert_eq!(place, "unseen", "{code} must only be unseen");
+                looked += 1;
+            }
+            for c in s["deal"]["own_hand"].as_array().unwrap() {
+                assert_eq!(t["cards"][c["card"].as_str().unwrap()]["place"], "hand");
+            }
+            for p in t["cards"].as_object().unwrap().values() {
+                if p["place"] == "played" {
+                    assert!(p["by"] == 0 || p["by"] == 1);
+                    assert!(p["trick"].as_u64().unwrap() >= 1);
+                }
+            }
+            assert_eq!(t["human"], s["human"]);
+            assert!(t["out_thirds"].as_u64().unwrap() <= 210);
+        });
+        assert!(looked > 500, "{looked}");
+    }
+
+    #[test]
+    fn the_tracker_needs_a_sitting_and_does_not_move_the_game() {
+        let mut h = Host::default();
+        h.show(|t| t.tracker());
+        assert_eq!(out(&h)["error"], "no-sitting");
+        let mut h = host(CONFIG);
+        h.render();
+        let before = out(&h);
+        h.show(|t| t.tracker());
+        h.render();
+        assert_eq!(out(&h), before);
     }
 
     #[test]

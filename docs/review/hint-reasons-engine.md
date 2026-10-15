@@ -16,6 +16,8 @@ Scope: `explain.rs`, `hint.rs`, `rung4::move_table`, wasm `hint()`, `docs/PROTOC
 | 8 | `keep-packet` is named whenever the reserved packet card is legal and not the hinted card, whatever else decided the card; true (that card is kept) but not always the deciding maxim. | open (minor) |
 | 9 | `web3d/strings.json` carries the texts: it needs `hint.reason.decline-rich` and the reworded `win-cheapest`, `win-over-cheaper`, `hint.rule.cheapest` from `docs/MESSAGES.md` (a JS-side reviewer owns it; I did not edit it). | open, hand-off |
 
+Note, 15 Oct 2026: finding 7's latency figure and the `hint_latency` test are superseded by `docs/OPPONENT.md`, "Hint evidence" (measured by `hintbench`; the hint now samples 1 000 / 50 worlds and the test is removed).
+
 ## Citations
 
 Checked against `research/07`: `bid` 1.1, `finesse` 1.3 (Zugzwang, Werner), `keep-packet` 1.2/1.5, `packet-off` 1.2 ("rasch abspielen"), `draw-trumps` 1.4, `exposed` 1.2, `lead-none` 1.2 (the recipe) support their rules. `pagat-last` is supported by 1.5 only loosely (threshold differs); noted in the basis. `cheapest` fixed as above.

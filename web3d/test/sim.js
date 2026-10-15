@@ -20,6 +20,7 @@ export async function engineInNode() {
     import: (record) => call("import", JSON.stringify(record)),
     audit: () => call("audit"),
     hint: () => call("hint"),
+    tracker: () => call("tracker"),
   };
 }
 

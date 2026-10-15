@@ -53,6 +53,7 @@ export const SECTIONS = [
       choice("talk", "now", TALKS),
       toggle("tutor", { noteKey: "settings.tutor.note" }),
       toggle("hints"),
+      toggle("tracker", { noteKey: "settings.tracker.note" }),
       toggle("explain"),
       toggle("announceAuto", { noteKey: "settings.announceAuto.note" }),
       toggle("slateAuto"),
