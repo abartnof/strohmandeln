@@ -34,7 +34,7 @@ pub struct Ladder {
 impl Ladder {
     /// Whether the ladder is well formed: a name of one word, skills with
     /// distinct one-word slugs, prerequisites inside the ladder and not the
-    /// skill itself, rates in [0, 1].
+    /// skill itself and not twice, no cycle among them, rates in [0, 1].
     pub fn check(&self) -> Result<(), String> {
         let one_word = |w: &str| !w.is_empty() && !w.contains(char::is_whitespace);
         if !one_word(self.name) {
@@ -59,6 +59,9 @@ impl Ladder {
                     s.slug
                 ));
             }
+            if let Some(k) = (1..s.needs.len()).find(|&k| s.needs[..k].contains(&s.needs[k])) {
+                return Err(format!("{}: needs {} twice", s.slug, s.needs[k]));
+            }
             if !(0.0..=1.0).contains(&s.top_rate) || !s.top_cost.is_finite() || s.top_cost < 0.0 {
                 return Err(format!("{}: top_rate or top_cost out of range", s.slug));
             }
@@ -66,7 +69,58 @@ impl Ladder {
                 return Err(format!("{}: min_chances out of range", s.slug));
             }
         }
+        // A cycle in the prerequisites would keep every skill on it from
+        // being open for ever: no focus, silently.
+        if let Some(cycle) = self.cycle() {
+            let names: Vec<&str> = cycle.iter().map(|&i| self.skills[i].slug).collect();
+            return Err(format!(
+                "prerequisites form a cycle: {}",
+                names.join(" -> ")
+            ));
+        }
         Ok(())
+    }
+
+    /// A cycle of prerequisites as indexes, the first repeated at the end, or
+    /// `None`. Depth first from each skill in ladder order; assumes every
+    /// `needs` index is inside the ladder.
+    fn cycle(&self) -> Option<Vec<usize>> {
+        // 0: not seen, 1: on the path, 2: done.
+        let mut state = vec![0u8; self.skills.len()];
+        let mut path: Vec<usize> = Vec::new();
+        for start in 0..self.skills.len() {
+            if state[start] != 0 {
+                continue;
+            }
+            // (skill, next need to look at)
+            let mut stack = vec![(start, 0usize)];
+            state[start] = 1;
+            path.push(start);
+            while let Some(&(i, k)) = stack.last() {
+                let Some(&n) = self.skills[i].needs.get(k) else {
+                    state[i] = 2;
+                    path.pop();
+                    stack.pop();
+                    continue;
+                };
+                stack.last_mut().expect("a frame").1 += 1;
+                match state[n] {
+                    0 => {
+                        state[n] = 1;
+                        path.push(n);
+                        stack.push((n, 0));
+                    }
+                    1 => {
+                        let from = path.iter().position(|&p| p == n).expect("on the path");
+                        let mut cycle = path[from..].to_vec();
+                        cycle.push(n);
+                        return Some(cycle);
+                    }
+                    _ => {}
+                }
+            }
+        }
+        None
     }
 
     /// The index of the skill with this slug.
