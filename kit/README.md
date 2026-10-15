@@ -22,7 +22,7 @@ inside it. A plain directory is in every worktree from the start.
 | Loop | `director.js` (render on demand, a clock a gate can hold, picking, screen points) |
 | Talk | `bag.js` (shuffle bag), `dialogue.js` (when and where a line is said) |
 | Score | `scoring.js` (a game's definition, the per-hand ledger, segments, the count's popups), `hud.js` (the HUD widget), `count.js` (the count's timing, the talk system's quiet) |
-| Shell | `tutorial.js` (the small Markdown parser), `engine.js` (wasm wrapper) |
+| Shell | `tutorial.js` (the small Markdown parser; `[text](#key)` is a link to another page, a span `{ text, page }` the game's view turns into a button), `engine.js` (wasm wrapper) |
 | Constants | `units.js` (CARD, TABLE, CAMERA*, PORTRAIT_BELOW), `reveal.js` (table edges, fog, the camera's way back) |
 
 `css/hud.css`: the HUD's styling (inlined by `build.py`, below).
