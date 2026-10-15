@@ -22,6 +22,7 @@ import { decodeBase64 } from "../../kit/js/engine.js";
 import { CARD } from "../../kit/js/units.js";
 import { sentence, where } from "./a11y.js";
 import { choreograph, initialPlacement, opening } from "./choreography.js";
+import { dragKind, shake } from "./gesture.js";
 import { handRange } from "./layout.js";
 import { TRULL, KINGS } from "./cardinfo.js";
 import { countGame, countLines, TARGET } from "./counting.js";
@@ -572,6 +573,7 @@ async function main() {
     const r = engine.send({ action: "play", card: code });
     if (r.ok) return advance(r); // the module allowed it after all: it is played
     showRefusal(r.refusal);
+    shake(director.meshOf(code), { now: () => performance.now(), frame: requestAnimationFrame, render: () => stage.render(), reduced: calm() }); // 3.1.3
   }
   function showRefusal(refusal) {
     if (!refusal) return;
@@ -880,7 +882,11 @@ async function main() {
   document.title = t("ui.title");
 
   // ---- input -----------------------------------------------------------------------------------------------
-  canvas.addEventListener("click", (e) => tapped(director.pick(e.clientX, e.clientY)));
+  let afterDrag = false; // the click that follows a drag is not a tap
+  canvas.addEventListener("click", (e) => {
+    if (afterDrag) return (afterDrag = false);
+    tapped(director.pick(e.clientX, e.clientY));
+  });
   document.getElementById("overlay").addEventListener("click", (e) => {
     if (e.target.closest("button, .dialog, .slate, .settings, .hud")) return;
     if (director.busy() || pending > 0) director.skip();
@@ -891,16 +897,33 @@ async function main() {
     const range = handRange(S ? S.model.hand.length : 0, zonesNow().yourHand);
     return Math.max(-range, Math.min(range, v));
   };
-  canvas.addEventListener("pointerdown", (e) => (dragFrom = { x: e.clientX, scroll: clampScroll(sel.scroll) }));
+  canvas.addEventListener("pointerdown", (e) => {
+    const slot = director.pick(e.clientX, e.clientY);
+    dragFrom = { x: e.clientX, y: e.clientY, scroll: clampScroll(sel.scroll), code: slot?.zone === "your-hand" || slot?.zone === "your-packets" ? slot.code : null };
+  });
   canvas.addEventListener("pointermove", (e) => {
     if (!dragFrom || zonesNow().yourHand.fan || director.busy()) return;
     const dx = e.clientX - dragFrom.x;
-    if (Math.abs(dx) < 6) return;
+    if (dragKind(dx, e.clientY - dragFrom.y) !== "scroll") return;
     const cm = (dx / window.innerWidth) * 34;
     sel = { ...sel, scroll: clampScroll(dragFrom.scroll - cm) };
     director.rearrange();
   });
-  window.addEventListener("pointerup", () => (dragFrom = null));
+  // A lit card drawn up toward the trick is played (3.1.2).
+  window.addEventListener("pointerup", (e) => {
+    const from = dragFrom;
+    dragFrom = null;
+    if (!from?.code || !wasm || wasm.prompt !== "you" || wasm.phase !== "play" || director.busy() || pending > 0) return;
+    const kind = dragKind(e.clientX - from.x, e.clientY - from.y);
+    if (kind !== "tap") {
+      afterDrag = true;
+      setTimeout(() => (afterDrag = false), 80); // no click may follow on touch
+    }
+    if (kind === "play" && lit.has(from.code)) {
+      sel = { ...sel, chosen: null };
+      commit(from.code);
+    }
+  });
   canvas.addEventListener(
     "wheel",
     (e) => {
