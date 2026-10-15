@@ -27,17 +27,23 @@ export function shakeOffset(ms, { ms: total = SHAKE.ms, swings = SHAKE.swings, a
 // Shake a mesh about where it lies: `frame(fn)` asks for the next frame (the
 // caller's requestAnimationFrame), `now()` is the clock, `render()` draws.
 // Reduced motion makes no movement. Returns whether it shook.
+const shaking = new WeakMap(); // mesh -> { x0, run }: the resting place of a card being shaken
 export function shake(mesh, { now, frame, render, reduced = false }) {
   if (reduced || !mesh) return false;
-  const x0 = mesh.position.x;
+  const x0 = shaking.get(mesh)?.x0 ?? mesh.position.x; // pressed again mid-shake: the rest stays where it was
   const start = now();
   const run = () => {
+    if (shaking.get(mesh)?.run !== run) return; // a later shake took over
     const ms = now() - start;
     mesh.position.x = x0 + shakeOffset(ms);
     render();
     if (ms < SHAKE.ms) frame(run);
-    else mesh.position.x = x0;
+    else {
+      mesh.position.x = x0;
+      shaking.delete(mesh);
+    }
   };
+  shaking.set(mesh, { x0, run });
   frame(run);
   return true;
 }

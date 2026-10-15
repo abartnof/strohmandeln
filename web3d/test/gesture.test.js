@@ -40,3 +40,21 @@ test("shake moves the mesh and puts it back; reduced motion does not move it", (
   assert.equal(mesh.position.x, 2);
   assert.equal(shake(mesh, { ...env, reduced: true }), false);
 });
+
+test("a second shake begun mid-shake does not move the card's resting place", () => {
+  let clock = 0;
+  const frames = [];
+  const mesh = { position: { x: 2 } };
+  const env = { now: () => clock, frame: (fn) => frames.push(fn), render: () => {} };
+  shake(mesh, env);
+  clock += 100;
+  frames.shift()(); // mid-shake: the card is off its place
+  assert.notEqual(mesh.position.x, 2);
+  shake(mesh, env); // pressed again
+  let guard = 0;
+  while (frames.length && guard++ < 200) {
+    clock += 20;
+    frames.shift()();
+  }
+  assert.equal(mesh.position.x, 2);
+});
