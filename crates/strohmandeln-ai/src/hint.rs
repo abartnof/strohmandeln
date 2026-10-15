@@ -119,7 +119,8 @@ pub const LEAD_WORLDS: usize = 1000;
 /// decision has, so more worlds are not shallower worlds.
 pub fn odds_config(config: Config, worlds: usize) -> Config {
     let mut c = config;
-    c.budget.nodes = config.budget.nodes / config.budget.worlds.max(1) as u64 * worlds as u64;
+    c.budget.nodes =
+        (config.budget.nodes / config.budget.worlds.max(1) as u64).saturating_mul(worlds as u64);
     c
 }
 
@@ -348,6 +349,9 @@ mod tests {
             assert_eq!(c.weights, config.weights);
         }
         assert_eq!(odds_config(config, 50).budget.nodes, 150_000);
+        let mut huge = config;
+        huge.budget.nodes = u64::MAX;
+        assert_eq!(odds_config(huge, 50).budget.nodes, u64::MAX, "saturates");
         assert_eq!(ODDS_WORLDS, 50);
     }
 
@@ -460,36 +464,6 @@ mod tests {
                 r[1]
             );
         }
-    }
-
-    /// The tutor's cost over the opponent's own move, at the top rung:
-    /// `cargo test -p strohmandeln-ai --release hint_latency -- --ignored --nocapture`
-    #[test]
-    #[ignore]
-    fn hint_latency() {
-        let level = Level::from_halves(8);
-        let config = Config::default();
-        let (mut decide, mut whole, mut n) = (0.0, 0.0, 0);
-        walk(3, |s, seat| {
-            let v = view(s, seat);
-            let k = Knowledge::from_view(&v).unwrap();
-            if !k.playing || k.legal.len() < 2 || n >= 8 {
-                return;
-            }
-            let t = std::time::Instant::now();
-            Opponent::new(level, 9).with_config(config).decide(&v);
-            decide += t.elapsed().as_secs_f64();
-            let t = std::time::Instant::now();
-            hint(&v, 9, level, config);
-            whole += t.elapsed().as_secs_f64();
-            n += 1;
-        });
-        let ms = |x: f64| x / f64::from(n) * 1e3;
-        eprintln!(
-            "n={n} decide {:.0} ms, whole hint {:.0} ms",
-            ms(decide),
-            ms(whole)
-        );
     }
 
     #[test]
