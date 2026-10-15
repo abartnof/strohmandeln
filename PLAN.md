@@ -43,10 +43,10 @@ terminal client. Built on the parts of Cassino and Piquet that carry over.
 | 5 | `strohmandeln-wasm` and `strohmandeln-cli`, with `docs/PROTOCOL.md` | 4 | done |
 | 6 | Computer opponent: a ladder of rungs, each measured against the one below (`docs/OPPONENT.md`) | 4 | done |
 | 7 | Card faces: 54 large-type faces and a back, drawn at runtime (`docs/img/faces.png`) | 2 | done |
-| 8 | The table (spec: `docs/TABLE3D.md`): layout, choreography, play, slate, settings, phone. The count and score use the kit's score HUD and scoring popups (moved from Cassino), configured for counting won cards in threes against 36 | 2, 5, 7 | core done (a whole sitting plays by clicking, no face leak); gaps open |
+| 8 | The table (spec: `docs/TABLE3D.md`): layout, choreography, play, slate, settings, phone. The count and score use the kit's score HUD and scoring popups (moved from Cassino), configured for counting won cards in threes against 36 | 2, 5, 7 | done; open items below |
 | 9 | Tutor: tutorial pages, the kibitzer's hints and explanations, end-of-deal review | 5, 8 | done |
-| 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | documents and Pages redirect done; publishing after the last merges |
-| 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | built across 3, 8, 9; the language_switch browser check open |
+| 10 | Build, browser test, README, CREDITS, LICENSE, Pages | all | done; published 15 Oct 2026 at abartnof.github.io/strohmandeln |
+| 11 | Languages: interface strings (en/de) and the switch, German court labels on the faces, German tutorial pages | 7, 8, 9 | done (built across 3, 8, 9; language_switch passes) |
 
 ## Open
 
