@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createStrings, thirds } from "../src/strings.js";
-import { hintLines, hintParams, hintSpoken, romanCardName } from "../src/hinttext.js";
+import { hintLines, hintParams, hintSpoken } from "../src/hinttext.js";
 
 const TABLE = JSON.parse(readFileSync(new URL("../strings.json", import.meta.url), "utf8"));
 const doc = readFileSync(new URL("../../docs/MESSAGES.md", import.meta.url), "utf8");
@@ -13,7 +13,7 @@ const slots = (s) => [...new Set([...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]))
 
 const words = (lang) => {
   const s = createStrings(TABLE, lang);
-  return { t: s.t, cardName: s.cardName, thirds };
+  return { t: s.t, cardName: s.cardName, romanName: s.romanName, thirds };
 };
 
 test("a card parameter is named, a _thirds parameter is told in points, a count stays", () => {
@@ -33,9 +33,9 @@ test("a hint reads: the card, why, the rule, the odds", () => {
   };
   const en = hintLines(r, words("en"));
   assert.equal(en.lead, "Play tarock 19.");
-  assert.equal(en.reason, "Tarock 19 beats tarock 15 and takes ⅔ point; it is the cheapest winner, and Mond also wins but is worth saving.");
+  assert.equal(en.reason, "Tarock 19 beats tarock 15 and takes ⅔ point; it is the cheapest winner, and Mond also wins but costs more to spend.");
   assert.equal(en.more.length, 2);
-  assert.match(en.more[0], /^Rule: lose with the least/);
+  assert.match(en.more[0], /^Rule: do not spend a king/);
   assert.equal(en.more[1], "Against Mond: ahead in 7 of 10 sampled deals, by 1⅓ points on average.");
   assert.match(hintSpoken(en), /^Play tarock 19\. Tarock 19 beats/);
   const de = hintLines(r, words("de"));
@@ -63,6 +63,15 @@ test("every hint key of MESSAGES.md has a string with exactly its parameters, in
   }
 });
 
+test("the hint strings say what MESSAGES.md says, word for word", () => {
+  const reasons = [...section("## Hint reasons", "### Hint rules").matchAll(/^\| `([a-z-]+)` \| [^|]*\| ([^|]*) \| ([^|]*) \|$/gm)];
+  const rules = [...section("### Hint rules", "### Hint odds").matchAll(/^\| `([a-z-]+)` \| ([^|]*) \| ([^|]*) \| [^|]* \|$/gm)];
+  assert.ok(reasons.length >= 20 && rules.length >= 8);
+  for (const [, key, en, de] of reasons) assert.deepEqual(TABLE[`hint.reason.${key}`], { en: en.trim(), de: de.trim() }, key);
+  for (const [, key, en, de] of rules) assert.deepEqual(TABLE[`hint.rule.${key}`], { en: en.trim(), de: de.trim() }, key);
+  assert.ok(TABLE["hint.reason.decline-rich"]);
+});
+
 test("every rule of MESSAGES.md has a string, and every row cites its basis", () => {
   const rows = [...section("### Hint rules", "### Hint odds").matchAll(/^\| `([a-z-]+)` \| [^|]* \| [^|]* \| ([^|]*) \|/gm)];
   assert.ok(rows.length >= 8);
@@ -83,7 +92,7 @@ test("no hint key is left in the strings that MESSAGES.md does not give", () => 
 
 test("shown tarocks use the faces' Roman numerals; Pagat, Mond, Sküs keep their names; zero is plural", () => {
   const w = words("en");
-  const name = romanCardName(w.cardName, w.t);
+  const name = w.romanName;
   assert.deepEqual(["T12", "T4", "T1", "T21", "SK", "Jh"].map(name), ["tarock XII", "tarock IIII", "Pagat", "Mond", "Sküs", "jack of hearts"]);
   assert.equal(hintParams({ n_thirds: 0 }, w).n_thirds, "0 points");
   assert.equal(hintLines({ hint: { action: "play", card: "T12" }, reason: "only-card", params: { card: "T12" } }, { ...w, cardName: name }).lead, "Play tarock XII.");
