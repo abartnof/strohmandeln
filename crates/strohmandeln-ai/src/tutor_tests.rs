@@ -209,7 +209,7 @@ fn a_student_who_never_plays_a_cover_off_misses_every_off_chance() {
     assert!(off.chances >= 10, "{off:?}");
     assert_eq!(off.met, 0, "{off:?}");
     let whole = s.whole_t[Skill::Off.index()];
-    assert!(rate(&s.whole_t, Skill::Off) > 0.4, "{whole:?}");
+    assert!(rate(&s.whole_t, Skill::Off) >= 0.8, "{whole:?}");
     assert!(
         off.missed > 3.0 * whole.missed,
         "{} against {}",
@@ -240,16 +240,58 @@ fn a_student_who_takes_up_every_hand_misses_the_bids_that_should_pass() {
     assert!(whole.met * 10 >= whole.chances * 8, "{whole:?}");
 }
 
+/// The fixture's values at the margin as set (3 sittings, default budget):
+/// rung 4 meets 0.96 of its chances (every skill with 8 or more chances at
+/// 0.88 or better), a random player 0.63 (`worth` 24 of 44).
 #[test]
 fn whole_rung_four_meets_nearly_every_chance_and_a_random_player_does_not() {
     let s = students();
-    assert!(overall(&s.whole_t) >= 0.85, "{:?}", s.whole_t);
-    assert!(overall(&s.random_t) <= 0.7, "{:?}", s.random_t);
+    assert!(overall(&s.whole_t) >= 0.9, "{:?}", s.whole_t);
+    for sk in Skill::ALL {
+        if s.whole_t[sk.index()].chances >= 8 {
+            assert!(
+                rate(&s.whole_t, sk) >= 0.8,
+                "{}: {:?}",
+                sk.slug(),
+                s.whole_t
+            );
+        }
+    }
+    assert!(overall(&s.random_t) <= 0.75, "{:?}", s.random_t);
     // the first rung of the ladder shows the difference most
-    assert!(rate(&s.whole_t, Skill::Worth) >= 0.8);
     assert!(rate(&s.random_t, Skill::Worth) <= 0.65);
     let (w, r) = (s.whole_t[0], s.random_t[0]);
     assert!(r.missed > 5.0 * w.missed, "{r:?} against {w:?}");
+}
+
+#[test]
+fn a_search_that_finished_no_trick_gives_no_play_verdict() {
+    // With a budget too small to finish a trick `move_table` falls back to
+    // rung 3's scale, which is not thirds: the decision is skipped.
+    let rec = &students().whole[0];
+    let starved = Budget {
+        worlds: 3,
+        nodes: 1,
+        bid_worlds: 4,
+    };
+    let (mut full, mut none) = (0, 0);
+    rec.replay(|_, d, seat, a| {
+        let k = Knowledge::from_view(&bare_view(d, seat)).unwrap();
+        if seat != HUMAN || !k.playing || k.legal.len() < 2 {
+            return;
+        }
+        let plays = |b| {
+            decision_verdicts(&bare_view(d, seat), a, b)
+                .iter()
+                .filter(|v| v.skill != Skill::Announce)
+                .count()
+        };
+        full += plays(small());
+        none += plays(starved);
+    })
+    .unwrap();
+    assert!(full > 3, "{full}");
+    assert_eq!(none, 0);
 }
 
 #[test]
