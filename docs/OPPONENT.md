@@ -55,3 +55,58 @@ wasm build in Node on the development machine (2 vCPU), opponent `step`, whole
 The slowest decisions are bids (sampled deals). No cap beyond the node budget
 is needed; `Budget` is the knob for a slower device. The wasm module is 466 KB
 (release, unstripped).
+
+### Hint evidence
+
+The tutor's two sampled lines are counted over `hint::LEAD_WORLDS` = 1,000
+deals ("takes the trick in N of 1,000", `lead-rate`, `lead-cheap`) and
+`hint::ODDS_WORLDS` = 50 deals (`odds`), each searched with the decision's own
+node share per world (`odds_config`: 30 000 / 10 = 3 000 nodes). The
+opponent's own lead still weighs `rung3::WORLDS` = 24; the hinted move does
+not depend on either constant (separate random streams, `hint.rs` tests).
+
+Measured by `hintbench` over 2 300 positions of 50 sittings (opponent level 3
+in both seats; 1 000 leads, 1 000 follows, 300 bids), native release, 2 vCPU,
+before the change (15 Oct 2026):
+
+| Lead rate, n | median | p95 | max | 95% half-width at p = 0.5 | wording flips between two samples |
+|---|---|---|---|---|---|
+| 24 (before) | 0.04 ms | 0.13 ms | 0.29 ms | 20 points | 2.4% |
+| 100 | 0.18 ms | 0.56 ms | 5 ms | 9.8 | 1.4% |
+| 1 000 (now) | 1.9 ms | 13 ms | 24 ms | 3.1 | 0.6% |
+| 10 000 | 16 ms | 66 ms | 150 ms | 1.0 | 0.2% |
+
+| Odds worlds, scaled nodes | median | p95 | max | odds given |
+|---|---|---|---|---|
+| 10 (before) | 2.3 ms | 5.7 ms | 20 ms | 39% |
+| 25 | 4.3 ms | 23 ms | 67 ms | 42% |
+| 50 (now) | 12 ms | 49 ms | 94 ms | 43% |
+| 100 | 17 ms | 55 ms | 125 ms | 43% |
+| 200 | 41 ms | 184 ms | 369 ms | 44% |
+
+With the 30 000 nodes left shared, more worlds are searched shallower and the
+line is given less often (26% at 50 worlds, 19% at 200); hence the scaling.
+The whole level-4 hint was 4.6 ms median, 13.6 ms p95, 35 ms max (leads).
+"Wording flips" is how often two independent samples fall on different sides
+of the `lead-cheap` threshold (wins at most 20%), computed from the binomial
+at each lead's proportion over 2 000 worlds; it does not reach zero because
+some leads sit on the threshold.
+
+The wasm build under Node 18 on the same machine takes 1.8 times the native
+time (median 1.8, p95 2.3, over 1 461 identical hints; `crates/strohmandeln-wasm/tests/hintbench.mjs`
+against `examples/hintbench.rs`). The added cost of the new constants is about
+2 ms median and 13 ms p95 for the lead rate, 10 ms and 45 ms for the odds,
+natively; times 1.8 in the browser, more on a phone. The hint runs on the main
+thread. In a Web Worker the same budget would allow about 10 000 lead worlds
+and 200 odds worlds in under a second on this machine (not built).
+
+Reproduce:
+
+```text
+cargo run --release -p strohmandeln-ai --bin hintbench -- --sittings 50 \
+  --cap-lead 1000 --cap-follow 1000 --cap-bid 300 \
+  --lead-ns 24,100,1000,10000 --odds-worlds 10,25,50,100,200
+cargo build --release -p strohmandeln-wasm --lib --target wasm32-unknown-unknown
+node crates/strohmandeln-wasm/tests/hintbench.mjs target/wasm32-unknown-unknown/release/strohmandeln_wasm.wasm 10 > wasm.txt
+cargo run --release -p strohmandeln-wasm --example hintbench -- 10 > native.txt   # compare line by line
+```

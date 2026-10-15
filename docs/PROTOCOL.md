@@ -336,7 +336,7 @@ asking twice gives the same answer, and asking changes nothing.
  "reason": "win-cheapest",
  "params": {"card": "T19", "led": "T15", "alt": "T21", "trick_thirds": 2},
  "rule": null,
- "odds": {"alt": "T21", "better": 7, "worlds": 10, "gain_thirds": 4}}
+ "odds": {"alt": "T21", "better": 35, "worlds": 50, "gain_thirds": 4}}
 ```
 
 `hint` is one of the entries of `state.legal` (send its card alone, as for any
