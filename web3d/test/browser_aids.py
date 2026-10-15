@@ -120,6 +120,7 @@ def check_slate_rows(browser, failures):
         log = js(page, "log()")
         scored = [e for e in log if e["type"] == "game_scored"]
         rows = page.locator(".slate [data-deal]")
+        fail_if(not scored, failures, "slate_rows: no scored deal in the log, so no row was compared")
         fail_if(page.locator(".slate-draw .slate-note").count() < 1, failures, "slate_rows: the draw is not marked")
         fail_if(page.locator(".slate-row .slate-double").count() < 1, failures, "slate_rows: no x2 on the doubled deal")
         fail_if(rows.count() != len(scored) + 1, failures, f"slate_rows: {rows.count()} rows for {len(scored)} scored deals and one live")
@@ -211,6 +212,7 @@ def check_talk_events(browser, failures):
         ("sitting_end", ["farewell", "settle-even", "settle-opp-pays", "settle-player-pays"]),
     ]
     for event, groups in wants:
+        fail_if(not any(e["type"] == event for e in log), failures, f"talk_events: the sitting never had a {event}, so its lines are untested")
         if any(e["type"] == event for e in log):
             fail_if(not seen_groups & set(groups), failures, f"talk_events: {event} occurred but none of {groups} was said (heard {sorted(seen_groups)[:12]}; last lines {[(l['deals'], l['text'][:20]) for l in lines[-4:]]})")
     fail_if(not (seen_groups - CALLS), failures, "talk_events: a whole sitting at All said no chatter")

@@ -534,7 +534,6 @@ def check_farewell_once(browser, failures):
 def check_motion_profile(browser, failures):
     page = open_page(browser, "seed=7&speed=normal&human=1&manual", wait=False)
     mrest(page, step=400)
-    take_if_bidding(page) if False else None
     if state(page)["phase"] == "bid":
         page.locator("[data-act=take]").click()
         mrest(page, step=400)
