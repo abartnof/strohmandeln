@@ -94,7 +94,15 @@ def state(page):
     return js(page, "state()")
 
 
+def close_slate(page):
+    """The slate opens by itself at a Tour's end and covers the cards; a person closes it (Esc) before choosing."""
+    if page.evaluate("(() => { const r = document.querySelector('.slate-root'); return Boolean(r) && !r.hidden; })()"):
+        page.keyboard.press("Escape")
+        page.wait_for_function("document.querySelector('.slate-root').hidden", timeout=10_000)
+
+
 def click_card(page, code):
+    close_slate(page)
     point = js(page, f"screenPoint('{code}')")
     assert point, f"{code} is not on the table"
     page.mouse.click(point["x"], point["y"])

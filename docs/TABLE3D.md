@@ -512,7 +512,10 @@ code by language (en: "king of hearts"; de: "Herz-König"; Sküs, "Sküs").
 stays on the refused card.
 
 3.10.4 Targets are at least 44 × 44 CSS px on touch; text contrasts at 4.5:1 or
-better; no information is carried by color alone (lit cards also lift).
+better; no information is carried by color alone (lit cards also lift). The
+accessible card lists (3.10.1) are a visually hidden 1 px box, reached by key or
+by a screen reader's own gestures, never by a finger on them; they are exempt from
+the 44 px rule as long as they stay hidden. A finger taps the cards on the canvas.
 
 ## 4. The slate
 
@@ -1123,7 +1126,8 @@ motion are saved to `web3d/test/out/`.
   to right.
 - `reduced_motion`: with the setting, no card in flight at any frame; the same
   sentences and results.
-- `touch_targets`: every control on touch is at least 44 px.
+- `touch_targets`: every visible control on touch is at least 44 px; the visually
+  hidden accessible card lists (3.10.4) are exempt, and the check asserts they are hidden.
 
 ### 10.4 Slate, talk, tutor
 
@@ -1198,13 +1202,12 @@ The software GPU spends about a second a frame, so the checks that read state an
 the DOM, not pixels, turn the draw calls into no-ops (`NO_DRAW`), and the drivers
 `drive` and `legal_only` loop inside the page, one round trip a sitting. Talk checks
 run at Normal speed on the test's clock (`?manual`): the Instant speed leaves the
-talk out (2.8). `keyboard_sitting` plays the first deal and the extension prompt by
-keys, the rest by the engine's first legal action. `talk_repeat` bounds the repeats
+talk out (2.8). `keyboard_sitting` plays a whole 3-Touren sitting by keys (about two minutes). `talk_repeat` bounds the repeats
 rather than forbidding them: the talk's record also holds lines the speaker dropped,
 which the page never shows (the exact rule is in `talk.test.js`).
 
 Wall time of the whole suite on the 2-core VM, load from other work included:
-53 checks took 3057 s (51 minutes) on 15 Oct 2026, of which 1200 s were two checks that timed out (no_face_leak, since sped up to 103 s, and keyboard_sitting, open); the rest ran in 1857 s. Open: keyboard_sitting (over 600 s), announce_prompt (no `[data-act=play]` after the spec-gap merge), touch_targets (the accessible card lists are 28 px high).
+53 checks took 3057 s (51 minutes) on 15 Oct 2026, of which 1200 s were two checks that timed out (no_face_leak, since sped up to 103 s, and keyboard_sitting, open); the rest ran in 1857 s. Since fixed: keyboard_sitting (a whole sitting by keys, 2 min), announce_prompt (the auto-opened slate covered the cards), touch_targets (3.10.4).
 
 ## 11. Order of work
 

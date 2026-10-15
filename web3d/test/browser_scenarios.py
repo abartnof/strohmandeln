@@ -534,7 +534,6 @@ def check_farewell_once(browser, failures):
 def check_motion_profile(browser, failures):
     page = open_page(browser, "seed=7&speed=normal&human=1&manual", wait=False)
     mrest(page, step=400)
-    take_if_bidding(page) if False else None
     if state(page)["phase"] == "bid":
         page.locator("[data-act=take]").click()
         mrest(page, step=400)
@@ -768,6 +767,7 @@ def key_turn(page, s):
         for _ in range(16):
             page.keyboard.press("Enter")
             if js(page, "selection()"):
+                still(page)  # the chosen card lifts; a second Enter during the lift is ignored, as for a person
                 page.keyboard.press("Enter")
                 chosen = True
                 break
@@ -778,6 +778,7 @@ def key_turn(page, s):
             page.keyboard.press(key)
             page.keyboard.press("Enter")
             if js(page, "selection()"):
+                still(page)  # the chosen card lifts; a second Enter during the lift is ignored, as for a person
                 page.keyboard.press("Enter")
                 chosen = True
         if page.locator(".dialog [data-dialog-act^=dont]").count():
@@ -786,26 +787,35 @@ def key_turn(page, s):
 
 
 def check_keyboard_sitting(browser, failures):
-    """The first deal and the extension prompt by keys alone; the deals between by the engine's
-    first legal action (a whole sitting of keys takes an hour on the software GPU, and adds no key)."""
+    """A whole sitting by keys alone: every decision of the human by arrows, Enter, A, T, W (the
+    opponent plays itself), the slate by S and Esc, then ? and Esc. A turn that changes nothing twice
+    over is a stall, and fails with the position."""
     page = open_page(browser, "seed=7&speed=instant&human=1")
-    turns = 0
-    for _ in range(300):
+    turns = stalls = 0
+    for _ in range(600):
         rest(page)
         s = state(page)
-        if s["prompt"] == "over" or s["deals_counted"] >= 1:
+        if s["prompt"] == "over":
             break
+        if page.evaluate("!document.querySelector('.slate-root').hidden"):
+            page.keyboard.press("Escape")
+        mark = (s["phase"], len(js(page, "log()")))
+        if turns == 3:  # the slate, the hint and the mute by their keys, once
+            for key in ("s", "Escape", "h", "m", "m"):
+                page.keyboard.press(key)
+            rest(page)
         key_turn(page, s)
         turns += 1
-    fail_if(state(page)["deals_counted"] < 1, failures, f"keyboard_sitting: the first deal not played by keys in {turns} turns")
-    drive(page, has("extension_offered"))
-    rest(page)
-    if state(page)["phase"] == "extend":
-        key_turn(page, state(page))
         rest(page)
-        fail_if(state(page)["prompt"] != "over", failures, "keyboard_sitting: the extension prompt was not answered by keys")
-    drive(page, until_over())
-    fail_if(state(page)["prompt"] != "over", failures, "keyboard_sitting: the sitting did not end")
+        if (state(page)["phase"], len(js(page, "log()"))) == mark:
+            stalls += 1
+            if stalls >= 2:
+                fail_if(True, failures, f"keyboard_sitting: stalled in turn {turns}, phase {s['phase']}, legal {s['legal'][:4]}, focus {page.evaluate('document.activeElement && document.activeElement.outerHTML.slice(0, 160)')}")
+                return
+        else:
+            stalls = 0
+    fail_if(state(page)["prompt"] != "over", failures, f"keyboard_sitting: the sitting did not end by keys in {turns} turns")
+    fail_if(state(page)["deals_counted"] < 6, failures, f"keyboard_sitting: only {state(page)['deals_counted']} deals counted")
     page.keyboard.press("?")
     fail_if(not page.locator("[data-dialog=keys]").count(), failures, "keyboard_sitting: ? did not list the keys")
     page.keyboard.press("Escape")
@@ -864,7 +874,11 @@ def check_reduced_motion(browser, failures):
 def check_touch_targets(browser, failures):
     page = open_page(browser, "seed=7&speed=instant&human=1&touch=1", {"width": 768, "height": 1024})
     small = []
-    for b in page.locator("button:visible").all():
+    # The mirror's lists (3.10.1) are a visually hidden 1 px box for the keyboard and a screen reader;
+    # a finger taps the cards on the canvas, so they are exempt (TABLE3D 3.10.4) -- but only while hidden.
+    box = page.locator(".mirror").bounding_box()
+    fail_if(not box or box["width"] > 2 or box["height"] > 2, failures, f"touch_targets: the mirror is not visually hidden ({box})")
+    for b in page.locator("button:visible:not(.mirror button)").all():
         box = b.bounding_box()
         if box and (box["width"] < 44 or box["height"] < 44):
             small.append((b.inner_text()[:20], round(box["width"]), round(box["height"])))
