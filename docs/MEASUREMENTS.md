@@ -38,9 +38,12 @@ finding 6) is that the two cards compared are the argmax of their classes under
 the same worlds, which the standard error does not take into account.
 
 **Positions.** Rung 4 against rung 4 (default budget), sittings of 3 Touren from
-seed 10,000,000 upward, both seats. Every decision with at least two legal
-actions is eligible. Plays: every 7th eligible play, until 600. Bids: every 2nd
-eligible bid, until 200. The count is fixed: 600 plays, 200 bids.
+seed 10,000,000 upward, both seats. Eligible: a card played with at least two
+legal cards (announcements and forced plays are not), or a bid. Plays: every
+7th eligible play, until 600. Bids: every 2nd eligible bid, until 200. The
+count is fixed: 600 plays, 200 bids. (A trial of the program on 40 plays and
+10 bids from seeds 1 and 2, 4 streams, checked that it runs; its numbers are
+not used.)
 
 **Draws.** Each position is judged under 8 independent advisor streams (salt 0
 to 7; salt 0 is the evidence's own stream, `tutor::EVIDENCE_SEED`), with the
