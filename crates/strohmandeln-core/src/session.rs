@@ -7,6 +7,7 @@
 
 use crate::cards::Card;
 use crate::deal::{Deal, DealEnd};
+use crate::dealrec::DealRecord;
 use crate::rng::{purpose, Rng};
 use crate::types::*;
 use serde::{Deserialize, Serialize};
@@ -82,6 +83,11 @@ pub struct Sitting {
     phase: SittingPhase,
     events: Vec<Event>,
     moves: Vec<Move>,
+    /// The deck of the deal in progress, its actions so far, and the record
+    /// of the last deal that ended (`docs/TUTOR.md` 3).
+    deck: Vec<Card>,
+    deal_actions: Vec<Move>,
+    last_deal: Option<DealRecord>,
 }
 
 impl Sitting {
@@ -123,6 +129,9 @@ impl Sitting {
             phase: SittingPhase::Deal,
             events: Vec::new(),
             moves: Vec::new(),
+            deck: Vec::new(),
+            deal_actions: Vec::new(),
+            last_deal: None,
         };
         let mut ev = vec![Event::SittingStart {
             first_dealer: first,
@@ -176,6 +185,12 @@ impl Sitting {
 
     pub fn deal(&self) -> Option<&Deal> {
         self.deal.as_ref()
+    }
+
+    /// The record of the last deal that ended, thrown in or scored: replays
+    /// that deal without the sitting.
+    pub fn last_deal(&self) -> Option<&DealRecord> {
+        self.last_deal.as_ref()
     }
 
     pub fn dealer(&self) -> Seat {
@@ -251,7 +266,18 @@ impl Sitting {
             SittingPhase::Deal => {
                 let deal = self.deal.as_mut().expect("a deal is in progress");
                 deal.apply(seat, action.clone(), &mut ev)?;
+                self.deal_actions.push(Move {
+                    seat,
+                    action: action.clone(),
+                });
                 if let Some(end) = deal.end().cloned() {
+                    self.last_deal = Some(DealRecord {
+                        deck: self.deck.clone(),
+                        dealer: deal.dealer(),
+                        multiplier: deal.multiplier(),
+                        settings: self.settings,
+                        actions: std::mem::take(&mut self.deal_actions),
+                    });
                     self.settle(&end, &mut ev);
                 }
             }
@@ -330,6 +356,8 @@ impl Sitting {
             }
             let void = deal.void_seats();
             if void.is_empty() {
+                self.deck = deck;
+                self.deal_actions.clear();
                 self.deal = Some(deal);
                 return;
             }

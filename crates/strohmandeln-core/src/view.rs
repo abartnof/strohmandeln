@@ -121,6 +121,30 @@ pub fn view(sitting: &Sitting, seat: Seat) -> View {
     }
 }
 
+/// The view of a bare deal for `seat`, without a sitting around it: the
+/// sitting's own fields (Contos, Touren) are zero. What the tutor replays a
+/// recorded deal with (`dealrec`).
+pub fn bare_view(deal: &crate::deal::Deal, seat: Seat) -> View {
+    let to_move = deal.to_move();
+    View {
+        seat,
+        to_move,
+        over: false,
+        contos: [0, 0],
+        balance: 0,
+        pending_doubling: false,
+        touren_total: 0,
+        deals_counted: 0,
+        legal_actions: if to_move == Some(seat) {
+            deal.legal_actions()
+        } else {
+            Vec::new()
+        },
+        deal: Some(deal_view(deal, seat)),
+        events: Vec::new(),
+    }
+}
+
 /// What `seat` knows of `deal`, without a sitting around it (the opponent's
 /// measurements and the hidden-information tests play bare deals).
 pub fn deal_view(deal: &crate::deal::Deal, seat: Seat) -> DealView {
