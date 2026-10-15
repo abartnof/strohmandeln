@@ -715,6 +715,7 @@ async function main() {
     if (wasm.prompt !== "you" || !lit.has(code)) return askRefusal(code);
     if (sel.chosen === code) return commit(code);
     sel = { ...sel, chosen: code, at };
+    ui.live(t("sr.chosen", { card: cardName(code) }));
     focus = null;
     ui.setRefusal(null);
     refresh();
@@ -1101,7 +1102,7 @@ async function main() {
     const dx = e.clientX - dragFrom.x;
     if (dragKind(dx, e.clientY - dragFrom.y) !== "scroll") return;
     const cm = (dx / window.innerWidth) * 34;
-    sel = { ...sel, scroll: clampScroll(dragFrom.scroll - cm) };
+    sel = { ...sel, scroll: clampScroll(dragFrom.scroll - cm), at: null }; // the row moved: the spot is no longer the card's
     director.rearrange();
   });
   // A lit card drawn up toward the trick is played (3.1.2).
@@ -1123,7 +1124,7 @@ async function main() {
     "wheel",
     (e) => {
       if (zonesNow().yourHand.fan) return;
-      sel = { ...sel, scroll: clampScroll(clampScroll(sel.scroll) + e.deltaY * 0.03 + e.deltaX * 0.03) };
+      sel = { ...sel, scroll: clampScroll(clampScroll(sel.scroll) + e.deltaY * 0.03 + e.deltaX * 0.03), at: null };
       director.rearrange();
     },
     { passive: true },
@@ -1161,6 +1162,7 @@ async function main() {
     if (!lit.has(code) || wasm.prompt !== "you") return askRefusal(code);
     if (sel.chosen === code) return commit(code);
     sel = { ...sel, chosen: code, at: null };
+    ui.live(t("sr.chosen", { card: cardName(code) }));
     refresh();
     director.rearrange();
   }
@@ -1224,6 +1226,7 @@ async function main() {
   }
   new ResizeObserver(() => {
     fitStrips();
+    sel = { ...sel, at: null }; // cards move on a resize
     if (S) director.relayout();
   }).observe(document.getElementById("overlay"));
   fitStrips();

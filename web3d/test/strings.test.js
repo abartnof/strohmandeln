@@ -228,3 +228,16 @@ test("the declarer is the Aufnehmer in German, as in the books", () => {
     assert.ok(!/Ich nehme auf/.test(TABLE[k].de), k);
   }
 });
+
+test("choosing a card is announced, with how to play it (there is no Play button)", () => {
+  const main = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
+  assert.equal((main.match(/t\("sr\.chosen"/g) ?? []).length, 2, "tap and keyboard both announce");
+  assert.match(TABLE["sr.chosen"].en, /again.*play/i);
+  assert.match(TABLE["sr.chosen"].de, /nochmals.*ausspielen/i);
+});
+
+test("a scrolled or resized hand forgets where the first click fell", () => {
+  const main = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
+  assert.equal((main.match(/scroll: clampScroll\([^;]*\), at: null/g) ?? []).length, 2, "drag-scroll and wheel");
+  assert.match(main, /sel = \{ \.\.\.sel, at: null \}; \/\/ cards move on a resize/);
+});

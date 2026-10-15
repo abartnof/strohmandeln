@@ -382,6 +382,7 @@
   "sr.live": {"en": "The game", "de": "Das Spiel"},
   "sr.hand.list": {"en": "Your hand", "de": "Ihre Hand"},
   "sr.packets.list": {"en": "Your covers", "de": "Ihre Decken"},
+  "sr.chosen": {"en": "{card} chosen. Press it again to play it, Escape to put it back.", "de": "{card} gewählt. Nochmals drücken zum Ausspielen, Escape zum Zurücklegen."},
   "sr.hand.item": {"en": "{card}, from your hand", "de": "{card}, aus Ihrer Hand"},
   "sr.packet.item.one": {"en": "{card}, cover of packet {packet}, {n} card beneath", "de": "{card}, Decke von Paket {packet}, {n} Karte darunter"},
   "sr.packet.item.other": {"en": "{card}, cover of packet {packet}, {n} cards beneath", "de": "{card}, Decke von Paket {packet}, {n} Karten darunter"},
