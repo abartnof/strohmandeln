@@ -89,11 +89,12 @@ impl Lesion {
     }
 }
 
-/// Rung 4 with one skill knocked out.
+/// Rung 4 with one skill knocked out, or several (M4's pairs): each knock-out
+/// changes what the one before it chose, in order.
 #[derive(Clone, Debug)]
 pub struct Student {
     opp: Opponent,
-    lesion: Lesion,
+    lesions: Vec<Lesion>,
     seed: u64,
 }
 
@@ -101,26 +102,53 @@ impl Student {
     /// A student at the top rung with the opponent's `config` (its budget is
     /// the student's search); `seed` makes its draws and its coin.
     pub fn new(lesion: Lesion, seed: u64, config: Config) -> Student {
+        Student::knocked_out(&[lesion], seed, config)
+    }
+
+    /// A student with several knock-outs, applied in the order given.
+    pub fn knocked_out(lesions: &[Lesion], seed: u64, config: Config) -> Student {
         Student {
             opp: Opponent::new(Level::from_halves(8), seed).with_config(config),
-            lesion,
+            lesions: lesions.to_vec(),
             seed,
         }
     }
 
+    /// The first knock-out.
     pub fn lesion(&self) -> Lesion {
-        self.lesion
+        self.lesions.first().copied().unwrap_or(Lesion::None)
     }
 
-    /// The student's move: rung 4's, changed by the knock-out.
+    pub fn lesions(&self) -> &[Lesion] {
+        &self.lesions
+    }
+
+    /// The student's move: rung 4's, changed by the knock-outs.
     pub fn decide(&self, view: &View) -> Action {
-        let action = self.opp.decide(view);
+        let mut action = self.opp.decide(view);
         let Some(k) = Knowledge::from_view(view) else {
             return action;
         };
-        let mut rng = Rng::stream(self.seed ^ 0x5757_d3e7, view_seed(view));
+        for (i, &lesion) in self.lesions.iter().enumerate() {
+            // the first knock-out keeps the stream it always had
+            let salt = (i as u64).wrapping_mul(0x9e37_79b9_7f4a_7c15);
+            action = self.apply(lesion, salt, view, &k, action);
+        }
+        action
+    }
+
+    /// One knock-out's change to `action`.
+    fn apply(
+        &self,
+        lesion: Lesion,
+        salt: u64,
+        view: &View,
+        k: &Knowledge,
+        action: Action,
+    ) -> Action {
+        let mut rng = Rng::stream(self.seed ^ 0x5757_d3e7 ^ salt, view_seed(view));
         if !k.playing {
-            return match (self.lesion, &action) {
+            return match (lesion, &action) {
                 (Lesion::Bid, Action::Take | Action::Pass) => {
                     if rng.below(2) == 0 {
                         Action::Take
@@ -136,21 +164,21 @@ impl Student {
         let Action::Play { card, .. } = action else {
             return action;
         };
-        let pick = match self.lesion {
+        let pick = match lesion {
             Lesion::Announce => return Action::play(card),
-            Lesion::Worth => self.worth(&k, card),
-            Lesion::Cheap => dearest_of_its_kind(&k, card),
-            Lesion::Off => self.without(&k, card, &mut rng, |c| !k.is_cover(c)),
-            Lesion::Run => random_tarock(&k, card, &mut rng),
-            Lesion::Pagat => coin_pagat(&k, card, &mut rng),
-            Lesion::Void if k.lead.is_none() => self.without(&k, card, &mut rng, |c| {
-                c.suit().is_some_and(|s| shown_void(&k, s))
+            Lesion::Worth => self.worth(k, card),
+            Lesion::Cheap => dearest_of_its_kind(k, card),
+            Lesion::Off => self.without(k, card, &mut rng, |c| !k.is_cover(c)),
+            Lesion::Run => random_tarock(k, card, &mut rng),
+            Lesion::Pagat => coin_pagat(k, card, &mut rng),
+            Lesion::Void if k.lead.is_none() => self.without(k, card, &mut rng, |c| {
+                c.suit().is_some_and(|s| shown_void(k, s))
             }),
-            Lesion::Behind if k.lead.is_none() => self.without(&k, card, &mut rng, |c| {
-                c.suit().is_some_and(|s| is_split(&k, s))
+            Lesion::Behind if k.lead.is_none() => self.without(k, card, &mut rng, |c| {
+                c.suit().is_some_and(|s| is_split(k, s))
             }),
             Lesion::Endgame if k.hidden_total() == 0 => {
-                let mut rng = Rng::stream(self.seed ^ 0x2, view_seed(view));
+                let mut rng = Rng::stream(self.seed ^ 0x2 ^ salt, view_seed(view));
                 match rung2::decide(view, &mut rng) {
                     Action::Play { card, .. } => card,
                     other => return other,
@@ -158,7 +186,7 @@ impl Student {
             }
             _ => card,
         };
-        play_card(&k, pick)
+        play_card(k, pick)
     }
 
     /// Lets the trick go if it can, with the cheapest card that does.

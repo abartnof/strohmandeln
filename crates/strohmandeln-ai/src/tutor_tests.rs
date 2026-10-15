@@ -823,3 +823,33 @@ fn a_bid_estimate_replays_and_differs_by_stream() {
     .unwrap();
     assert!(seen >= 1);
 }
+
+/// M4 knocks out two skills at once to check the prerequisites: a student
+/// with both lesions does what each does, and one lesion alone is the single
+/// student it always was.
+#[test]
+fn a_student_with_two_knock_outs_does_both() {
+    let one = Student::new(Lesion::Off, 77, config());
+    let same = Student::knocked_out(&[Lesion::Off], 77, config());
+    let rec = &one_sitting().whole[0];
+    rec.replay(|_, d, seat, _| {
+        let view = bare_view(d, seat);
+        if view.legal_actions.is_empty() {
+            return;
+        }
+        assert_eq!(one.decide(&view), same.decide(&view));
+    })
+    .unwrap();
+    let both = Student::knocked_out(&[Lesion::Worth, Lesion::Off], 77, config());
+    assert_eq!(both.lesions(), &[Lesion::Worth, Lesion::Off]);
+    let recs = deals_of(0, &mut { both });
+    let t = totals(&recs);
+    let (w, o) = (rate(&t, Skill::Worth), rate(&t, Skill::Off));
+    let whole = &one_sitting().whole_t;
+    assert!(t[Skill::Worth.index()].chances >= 4, "{t:?}");
+    assert!(w + 0.3 <= rate(whole, Skill::Worth), "worth {w}");
+    assert!(
+        o + 0.3 <= rate(whole, Skill::Off) || t[Skill::Off.index()].chances < 2,
+        "off {o}"
+    );
+}
