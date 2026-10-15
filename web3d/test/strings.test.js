@@ -32,6 +32,21 @@ test("the word the score HUD puts before a hand number has no slot", () => {
   assert.deepEqual(slots(TABLE["hud.hand"].de), []);
 });
 
+test("the Kibitzer's tab and mute say what they do, and § 13 is only the flavour", () => {
+  const say = (key, lang, re) => assert.match(TABLE[key][lang], re, `${key} ${lang}`);
+  for (const key of ["tutor.tab", "tutor.mute.label", "tutor.unmute.label"]) {
+    say(key, "en", /tips/i);
+    say(key, "de", /tipps/i);
+  }
+  say("tutor.mute.label", "en", /§ 13/);
+  say("tutor.mute.title", "en", /§ 13: Kibitzer, shut your trap!.*joke/);
+  say("tutor.mute.title", "de", /§ 13: Kiebitz, halt's Maul!.*scherz/i);
+  say("tutor.tab.title", "en", /tips/i);
+  say("tutor.tab.title", "de", /tipps/i);
+  say("hint.muted", "en", /tips.*§ 13/i);
+  say("hint.muted", "de", /tipps.*§ 13/i);
+});
+
 test("keys are namespaced", () => {
   const ok = /^(ui|chip|banner|hud|slate|refusal|hint|explain|review|sr|card|settings|error|tutor|keys)\./;
   for (const key of Object.keys(TABLE)) assert.match(key, ok, key);

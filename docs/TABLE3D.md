@@ -763,11 +763,13 @@ named, and has no portrait: a small speech tab at the player's shoulder
 
 ### 6.1 The mute
 
-**"§ 13: Kiebitz, halt's Maul!"** is the tutor's mute button, as the research
-suggests ([05c headline 1], [PH `kibitz`, `kibitz-mute`]). It is a button in
-the speech tab with the text in German, and in English
-"§ 13: Kibitzer, shut your trap!" in the title/tooltip with the button label
-"§ 13". A tap mutes the tutor for the sitting (hints, tips, pages, review
+The tab reads "Tips (Kibitzer)" / "Tipps (Kiebitz)", with a tooltip saying it
+holds tips and the help pages. The mute button reads "Mute tips · § 13" /
+"Tipps aus · § 13" (while muted, "Tips on" / "Tipps an"), so it is plain what it
+does and "§ 13" is only the flavour. Its tooltip gives the period line and the
+joke in one phrase: "Silence the tips. § 13: Kibitzer, shut your trap! (the old
+Viennese card-table joke)" and, in German, "§ 13: Kiebitz, halt's Maul!" ([05c
+headline 1], [PH `kibitz`, `kibitz-mute`]). A tap mutes the tutor for the sitting (hints, tips, pages, review
 prompt); the tutor answers with `kibitz-mute` once, then says nothing. A tap
 again, or the setting (7.1), un-mutes. **Muted, the tutor does not speak, and
 no tutorial page opens by itself**; the Help pages remain reachable from the
@@ -834,7 +836,7 @@ line; off, the line is empty. The game's result is said whatever.
 
 6.3.4 Hints and explanations are asked only with the cards at rest (the director's
 `rested`), once per position, never in an animation. If the muted tutor is
-asked for a hint, the chip says "§ 13", unmuting only by the human's tap.
+asked for a hint, the chip says "Tips are off (§ 13)" / "Tipps sind aus (§ 13)", unmuting only by the human's tap.
 
 ### 6.4 The end-of-deal review
 

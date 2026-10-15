@@ -94,7 +94,7 @@ export function createUi(root, { t, onAct }) {
     tab.title = t("tutor.tab.title");
     const mute = q(".tutor-mute");
     mute.hidden = !tutor.on;
-    mute.textContent = t("tutor.mute.label");
+    mute.textContent = t(tutor.muted ? "tutor.unmute.label" : "tutor.mute.label");
     mute.title = t(tutor.muted ? "tutor.unmute.title" : "tutor.mute.title");
     mute.setAttribute("aria-label", mute.title);
     mute.setAttribute("aria-pressed", String(tutor.muted));
