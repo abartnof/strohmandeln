@@ -214,6 +214,24 @@ test("table-level moments: slow, a refused card, the opponent's own error, doubl
   assert.deepEqual(t.groups(), ["slow", "slip-yours", "blunder-own", "doubling-lapsed"]);
 });
 
+test("the Kibitzer's lines are his own voice: kibitz and kibitz-mute, whatever the table-talk mode, not in the opponent's name", () => {
+  for (const mode of ["all", "calls", "none"]) {
+    const t = make({ mode });
+    t.feed({ type: "kibitz" }, { type: "kibitz_mute" });
+    assert.deepEqual(t.groups(), ["kibitz", "kibitz-mute"], mode);
+    assert.deepEqual(t.said.map((l) => l.who), ["kibitz", "kibitz"], mode);
+  }
+  const de = make({ lang: "de" });
+  de.feed({ type: "kibitz_mute" });
+  assert.equal(de.said[0].text, words.texts[de.said[0].key].de);
+});
+
+test("the Kibitzer is heard through the quiet of the count", () => {
+  const t = make();
+  t.feed({ type: "count_start" }, { type: "kibitz_mute" });
+  assert.deepEqual(t.groups().at(-1), "kibitz-mute");
+});
+
 test("modes: all, calls only, none", () => {
   const events = [{ type: "bid", seat: O }, { type: "slow", n: 1 }, pulled(O, "Kh"), { type: "pagat_ultimo", seat: O, result: "won" }];
   const all = make();
