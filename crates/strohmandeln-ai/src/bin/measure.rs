@@ -10,7 +10,10 @@ use strohmandeln_ai::know::Knowledge;
 use strohmandeln_ai::measure::{self, Position};
 use strohmandeln_ai::opponent::Config;
 use strohmandeln_ai::rung4::Budget;
+use strohmandeln_ai::stats::{run_sequential, Plan, Verdict};
+use strohmandeln_ai::students::{Lesion, Student};
 use strohmandeln_ai::tutor::{self, Skill, SKILLS};
+use strohmandeln_core::agents::Player;
 use strohmandeln_core::types::{Action, BothPass, Settings, Values};
 
 struct Args {
@@ -42,6 +45,7 @@ fn main() {
         "m1" => m1(&args),
         "m2" => m2(&args),
         "m3" => m3(&args),
+        "m4" => m4(&args),
         "m8" => m8(&args),
         other => panic!("unknown measurement {other}"),
     }
@@ -543,6 +547,158 @@ fn m3(args: &Args) {
             );
         }
         println!();
+    }
+    println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}
+
+/// A player that is rung 4 with `lesions` knocked out (none: whole).
+fn knocked_out_factory(
+    lesions: Vec<Lesion>,
+    salt: u64,
+) -> impl Fn(u64, strohmandeln_core::types::Seat) -> Box<dyn Player> {
+    move |seed, seat| {
+        Box::new(Student::knocked_out(
+            &lesions,
+            seed ^ salt ^ ((seat.index() as u64 + 1) * 0x9e37),
+            Config::default(),
+        ))
+    }
+}
+
+/// One sequential comparison of two students over mirrored pairs; prints each
+/// look and gives the report.
+fn compare(
+    label: &str,
+    a: &[Lesion],
+    b: &[Lesion],
+    plan: Plan,
+    first_seed: u64,
+) -> strohmandeln_ai::stats::Report {
+    let (fa, fb) = (
+        knocked_out_factory(a.to_vec(), 0xA),
+        knocked_out_factory(b.to_vec(), 0xB),
+    );
+    let started = Instant::now();
+    let report = run_sequential(
+        plan,
+        |i| {
+            f64::from(strohmandeln_ai::tournament::mirrored(
+                first_seed + i as u64,
+                Settings::default(),
+                3,
+                &fa,
+                &fb,
+            ))
+        },
+        |look| {
+            println!(
+                "  {label} look {}: {} pairs, {:+.3} +- {:.3} (z {:+.2}, boundary {:.2}), {:.0}s",
+                look.look,
+                look.n,
+                look.mean,
+                look.se,
+                look.z,
+                look.boundary,
+                started.elapsed().as_secs_f64()
+            );
+        },
+    );
+    let l = report.verdict.last();
+    let how = match report.verdict {
+        Verdict::Clear(_) => "CLEAR",
+        Verdict::Negligible(_) => "NEGLIGIBLE",
+        Verdict::Inconclusive(_) => "INCONCLUSIVE",
+    };
+    println!(
+        "{label}: {how} at look {} ({} pairs): {:+.3} +- {:.3}, 95% interval {:+.3} to {:+.3}",
+        l.look,
+        l.n,
+        l.mean,
+        l.se,
+        l.low(),
+        l.high()
+    );
+    report
+}
+
+fn lesion_name(l: Lesion) -> String {
+    format!("{l:?}")
+}
+
+fn m4(args: &Args) {
+    let started = Instant::now();
+    let first = args.num("--seed", 40_000_000);
+    let batch = args.num("--batch", 40) as usize;
+    let single_looks = args.num("--looks", 4) as usize;
+    let pair_looks = args.num("--pair-looks", 3) as usize;
+    let only: Option<String> = args
+        .rest
+        .iter()
+        .position(|a| a == "--only")
+        .and_then(|i| args.rest.get(i + 1).cloned());
+    let plan = |looks| Plan {
+        batch,
+        looks,
+        negligible: 0.5,
+    };
+    let singles = [
+        Lesion::Worth,
+        Lesion::Cheap,
+        Lesion::Off,
+        Lesion::Run,
+        Lesion::Pagat,
+        Lesion::Void,
+        Lesion::Behind,
+        Lesion::Endgame,
+        Lesion::Bid,
+        Lesion::AlwaysPass,
+        Lesion::Announce,
+    ];
+    println!(
+        "M4: batches of {batch}, singles at most {single_looks} looks (boundaries {:?}), pairs at most {pair_looks} looks, negligible +-0.5, first seed {first}",
+        plan(single_looks)
+            .boundaries()
+            .iter()
+            .map(|z| (z * 100.0).round() / 100.0)
+            .collect::<Vec<_>>()
+    );
+    let mut single_effect = std::collections::HashMap::new();
+    if only.as_deref() != Some("pairs") {
+        println!("\nsingle knock-outs against rung 4 whole (Points per mirrored pair, 12 deals):");
+        for &l in &singles {
+            let r = compare(&lesion_name(l), &[l], &[], plan(single_looks), first);
+            single_effect.insert(lesion_name(l), *r.verdict.last());
+        }
+    }
+    if only.as_deref() != Some("singles") {
+        // the bid knock-out with the larger effect stands for `bid`
+        let bid = if only.as_deref() == Some("pairs") {
+            Lesion::AlwaysPass
+        } else {
+            let eff = |l: Lesion| single_effect[&lesion_name(l)].mean;
+            if eff(Lesion::Bid) <= eff(Lesion::AlwaysPass) {
+                Lesion::Bid
+            } else {
+                Lesion::AlwaysPass
+            }
+        };
+        let edges = [
+            (Lesion::Cheap, Lesion::Worth),
+            (Lesion::Off, Lesion::Worth),
+            (Lesion::Run, Lesion::Cheap),
+            (Lesion::Pagat, Lesion::Run),
+            (Lesion::Void, Lesion::Worth),
+            (Lesion::Behind, Lesion::Off),
+            (Lesion::Behind, Lesion::Void),
+            (Lesion::Endgame, Lesion::Cheap),
+            (Lesion::Endgame, Lesion::Void),
+            (bid, Lesion::Worth),
+        ];
+        println!("\nprerequisites: the skill's worth with its prerequisite already knocked out (both out against the prerequisite out alone):");
+        for (skill, need) in edges {
+            let label = format!("{} with {} out", lesion_name(skill), lesion_name(need));
+            compare(&label, &[need, skill], &[need], plan(pair_looks), first);
+        }
     }
     println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
 }

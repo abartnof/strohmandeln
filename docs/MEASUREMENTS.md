@@ -433,3 +433,56 @@ rung-4 opponent with the margin of 6.
 
 **Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m3`
 (defaults: `--sittings 200 --other-sittings 40`; the ladder lines are printed).
+
+## M4 What a skill is worth
+
+### Plan (2026-10-15, before the first batch)
+
+**Question.** What does rung 4 lose when one skill is knocked out, in Points, and
+does a skill's worth depend on the skill the ladder puts before it? This sets
+`PARAMS.min_gain` and `PARAMS.costly_gain` (the cost of a skill the learner may
+call worth working on) and checks the prerequisites of `docs/TUTOR.md` 2.
+
+**Comparison.** A student (`students.rs`, rung 4 with the knock-out) against rung
+4 whole, mirrored pairs from seed 40,000,000 (the same seeds for every
+knock-out), settings default, sittings of 3 Touren. The observation is the
+student's Points less rung 4's over the pair (12 deals each). The effect of a
+knock-out is the mean; its **worth** is minus the effect.
+
+**Knock-outs (eleven).** `Worth`, `Cheap`, `Off`, `Run`, `Pagat` (a coin, halved),
+`Void`, `Behind`, `Endgame`, `Bid` (a coin, halved), `AlwaysPass`, `Announce`
+(`students.rs` and `docs/TUTOR.md` 11). `AlwaysTake` is not run (the plan of
+`docs/TUTOR.md` 11 names the pass and the coin).
+
+**Sequential plan, fixed now.** Batches of 40 pairs, at most 4 looks (160 pairs),
+two-sided O'Brien-Fleming boundaries 4.05, 2.86, 2.34, 2.02 (`stats.rs`), a
+futility stop from the second look if the whole 95% interval lies within +-0.5
+Point a pair (about 0.5 thirds a deal). Stops as soon as a boundary is crossed
+or the effect is negligible; the interval at the last look is reported.
+
+**Prerequisites.** For each edge "A needs B" of `Skill::needs` (ten edges): the
+worth of A with B already knocked out, measured as a student with B and A out
+against a student with B out (`Bid` for the `bid` edge is the knock-out with the
+larger single effect). Batches of 40, at most 3 looks, the same boundaries rule
+(`obf_constant(3)`), the same futility band. An edge **holds** if the worth of A
+with B out is smaller than its worth alone by more than twice the standard error
+of the difference (A matters less once B is gone: its value rests on B). Otherwise
+the edge is recorded as **not shown**, and kept as the logical order of the
+sources (`research/16`): the skills may stand in for one another, as Cassino
+found for its own.
+
+**Decision rules (fixed now).**
+
+- The worth of a skill in thirds a deal = (-effect) / 12 x `THIRDS_PER_POINT`.
+- `min_gain` = half the smallest worth in thirds a deal among the knock-outs that
+  are **clear** with a negative effect (the skill is worth something), rounded
+  to 0.1.
+- `costly_gain` = four times `min_gain` (Cassino's ratio, 2.0 to 0.5), and
+  `costly_chances` = 8 (twice the largest `min_chances` of M3, as Cassino's 8 is
+  twice its 4).
+- A knock-out that is clear with a **positive** effect (the student wins) says
+  the skill, as the advisor defines it, is not worth Points; it is reported, and
+  does not set `min_gain`.
+
+**Stopping.** As above; the maximum is 160 pairs for a single knock-out and 120
+for an edge.
