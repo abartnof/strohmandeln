@@ -786,20 +786,23 @@ pub const LADDER: Ladder = Ladder {
     ],
 };
 
-/// The learner's constants (`docs/TUTOR.md` 5). `discount`: a window of about
-/// a sitting of six deals, 1 - 1/6 (M3). `min_gain` and `costly_gain`: half the
-/// worth of the least valuable skill whose knock-out costs rung 4 clearly
-/// (`announce`, 2.1 thirds a deal), and four times that; `costly_chances` twice
-/// the largest `min_chances` (M4). The quantiles and mastery are **provisional**
-/// until M6.
+/// The learner's constants (`docs/TUTOR.md` 5). `min_gain` and `costly_gain`:
+/// half the worth of the least valuable skill whose knock-out costs rung 4
+/// clearly (`announce`, 2.1 thirds a deal), and four times that;
+/// `costly_chances` twice the largest `min_chances` (M4). The rest are the
+/// grid point of M6 that named the most lesioned students' skills within their
+/// limits while naming no focus for whole rung 4 on more than one deal in ten
+/// of its windows (`docs/MEASUREMENTS.md`): a window of about eight deals
+/// (`discount` 0.88), mastery at 80% of what rung 4 meets, the quantiles 0.2
+/// and 0.8, a loss of mastery 0.2 below it.
 pub const PARAMS: Params = Params {
-    discount: 0.83,
+    discount: 0.88,
     min_gain: 1.1,
     costly_gain: 4.4,
     costly_chances: 8.0,
     lower: 0.2,
-    upper: 0.9,
-    master_of_top: 0.85,
+    upper: 0.8,
+    master_of_top: 0.80,
     lose_below: 0.2,
 };
 

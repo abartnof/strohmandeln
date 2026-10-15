@@ -762,3 +762,59 @@ says which.
 **Stopping.** Descriptive fixed counts, no looks. `lose_below` shows only when
 a mastered skill is lost, which 18 deals seldom do; the grid reports whether it
 moved the scores, and if not the Cassino value 0.2 is kept.
+
+### Result (2026-10-15)
+
+Twelve students, 6 windows of 18 deals each on the tuning seeds (60,000,000) and
+6 on the fresh seeds (65,000,000); 178 seconds to play and judge the 144
+windows, 500 seconds to score the 540 sets of the grid on the tuning windows.
+Descriptive, fixed counts. Detection is the share of the 6 windows in which the
+skill the student lacks was the focus within the limit (6 deals; 12 for
+`Pagat`, `Bid`, `AlwaysPass`; 18 for `Announce`).
+
+| | Sensitivity | Worth | Cheap | Off | Run | Pagat | Endgame | Bid | AlwaysPass | Announce | False focus | Whole mastered |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Provisional constants, tuning | 0.537 | 1.00 | 0.50 | 1.00 | 0.17 | 0.83 | 0.50 | 0.67 | 0.17 | 0.00 | 0.098 | 4.00 |
+| Provisional constants, fresh | 0.537 | 1.00 | 0.83 | 1.00 | 0.33 | 0.50 | 0.33 | 0.67 | 0.17 | 0.00 | 0.059 | 4.33 |
+| **Chosen**, tuning | 0.574 | 1.00 | 0.50 | 1.00 | 0.33 | 0.83 | 0.50 | 0.67 | 0.33 | 0.00 | 0.078 | 6.50 |
+| **Chosen**, fresh | 0.556 | 1.00 | 0.83 | 1.00 | 0.33 | 0.50 | 0.33 | 0.83 | 0.17 | 0.00 | 0.039 | 6.33 |
+
+The chosen set by the rule of the plan: `discount` 0.88, `lower` 0.2, `upper`
+0.8, `master_of_top` 0.80, `lose_below` 0.2 (the three values of `lose_below`
+gave the same scores; the one nearest the provisional constants is kept).
+
+**Acceptance on the fresh windows: not met** (sensitivity 0.556 against 0.7;
+the false-focus rate 0.039 and the 6.33 skills mastered by rung 4 whole meet
+theirs). `worth` and `off` are named in every window within six deals, `cheap`
+and `bid` in 5 of 6, the rest less often: `run` in 2 of 6 (a random tarock lead
+costs only 1.3 Points a pair, M4, and is within the margin of the best often),
+`pagat`, `endgame` and the coin `bid` in 3 to 5 of 6, `AlwaysPass` in 1 of 6
+(it is rarely clearly wrong, M4), and `announce` never (about 1.4 chances in
+18 deals against a bar of 2). The rare skills cannot be certified in one
+window of 18 deals. The set is kept; the finding is that the learner names the
+two skills worth most (`worth`, `off`; also `cheap` and `bid` often), not all
+ten, in a few deals.
+
+The students lacking the praise-only skills: after the last deal of the 6
+tuning windows the focus is none in all of them for `Void` and `Behind`; on
+the fresh windows `Void` is told `off` in 2 and `Behind` `run` in 1 (a class
+knock-out hurts a neighbour: M4's matrix, `docs/TUTOR.md` 11).
+
+The test `a_student_who_lacks_worth_or_off_is_pointed_at_it_and_rung_four_whole_is_not`
+(`tutor_tests.rs`, run by `bin/lesions`, seeds from 66,000,000) holds the two
+reliable detections and the false-focus rate on a third set of windows.
+
+**Constants set** (`tutor::PARAMS`):
+
+| Constant | Was | Now |
+|---|---|---|
+| `discount` | 0.83 (M3) | **0.88** |
+| `lower` | 0.2 | **0.2** |
+| `upper` | 0.9 | **0.8** |
+| `master_of_top` | 0.85 | **0.80** |
+| `lose_below` | 0.2 | **0.2** |
+
+**Command.** `cargo run --release -p strohmandeln-ai --bin measure -- m6
+--windows 6` (defaults: `--seed 60000000 --fresh-seed 65000000 --sittings 3`;
+`--tune-cache FILE` and `--fresh-cache FILE` keep the windows' summaries so the
+grid can be rerun without playing).

@@ -1076,3 +1076,40 @@ fn a_student_with_two_knock_outs_does_both() {
         "off {o}"
     );
 }
+
+/// M6 (`docs/MEASUREMENTS.md`): the learner with `PARAMS` points a student who
+/// lacks `worth` or `off` at it within six deals, in every window of 18 deals
+/// (seeds 66,000,000 and on: neither M6's tuning nor its fresh windows), and
+/// names no focus for whole rung 4 beyond the false-focus rate M6 accepted.
+/// The other lessons are detected less often (the same section); this test
+/// holds what M6 found reliable.
+#[test]
+#[ignore = "lesions, about 100 s: bin/lesions"]
+fn a_student_who_lacks_worth_or_off_is_pointed_at_it_and_rung_four_whole_is_not() {
+    use crate::measure::{focus_trace, mastered_at_end, named_by, student_window};
+    const WINDOWS: u64 = 3;
+    let window =
+        |lesions: &[Lesion], w: u64| student_window(lesions, 66_000_000 + 3 * w, 3, config());
+    for (lesion, skill) in [(Lesion::Worth, Skill::Worth), (Lesion::Off, Skill::Off)] {
+        for w in 0..WINDOWS {
+            let trace = focus_trace(&PARAMS, &window(&[lesion], w));
+            assert!(
+                named_by(&trace, skill.index(), 6),
+                "{lesion:?} window {w}: {trace:?}"
+            );
+        }
+    }
+    let (mut focused, mut deals, mut mastered) = (0, 0, 0);
+    for w in 0..WINDOWS {
+        let summaries = window(&[], w);
+        let trace = focus_trace(&PARAMS, &summaries);
+        focused += trace.iter().skip(1).filter(|f| f.is_some()).count();
+        deals += trace.len() - 1;
+        mastered += mastered_at_end(&PARAMS, &summaries);
+    }
+    assert!(
+        focused as f64 / deals as f64 <= 0.15,
+        "{focused} of {deals} deals name a focus for rung 4 whole"
+    );
+    assert!(mastered >= 3 * WINDOWS as usize, "{mastered} mastered");
+}
