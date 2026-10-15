@@ -654,11 +654,20 @@ def check_tutor_pages(browser, failures):
     page.wait_for_selector("[data-dialog=page]", timeout=180_000)
     fail_if(js(page, "busy()"), failures, "tutor_pages: the first page opened while the cards moved")
     title = page.locator("[data-dialog=page] h2").inner_text()
-    fail_if(title != t("tutor.page.packets"), failures, f"tutor_pages: the first page is {title!r}, not the packets")
-    page.locator("[data-dialog-act=notnow]").click()
+    fail_if(title != t("tutor.page.the-cards"), failures, f"tutor_pages: the first page is {title!r}, not 'The cards'")
+    # Pages due at one rest follow one at a time, in the table's order (TABLE3D 6.2.2): the cards, the packets, bidding.
+    titles = [title]
+    for _ in range(6):
+        fail_if(page.locator("[data-dialog=page]").count() != 1, failures, "tutor_pages: not one page at a time")
+        page.locator("[data-dialog-act=notnow]").click()
+        page.wait_for_timeout(300)
+        if not page.locator("[data-dialog=page]").count():
+            break
+        titles.append(page.locator("[data-dialog=page] h2").inner_text())
     fail_if(page.locator("[data-dialog=page]").count(), failures, "tutor_pages: Not now did not close the page")
+    fail_if(titles != [t("tutor.page.the-cards"), t("tutor.page.packets"), t("tutor.page.bidding")], failures, f"tutor_pages: the pages came as {titles}, not the cards, the packets, bidding")
     seen = js(page, "prefs()")["seen"]
-    fail_if("packets" not in seen, failures, f"tutor_pages: Not now did not mark the page seen ({seen})")
+    fail_if(not {"the-cards", "packets", "bidding"} <= set(seen), failures, f"tutor_pages: Not now did not mark the pages seen ({seen})")
     rest(page)
     page.keyboard.press("m")
     fail_if(not js(page, "prefs()")["muted"], failures, "tutor_pages: M did not mute the Kibitzer")
