@@ -322,7 +322,7 @@ Observations: (1) The only elements all three modern sources agree on are 54 car
 
 ## 6. Sources (all read in this session)
 
-Local paths relative to `/home/andrewbartnof/strohmandeln/research/sources/03/`.
+Local paths relative to `research/sources/03/`.
 
 **Books (ÖNB "ABO", via IIIF API `iiif.onb.ac.at/presentation/ABO/+Z.../manifest` and `api.onb.ac.at/iiif/presentation/v3/manifest/ABO_+Z...`; viewer `https://viewer.onb.ac.at/ABO_+Z...`; permalink `http://data.onb.ac.at/ABO/+Z...`; each directory holds `meta.json`, `ocr.txt` with `=====PAGE n=====` scan-image markers; selected page images as `.jpg`)**
 - S1 Cäsar, Julius: *Neuester Spielalmanach für das Jahr 1800 ...*. Berlin 1800. ÖNB +Z200861608. pp.135-138 (Taroc en trois), 146-147 (Taroc en deux). Dir `abo/caesar1800`.
