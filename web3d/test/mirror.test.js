@@ -136,3 +136,12 @@ test("focusItem puts the focus on an item", () => {
   m.focusItem("packets", 1);
   assert.equal(buttonsOf(m, "packets")[1].focused, true);
 });
+
+test("a focus index past the end of a shrunken list leaves the list a Tab stop", () => {
+  const { m } = build();
+  m.set({ hand: HAND, packets: [], focus: { row: "hand", index: 2 } });
+  m.set({ hand: HAND.slice(0, 2), packets: [], focus: { row: "hand", index: 2 } });
+  const stops = buttonsOf(m, "hand").filter((b) => b.getAttribute("tabindex") === "0");
+  assert.equal(stops.length, 1, "one Tab stop");
+  assert.equal(stops[0].getAttribute("data-i"), "1", "the last card, nearest the focus");
+});

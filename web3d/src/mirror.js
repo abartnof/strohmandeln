@@ -53,7 +53,7 @@ export function createMirror(doc, { t, tn, cardName, onFocus, onMove, onPick, on
   // The Tab stop of each list: the card in focus, else the first lit one.
   function setStops(rows, focus) {
     for (const row of Object.keys(lists)) {
-      const mine = focus && focus.row === row ? focus.index : -1;
+      const mine = focus && focus.row === row ? Math.min(focus.index, buttons[row].length - 1) : -1; // the list may have shrunk under the focus
       const stop = mine >= 0 ? mine : rows[row].findIndex((x) => x.lit);
       buttons[row].forEach((b, i) => b.setAttribute("tabindex", i === stop ? "0" : "-1"));
     }
@@ -72,7 +72,7 @@ export function createMirror(doc, { t, tn, cardName, onFocus, onMove, onPick, on
       buttons[row] = items.map((item, i) => {
         const b = h(doc, "button", { type: "button", "data-i": String(i), "data-code": item.code, "aria-disabled": item.lit ? null : "true", "aria-pressed": item.chosen ? "true" : null }, labelOf(row, item));
         b.addEventListener("click", () => onPick?.(row, i));
-        if (inside && focus && focus.row === row && focus.index === i) target = b;
+        if (inside && focus && focus.row === row && Math.min(focus.index, items.length - 1) === i) target = b;
         return b;
       });
       ul.replaceChildren(...buttons[row].map((b) => h(doc, "li", {}, b)));
