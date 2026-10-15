@@ -108,9 +108,9 @@ It comes from a fresh sample and is given only when it agrees with the choice
 
 ## Review keys
 
-The end-of-deal review (`strohmandeln_review`, `docs/PROTOCOL.md`) is up to
-three bullets, each `{lead, key, params}`: `lead` is `count`, `decided`,
-`try` or `sitting`. Cards in `params` are codes and `thirds` are integer thirds; the table
+The end-of-deal review (`strohmandeln_review`, `docs/PROTOCOL.md`) is two
+bullets, each `{lead, key, params}`: `lead` is `count`, `decided` or `sitting`.
+What to work on is the tutor's brief ("Tutor keys"), not the review. Cards in `params` are codes and `thirds` are integer thirds; the table
 names the cards, formats the thirds (107 is "35⅔") and the honour
 (`card.honour.*`). Each text is the English and German the table shows.
 
@@ -126,18 +126,15 @@ names the cards, formats the thirds (107 is "35⅔") and the honour
 | `mond-lost` | `trick` | In trick {trick} your Mond fell to the Sküs. | Im {trick}. Stich fiel Ihr Mond dem Sküs zu. | RULES 1.3, 1.4 |
 | `trick-lost-rich` | `trick`, `mine`, `theirs` (cards), `thirds` | Trick {trick} was the rich one you lost: {mine} against {theirs}, {thirds} between them. | Der {trick}. Stich war der reiche, den Sie abgaben: {mine} gegen {theirs}, zusammen {thirds}. | RULES 8.1 |
 | `trick-won-rich` | `trick`, `mine`, `theirs` (cards), `thirds` | Trick {trick} was your best: {mine} beat {theirs}, {thirds} between them. | Der {trick}. Stich war Ihr bester: {mine} schlug {theirs}, zusammen {thirds}. | RULES 8.1 |
+| `valat-you` | none | You took every trick: a Valat. | Sie nahmen alle Stiche: ein Valat. | RULES 10.1 |
+| `valat-opp` | none | Your opponent took every trick: a Valat. | Ihr Gegner nahm alle Stiche: ein Valat. | RULES 10.1 |
 | `level` | none | Nothing stood out: the cards ran evenly. | Nichts fiel auf: die Karten liefen gleichmäßig. | |
-| `try-pagat` | none | If I may: the Pagat is the lowest tarock; kept for the last trick it wins or loses a Point. | Wenn ich mir erlauben darf: der Pagat ist das niedrigste Tarock; für den letzten Stich aufgehoben gewinnt oder verliert er einen Point. | RULES 1.4, 5.3, 12.2 |
-| `try-announce` | `honour` | If I may: you held {honour} and did not announce it; announced, the honour is paid. | Wenn ich mir erlauben darf: Sie hielten {honour} und sagten nicht an; angesagt, wird der Honneur bezahlt. | RULES 11.1, 11.5 |
-| `try-count` | none | If I may: count the tarocks out as they fall; there are 22, the Sküs among them. | Wenn ich mir erlauben darf: Zählen Sie die Tarock mit, die fallen; es sind 22, der Sküs darunter. | RULES 1.3, 13.6 |
 
-The `decided` bullet is the first of: the Pagat ultimo, a Mond caught by the
-Sküs, the richest trick the human lost (from 23 thirds, a king and a queen),
-the richest trick the human won, else `level`. The `try` bullet is the first
-of: the Pagat led before the last trick, an honour held in the hand and not
-announced, else `try-count`. For a sitting, `sitting-tally` replaces `count`,
-the `decided` bullet is that of the deal that went worst (else best) and
-carries a `deal` number, and the `try` bullet is the most frequent one.
+The `decided` bullet is the first of: a Valat, the Pagat ultimo, a Mond caught
+by the Sküs, the richest trick the human lost (from 23 thirds, a king and a
+queen), the richest trick the human won, else `level`. For a sitting,
+`sitting-tally` replaces `count` and the `decided` bullet is that of the deal
+that went worst (else best); it carries a `deal` number.
 
 ## Explanation keys
 

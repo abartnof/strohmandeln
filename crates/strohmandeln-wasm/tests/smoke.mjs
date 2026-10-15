@@ -194,8 +194,8 @@ for (let n = 0; n < 60; n++) {
 assert.ok(hinted > 10, "several hints were taken");
 console.log(`${hinted} hints, each legal and playable (slowest ${worst.toFixed(0)} ms)`);
 
-// 5. The review: null before a deal is scored, then up to three bullets of
-//    keys with parameters, and three for the sitting at its end.
+// 5. The review: null before a deal is scored, then two bullets of keys with
+//    parameters, and two for the sitting at its end.
 create({ seed: 91, touren: 3, human: 1 });
 w.strohmandeln_review();
 assert.equal(out().review, null);
@@ -212,14 +212,14 @@ for (let n = 0; n < 4000; n++) {
   if (out().events?.some((e) => e.type === "game_scored")) {
     w.strohmandeln_review();
     const r = out().review;
-    assert.ok(r.bullets.length >= 2 && r.bullets.length <= 3, JSON.stringify(r));
+    assert.equal(r.bullets.length, 2, JSON.stringify(r));
     assert.equal(r.bullets[0].lead, "count");
     for (const b of r.bullets) assert.match(b.key, /^[a-z]+(-[a-z]+)*$/);
     reviewed++;
   }
 }
 w.strohmandeln_review_sitting();
-assert.equal(out().review.bullets.length, 3);
+assert.equal(out().review.bullets.length, 2);
 assert.equal(out().review.bullets[0].key, "sitting-tally");
 assert.ok(reviewed >= 3, "every scored deal had a review");
 console.log(`${reviewed} deal reviews and a sitting review`);

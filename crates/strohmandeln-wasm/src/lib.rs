@@ -1358,7 +1358,7 @@ mod tests {
             play_until(&mut h, |_| false);
             h.show(|t| t.review(true));
             let r = out(&h);
-            assert_eq!(r["review"]["bullets"].as_array().unwrap().len(), 3, "{r}");
+            assert_eq!(r["review"]["bullets"].as_array().unwrap().len(), 2, "{r}");
             assert_eq!(r["review"]["bullets"][0]["key"], "sitting-tally");
         }
     }

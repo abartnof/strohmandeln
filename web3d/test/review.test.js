@@ -14,7 +14,7 @@ const fmt = (lang) => {
 const bullets = [
   { lead: "count", key: "count", params: { mine: 120, theirs: 90 } },
   { lead: "decided", key: "trick-lost-rich", params: { trick: 4, mine: "Qs", theirs: "Ks", thirds: 23 } },
-  { lead: "try", key: "try-announce", params: { honour: "trull" } },
+  { lead: "decided", key: "valat-opp", params: {} },
 ];
 
 test("the count is written in points and thirds", () => {
@@ -25,8 +25,8 @@ test("the count is written in points and thirds", () => {
 test("cards are named in the language, the honour too", () => {
   assert.equal(words(bullets[1], fmt("en")), "Trick 4 was the rich one you lost: queen of spades against king of spades, 7⅔ between them.");
   assert.equal(words(bullets[1], fmt("de")), "Der 4. Stich war der reiche, den Sie abgaben: Pik-Dame gegen Pik-König, zusammen 7⅔.");
-  assert.match(words(bullets[2], fmt("en")), /you held the Trull and did not announce it/);
-  assert.match(words(bullets[2], fmt("de")), /Sie hielten die Troule und sagten nicht an/);
+  assert.equal(words(bullets[2], fmt("en")), "Your opponent took every trick: a Valat.");
+  assert.equal(words(bullets[2], fmt("de")), "Ihr Gegner nahm alle Stiche: ein Valat.");
 });
 
 test("the sitting's net is signed", () => {
@@ -37,7 +37,7 @@ test("the sitting's net is signed", () => {
 test("a review is a title, up to three bullets with a lead each, and the method", () => {
   const r = reviewBlocks({ deal: 3, bullets }, fmt("en"));
   assert.equal(r.title, "How the deal went");
-  assert.deepEqual(r.bullets.map((b) => b.lead), ["The count.", "Where it was decided.", "One thing to try."]);
+  assert.deepEqual(r.bullets.map((b) => b.lead), ["The count.", "Where it was decided.", "Where it was decided."]);
   assert.match(r.method, /thirds/);
   assert.equal(r.how, "How is this worked out?");
   assert.equal(reviewBlocks({ bullets }, fmt("de"), { whole: true }).title, "Wie der Abend verlief");

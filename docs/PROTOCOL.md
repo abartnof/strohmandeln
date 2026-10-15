@@ -366,18 +366,18 @@ the opponent's included, is in that log. Asking changes nothing.
 ```json
 {"protocol": 1, "review": {"deal": 3, "bullets": [
   {"lead": "count", "key": "count", "params": {"mine": 120, "theirs": 90}},
-  {"lead": "decided", "key": "trick-lost-rich", "params": {"mine": "Qs", "theirs": "Ks", "thirds": 23, "trick": 4}},
-  {"lead": "try", "key": "try-announce", "params": {"honour": "trull"}}]}}
+  {"lead": "decided", "key": "trick-lost-rich", "params": {"mine": "Qs", "theirs": "Ks", "thirds": 23, "trick": 4}}]}}
 ```
 
 `review` is `null` when no deal has been scored (a void deal and a throw-in are
 not scored). `deal` is the deal's number, `0` for the sitting. A bullet's `lead`
-is `count`, `decided` or `try`; `key` and `params` are those of the "Review
+is `count` or `decided` (`sitting` for the sitting's tally); `key` and `params` are those of the "Review
 keys" table of `docs/MESSAGES.md`, which gives each key's English and German
 text and the rule it rests on. Thirds are integers (107 is 35⅔); cards are
-codes. The sitting's review has three bullets: `sitting-tally`, the `decided`
-bullet of the deal that went worst (else best), with its `deal`, and the most
-frequent `try`. The review is a function of the events (`strohmandeln_ai::review`).
+codes. The sitting's review has two bullets: `sitting-tally` and the `decided`
+bullet of the deal that went worst (else best), with its `deal`. The review is a
+function of the events (`strohmandeln_ai::review`); what to work on is the
+tutor's brief ("The tutor").
 
 `strohmandeln_explain` answers the line under the prompt after a trick (the
 setting "Explanations", `docs/TABLE3D.md` 6.3.3): one bullet

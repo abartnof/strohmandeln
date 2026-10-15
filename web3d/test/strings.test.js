@@ -213,14 +213,14 @@ const messageRows = (from, to) => {
 
 test("every review key of docs/MESSAGES.md has a review.say.* string with the text the doc gives", () => {
   const rows = messageRows("\n## Review keys", "\n## Explanation keys");
-  assert.equal(rows.length, 14);
+  assert.equal(rows.length, 13);
   for (const r of rows) {
     const s = TABLE["review.say." + r.key];
     assert.ok(s, r.key);
     assert.equal(s.en, r.en, r.key);
     assert.equal(s.de, r.de, r.key);
   }
-  for (const lead of ["count", "decided", "try", "sitting"]) assert.ok(TABLE["review.lead." + lead], lead);
+  for (const lead of ["count", "decided", "sitting"]) assert.ok(TABLE["review.lead." + lead], lead);
 });
 
 test("every explanation key of docs/MESSAGES.md has an explain.* string with the text the doc gives", () => {
