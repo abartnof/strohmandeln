@@ -10,8 +10,8 @@ use strohmandeln_ai::know::Knowledge;
 use strohmandeln_ai::measure::{self, Position};
 use strohmandeln_ai::opponent::Config;
 use strohmandeln_ai::rung4::Budget;
-use strohmandeln_ai::tutor::Skill;
-use strohmandeln_core::types::Action;
+use strohmandeln_ai::tutor::{self, Skill, SKILLS};
+use strohmandeln_core::types::{Action, BothPass, Settings, Values};
 
 struct Args {
     rest: Vec<String>,
@@ -41,6 +41,7 @@ fn main() {
     match which.as_str() {
         "m1" => m1(&args),
         "m2" => m2(&args),
+        "m3" => m3(&args),
         "m8" => m8(&args),
         other => panic!("unknown measurement {other}"),
     }
@@ -371,5 +372,163 @@ fn m8(args: &Args) {
         "SPLIT_MIN_POINTS by the rule: {:?}",
         measure::min_points_rule(&classes, 30)
     );
+    println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
+}
+
+/// Per skill: the chances, met and missed thirds of each sitting's deals for
+/// the player, and the deals.
+struct Sittings {
+    chances: Vec<[f64; SKILLS]>,
+    met: Vec<[f64; SKILLS]>,
+    missed: Vec<[f64; SKILLS]>,
+    deals: usize,
+}
+
+fn player_sittings(first: u64, count: u64, settings: Settings) -> Sittings {
+    let mut out = Sittings {
+        chances: Vec::new(),
+        met: Vec::new(),
+        missed: Vec::new(),
+        deals: 0,
+    };
+    for i in 0..count {
+        let (seat, recs) =
+            measure::player_sitting(first + i, settings, i % 2 == 0, Config::default());
+        let (mut c, mut m, mut x) = ([0.0; SKILLS], [0.0; SKILLS], [0.0; SKILLS]);
+        for rec in &recs {
+            let e = tutor::evidence(rec, seat, &[], Budget::default()).expect("a played deal");
+            for (s, t) in e.summary.tallies.iter().enumerate() {
+                c[s] += f64::from(t.chances);
+                m[s] += f64::from(t.met);
+                x[s] += t.missed;
+            }
+            out.deals += 1;
+        }
+        out.chances.push(c);
+        out.met.push(m);
+        out.missed.push(x);
+    }
+    out
+}
+
+impl Sittings {
+    fn column(v: &[[f64; SKILLS]], s: usize) -> Vec<f64> {
+        v.iter().map(|r| r[s]).collect()
+    }
+
+    /// Met rate with its cluster error, chances a deal, missed thirds a deal.
+    fn skill(&self, s: usize) -> (f64, f64, f64, f64) {
+        let (c, m) = (Self::column(&self.chances, s), Self::column(&self.met, s));
+        let (rate, se) = measure::ratio_estimate(&m, &c);
+        let deals = self.deals as f64;
+        (
+            rate,
+            se,
+            c.iter().sum::<f64>() / deals,
+            Self::column(&self.missed, s).iter().sum::<f64>() / deals,
+        )
+    }
+}
+
+fn m3(args: &Args) {
+    let started = Instant::now();
+    let default_n = args.num("--sittings", 200);
+    let other_n = args.num("--other-sittings", 40);
+    let sets: [(&str, u64, Settings, u64); 5] = [
+        ("default", 30_000_000, Settings::default(), default_n),
+        (
+            "values 1/2/3",
+            31_000_000,
+            Settings {
+                values: Values::V123,
+                ..Settings::default()
+            },
+            other_n,
+        ),
+        (
+            "values 1/2/4",
+            32_000_000,
+            Settings {
+                values: Values::V124,
+                ..Settings::default()
+            },
+            other_n,
+        ),
+        (
+            "both pass: throw in",
+            33_000_000,
+            Settings {
+                both_pass: BothPass::ThrowIn,
+                ..Settings::default()
+            },
+            other_n,
+        ),
+        (
+            "ultimo 2",
+            34_000_000,
+            Settings {
+                ultimo: 2,
+                ..Settings::default()
+            },
+            other_n,
+        ),
+    ];
+    let mut results = Vec::new();
+    for (name, seed, settings, n) in sets {
+        let r = player_sittings(seed, n, settings);
+        println!(
+            "{name}: {n} sittings, {} deals (seeds {seed}..{}), {:.0}s",
+            r.deals,
+            seed + n - 1,
+            started.elapsed().as_secs_f64()
+        );
+        results.push((name, r));
+    }
+    println!("\ndefault rule set: rung 4 against rung 3, evidence for rung 4");
+    println!(
+        "{:8} {:>8} {:>7} {:>8} {:>6} {:>9} {:>10} {:>6}",
+        "skill", "chances", "met", "rate", "se", "per deal", "lost/deal", "minCh"
+    );
+    let base = &results[0].1;
+    for sk in Skill::ALL {
+        let s = sk.index();
+        let (rate, se, per, lost) = base.skill(s);
+        let c: f64 = Sittings::column(&base.chances, s).iter().sum();
+        let m: f64 = Sittings::column(&base.met, s).iter().sum();
+        println!(
+            "{:8} {:>8} {:>7} {:>8.3} {:>6.3} {:>9.3} {:>10.3} {:>6}",
+            sk.slug(),
+            c,
+            m,
+            rate,
+            se,
+            per,
+            lost,
+            measure::min_chances_rule(per)
+        );
+    }
+    println!("\nthe met rate (chances) under each rule set; * marks a difference of more than twice the larger error from the default:");
+    print!("{:8}", "skill");
+    for (name, _) in &results {
+        print!(" {:>22}", name);
+    }
+    println!();
+    for sk in Skill::ALL {
+        let s = sk.index();
+        let (r0, e0, _, _) = base.skill(s);
+        print!("{:8}", sk.slug());
+        for (i, (_, r)) in results.iter().enumerate() {
+            let (rate, se, _, _) = r.skill(s);
+            let c: f64 = Sittings::column(&r.chances, s).iter().sum();
+            let differs = i > 0 && (rate - r0).abs() > 2.0 * se.max(e0);
+            print!(
+                " {:>14.3} ({:>4}){}",
+                rate,
+                c,
+                if differs { "*" } else { " " }
+            );
+        }
+        println!();
+    }
     println!("\ntotal {:.0}s", started.elapsed().as_secs_f64());
 }

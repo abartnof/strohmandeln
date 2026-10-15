@@ -603,6 +603,55 @@ pub fn min_points_rule(classes: &[Bin], min_rows: usize) -> Option<u32> {
     None
 }
 
+// ---- M3: what the strongest rung meets ---------------------------------------
+
+/// A ratio of sums over clusters (met over chances, by sitting) with the
+/// cluster standard error of the ratio estimator: the sum over clusters of
+/// `(num - ratio * den)^2`, over the squared total of `den`, times G / (G - 1).
+pub fn ratio_estimate(num: &[f64], den: &[f64]) -> (f64, f64) {
+    assert_eq!(num.len(), den.len());
+    let (n, d): (f64, f64) = (num.iter().sum(), den.iter().sum());
+    if d == 0.0 {
+        return (f64::NAN, f64::NAN);
+    }
+    let r = n / d;
+    let g = num.len() as f64;
+    let var = num
+        .iter()
+        .zip(den)
+        .map(|(a, b)| (a - r * b).powi(2))
+        .sum::<f64>()
+        / (d * d)
+        * g
+        / (g - 1.0).max(1.0);
+    (r, var.sqrt())
+}
+
+/// `min_chances` by the rule of M3: the chances a skill offers in six deals,
+/// halved and rounded down, at least 2 and at most 4.
+pub fn min_chances_rule(chances_per_deal: f64) -> f64 {
+    (chances_per_deal * 6.0 / 2.0).floor().clamp(2.0, 4.0)
+}
+
+/// The deals of one sitting of 3 Touren between rung 4 (the player, in seat A
+/// when `player_a`) and rung 3, under `settings`, and the player's seat.
+pub fn player_sitting(
+    seed: u64,
+    settings: Settings,
+    player_a: bool,
+    config: Config,
+) -> (strohmandeln_core::types::Seat, Vec<DealRecord>) {
+    use strohmandeln_core::types::Seat;
+    let mut four = Opponent::new(Level::from_halves(8), seed ^ 0xA).with_config(config);
+    let mut three = Opponent::new(Level::from_halves(6), seed ^ 0xB).with_config(config);
+    let records = if player_a {
+        record_sitting(seed, settings, 3, &mut [&mut four, &mut three])
+    } else {
+        record_sitting(seed, settings, 3, &mut [&mut three, &mut four])
+    };
+    (if player_a { Seat::A } else { Seat::B }, records)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -923,5 +972,33 @@ mod tests {
         // a follower has no lead to compare
         let f = know(&["Kh", "Qh"], ["", "", ""], ["T2", "", ""], &[], Some("3h"));
         assert!(lead_rows(&f, c("Kh"), &advice, 0).is_empty());
+    }
+
+    #[test]
+    fn the_ratio_estimator_has_its_hand_computed_error() {
+        // clusters (met, chances): (3, 4), (1, 4): ratio 0.5; residuals
+        // 3 - 2 = 1 and 1 - 2 = -1, var = (1 + 1) / 64 * 2 = 1/16
+        let (r, se) = ratio_estimate(&[3.0, 1.0], &[4.0, 4.0]);
+        assert_eq!(r, 0.5);
+        assert!((se - 0.25).abs() < 1e-12, "{se}");
+        assert!(ratio_estimate(&[0.0], &[0.0]).0.is_nan());
+    }
+
+    #[test]
+    fn the_least_chances_follow_the_chances_in_a_sitting() {
+        assert_eq!(min_chances_rule(2.5), 4.0);
+        assert_eq!(min_chances_rule(0.5), 2.0);
+        assert_eq!(min_chances_rule(1.0), 3.0);
+        assert_eq!(min_chances_rule(0.11), 2.0);
+        assert_eq!(min_chances_rule(5.0), 4.0);
+    }
+
+    #[test]
+    fn the_player_sits_in_the_seat_asked_and_the_evidence_is_for_that_seat() {
+        use strohmandeln_core::types::Seat;
+        let (seat, recs) = player_sitting(30_000_000, Settings::default(), false, tiny());
+        assert_eq!((seat, recs.len()), (Seat::B, 6));
+        let (seat, _) = player_sitting(30_000_000, Settings::default(), true, tiny());
+        assert_eq!(seat, Seat::A);
     }
 }
