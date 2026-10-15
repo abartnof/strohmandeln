@@ -8,7 +8,7 @@ import { fakeRoot } from "./support/fakedom.js";
 
 const TABLE = JSON.parse(readFileSync(new URL("../strings.json", import.meta.url), "utf8"));
 
-const SPEC_ROWS = ["both_pass", "values", "ultimo", "touren", "skill", "speed", "talk", "tutor", "hints", "explain", "announceAuto", "slateAuto", "faces", "leftHanded", "reducedMotion", "lang", "surface"];
+const SPEC_ROWS = ["both_pass", "values", "ultimo", "touren", "skill", "speed", "talk", "tutor", "hints", "tracker", "explain", "announceAuto", "slateAuto", "faces", "leftHanded", "reducedMotion", "lang", "surface"];
 
 test("every setting of spec 7.1 has a row, and every default is an option", () => {
   assert.deepEqual(ROWS.map((r) => r.key).sort(), [...SPEC_ROWS].sort());
@@ -37,7 +37,7 @@ test("every label and note key exists in both languages", () => {
 test("the three rules and the length apply from the next sitting; the rest now", () => {
   const rows = Object.fromEntries(ROWS.map((r) => [r.key, r.applies]));
   for (const k of ["both_pass", "values", "ultimo", "touren", "skill"]) assert.equal(rows[k], "next", k);
-  for (const k of ["speed", "talk", "tutor", "hints", "explain", "announceAuto", "slateAuto", "faces", "leftHanded", "reducedMotion", "lang", "surface"]) assert.equal(rows[k], "now", k);
+  for (const k of ["speed", "talk", "tutor", "hints", "tracker", "explain", "announceAuto", "slateAuto", "faces", "leftHanded", "reducedMotion", "lang", "surface"]) assert.equal(rows[k], "now", k);
 });
 
 test("in a sitting the next-sitting rows are locked", () => {
