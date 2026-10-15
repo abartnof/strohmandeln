@@ -377,7 +377,7 @@ impl Table {
         let Some(legal) = self.my_hint_legal() else {
             return json!({
                 "protocol": PROTOCOL,
-                "action": null,
+                "deal_action": null,
                 "hint": null,
                 "reason": "not-your-turn",
                 "params": {},
@@ -412,7 +412,7 @@ impl Table {
         });
         json!({
             "protocol": PROTOCOL,
-            "action": self.sitting.deal_action_count(),
+            "deal_action": self.sitting.deal_action_count(),
             "hint": action,
             "reason": h.key,
             "params": params,
@@ -750,8 +750,9 @@ pub mod ffi {
     }
 
     /// Renders the tutor's hint for the human's move
-    /// (`{"hint": <a legal action>, "reason": <key>, "params": {..}, "rule":
-    /// <key or null>, "odds": <object or null>}`).
+    /// (`{"deal_action": <the number of the action it is for>, "hint": <a
+    /// legal action>, "reason": <key>, "params": {..}, "rule": <key or null>,
+    /// "odds": <object or null>}`).
     #[no_mangle]
     pub extern "C" fn strohmandeln_hint() {
         HOST.with(|h| h.borrow_mut().show(|t| t.hint()))
@@ -829,7 +830,7 @@ mod tests {
             if s["prompt"] == "you" {
                 h.show(|t| t.hint());
                 let r = out(&h);
-                assert_eq!(r["action"], s["deal_actions"], "{r}");
+                assert_eq!(r["deal_action"], s["deal_actions"], "{r}");
                 let a = r["hint"].to_string();
                 assert_eq!(h.send(&a), 1);
                 assert_eq!(out(&h)["state"]["deal_actions"], seen + 1);
@@ -847,7 +848,7 @@ mod tests {
         h.show(|t| t.hint());
         let r = out(&h);
         if r["reason"] == "not-your-turn" {
-            assert_eq!(r["action"], Value::Null);
+            assert_eq!(r["deal_action"], Value::Null);
         }
     }
 

@@ -97,7 +97,7 @@ are not evidence: teaching would otherwise spoil the measuring. The table keeps
 the list for the deal as action numbers, counted from 0 over **both seats'**
 actions of the deal (bids and announcements included), and stores it with the
 record; the engine takes it as an input. The number is the engine's, not the
-table's count: `state.deal_actions` and the hint's `action`
+table's count: `state.deal_actions` and the hint's `deal_action`
 (`docs/PROTOCOL.md`). An assisted `Announce` also covers the actions of the same
 turn up to the card played (a hint is for the position, and the human may
 announce before the card it was about). Asking for
