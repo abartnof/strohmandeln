@@ -1,0 +1,165 @@
+//! The summary: counts, text form, versions. Ported from Cassino's learner
+//! tests (`a_summary_counts_chances_met_and_the_gaps_of_those_missed`,
+//! `a_summary_round_trips_through_its_text`, `a_stale_summary_is_not_counted`)
+//! onto indexes and a ladder.
+
+mod common;
+
+use common::*;
+use kit_learner::{stale, Chance, Ladder, Params, SkillSpec, Summary, Tally};
+
+#[test]
+fn a_summary_counts_chances_met_and_the_gaps_of_those_missed() {
+    let chance = |skill, met, gap| Chance { skill, met, gap };
+    let s = Summary::from_chances(
+        &LADDER,
+        &[
+            chance(PAIRS, true, 1.0),
+            chance(PAIRS, false, 0.75),
+            chance(PAIRS, false, 0.5),
+            chance(BUILDING, true, 2.0),
+        ],
+    );
+    assert_eq!(
+        s.of(PAIRS),
+        Tally {
+            chances: 3,
+            met: 1,
+            missed: 1.25
+        }
+    );
+    assert_eq!(s.of(BUILDING).missed, 0.0);
+    assert_eq!(s.of(SUMS), Tally::default());
+    assert!(s.is_current(&LADDER));
+    assert_eq!(s.tallies.len(), 8);
+}
+
+#[test]
+fn a_summary_round_trips_through_its_text() {
+    let s = summary(&[
+        (PAIRS, 12, 11, 0.35),
+        (BUILDING, 3, 0, 4.0 / 3.0),
+        (TRAILING, 7, 7, 0.0),
+    ]);
+    let text = s.to_text(&LADDER);
+    assert!(
+        text.starts_with("cassino evidence v1\npairs 12 11 0.35\n"),
+        "{text}"
+    );
+    assert_eq!(Summary::parse(&LADDER, &text), Ok(s.clone()));
+    assert_eq!(Summary::parse(&LADDER, &format!("{text}\n")), Ok(s));
+    for bad in [
+        "",
+        "cassino evidence v1",
+        "cassino evidence v1\npairs 1 2 0\n",
+        &text.replace("pairs", "pears"),
+        &text.replace("12 11", "x 11"),
+        &text.replace("0.35", "-1"),
+        &text.replace("cassino", "piquet"),
+        &format!("{text}\nextra 1 1 0"),
+    ] {
+        assert!(Summary::parse(&LADDER, bad).is_err(), "{bad}");
+    }
+}
+
+#[test]
+fn a_stale_summary_is_listed() {
+    let mut old = summary(&[(PAIRS, 20, 0, 40.0)]);
+    old.version += 1;
+    let fresh = summary(&[]);
+    assert!(!old.is_current(&LADDER));
+    assert_eq!(stale(&LADDER, &[fresh.clone(), old, fresh.clone()]), [1]);
+    assert!(stale(&LADDER, &[]).is_empty());
+    // A summary of another ladder's size is as stale as one of another version.
+    let mut short = fresh.clone();
+    short.tallies.pop();
+    assert_eq!(stale(&LADDER, &[fresh, short]), [1]);
+}
+
+#[test]
+fn a_summary_of_a_newer_version_keeps_its_version_through_the_text() {
+    let mut s = summary(&[(SUMS, 4, 2, 1.5)]);
+    s.version = 7;
+    let text = s.to_text(&LADDER);
+    assert!(text.starts_with("cassino evidence v7\n"), "{text}");
+    assert_eq!(Summary::parse(&LADDER, &text), Ok(s));
+}
+
+#[test]
+fn a_ladder_is_checked() {
+    static A: [SkillSpec; 2] = [
+        SkillSpec {
+            slug: "a",
+            needs: &[],
+            top_rate: 0.9,
+            top_cost: 0.1,
+            min_chances: 4.0,
+        },
+        SkillSpec {
+            slug: "b",
+            needs: &[0],
+            top_rate: 0.9,
+            top_cost: 0.1,
+            min_chances: 4.0,
+        },
+    ];
+    let ladder = |skills| Ladder {
+        name: "game",
+        version: 1,
+        skills,
+    };
+    assert_eq!(ladder(&A).check(), Ok(()));
+    assert_eq!(LADDER.check(), Ok(()));
+    assert_eq!(ladder(&A).index_of("b"), Some(1));
+    assert_eq!(ladder(&A).index_of("c"), None);
+
+    static SELF: [SkillSpec; 1] = [SkillSpec {
+        needs: &[0],
+        ..A[0]
+    }];
+    static OUT: [SkillSpec; 1] = [SkillSpec {
+        needs: &[3],
+        ..A[0]
+    }];
+    static SPACE: [SkillSpec; 1] = [SkillSpec {
+        slug: "a b",
+        ..A[0]
+    }];
+    static RATE: [SkillSpec; 1] = [SkillSpec {
+        top_rate: 1.5,
+        ..A[0]
+    }];
+    static DUP: [SkillSpec; 2] = [A[0], A[0]];
+    for (what, skills) in [
+        ("itself", &SELF[..]),
+        ("outside", &OUT[..]),
+        ("whitespace", &SPACE[..]),
+        ("rate", &RATE[..]),
+        ("duplicate", &DUP[..]),
+        ("empty", &[][..]),
+    ] {
+        assert!(ladder(skills).check().is_err(), "{what}");
+    }
+    let mut bad_name = ladder(&A);
+    bad_name.name = "two words";
+    assert!(bad_name.check().is_err());
+}
+
+#[test]
+fn mastery_asks_a_fraction_of_the_strongest_rate_and_loss_a_margin_below() {
+    let p = Params {
+        master_of_top: 0.5,
+        lose_below: 0.2,
+        ..PARAMS
+    };
+    let top = &SKILLS[PAIRS];
+    assert!((p.master(top) - 0.487).abs() < 1e-12);
+    assert!((p.lose(top) - 0.287).abs() < 1e-12);
+    // The loss bar never goes below nothing.
+    let p = Params {
+        master_of_top: 0.1,
+        lose_below: 0.5,
+        ..PARAMS
+    };
+    assert_eq!(p.lose(top), 0.0);
+}
