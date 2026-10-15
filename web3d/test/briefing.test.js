@@ -172,3 +172,65 @@ test("the nudge follows the focus the page sets", async () => {
   assert.ok(asked > 5);
   assert.ok(shown > 0);
 });
+
+// ---- one bad stored deal must not blank the sitting's brief -----------------------------
+
+// A played sitting kept in a store, then damaged by `damage(entry, index)` (raw JSON).
+async function damaged(seed, damage) {
+  const store = memory();
+  let engineSeen;
+  let scored = 0;
+  await sittingWith(seed, (engine, n) => {
+    engineSeen = engine;
+    const briefing = createBriefing({ store, engine, level: () => 3 });
+    briefing.briefOf(briefing.recordDeal({ assisted: [], n, sit: String(seed) }));
+    scored = n;
+  }, { limit: 1500 });
+  assert.ok(scored >= 2, `${scored} deals`);
+  const raw = JSON.parse(store.getItem(KEY));
+  raw.deals.forEach(damage);
+  store.setItem(KEY, JSON.stringify(raw));
+  const counted = [];
+  const spy = { ...engineSeen, evidenceOf: (...a) => (counted.push(a[0]), engineSeen.evidenceOf(...a)) };
+  return { store, counted, briefing: createBriefing({ store, engine: spy, level: () => 3 }), sit: String(seed), deals: raw.deals.length };
+}
+
+test("a stored deal number of 0, or of 2^33, does not blank the sitting's brief", async () => {
+  for (const [seed, n] of [[21, 0], [22, 2 ** 33], [23, -4]]) {
+    const { briefing, sit, counted } = await damaged(seed, (d, i) => i === 0 && (d.n = n));
+    const b = briefing.sittingBrief(sit);
+    assert.ok(b && b.bullets.length >= 1, `n ${n}`);
+    assert.deepEqual(counted, [], "no advisor for a number");
+  }
+});
+
+test("a detail with a damaged miss is worked out again once, and the brief is made", async () => {
+  const { briefing, store, sit, counted, deals } = await damaged(24, (d, i) => i === 0 && (d.detail.misses = { off: { cost: 1 } }));
+  const b = briefing.sittingBrief(sit);
+  assert.ok(b && b.bullets.length >= 1);
+  assert.equal(counted.length, deals, "the engine does not say which: every detail of the sitting, once");
+  assert.notDeepEqual(loadDeals(store)[0].detail.misses, { off: { cost: 1 } }, "and kept mended");
+  assert.equal(briefing.sittingBrief(sit) !== null, true);
+  assert.equal(counted.length, deals, "not again");
+});
+
+test("a detail whose summary is of an older evidence counts as missing and is worked out again", async () => {
+  const { briefing, store, sit, counted } = await damaged(25, (d, i) => i === 0 && (d.detail.summary = d.detail.summary.replace(/evidence v\d+/, "evidence v1")));
+  const b = briefing.sittingBrief(sit);
+  assert.ok(b && b.bullets.length >= 1);
+  assert.equal(counted.length, 1);
+  assert.match(loadDeals(store)[0].detail.summary, /evidence v3|evidence v[2-9]/);
+});
+
+test("when the engine still refuses, the brief is null and nothing is looped", async () => {
+  const { store, sit } = await damaged(26, () => {});
+  let calls = 0;
+  const engine = {
+    briefSitting: () => (calls++, { error: "bad-input", brief: null }),
+    evidenceOf: () => ({ error: "replay" }),
+    learner: () => ({ version: 3 }),
+  };
+  const briefing = createBriefing({ store, engine, level: () => 3 });
+  assert.equal(briefing.sittingBrief(sit), null);
+  assert.ok(calls <= 2, `${calls} tries`);
+});

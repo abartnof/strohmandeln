@@ -165,15 +165,30 @@ test("what the sitting's brief is made of is kept with the deal: its detail", ()
   assert.equal(setEvidence(null, "x", summary(), detail()), false);
 });
 
-test("clearing leaves a newer page's store alone", () => {
+test("clearing says what it did, and leaves a newer page's store alone", () => {
   const store = memory();
   store.setItem(KEY, JSON.stringify({ v: 2, deals: [deal(1)] }));
-  clearTutor(store);
+  assert.equal(clearTutor(store), "newer");
   assert.ok(store.getItem(KEY), "a newer page's store is not ours to clear");
   const mine = memory();
   addDeal(mine, deal(1));
-  clearTutor(mine);
+  assert.equal(clearTutor(mine), "cleared");
   assert.equal(mine.getItem(KEY), null);
+  assert.equal(clearTutor(broken), "blocked");
+  assert.equal(clearTutor(null), "blocked");
+});
+
+test("the number a deal had is 1 to 9999: anything else is read as missing", () => {
+  const store = memory();
+  for (const n of [0, -3, 10000, 2 ** 33, 1.5, "7"]) {
+    store.setItem(KEY, JSON.stringify({ v: 1, deals: [deal(1, { n })] }));
+    assert.equal("n" in loadDeals(store)[0], false, String(n));
+  }
+  for (const n of [1, 9999]) {
+    store.setItem(KEY, JSON.stringify({ v: 1, deals: [deal(1, { n })] }));
+    assert.equal(loadDeals(store)[0].n, n);
+  }
+  assert.equal(addDeal(memory(), deal(1, { n: 0 })), true, "the deal is kept, without its number");
 });
 
 test("it can be exported, cleared and imported; a bad file is refused in a key and changes nothing", () => {
@@ -236,11 +251,24 @@ test("a deal kept without its detail has it worked out while the table is idle",
   assert.equal(await refreshOne(store, engine), false);
 });
 
+test("only a record the engine cannot restore is dropped; another error leaves it", async () => {
+  const store = memory();
+  addDeal(store, deal(1));
+  const other = fakeEngine({ stale: () => [0], summaryFor: () => ({ error: "bad-constants" }) });
+  assert.equal(await refreshOne(store, other), true);
+  assert.equal(loadDeals(store).length, 1, "bad-constants does not take the deal");
+  assert.equal(await refreshOne(store, fakeEngine({ stale: () => [0], summaryFor: () => null })), true);
+  assert.equal(loadDeals(store).length, 1, "nothing at all (a stopped engine) does not either");
+  // a record that does not even parse for the engine cannot be restored
+  assert.equal(await refreshOne(store, fakeEngine({ stale: () => [0], summaryFor: () => ({ error: "bad-input", why: "record" }) })), true);
+  assert.equal(loadDeals(store).length, 0);
+});
+
 test("a record the engine can no longer restore is dropped after one failed try", async () => {
   const store = memory();
   addDeal(store, deal(1));
   addDeal(store, deal(2, { summary: summary() }));
-  const engine = fakeEngine({ stale: (h) => h.map((s, i) => (s === null ? i : -1)).filter((i) => i >= 0), summaryFor: () => null });
+  const engine = fakeEngine({ stale: (h) => h.map((s, i) => (s === null ? i : -1)).filter((i) => i >= 0), summaryFor: () => ({ error: "replay" }) });
   const tried = new Set();
   assert.equal(await refreshOne(store, engine, tried), true);
   assert.deepEqual(loadDeals(store).map((d) => JSON.parse(d.record).n), [2]);

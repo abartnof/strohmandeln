@@ -396,10 +396,14 @@ async function main() {
     owed = [];
     settling = true;
     setTimeout(() => {
-      for (const entry of todo) briefing.briefOf(entry);
-      settling = false;
-      settleFocus();
-      showTutor();
+      // a trap or a malformed reply must not leave the chip working for the life of the page
+      try {
+        for (const entry of todo) briefing.briefOf(entry);
+        settleFocus();
+      } finally {
+        settling = false;
+        showTutor();
+      }
     }, 0);
   }
   // The skill to work on, from everything kept; the nudge shows it in the next deal.
@@ -1054,12 +1058,17 @@ async function main() {
     } else if (id === "clear") {
       ui.closeDialog("clear");
       if (rest[0] === "yes") {
-        clearTutor(tutorStore());
-        briefing.forget(); // the page's own memory too, or the focus would come back from it
-        focusNow = null;
-        focusGiven = undefined;
-        owed = [];
-        ui.chip(t("settings.progress.cleared"), { x: window.innerWidth / 2, y: 120, ms: 3000 });
+        const did = clearTutor(tutorStore());
+        if (did === "newer") ui.setRefusal(t("error.progress-newer"));
+        else if (did === "blocked") ui.setRefusal(t("error.progress-blocked"));
+        else {
+          briefing.forget(); // the page's own memory too, or the focus would come back from it
+          focusNow = null;
+          focusGiven = undefined;
+          owed = [];
+          showTutor(); // a chip that was working has nothing to wait for
+          ui.chip(t("settings.progress.cleared"), { x: window.innerWidth / 2, y: 120, ms: 3000 });
+        }
       }
     } else if (id === "over") {
       ui.closeDialog("over");
