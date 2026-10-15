@@ -8,6 +8,7 @@ import re
 from browser import open_page as _open_page
 from browser import (
     LANDSCAPE,
+    NO_DRAW,
     PAGE,
     STRINGS,
     WORDS,
@@ -24,8 +25,9 @@ from browser import (
 FAST = {"width": 800, "height": 450}  # the flows that play whole sittings: a software GPU draws a small window faster
 
 
-def open_page(browser, query="seed=7&speed=instant", viewport=None, **kw):
-    return _open_page(browser, query, viewport or FAST, **kw)
+def open_page(browser, query="seed=7&speed=instant", viewport=None, nodraw=True, **kw):
+    """The scenario checks read the page's state and DOM, never its pixels: no draw calls (browser.NO_DRAW)."""
+    return _open_page(browser, query, viewport or FAST, nodraw=nodraw, **kw)
 
 
 # ---- driving the table without a mouse ---------------------------------------------------------
@@ -56,8 +58,38 @@ def choose(s, policy, extend):
     return legal[0]
 
 
+DRIVE_JS = """async (o) => {
+  const h = window.strohmandeln3d;
+  const wire = (a) => (a.action === 'play' ? { action: 'play', card: a.card } : a);
+  const choose = (s) => {
+    if (s.phase === 'extend') return { action: 'extend', accept: o.extend };
+    if (o.policy === 'weiter') { const p = s.legal.find((a) => a.action === 'pass'); if (p) return p; }
+    return s.legal[0];
+  };
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const met = (s, log) => (o.kind === 'over' ? s.prompt === 'over' : o.kind === 'extend_you' ? s.phase === 'extend' && s.prompt === 'you' : o.kind === 'over_or_extend' ? s.prompt === 'over' || (s.phase === 'extend' && s.prompt === 'you') : log.some((e) => e.type === o.kind && Object.entries(o.fields).every(([k, v]) => e[k] === v)));
+  for (let i = 0; i < o.limit; i++) {
+    for (let spins = 0; ; spins++) {
+      const s = h.state();
+      if (s && !h.busy() && s.prompt !== 'opponent') break;
+      if (spins > 40000) throw new Error('the table did not come to rest');
+      await sleep(5);
+    }
+    const s = h.state();
+    if (met(s, h.log())) return true;
+    if (s.prompt === 'over') return false;
+    h.act(wire(choose(s)));
+  }
+  return false;
+}"""
+
+
 def drive(page, until, policy="first", extend=False, limit=3000, manual=False, step=250):
-    """Play by the engine's own first legal action (or weiter) until `until(state, log)`."""
+    """Play by the engine's own first legal action (or weiter) until `until(state, log)`.
+    An `until` made by has() or until_over() runs inside the page, in one round trip."""
+    spec = getattr(until, "spec", None)
+    if spec and not manual:
+        return page.evaluate(DRIVE_JS, {**spec, "policy": policy, "extend": extend, "limit": limit})
     for _ in range(limit):
         (mrest(page, step) if manual else rest(page))
         s = state(page)
@@ -72,7 +104,27 @@ def drive(page, until, policy="first", extend=False, limit=3000, manual=False, s
 
 
 def has(kind, **fields):
-    return lambda s, log: any(e["type"] == kind and all(e.get(k) == v for k, v in fields.items()) for e in log)
+    def until(s, log):
+        return any(e["type"] == kind and all(e.get(k) == v for k, v in fields.items()) for e in log)
+
+    until.spec = {"kind": kind, "fields": fields}
+    return until
+
+
+def until_extend(or_over=False):
+    def until(s, log):
+        return (or_over and s["prompt"] == "over") or (s["phase"] == "extend" and s["prompt"] == "you")
+
+    until.spec = {"kind": "over_or_extend" if or_over else "extend_you", "fields": {}}
+    return until
+
+
+def until_over():
+    def until(s, log):
+        return s["prompt"] == "over"
+
+    until.spec = {"kind": "over", "fields": {}}
+    return until
 
 
 def count_of(page, zone):
@@ -88,6 +140,7 @@ def wait_chip(page, kind=None, timeout=15_000):
 def with_prefs(browser, prefs, query="seed=7&speed=instant&human=1", viewport=None, reduced=False, wait=True):
     context = browser.new_context(viewport=viewport or FAST, reduced_motion="reduce" if reduced else "no-preference")
     context.set_offline(True)
+    context.add_init_script(NO_DRAW)
     context.add_init_script(f"try {{ localStorage.setItem('strohmandeln.prefs', JSON.stringify({json.dumps({'v': 1, **prefs})})); }} catch (e) {{}}")
     page = context.new_page()
     page.requests = []
@@ -421,7 +474,7 @@ def check_tour_end_and_extension(browser, failures):
     # Seat 0 is asked first: the human sees the prompt. Accepting extends only if the opponent agrees too.
     for accept in (True, False):
         page = open_page(browser, "seed=7&speed=instant&human=0")
-        ok = drive(page, lambda s, log: s["phase"] == "extend" and s["prompt"] == "you")
+        ok = drive(page, until_extend())
         fail_if(not ok, failures, "tour_end_and_extension: no extension offered to the human")
         if ok:
             page.wait_for_selector("[data-dialog-act=yes]", timeout=60_000)
@@ -441,7 +494,7 @@ def check_tour_end_and_extension(browser, failures):
     # Seat 1 is asked second: if the opponent has had enough, the sitting ends without the human's prompt.
     page = open_page(browser, "seed=7&speed=instant&human=1")
     watch_chips(page)
-    drive(page, lambda s, log: s["prompt"] == "over" or (s["phase"] == "extend" and s["prompt"] == "you"))
+    drive(page, until_extend(or_over=True))
     log = js(page, "log()")
     asked = any(e["type"] == "extension_offered" for e in log)
     fail_if(not asked, failures, "tour_end_and_extension: no extension offered at all")
@@ -452,7 +505,7 @@ def check_tour_end_and_extension(browser, failures):
 
 def check_settlement(browser, failures):
     page = open_page(browser, "seed=7&speed=instant&human=1")
-    ok = drive(page, lambda s, log: s["prompt"] == "over")
+    ok = drive(page, until_over())
     fail_if(not ok, failures, "settlement: the sitting did not end")
     if ok:
         end = next(e for e in js(page, "log()") if e["type"] == "sitting_end")
@@ -465,7 +518,7 @@ def check_settlement(browser, failures):
 def check_farewell_once(browser, failures):
     page = open_page(browser, "seed=7&speed=instant&human=1")
     page.evaluate("window.__said = new Set(); setInterval(() => window.strohmandeln3d.said().forEach(t => window.__said.add(t)), 40)")
-    drive(page, lambda s, log: s["prompt"] == "over")
+    drive(page, until_over())
     page.wait_for_selector("[data-dialog-act=new]", timeout=60_000)
     page.wait_for_timeout(1500)
     heard = set(page.evaluate("[...window.__said]"))
@@ -505,22 +558,40 @@ def check_motion_profile(browser, failures):
 # ---- 10.3 interaction ------------------------------------------------------------------------------
 
 
+LEGAL_JS = """async (o) => {
+  const h = window.strohmandeln3d;
+  const wire = (a) => (a.action === 'play' ? { action: 'play', card: a.card } : a);
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  let seen = 0;
+  for (let i = 0; i < o.limit; i++) {
+    for (let spins = 0; ; spins++) {
+      const s = h.state();
+      if (s && !h.busy() && s.prompt !== 'opponent') break;
+      if (spins > 40000) throw new Error('the table did not come to rest');
+      await sleep(5);
+    }
+    const s = h.state();
+    if (s.prompt === 'over') break;
+    const lit = [...h.lit()].sort();
+    const plays = s.legal.filter((a) => a.action === 'play').map((a) => a.card).sort();
+    if (JSON.stringify(lit) !== JSON.stringify(plays)) return { seen, bad: { lit, plays } };
+    seen += 1;
+    const a = s.phase === 'extend' ? { action: 'extend', accept: false } : s.legal[0];
+    h.act(wire(a));
+  }
+  return { seen, bad: null };
+}"""
+
+
 def check_legal_only(browser, failures):
     seen = 0
     for seed, human in [(7, 1), (3, 0), (11, 1)]:
         page = open_page(browser, f"seed={seed}&speed=instant&human={human}")
-        for _ in range(400):
-            rest(page)
-            s = state(page)
-            if s["prompt"] == "over":
-                break
-            lit = sorted(js(page, "lit()"))
-            plays = sorted(a["card"] for a in s["legal"] if a["action"] == "play")
-            if lit != plays:
-                failures.append(f"legal_only: lit {lit} vs legal {plays} (seed {seed})")
-                break
-            seen += 1
-            page.evaluate(f"window.strohmandeln3d.act({json.dumps(wire(choose(s, 'first', False)))})")
+        got = page.evaluate(LEGAL_JS, {"limit": 400})
+        seen += got["seen"]
+        if got["bad"]:
+            failures.append(f"legal_only: lit {got['bad']['lit']} vs legal {got['bad']['plays']} (seed {seed})")
+            break
         close_all(browser)
         if seen >= 200:
             break
@@ -676,34 +747,65 @@ def check_length_choice(browser, failures):
     fail_if(state(page)["touren_total"] != 6, failures, "length_choice: the new-sitting screen's 6 did not give six Touren")
 
 
-def check_keyboard_sitting(browser, failures):
-    page = open_page(browser, "seed=7&speed=instant&human=1")
-    turns = 0
-    for _ in range(900):
-        rest(page)
-        s = state(page)
-        if s["prompt"] == "over":
-            break
-        if s["phase"] == "bid":
-            page.keyboard.press("t")
-        elif s["phase"] == "extend":
+def key_turn(page, s):
+    """One decision of the human by keys alone."""
+    if s["phase"] == "bid":
+        page.keyboard.press("t")
+    elif s["phase"] == "extend":
+        page.keyboard.press("Tab")
+        page.keyboard.press("Enter")
+    else:
+        if any(a["action"] == "announce" for a in s["legal"]):
+            page.keyboard.press("a")
+            rest(page)
+        # As a person would: from the left end, Enter on a card; a dimmed one is refused, so on to the next.
+        page.keyboard.press("Home")
+        chosen = False
+        for _ in range(16):
+            page.keyboard.press("Enter")
+            if js(page, "selection()"):
+                page.keyboard.press("Enter")
+                chosen = True
+                break
+            page.keyboard.press("ArrowRight")
+        for key in ("1", "2", "3"):  # only a cover is playable: keys 1 to 3 go to the packets
+            if chosen:
+                break
+            page.keyboard.press(key)
+            page.keyboard.press("Enter")
+            if js(page, "selection()"):
+                page.keyboard.press("Enter")
+                chosen = True
+        if page.locator(".dialog [data-dialog-act^=dont]").count():
             page.keyboard.press("Tab")
             page.keyboard.press("Enter")
-        else:
-            if any(a["action"] == "announce" for a in s["legal"]):
-                page.keyboard.press("a")
-                rest(page)
-            page.keyboard.press("Home")
-            page.keyboard.press("Enter")
-            page.keyboard.press("Enter")
-            if page.locator(".dialog [data-dialog-act^=dont]").count():
-                page.keyboard.press("Tab")
-                page.keyboard.press("Enter")
+
+
+def check_keyboard_sitting(browser, failures):
+    """The first deal and the extension prompt by keys alone; the deals between by the engine's
+    first legal action (a whole sitting of keys takes an hour on the software GPU, and adds no key)."""
+    page = open_page(browser, "seed=7&speed=instant&human=1")
+    turns = 0
+    for _ in range(300):
+        rest(page)
+        s = state(page)
+        if s["prompt"] == "over" or s["deals_counted"] >= 1:
+            break
+        key_turn(page, s)
         turns += 1
-    fail_if(state(page)["prompt"] != "over", failures, f"keyboard_sitting: not over after {turns} turns of keys")
+    fail_if(state(page)["deals_counted"] < 1, failures, f"keyboard_sitting: the first deal not played by keys in {turns} turns")
+    drive(page, has("extension_offered"))
+    rest(page)
+    if state(page)["phase"] == "extend":
+        key_turn(page, state(page))
+        rest(page)
+        fail_if(state(page)["prompt"] != "over", failures, "keyboard_sitting: the extension prompt was not answered by keys")
+    drive(page, until_over())
+    fail_if(state(page)["prompt"] != "over", failures, "keyboard_sitting: the sitting did not end")
     page.keyboard.press("?")
     fail_if(not page.locator("[data-dialog=keys]").count(), failures, "keyboard_sitting: ? did not list the keys")
     page.keyboard.press("Escape")
+    fail_if(page.locator("[data-dialog=keys]").count(), failures, "keyboard_sitting: Esc did not close the key list")
     check_offline(page, failures, "keyboard_sitting: ")
 
 
