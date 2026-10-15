@@ -19,7 +19,7 @@ inside it. A plain directory is in every worktree from the start.
 |---|---|
 | Render | `scene.js` (stage, lights, table, camera), `cards.js` (card slab), `materials.js` (toon shading), `deck.js` (meshes by card code, ink line), `surfaces.js` (table tops), `framing.js` (camera fit to the window), `art.js` (image-map loader), `faces.js` (Large Text faces) |
 | Motion | `easing.js`, `kinematics.js` (card paths: pose, layDown, pull, toss, flip, fan, peelOff, carryBlock ...), `timeline.js` |
-| Loop | `director.js` (render on demand, a clock a gate can hold, picking, screen points) |
+| Loop | `director.js` (render on demand, a clock a gate can hold, picking, screen points; `advance` returns `beats`, `count` and, if the game's choreography gives them, `landed`: when an event's cards come to rest) |
 | Talk | `bag.js` (shuffle bag), `dialogue.js` (when and where a line is said) |
 | Score | `scoring.js` (a game's definition, the per-hand ledger, segments, the count's popups), `hud.js` (the HUD widget), `count.js` (the count's timing, the talk system's quiet) |
 | Shell | `tutorial.js` (the small Markdown parser; `[text](#key)` is a link to another page, a span `{ text, page }` the game's view turns into a button), `engine.js` (wasm wrapper) |

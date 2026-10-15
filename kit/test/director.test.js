@@ -36,6 +36,7 @@ function setup({ cards = 4, zones = null, view = {}, defaultCards = false } = {}
         placement: placed(next),
         motions: next.cards.map((code, id) => ({ id, delay: 0, duration: 100, path: () => ({ position: new Vector3(9, 9, 9), quaternion: new Quaternion() }) })),
         beats: { 0: 40 },
+        ...(next.landed ? { landed: { 0: 400 } } : {}),
       };
     },
   };
@@ -73,6 +74,14 @@ test("advance hands the old and new state to the game's choreograph, and plays i
   director.tick(1000);
   assert.equal(director.meshes[0].position.x, 9, "the motion landed");
   assert.equal(director.state(), next);
+});
+
+test("a choreography may also say when an event's cards have landed; advance hands it back on the table's clock", () => {
+  const { director } = setup();
+  director.restart({ cards: ["AS"] });
+  assert.deepEqual(director.advance({ cards: ["AS", "2C"] }).landed, {}, "none unless the game gives them");
+  const { landed } = director.advance({ cards: ["AS", "2C", "3C"], landed: true });
+  assert.deepEqual(landed, { 0: 400 });
 });
 
 test("a dealt restart asks the game for its opening", () => {
