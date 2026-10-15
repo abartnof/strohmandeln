@@ -778,8 +778,8 @@ pub const LADDER: Ladder = Ladder {
         spec("off", &[0], 0.92, 0.72, 2.0),
         spec("run", &[1], 0.95, 0.93, 3.0),
         spec("pagat", &[3], 0.98, 0.22, 2.0),
-        spec("void", &[0], 0.96, 0.62, 2.0),
-        spec("behind", &[2, 5], 0.96, 1.42, 4.0),
+        praise_only("void", &[0], 0.96, 0.62, 2.0),
+        praise_only("behind", &[2, 5], 0.96, 1.42, 4.0),
         spec("endgame", &[1, 5], 0.93, 0.86, 3.0),
         spec("bid", &[0], 0.99, 0.09, 2.0),
         spec("announce", &[], 1.0, 0.0, 2.0),
@@ -821,6 +821,22 @@ const fn spec(
         top_rate,
         top_cost,
         min_chances,
+        may_focus: true,
+    }
+}
+
+/// A skill that is judged and praised but never the focus: M4 found it worth
+/// nothing against the strongest rung (`docs/MEASUREMENTS.md`).
+const fn praise_only(
+    slug: &'static str,
+    needs: &'static [usize],
+    top_rate: f64,
+    top_cost: f64,
+    min_chances: f64,
+) -> SkillSpec {
+    SkillSpec {
+        may_focus: false,
+        ..spec(slug, needs, top_rate, top_cost, min_chances)
     }
 }
 

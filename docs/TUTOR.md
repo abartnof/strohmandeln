@@ -60,6 +60,16 @@ the engine's. A slug is the wire name.
 | call | `bid` | `worth` | To bid: {take up, pass} | The advisor's bid expectation (Points, `rung4::bid_advantage`) favours a class by more than a margin in Points | The call is in it | The expectation gap, times 12 |
 | call | `announce` | | About to play a card of a held, unannounced honour: {announce with it, play it silent} | Announce (one Point, exact) | Announced; missed = the human's `honour_forfeited` event | 12 thirds times the deal's multiplier |
 
+**Praise-only skills (M4, 15 Oct 2026).** `void` and `behind` are judged and may be
+praised, but are never the focus: a student made to lead into a shown void, or
+into a split suit, loses nothing it can show against whole rung 4 in 160 mirrored
+pairs (`void` +0.49 +- 0.45, `behind` -0.49 +- 0.47 Points a pair; `docs/MEASUREMENTS.md`
+M4), so a learner sent to work on them would be sent to something that does not
+pay. The learner's `may_focus` is false for them until a measurement shows a
+worth. Of the ten prerequisite edges above only two were shown by pairs of
+knock-outs (`off` needs `worth`, `behind` needs `off`); the others stay as the
+logical order of the sources (`research/16`), not contradicted by the data.
+
 Definitions the table leans on:
 
 - **Shown void**: `Knowledge::opp_void` for the suit, and no cover of his and no
@@ -183,9 +193,11 @@ what is known after deal *n* depends on what was known after *n - 1*.
   below `lose(skill)` (surely lower now). Between the two the state stays: no
   flicker. With fewer than `MIN_CHANCES(skill)` discounted chances nothing changes.
 - **Focus** (the zone of proximal development): the skill that is
-  1. not mastered;
-  2. has its prerequisites **cleared** (mastered, or gaining less than `MIN_GAIN`
-     because its chances rarely come up, or not shown to be short);
+  1. not mastered, and a skill that may be the focus (`void` and `behind` may
+     not, section 2);
+  2. has its prerequisites **cleared** (mastered, or a skill that may not be the
+     focus, or gaining less than `MIN_GAIN` because its chances rarely come up,
+     or not shown to be short);
   3. is **surely short** (the `UPPER` quantile of its met rate below
      `master(skill)`), or **costly** (a gain of `COSTLY_GAIN` over at least
      `COSTLY_CHANCES`);
@@ -636,7 +648,8 @@ Crate `kit-learner` (lib `kit_learner`), as built (15 Oct 2026):
 ```rust
 // The ladder and the constants
 pub struct SkillSpec { pub slug: &'static str, pub needs: &'static [usize],
-                       pub top_rate: f64, pub top_cost: f64, pub min_chances: f64 }
+                       pub top_rate: f64, pub top_cost: f64, pub min_chances: f64,
+                       pub may_focus: bool }   // false: counted and praised, never the focus, never held a dependent back
 impl SkillSpec { pub fn seen(&self, chances: f64) -> bool; }    // chances >= min_chances
 pub struct Ladder { pub name: &'static str, pub version: u32, pub skills: &'static [SkillSpec] }
 impl Ladder { pub fn check(&self) -> Result<(), String>;      // slugs, needs, rates
