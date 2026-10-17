@@ -2,16 +2,19 @@
 //! parameters the table can check against what it shows (`docs/MESSAGES.md`,
 //! "Hint reasons"). It explains a choice already made; it never makes one.
 
+use crate::ask::alternative;
 use crate::cardset::leader_wins;
 use crate::know::Knowledge;
 use crate::rung2::{reserved_packet, spend, Weights, STRONG_TAROCKS};
-use strohmandeln_core::cards::Card;
+use strohmandeln_core::cards::{Card, Suit};
 
 /// A parameter of a reason: a card (sent as its code) or a whole number.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Param {
     Card(Card),
     Int(i64),
+    /// A suit, sent as its letter (`h d c s`).
+    Suit(Suit),
 }
 
 /// A reason: its key, parameters, and the rule it follows, if one is worth
@@ -64,30 +67,21 @@ pub fn explain_play(k: &Knowledge, card: Card, maxim: &Maxim, sampled: &Sampled)
     if k.legal.len() == 1 {
         return reason("only-card", &[("card", cd)], None);
     }
-    // The Pagat is the lowest tarock a strong hand could spend: keep it.
-    let lowest_tarock = k
-        .legal
-        .iter()
-        .filter(|c| c.is_tarock())
-        .min_by_key(|c| c.strength());
-    // On a lead the Pagat is a rival only for another tarock: a king led with
-    // a strong hand is not "instead of the Pagat".
-    if card != Card::PAGAT
-        && (k.lead.is_some() || card.is_tarock())
-        && lowest_tarock == Some(&Card::PAGAT)
-        && k.my_tarocks() >= STRONG_TAROCKS
-    {
-        return reason(
-            "hold-pagat",
-            &[("card", cd), ("tarocks", int(k.my_tarocks() as u32))],
-            Some("pagat-last"),
-        );
-    }
+    // A packet kept against his Pagat ultimo.
     if let Some(i) = reserved_packet(k) {
         let kept = k.covers[i];
         if kept.is_some_and(|kept| kept != card && k.legal.contains(&kept)) {
             return reason("keep-packet", &[("card", cd)], Some("keep-packet"));
         }
+    }
+    // The Pagat is "instead of" the card only when it is the natural
+    // alternative A (`docs/HINTS.md` 3.2): a strong hand keeps it.
+    if alternative(k, card) == Some(Card::PAGAT) && k.my_tarocks() >= STRONG_TAROCKS {
+        return reason(
+            "hold-pagat",
+            &[("card", cd), ("tarocks", int(k.my_tarocks() as u32))],
+            Some("pagat-last"),
+        );
     }
     match k.lead {
         Some(led) => follow(k, led, card),
@@ -344,11 +338,24 @@ mod tests {
     }
 
     #[test]
-    fn leading_a_king_is_not_instead_of_the_pagat() {
+    fn hold_pagat_only_when_the_pagat_is_the_alternative() {
+        // Following a suit lead with nothing but tarocks: every tarock wins,
+        // the Pagat is the cheapest other winner, so it is A.
+        let hand = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "9c"];
+        let k = know(&hand, NO, NO, &[], Some("Kh"));
+        assert_eq!(why(&k, "T2").key, "hold-pagat");
+        // Uhu (II) led with thirteen tarocks: the Pagat loses to it, A is III.
+        let hand = [
+            "T1", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12", "T13", "T21",
+        ];
+        let k = know(&hand, NO, NO, &[], Some("T2"));
+        assert_ne!(why(&k, "T21").key, "hold-pagat");
+        assert_eq!(alternative(&k, c("T21")), Some(c("T3")));
+        // Leading: A is the highest card held, never the Pagat.
         let hand = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "Kh"];
         let k = know(&hand, NO, NO, &[], None);
         assert_ne!(why(&k, "Kh").key, "hold-pagat");
-        assert_eq!(why(&k, "T2").key, "hold-pagat");
+        assert_ne!(why(&k, "T2").key, "hold-pagat");
     }
 
     #[test]

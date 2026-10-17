@@ -407,6 +407,7 @@ impl Table {
                 let v = match p {
                     HintParam::Card(c) => json!(c),
                     HintParam::Int(n) => json!(n),
+                    HintParam::Suit(s) => json!(s.letter().to_string()),
                 };
                 ((*name).to_string(), v)
             })
