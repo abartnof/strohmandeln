@@ -1140,9 +1140,10 @@ red suits and 10 9 8 7 in black, as printed); then the 22 tarocks from the Sküs
 to I in rows of 8, 8 and 6. Labels follow the faces (`tarockfaces.js`): K Q C J in
 English, K D C B in German; Roman numerals with IIII; "Sküs". A cell's state is
 carried by more than colour: **yours** (hand or cover) is filled; **played by
-you** is dimmed on a grey field; **played by your opponent** is a dull red field
-(`--tracker-opp`, 8.6:1 light, 6.5:1 dark for its label; not the slate's teal) with a
-bar under the label; under `prefers-contrast: more` both are struck through, his
+you** is dimmed on a grey field; **played by your opponent** is one clear red, solid
+(`--tracker-opp`, white label at 6.6:1; not the slate's teal), against the dimmed, dashed
+cell played by you; the panel keeps the score HUD's dark greys in either colour scheme
+(17 Oct 2026, the maintainer: one colour, so the legend shows one kind of card he played); under `prefers-contrast: more` both are struck through, his
 dashed (17 Oct 2026, the maintainer: the cards he played should differ from the
 grey of "not seen yet"); **still out** (unseen, or face up in his hand or on his
 cover) is outlined. A legend names the four; its "Still out" says it holds your own face-down packet cards ("Still
