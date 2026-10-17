@@ -967,7 +967,7 @@ person reads after a scored deal and at the sitting's end, a few bullets at most
 small "Review" chip appears at the tutor's tab and stays until the next deal is
 scored (and for a sitting, until the farewell). It opens a dialog, **"How the
 deal went"**: the **count** as the header line (`review.say.count`, the result,
-not advice), then **at most three bullets** with a bold lead, from the engine's
+not advice), then **at most three bullets** (and, for a styled opponent, the fourth line of 7.3) with a bold lead, from the engine's
 brief (message keys with parameters, `docs/MESSAGES.md` "Tutor keys"):
 
 1. *Went well:* a skill just mastered, else the deal's best strength (all
@@ -1197,9 +1197,13 @@ but Normal, a note says the style shows mostly in the bidding
 **Random** the menu's line says "Random (shown at the end)" and, once the sitting is
 over, "Random: After Bermann"; the end-of-sitting dialog and brief name the drawn
 style in quotes (`style.reveal`), the engine withholding it until the brief's
-`reveal` flag. Open: the after-deal brief's "Their style" bullet (`docs/STYLES.md`
-5) waits on the engine; a Random sitting left by a new sitting reveals nothing yet;
-the end dialog's reveal does not follow a language switch made at the end.
+`reveal` flag. The after-deal brief has a fourth line, "Their style:", for any style
+but Normal and under Random too (`docs/STYLES.md` 5, `docs/TUTOR.md` 6): the
+opponent's take-ups so far in the sitting ("your opponent has taken up 4 of 6
+bids so far"), a fact in the Kibitzer's voice, never a counter and never a style's
+name; the table sends the sitting's earlier records and shows the line as given.
+Open: a Random sitting left by a new sitting reveals nothing yet; the end dialog's
+reveal does not follow a language switch made at the end.
 
 ### 7.4 Speed
 
@@ -1467,7 +1471,7 @@ motion are saved to `web3d/test/out/`.
   note to its closing) the dots appear with a tooltip, the note once and kept as seen; off, or
   the Kibitzer muted, takes the dots away at once, and back on returns them (1.5.7).
 - `deal_brief`: after a scored deal the chip opens "How the deal went": the count as
-  the header, at most three bullets with a bold lead each, the method folded; none
+  the header, at most three bullets (and, for a styled opponent, the fourth line of 7.3) with a bold lead each, the method folded; none
   after a void deal or a throw-in; in German in German; muted it shows nothing; with the
   tips off one bullet at most and no "Next:"; a hint shown marks its decision assisted,
   and so does the nudge, which comes once a deal in the Kibitzer's tab.

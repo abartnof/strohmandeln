@@ -11,9 +11,12 @@ const summaries = (list) => (list ?? []).map((s) => s ?? "").join("\n--\n");
 
 // The brief calls' header: `level n`, then the optional lines the engine reads
 // (docs/PROTOCOL.md, "The tutor"): the sitting's style, what Random drew and
-// `reveal` (the sitting is over; the engine withholds `drawn` without it).
-export function briefHead(level, { style, drawn, reveal } = {}) {
-  return [`level ${level}`, style ? `style ${style}` : null, drawn ? `drawn ${drawn}` : null, reveal ? "reveal" : null].filter(Boolean).join("\n");
+// `reveal` (the sitting is over; the engine withholds `drawn` without it), and `earlier`, the
+// records of the sitting's earlier deals, a line each, oldest first (their bids are what the
+// brief's "Their style" line counts).
+export function briefHead(level, { style, drawn, reveal, earlier } = {}) {
+  const before = (earlier ?? []).map((r) => `earlier ${r}`);
+  return [`level ${level}`, style ? `style ${style}` : null, drawn ? `drawn ${drawn}` : null, reveal ? "reveal" : null, ...before].filter(Boolean).join("\n");
 }
 
 export function tutorApi(call, callNumber) {
