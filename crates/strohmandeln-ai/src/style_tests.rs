@@ -1,7 +1,7 @@
 use super::*;
 use crate::cardset::CardSet;
 use crate::opponent::{Level, Opponent};
-use crate::rung2::{best_card, bid_as, BidExtra, BidRule, BID_RULE};
+use crate::rung2::{best_card, bid_with, BidExtra, BidRule, BID_RULE};
 use crate::testutil::{c, know};
 use strohmandeln_core::cards::Card;
 use strohmandeln_core::rng::Rng;
@@ -20,8 +20,8 @@ fn pick(style: Style, k: &crate::know::Knowledge) -> Card {
     best_card(k, &mut Rng::seeded(1), &cfg(style).weights).card
 }
 
-fn bids(style: Style, hand: &[&str], dealer: bool) -> bool {
-    bid_as(set(hand), cfg(style).bid, dealer).0
+fn bids(style: Style, hand: &[&str]) -> bool {
+    bid_with(set(hand), cfg(style).bid).0
 }
 
 #[test]
@@ -75,13 +75,13 @@ fn bermann_bids_on_sixty_thirds_with_queens_as_figures_and_any_tarocks() {
     let hand = [
         "SK", "T21", "T2", "Kh", "Kd", "Qc", "Qs", "1h", "2h", "3h", "4h", "1d", "2d", "3d", "4d",
     ];
-    assert!(bids(Style::Bermann, &hand, false));
-    assert!(!bids(Style::Normal, &hand, false), "Normal needs 5 tarocks");
+    assert!(bids(Style::Bermann, &hand));
+    assert!(!bids(Style::Normal, &hand), "Normal needs 5 tarocks");
     // Two tarocks and 52 thirds: under his 60.
     let thin = [
         "SK", "T21", "Kh", "Kd", "1h", "2h", "3h", "4h", "1d", "2d", "3d", "4d", "7c", "8c", "9c",
     ];
-    assert!(!bids(Style::Bermann, &thin, false));
+    assert!(!bids(Style::Bermann, &thin));
 }
 
 #[test]
@@ -90,11 +90,11 @@ fn ms_needs_six_tarocks_and_counts_the_pagat_always() {
     let hand = [
         "SK", "T1", "T5", "T6", "Kh", "Kd", "Kc", "1h", "2h", "3h", "1d", "2d", "3d", "7c", "8c",
     ];
-    assert!(!bids(Style::Ms, &hand, false), "four tarocks are under six");
+    assert!(!bids(Style::Ms, &hand), "four tarocks are under six");
     let six = [
         "SK", "T1", "T5", "T6", "T7", "T8", "Kh", "Kd", "Kc", "1h", "2h", "1d", "2d", "7c", "8c",
     ];
-    assert!(bids(Style::Ms, &six, false));
+    assert!(bids(Style::Ms, &six));
     // Six tarocks guard the Pagat for Normal too, so the figure is the same;
     // the rule's own fields are what differ.
     let rule = cfg(Style::Ms).bid;
@@ -104,24 +104,31 @@ fn ms_needs_six_tarocks_and_counts_the_pagat_always() {
 }
 
 #[test]
-fn ulmann_takes_up_on_four_honours_at_once_and_a_dealer_passes_three_without_a_queen() {
+fn ulmann_takes_up_on_four_honours_at_once() {
     // Sküs, Mond, Kh, Kd: four honours, one more tarock only (T2).
     let four = [
         "SK", "T21", "T2", "Kh", "Kd", "1h", "2h", "3h", "1d", "2d", "3d", "7c", "8c", "9c", "10c",
     ];
-    assert!(bids(Style::Ulmann, &four, false));
-    assert!(bids(Style::Ulmann, &four, true));
-    assert!(!bids(Style::Normal, &four, false));
-    // Three honours and no queen: not enough for Ulmann, forehand or dealer
-    // (the dealer's clause binds nothing Normal's thresholds would let
-    // through: three honours without a queen are at most 39 thirds).
+    assert!(bids(Style::Ulmann, &four));
+    assert!(bids(Style::Ulmann, &four));
+    assert!(!bids(Style::Normal, &four));
+    // Three honours and no queen: not enough (at most 39 thirds). U's
+    // "especially as dealer" clause is not modelled: it could change nothing,
+    // since Normal's thresholds already refuse such a hand.
     let three = [
         "SK", "T21", "Kh", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "1h", "2h", "1d", "7c", "8c",
     ];
-    assert!(!bids(Style::Ulmann, &three, false));
-    assert!(!bids(Style::Ulmann, &three, true));
-    // Four honours bid for the dealer too.
-    assert!(bids(Style::Ulmann, &four, true));
+    assert!(!bids(Style::Ulmann, &three));
+    // The Pagat is an honour only with six tarocks (U 78): with three
+    // tarocks SK, Mond, Pagat and a king are three honours, not four.
+    let short = [
+        "SK", "T21", "T1", "Kh", "1h", "2h", "3h", "1d", "2d", "3d", "7c", "8c", "9c", "10c", "7s",
+    ];
+    assert!(!bids(Style::Ulmann, &short));
+    let long = [
+        "SK", "T21", "T1", "Kh", "T2", "T3", "T4", "1h", "2h", "1d", "2d", "3d", "7c", "8c", "10c",
+    ];
+    assert!(bids(Style::Ulmann, &long), "six tarocks guard the Pagat");
 }
 
 #[test]
@@ -129,17 +136,17 @@ fn werner_wants_three_honours_six_tarocks_and_a_guarded_queen() {
     let good = [
         "SK", "T21", "Kh", "Qh", "T2", "T3", "T4", "T5", "T6", "1d", "2d", "3d", "7c", "8c", "7s",
     ];
-    assert!(bids(Style::Werner, &good, false));
+    assert!(bids(Style::Werner, &good));
     // No queen with a guard: pass.
     let no_queen = [
         "SK", "T21", "Kh", "1h", "T2", "T3", "T4", "T5", "T6", "1d", "2d", "3d", "7c", "8c", "7s",
     ];
-    assert!(!bids(Style::Werner, &no_queen, false));
+    assert!(!bids(Style::Werner, &no_queen));
     // Five tarocks: pass.
     let few = [
         "SK", "T21", "Kh", "Qh", "T2", "T3", "T4", "1d", "2d", "3d", "4d", "7c", "8c", "7s", "8s",
     ];
-    assert!(!bids(Style::Werner, &few, false));
+    assert!(!bids(Style::Werner, &few));
 }
 
 #[test]
@@ -215,7 +222,7 @@ fn cash_mond_plays_an_unescorted_mond_on_a_rich_suit_trick() {
 }
 
 #[test]
-fn spare_lead_opens_a_wholly_split_suit_with_the_lowest_spare_card() {
+fn spare_lead_opens_a_wholly_split_suit_with_the_highest_spare_card() {
     // Be 150-151: I hold the king, cavall, two and four of hearts; his queen
     // and jack are out. Normal does not open a split suit; Bermann leads 2h.
     let hand = ["Kh", "Ch", "2h", "4h", "7c", "8c", "7s"];

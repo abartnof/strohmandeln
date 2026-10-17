@@ -153,26 +153,29 @@ impl Style {
                 // Be 148 "so sind sie stets abzuspielen": no `low_shown < 2`
                 // exception ("leere Blätter" read as blank pips, Be 151) (T).
                 w.low_shown_exception = false;
-                // Be 151-152: keep one or more small tarocks (T), play an
-                // unescorted Mond "stets bei passender Gelegenheit" (T).
+                // Be 151-152: keep one or more small tarocks (I: the text keeps
+                // them to catch the Mond, STYLES reads it as holding it), play
+                // an unescorted Mond "stets bei passender Gelegenheit" (I: a
+                // fitting chance read as a rich suit trick it takes).
                 w.guard_mond = 4.0;
                 w.guard_keep = 1;
                 w.cash_mond = 4.0;
-                // Be 150-151: the fork position only (T, narrow). The weight
+                // Be 150-151: the fork position only (I, narrow). The weight
                 // outbids `split_suit` (4.0), which would forbid the lead (E).
                 w.spare_lead = 6.0;
             }
             Style::Ulmann => {
-                // U 77-78: four honours at once, three weak honours and no
-                // queen not as dealer (T; the Rückhand is the dealer: U 70,
-                // W 130, RULES 3.2).
+                // U 77-78: four honours (the Pagat only with six tarocks, U 78)
+                // at once (T). The dealer clause on three weak honours is not
+                // modelled: Normal's thresholds already refuse such a hand.
                 c.bid = BidRule {
                     extra: BidExtra::Ulmann,
                     ..BID_RULE
                 };
-                // U 74: no Pagat, 10-12 tarocks, a closed run: hunt (T).
+                // U 74: 10-12 tarocks hunt the Pagat (T). U's other conditions,
+                // "no Pagat in hand" and "a closed run", are not modelled.
                 w.draw_from = Some(10);
-                // U 74 "suche man rechtzeitig heimzubringen" (T). The Pagat
+                // U 74 "suche man rechtzeitig heimzubringen" (I, as Bermann). The Pagat
                 // cash with 7-8 tarocks is Normal's (the spec: no parameter).
                 w.cash_mond = 4.0;
             }
