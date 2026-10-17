@@ -284,3 +284,33 @@ engine breaks, and M9 does not measure cause.
 - Thirds in (b): II 1, Mond 13 (RULES 8.1).
 - Headline-once, "Why?" closed by default, only-card line, wire shape and
   `hintLines` change are implementable against `hinttext.js` (a small change).
+
+## Fixes (17 Oct 2026)
+
+`docs/HINTS.md` rewritten against this review; section numbers are the new ones.
+
+| # | Change |
+|---|---|
+| 1 | A redefined (3.2): X wins, A = the cheapest other winner; sole winner, the cheapest loser; X loses, the cheapest winner, else the cheapest other loser; table of (a) and (b). (b) now gives A = III, `keep` decisive; `hold-pagat` only when the Pagat is A. Test 1, 2 follow. |
+| 2 | One composition (3.1): headline + question + `so`, or `ans` when no rule; every draft counted by script and the counts in the table of 9 (all within 25 en / 30 de); test 8 counts them. |
+| 3 | The `so` sentence is a rule gated by M5's protocol (5.1); one gate, stated once; Q4 tests precision against the result table; case (a) no longer contradicts itself; only `worth.rich` ships today. |
+| 4 | M9 and its search-again design dropped; no cause is claimed (5.1). Replaced by M5r, rule refinement (5.2): visible-state family, fitting and confirmation split, sequential plan fixed (batches of 100 sittings, 4 looks, OBF 4.05 / 2.86 / 2.34 / 2.02, z against 0.80, futility, minimum n_eff 60, seeds, reach), mirrored pairs not used (no comparison of players), cost derived (about 5.5 min, at most 10). |
+| 5 | The Sküs share and the 1,000-world figure removed; no figure without an engine source (4, 5.5). |
+| 6 | "Why?" cases counted: 81 and 72 words, limit 90 (11). |
+| 7 | `ask-differ` restricted to a suit trick with X the dearer winner; dropped from (b) (5.4). |
+| 8 | No A when nothing wins: defined. `cheap` decisive when X and A both win or both lose. `ask.out` tests masters or a shown void, not possibility. `ask.suit` only for two suit cards. Priority by measured precision, then a stated teaching order (3.3), so `beneath` does not win by rarity. `keep` names `{keep}` and is decisive when exactly one of X, A is a key card. Cashing the Pagat has its own `so`. |
+| 9 | Numbers stated by M5r, not by a book; questions and rules reworded without "solid run", "draw his", "open a suit", "key card"; "Paket" in German; `so-keep-pagat` says "the last trick"; the Mond rule separates X from A by what it says (he led); `out-void` carries the tarock condition; German imperatives made infinitives; term list of 7. |
+| 10 | `ask.suit` and tarocks-first carry a fact and no `so`; `trumps` restricted to the leading of a tarock (2, 9, 13 question 8). |
+| 11 | Citations: W p. 133 only for the ultimo; Mondfang is the Mond-holder keeping small tarocks so that he leads (research/07 1.5); 7 thirds cited to M5 and RULES 8.1; the out-master condition cited to RULES 5.4; `fact-master` from the tracker. |
+| 12 | The sample figure is shown whichever card it favours; Q8 reports how often it sides with A (4, 8). |
+| 13 | Bar rebuilt (8): Q2 named as coverage; Q4 truth and Q3 form added; denominators and draw stated; page-open events listed in 7; Q5 share reported not gated. |
+| 14 | Estimate derived (5.2): 78 s per 400 sittings from M5; the 5.5 minute total and the 10 minute cap. |
+| 15 | `vs-*`, `ask-none`, `ask-differ` and fact wording written out in en and de (9); the typed atoms live in `rules.rs` (test 12). |
+| 16 | Level-4-only stated (1); no lower-level branch. |
+| 17 | (a) now asks `trumps` by the stated order and has an honest "now" form; ans/beneath reworded from RULES 6.1; the suit total is 12⅔ points (38 thirds), tested. |
+| 18 | Ten drafts counted; key count left to the build. |
+| 19 | Revision narrative removed; ZPD paragraph cut to the one point used. |
+| 20 | "Mondfang" only in "Why?" (7). |
+| 21 | "Five, one only in Why?" (2). |
+| 22 | The composition is one (3.1). |
+| 23 | (a) states XIX is not a key card and not a master. |
