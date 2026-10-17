@@ -1026,9 +1026,11 @@ the tracker is never called a slate.)
 6.6.2 **When it shows.** Hints on (7.1), the setting "Cards out" on (default on), the
 tutor not muted (as the hint, 6.3.4), and a deal under way. A tab "Cards out" /
 "Ausgespielt" in the top row, left of the slate's, folds and unfolds it
-(`aria-expanded`); so does the panel's own "Fold" button. The fold is kept
-(`trackerFolded` in the preferences, 7.7): unset, the panel starts open when the
-window is at least 900 × 600 px and folded on a smaller one. On a phone it is not
+(`aria-expanded`); so does the panel's own "Fold" button. The panel is folded
+on load and at the start of every deal, at any window size, as the score HUD's
+by-deal list is, and opens only when the person opens it; nothing is kept
+(17 Oct 2026, the maintainer's play-through notes; an old saved `trackerFolded`
+is ignored). On a phone it is not
 shown at all, and the engine is not asked for it (6.6.6, `trackerFits`).
 
 6.6.3 **When it changes.** With the cards at rest (the director's `rested`, as 6.3.4):
@@ -1396,9 +1398,10 @@ motion are saved to `web3d/test/out/`.
   rest, with two to four lines and the 54-cell grid, and its rectangle meets none of
   the hand, the move bar, the prompt, the HUD or the Kibitzer's tabs at the window
   sizes of 6.6.6, with the whole legend inside it (no scrolling).
-- `tracker_fold_and_settings`: the tab and Fold fold and open it and the fold is
-  kept; it follows the cards at rest; Hints off, its own setting off, or the
-  Kibitzer muted takes it away, and back on returns it.
+- `tracker_fold_and_settings`: a fresh page starts folded at 1280 × 720; the tab
+  and Fold open and fold it; it follows the cards at rest; Hints off, its own
+  setting off, or the Kibitzer muted takes it away, and back on returns it; the
+  next deal starts folded again.
 - `tracker_languages`: the tab, the lines and the court labels are German in
   German, and the German legend is whole inside the panel; held upright it is not shown.
 - `deal_brief`: after a scored deal the chip opens "How the deal went": the count as
