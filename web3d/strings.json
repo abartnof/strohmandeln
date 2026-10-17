@@ -641,7 +641,7 @@
   "tracker.line.masters": {"en": "Your highest cards, nothing higher out: {cards}", "de": "Ihre höchsten Karten, nichts Höheres draußen: {cards}"},
   "tracker.line.void": {"en": "Your opponent has shown no {kinds}.", "de": "Ihr Gegner hat kein {kinds} mehr gezeigt."},
   "tracker.line.points": {"en": "Still out: {points} of 70 card points", "de": "Noch draußen: {points} von 70 Augen"},
-  "tracker.sr.group": {"en": "{kind}: yours {mine}; still out {out}.", "de": "{kind}: Ihre {mine}; noch draußen {out}."},
+  "tracker.sr.group": {"en": "{kind}: yours {mine}; still out {out}. Counted: you {you}, your opponent {opp}, seen {seen}.", "de": "{kind}: Ihre {mine}; noch draußen {out}. Gezählt: Sie {you}, Ihr Gegner {opp}, gesehen {seen}."},
   "tracker.sr.none": {"en": "none", "de": "keine"},
   "tutor.lead.well": {"en": "Went well:", "de": "Gut gelaufen:"},
   "tutor.lead.next": {"en": "Next: {skill}.", "de": "Als Nächstes: {skill}."},

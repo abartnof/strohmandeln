@@ -220,12 +220,13 @@ test("two to four lines, in order: tarocks, masters, voids, points", () => {
 });
 
 test("the screen reader gets a sentence per kind in place of the grid", () => {
-  const p = payload({ groups: { h: { mine: ["Qh"], out: ["Kh", "Ch"] }, d: {} } });
+  const p = payload({ places: { Qh: "hand", Jh: [0, 3], "4h": [1, 2], T21: [1, 1], T3: "hand" }, groups: { h: { mine: ["Qh"], out: ["Kh", "Ch"] }, d: {} } });
   const m = trackerModel(p, words("en"));
   assert.equal(m.sr.length, 5);
-  assert.equal(m.sr[0], "Hearts: yours queen of hearts; still out king of hearts, cavall of hearts.");
-  assert.equal(m.sr[1], "Diamonds: yours none; still out none.");
-  assert.match(trackerModel(p, words("de")).sr[0], /^Herz: Ihre Herz-Dame; noch draußen Herz-König, Herz-Cavall\.$/);
+  assert.equal(m.sr[0], "Hearts: yours queen of hearts; still out king of hearts, cavall of hearts. Counted: you 2, your opponent 1, seen 3.");
+  assert.equal(m.sr[1], "Diamonds: yours none; still out none. Counted: you 0, your opponent 0, seen 0.");
+  assert.match(m.sr[4], /Counted: you 1, your opponent 1, seen 2\.$/, "the tarocks' three rows summed");
+  assert.match(trackerModel(p, words("de")).sr[0], /^Herz: Ihre Herz-Dame; noch draußen Herz-König, Herz-Cavall\. Gezählt: Sie 2, Ihr Gegner 1, gesehen 3\.$/);
 });
 
 test("the panel: a labelled region, the lines a list, the grid hidden from the screen reader, a Fold button", () => {

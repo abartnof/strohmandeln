@@ -112,14 +112,20 @@ export function trackerModel(p, words) {
   }
   lines.push({ id: "points", text: t("tracker.line.points", { points: thirds(p.out_thirds) }) });
 
+  const counted = rows.map((r) => ({ ...r, counts: counts(r.cells) }));
+  // A kind's counts for the screen reader: its rows summed (the tarocks have three).
+  const kindCounts = (kind) => {
+    const of = counted.filter((r) => (r.id.startsWith("t") ? "trump" : r.id) === kind).map((r) => r.counts);
+    return Object.fromEntries(COUNTS.map((id) => [id, of.reduce((n, c) => n + c[id], 0)]));
+  };
   const names = (codes) => (codes.length ? codes.map(cardName).join(", ") : t("tracker.sr.none"));
   return {
     title: t("tracker.title"),
     byline: t("tracker.byline"),
     lines,
-    rows: rows.map((r) => ({ ...r, counts: counts(r.cells) })),
+    rows: counted,
     legend: STATES.map((state) => ({ state, text: t(`tracker.legend.${state}`) })),
-    sr: KINDS.map(group).map((g) => t("tracker.sr.group", { kind: t(`card.suit.${g.kind}`), mine: names(g.mine), out: names(g.out) })),
+    sr: KINDS.map(group).map((g) => t("tracker.sr.group", { kind: t(`card.suit.${g.kind}`), mine: names(g.mine), out: names(g.out), ...kindCounts(g.kind) })),
     countHeads: COUNTS.map((id) => ({ id, text: t(`tracker.count.${id}`), title: t(`tracker.count.${id}.title`) })),
     trick: p.trick,
   };
