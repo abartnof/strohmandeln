@@ -477,19 +477,20 @@ shown. After a bid, the buttons vanish.
 3.5.1 The **new-sitting screen** (also reached by "New sitting" at the end and the
 plus at the top) offers: **Length**, "3 Touren (6 deals)" / "6 Touren (12 deals)",
 default 3 [R 15.2, 17.14]; the three rule settings (7.2); the opponent's level
-(7.3); the seat's "Hand" (the human's seat is chosen by lot unless the page
+and style (7.3); the seat's "Hand" (the human's seat is chosen by lot unless the page
 passes `human`); and **Deal** and **Cancel**. The rules rows are shown on the
 screen, with no disclosure. The screen's helper line
 says "A Tour is two deals, one dealt by each." The screen is the only place
-these five are chosen (17 Oct 2026, the maintainer's request: what does not
-apply to this game in play belongs in the new-sitting choices).
+these six are chosen (17 Oct 2026, the maintainer's request: what does not
+apply to this game in play belongs in the new-sitting choices; the style, the
+same day, the maintainer's request for a style dropdown, `docs/STYLES.md`).
 
 3.5.2 The screen starts from the sitting on the table (its length, rules and
-level, as the record and the engine have them), else from the kept prefs; what
+level and style, as the record and the engine have them), else from the kept prefs; what
 is chosen when Deal is pressed is kept as the next default (7.7). A sitting in
 progress is never changed by the screen, and the Settings menu does not offer
-the length, the three rules or the opponent's level at all: it reads them back
-(7.1). The opponent's level is fixed for the sitting (a change would need a
+the length, the three rules, the opponent's level or style at all: it reads them
+back (7.1). The opponent's level and style are fixed for the sitting (a change would need a
 record event of its own, PROTOCOL "Creating a sitting"; not offered).
 
 ### 3.6 Extension prompt
@@ -1162,7 +1163,7 @@ choices: the length, the three rules and the opponent's level are the
 new-sitting screen's (3.5). A read-only line at the top says what the sitting
 on the table is, read from the record's `sitting_start` and the engine's level
 and not from the prefs: "This sitting: 3 Touren, 2/3/4, ultimo 1, simple game,
-opponent level 3", then "A new sitting, from the plus at the top, chooses the
+opponent level 3, style Normal", then "A new sitting, from the plus at the top, chooses the
 next." It is hidden when there is no sitting, and a restored sitting shows its
 own rules, not the kept defaults. The table-top select is 16 px or more, at
 least a touch target high, and in the menu's colour pair. Escape on its open list closes
@@ -1179,12 +1180,27 @@ variants without the maintainer).
 
 ### 7.3 The opponent's skill
 
-A dial of 1 to 4 in halves, as Cassino's, on the new-sitting screen (3.5) and not
-in the Settings menu; passed as `level` in `new` [P] (an
-integer for now: the dial maps to the engine's levels when the opponent
-package defines them; until then the wasm carries the opaque value). The
-label under the dial says in a sentence what the level plays like, once the
-package defines it.
+A dial of 1, 2, 3, 3½, 4 (no other half steps, `docs/STYLES.md` 1.1; a kept 1.5
+or 2.5 snaps to 1 or 2 as the engine does), on the new-sitting screen (3.5) and not
+in the Settings menu; passed as `level` in `new` [P].
+
+**The style** (17 Oct 2026, the maintainer's request; `docs/STYLES.md` 2, 5): a
+native select under the dial, 16 px or more, labelled "Opponent's style" / "Stil
+des Gegners": Normal (default), Random, then the offered styles. The offered
+list is one constant (`OFFERED_STYLES`, `web3d/src/prefs.js`) and follows
+`docs/STYLES.md` 9: today Bermann, Mayr and Sedlaczek, Bold, Cautious, Pagat hunter
+(Werner and Ulmann fell out; Hunter is provisional). A writer is a school, "After
+Bermann" / "Nach Bermann", never the opponent's name; a temperament is the table's
+own character: Bold / Verwegen, Cautious / Vorsichtig, Pagat hunter / Pagatjäger.
+A line under the select says in a sentence what the choice plays like
+(`style.<id>.line`); at skills 3½ and 4, for any style but Normal, a note adds "At
+this skill the style shows mostly in the bidding." (`style.note.bidding`).
+Passed as `style` in `new`; the last choice is kept. Under **Random** the menu's
+line says "Random (shown at the end)" and, once the sitting is over, "Random:
+After Bermann"; the end-of-sitting dialog and brief name the drawn style
+(`style.reveal`), the engine withholding it until the brief's `reveal` flag. Open:
+the after-deal brief's "Their style" bullet (`docs/STYLES.md` 5) waits on the
+engine; a Random sitting left by a new sitting reveals nothing yet.
 
 ### 7.4 Speed
 
@@ -1242,7 +1258,8 @@ sitting, 9), `strohmandeln.tutor` (the tutor's deals and summaries, 6.4.4),
 (a private window, cleared site data) means defaults, a one-time notice, and a
 page that works as a single sitting.
 
-7.7.3 The prefs record is `{v, ...all settings, defaults too}`, `v` the version of
+7.7.3 The prefs record is `{v, ...all settings, defaults too}` (version 2 adds
+`style`, and drops the half levels), `v` the version of
 the defaults it was kept under, as Cassino's: a default changed later is not
 mistaken for the person's choice. A store written by a newer page (`v` above
 this page's) is read as empty and left as it is, and said once. A record whose
@@ -1467,7 +1484,14 @@ motion are saved to `web3d/test/out/`.
 - `new_sitting_from_table`: the new-sitting screen starts from the sitting on the
   table, not the prefs, and shows the rules rows with no disclosure.
 - `skill_speed`: the speed keeps and applies; the level is read in the menu's line
-  and chosen on the new-sitting screen.
+  and chosen on the new-sitting screen, which offers 1, 2, 3, 3½, 4.
+- `new_sitting_style`: the Style select offers Normal, Random and the offered
+  styles, with the style's line under it and, at skills 3½ and 4, the bidding
+  note; the choice starts the sitting, is kept as the next default, and shows in
+  the menu's line and in the exported record; the screen starts from it (7.3).
+- `random_style_hidden`: under Random the menu's line says "Random (shown at the
+  end)" and the state's `drawn` is null; at the sitting's end the drawn style is
+  named in the dialog, the menu's line and the sitting's brief (7.3).
 - `language_switch`: mid-sitting (during a deal, after a reveal, at the count)
   English to German and back: every visible string, the faces' court labels,
   the HUD (rebuilt, numbers kept), the slate, the open tutorial page and the screen-reader text
