@@ -5,7 +5,7 @@
 // the same way. The two takes' lines alternate, so both sides count at once
 // and the count is as long as the longer take, not the two together.
 import { defineGame } from "../../kit/js/scoring.js";
-import { thirdsOf } from "./cardinfo.js";
+import { thirdsOf, valueOf } from "./cardinfo.js";
 import { thirds } from "./strings.js";
 
 // 107 thirds is 35 2/3, and reaches 36: the finish lights at 107.
@@ -97,4 +97,28 @@ export function countGame(words) {
     ...COUNT_RULES,
     popup: (l, i, lines, info) => (l.bonus ? { pts: info.pts, label: l.label } : { pts: l.thirds, label: words.group(l.group + 1) }),
   });
+}
+
+// A group's arithmetic (docs/TABLE3D.md 2.5.2, RULES 8.1): each card's value in Points, their
+// sum, less 2/3 a card (a card counts 3 x value - 2 thirds), the group's count. `name` is a
+// card's short name, `t` the strings. { thirds, sum, less (thirds), text }.
+export function groupArithmetic(codes, { t, name }) {
+  const sum = codes.reduce((n, c) => n + valueOf(c), 0);
+  const less = 2 * codes.length;
+  const sorted = codes.map((c) => `${name(c)} ${valueOf(c)}`).join(" + ");
+  const cards = sorted.charAt(0).toUpperCase() + sorted.slice(1);
+  const total = codes.reduce((n, c) => n + thirdsOf(c), 0);
+  return { thirds: total, sum, less, text: t("hud.badge.sum", { cards, sum, less: thirds(less), value: thirds(total) }) };
+}
+
+// The badges of a count: one a group of its lines, in the order counted:
+// { line, side, group, codes, thirds, label (the count as the HUD shows it), text (the arithmetic) }.
+export function countBadges(lines, words) {
+  const badges = [];
+  lines.forEach((l, line) => {
+    if (l.bonus) return;
+    const a = groupArithmetic(l.codes, words);
+    badges.push({ line, side: l.side, group: l.group, codes: l.codes, thirds: a.thirds, label: thirds(a.thirds), text: a.text });
+  });
+  return badges;
 }

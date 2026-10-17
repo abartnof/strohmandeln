@@ -24,6 +24,7 @@ export function createUi(root, { t, onAct }) {
   root.append(
     el("div", { class: "tags" }), // each tag is hidden from a reader but one with a tip
     el("div", { class: "floats", "aria-hidden": "true" }),
+    el("div", { class: "count-badges" }),
     el("div", { class: "info" }, el("div", { class: "hud-slot" }), el("p", { class: "tour-line" })),
     el("div", { class: "slate-root" }),
     el("div", { class: "settings-root" }),
@@ -71,8 +72,25 @@ export function createUi(root, { t, onAct }) {
   const live = q(".sr-live");
   const floats = q(".floats");
   const tagLayer = q(".tags");
+  const badgeLayer = q(".count-badges");
   const sayLayer = q(".say-layer");
   const dialogs = q(".dialogs");
+
+  // A tooltip kept inside the window: shifted sideways by what overhangs.
+  function nudgeTip(node) {
+    const tip = node.lastChild;
+    tip.style.setProperty("--shift", "0px");
+    const r = tip.getBoundingClientRect();
+    const shift = r.left < 8 ? 8 - r.left : r.right > window.innerWidth - 8 ? window.innerWidth - 8 - r.right : 0;
+    tip.style.setProperty("--shift", `${shift}px`);
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    for (const n of badgeLayer.children) (n.classList.add("hushed"), n.classList.remove("open"));
+  });
+  document.addEventListener("pointerdown", (e) => {
+    if (!(e.target instanceof Element) || !e.target.closest(".count-badge")) for (const n of badgeLayer.children) n.classList.remove("open");
+  });
 
   root.addEventListener("click", (e) => {
     const button = e.target instanceof Element ? e.target.closest("[data-act]") : null;
@@ -218,6 +236,38 @@ export function createUi(root, { t, onAct }) {
     },
     clearChips(kind = null) {
       for (const c of floats.querySelectorAll(".chip")) if (!kind || c.classList.contains(kind)) c.remove();
+    },
+
+    // The count's badges (TABLE3D 2.5.2), one a group, over it: [{ id, label, text, side, thirds, x, y, size }].
+    // `text` is the arithmetic: the tooltip on hover, focus and tap, and the badge's accessible name.
+    // The tooltip needs no closing (it follows the pointer and the focus); Escape hushes it all the same.
+    countBadges(list) {
+      const have = new Map([...badgeLayer.children].map((n) => [n.dataset.id, n]));
+      const keep = new Set();
+      for (const b of list) {
+        keep.add(b.id);
+        let node = have.get(b.id);
+        if (!node) {
+          node = el("div", { class: "count-badge", "data-id": b.id, tabindex: "0", role: "img" }, "", el("span", { class: "tip", "aria-hidden": "true" }));
+          for (const ev of ["pointerenter", "focus"]) node.addEventListener(ev, () => (node.classList.remove("hushed"), nudgeTip(node)));
+          node.addEventListener("click", () => {
+            const open = !node.classList.contains("open");
+            for (const n of badgeLayer.children) n.classList.remove("open");
+            node.classList.toggle("open", open);
+            if (open) nudgeTip(node);
+          });
+          badgeLayer.append(node);
+        }
+        if (node.firstChild.textContent !== b.label) node.firstChild.textContent = b.label;
+        const tip = node.lastChild;
+        if (tip.textContent !== b.text) (tip.textContent = b.text), node.setAttribute("aria-label", b.text);
+        node.dataset.thirds = b.thirds;
+        node.dataset.side = b.side;
+        node.style.left = `${b.x.toFixed(1)}px`;
+        node.style.top = `${b.y.toFixed(1)}px`;
+        node.style.fontSize = `${b.size.toFixed(1)}px`;
+      }
+      for (const [id, node] of have) if (!keep.has(id)) node.remove();
     },
 
     // Tags that follow cards: [{ id, text, x, y, kind, title }], the pool kept by id.

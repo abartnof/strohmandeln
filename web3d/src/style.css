@@ -121,7 +121,7 @@ button { font: inherit; }
 .big:focus-visible, .tab:focus-visible { outline: 3px solid var(--md-sys-color-primary); outline-offset: 2px; }
 .place.announce .big { min-width: 0; font-size: 14px; }
 
-.tags, .floats, .say-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.tags, .floats, .say-layer, .count-badges { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .tag { position: absolute; left: 0; top: 0; }
 .tag.badge { min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 10px; background: #1d2433; color: #fff; border: 2px solid #fff; font: 700 12px/16px system-ui; text-align: center; }
 .tag.dealer { pointer-events: auto; cursor: help; white-space: nowrap; } /* its tooltip (the tags layer takes no pointer) */
@@ -172,3 +172,54 @@ button { font: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .chip { animation: none; transition: none; }
 }
+
+/* ---- the count's badges (TABLE3D 2.5.2): a black disc over each group of three, after
+   Cassino's build badge, ringed white; the arithmetic in a tooltip on hover, focus and tap. */
+.count-badge {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  min-width: 2em;
+  height: 2em;
+  padding: 0 0.42em;
+  display: grid;
+  place-items: center;
+  border: max(2px, 0.15em) solid #fff;
+  border-radius: 999px;
+  background: #1b1f24;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 max(1px, 0.09em) #1b1f24, 0 2px 5px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+  cursor: help;
+}
+.count-badge:focus-visible { outline: 3px solid var(--gold, #e0b020); outline-offset: 2px; }
+.count-badge .tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.5em);
+  transform: translateX(calc(-50% + var(--shift, 0px)));
+  width: max-content;
+  max-width: min(280px, 80vw);
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: #1b1f24;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+.count-badge[data-side="opp"] .tip { bottom: auto; top: calc(100% + 0.5em); }
+.count-badge:not(.hushed):is(:hover, :focus, .open) { z-index: 3; }
+.count-badge:not(.hushed):is(:hover, :focus, .open) .tip { visibility: visible; }

@@ -53,13 +53,21 @@ export function createStrings(table, initial = "en") {
     return m && m[1] !== "1" && m[1] !== "21" ? t("card.tarock", { n: tarockNumeral(+m[1]) }) : cardName(code);
   }
 
+  // A card's short name in the count's arithmetic: a suit card by its rank alone ("king",
+  // "seven"; the suit is no part of its value), the tarocks as `romanName`.
+  function badgeName(code) {
+    const m = /^(K|Q|C|J|\d+)[hdcs]$/.exec(code);
+    if (!m) return romanName(code);
+    return /^\d/.test(m[1]) ? t(`hud.badge.pip.${m[1]}`) : t(`card.rank.${m[1]}`);
+  }
+
   // A whole count as the language writes it: 1,000 in English, 1.000 in
   // German (four digits and more are grouped, a smaller count is as it is);
   // anything that is not a whole number is left as it is.
   const GROUPING = { en: new Intl.NumberFormat("en-US"), de: new Intl.NumberFormat("de-DE") };
   const count = (n) => (Number.isInteger(n) ? GROUPING[lang].format(n + 0) : String(n));
 
-  return { t, tn, getLang: () => lang, setLang, onLang, suitName, cardName, romanName, count };
+  return { t, tn, getLang: () => lang, setLang, onLang, suitName, cardName, romanName, badgeName, count };
 }
 
 // Roman numerals as on the real pack: standard subtractive numerals, except 4, which is IIII.
@@ -96,4 +104,4 @@ export const signed = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "0");
 // ---- the shipped table ----------------------------------------------------
 
 const shared = createStrings(TABLE);
-export const { t, tn, getLang, setLang, onLang, suitName, cardName, romanName, count } = shared;
+export const { t, tn, getLang, setLang, onLang, suitName, cardName, romanName, badgeName, count } = shared;

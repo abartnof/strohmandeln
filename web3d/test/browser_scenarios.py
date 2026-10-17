@@ -18,6 +18,7 @@ from browser import (
     fail_if,
     js,
     rest,
+    shot,
     state,
     still,
 )
@@ -396,6 +397,70 @@ def check_count_thirds(browser, failures):
             fail_if(any(b < a for a, b in zip(from_nothing[: from_nothing.index(max(from_nothing)) + 1], from_nothing[1:])), failures, "count_thirds: the tally fell during the count")
         fail_if(sum(count["thirds"]) != 210, failures, "count_thirds: the takes do not sum to 210")
         fail_if(max(x["counted"] for x in samples) < 3, failures, "count_thirds: no cards turned up in the count")
+
+
+BADGES = """() => [...document.querySelectorAll('.count-badges .count-badge')].map((b) => ({ label: b.firstChild.textContent, thirds: Number(b.dataset.thirds), name: b.getAttribute('aria-label'), tip: b.querySelector('.tip')?.textContent ?? '', side: b.dataset.side, tab: b.tabIndex }))"""
+
+
+def tip_shown(page, badge):
+    return page.evaluate("(b) => { const t = b.querySelector('.tip'); const r = t.getBoundingClientRect(); const c = getComputedStyle(t); return c.visibility !== 'hidden' && c.display !== 'none' && Number(c.opacity) > 0 && r.width > 0; }", badge.element_handle())
+
+
+def check_count_badges(browser, failures):
+    """TABLE3D 2.5.2: a circle badge over each group of three won cards, its count as the HUD shows it;
+    the arithmetic on hover and focus (and tap), as the badge's accessible name; the badges sum to the take."""
+    for reduced in (False, True):
+        tag = "count_badges" + (" (reduced motion)" if reduced else "")
+        page = open_page(browser, "seed=7&speed=fast&human=1&manual", viewport=LANDSCAPE, nodraw=False, reduced=reduced, wait=False)
+        mrest(page, step=400)
+        take_if_bidding(page, manual=True)
+        ok = to_last_trick(page)
+        fail_if(not ok, failures, f"{tag}: the sitting did not reach a last trick")
+        if not ok:
+            continue
+        human = state(page)["human"]
+        play = False
+        full = None
+        seen = []  # the HUD's totals, all through
+        for _ in range(1200):
+            s = state(page)
+            if not play and s["prompt"] == "you":
+                page.evaluate(f"window.strohmandeln3d.act({json.dumps(wire(choose(s, 'first', False)))})")
+                play = True
+            page.evaluate("window.strohmandeln3d.tick(250)")
+            seen.append(page.evaluate("window.strohmandeln3d.hud().totals"))
+            badges = page.evaluate(BADGES)
+            if badges and sum(b["thirds"] for b in badges) == 210:  # every group has its badge: the two takes make 210
+                full = badges
+                break
+        fail_if(full is None, failures, f"{tag}: the badges never came to one a group")
+        if full is None:
+            continue
+        count = next(e for e in js(page, "log()") if e["type"] == "count")
+        for side, seat in (("you", human), ("opp", 1 - human)):
+            mine = [b for b in full if b["side"] == side]
+            fail_if(sum(b["thirds"] for b in mine) != count["thirds"][seat], failures, f"{tag}: {side}'s badges sum to {sum(b['thirds'] for b in mine)}, the count says {count['thirds'][seat]}")
+        fail_if(any(b["label"] != b["name"].rsplit("= ", 1)[1] for b in full), failures, f"{tag}: a badge's number is not the end of its arithmetic")
+        fail_if(any(b["tip"] != b["name"] or b["tab"] != 0 for b in full), failures, f"{tag}: a badge's tooltip is not its accessible name, or it cannot take focus")
+        fail_if(any("+" not in b["name"] or "less" not in b["name"] for b in full), failures, f"{tag}: an arithmetic lacks its sum or its subtraction")
+        loud = page.locator(".count-badges .count-badge")
+        fail_if(any(tip_shown(page, loud.nth(i)) for i in range(loud.count())), failures, f"{tag}: a tooltip is up before any hover")
+        loud.nth(0).hover()
+        fail_if(not tip_shown(page, loud.nth(0)), failures, f"{tag}: hover shows no arithmetic")
+        if not reduced:
+            shot(page, "count_badges_hover")
+        page.mouse.move(2, 2)
+        loud.nth(1).focus()
+        fail_if(not tip_shown(page, loud.nth(1)), failures, f"{tag}: focus shows no arithmetic")
+        page.keyboard.press("Escape")
+        fail_if(tip_shown(page, loud.nth(1)), failures, f"{tag}: Escape did not close the arithmetic")
+        # The HUD's tally is as it was: the count ends on the same totals.
+        for _ in range(60):
+            page.evaluate("window.strohmandeln3d.tick(200)")
+            seen.append(page.evaluate("window.strohmandeln3d.hud().totals"))
+        want = {"you": count["thirds"][human], "opp": count["thirds"][1 - human]}
+        fail_if(want not in seen, failures, f"{tag}: the HUD never showed {want}")
+        close_all(browser)
 
 
 def check_count_quiet(browser, failures):
@@ -927,7 +992,7 @@ def check_touch_targets(browser, failures):
 
 CHECKS_102 = [
     check_cut_and_deal, check_bid_badge, check_reveal_shows_cards, check_last_card_pulled, check_play_hand_vs_packet,
-    check_replacement_after_trick, check_trick_gather, check_last_trick_ultimo, check_count_thirds, check_count_quiet,
+    check_replacement_after_trick, check_trick_gather, check_last_trick_ultimo, check_count_thirds, check_count_badges, check_count_quiet,
     check_game_scored_banner, check_draw_and_doubling, check_void_deal, check_throw_in, check_tour_end_and_extension,
     check_settlement, check_farewell_once, check_motion_profile,
 ]

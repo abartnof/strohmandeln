@@ -271,7 +271,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 - While you play, the line at the top gives the Tour, the deal and the trick, such as Trick 14 / 27.
 - The score runs as you take tricks. After each trick every line holds the cards won so far, counted as the count will count them.
 - The number beside the score line is the tally in exact thirds. The line fills one segment for each whole card point, up to 36.
-- After the 27th trick the count begins again from nothing. Each take is turned up, three cards at a time, and over each group a figure rises: the group's count, such as +6 for the king, jack and seven.
+- After the 27th trick the count begins again from nothing. Each take is turned up, three cards at a time, and a round badge over each group shows its count, such as 6. Hover over it for the sum.
 - It ends on the same numbers the tally had. A take that reaches 35⅔ lights the finish; one that ends on 35⅓ is marked "35⅓ is not 36".
 - Honours and ultimo come after the count, in Points. They have their own row, "Honours and ultimo", and are not added to the 36.
 - The arrow beside the score opens the list by deal: the count, and the honours and ultimo. A banner then names the result and the Points paid.

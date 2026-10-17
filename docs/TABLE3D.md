@@ -274,11 +274,24 @@ the opponent's) is taken from its won pile, 3 cards at a time: each group peeled
 off the pile (`peelOff`), turned face up (`flip`), and laid in a row in the
 count zone in front of its owner, the groups laid out left to right in the order
 counted, every group's cards overlapping by a third so their indices read. The
-group's popup (`+n` thirds, in the value of the group: the sum of 3×value−2 for
-each card, [R 8.1]) rises over the group, and the running tally in the HUD
-ticks up. A last group of fewer than three shows its popup the same way. One
-popup a beat (`countSchedule`, `scalePace`); a side's next popup waits for its
-last.
+running tally in the HUD ticks up, one line a beat (`countSchedule`,
+`scalePace`); a side's next line waits for its last. Over each group, once its
+cards are down, sits a **count badge** (17 Oct 2026, the maintainer: a circle
+badge over each three cards with the points it awards, the arithmetic on
+hover; no pop-out figure): a black disc ringed white, after Cassino's build
+badge, showing the group's count as the HUD does ("6", "5⅔", "1"); a last group
+of fewer than three has its badge the same way. The badge's tooltip is the
+arithmetic, [R 8.1]: each card's value, their sum, less 2 thirds a card, the
+count ("King 5 + jack 2 + seven 1 = 8, less 2 = 6"; a pair: "King 5 + jack 2 =
+7, less 1⅓ = 5⅔"; `groupArithmetic`, `countBadges`). Cards are named by rank
+(Roman numerals for tarocks, the Sküs, the Mond, the Pagat). The tooltip shows on
+hover, on keyboard focus (each badge takes Tab, in the order counted) and on
+tap, and needs no closing; Escape hushes it all the same. The badge's accessible
+name is the arithmetic. Badges stay while the count's cards are on the table; with
+reduced motion each appears at its line. Strings `hud.badge.*`. The badges of a take
+sum to its thirds (`countbadges.test.js`, browser check `count_badges`). The renderer is
+this game's (`ui.countBadges`), not the kit's: no other game of the series uses it,
+and Cassino keeps its pop-out.
 
 2.5.3 **The running tally in exact thirds.** (It runs during play as well as at
 the count: see the paragraph after this one.) The HUD's line for each side runs to

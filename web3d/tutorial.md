@@ -273,7 +273,7 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - Solange Sie spielen, nennt die Zeile oben die Tour, die Partie und den Stich, etwa Stich 14 / 27.
 - Der Stand läuft mit, während Sie Stiche machen. Nach jedem Stich zeigt jede Linie die bisher gewonnenen Karten, so gezählt, wie die Zählung sie zählen wird.
 - Die Zahl neben der Stand-Linie ist der laufende Stand in genauen Dritteln. Die Linie füllt je einen Abschnitt für jedes ganze Auge, bis 36.
-- Nach dem 27. Stich beginnt die Zählung von vorn. Die gewonnenen Karten jedes Spielers werden aufgedeckt, drei auf einmal, und über jeder Gruppe steigt eine Zahl auf: ihr Wert, etwa +6 für König, Bube und Sieben.
+- Nach dem 27. Stich beginnt die Zählung von vorn. Die gewonnenen Karten jedes Spielers werden aufgedeckt, drei auf einmal, und eine runde Marke über jeder Gruppe zeigt ihren Wert, etwa 6. Fahren Sie mit der Maus darüber für die Rechnung.
 - Sie endet bei denselben Zahlen wie der laufende Stand. Wer 35⅔ erreicht, lässt das Ziel leuchten; wer auf 35⅓ endet, bekommt „35⅓ ist nicht 36“.
 - Die Honneurs und das Ultimo kommen nach der Zählung, in Points. Sie haben eine eigene Zeile, „Honneurs und Ultimo“, und werden nicht zu den 36 gerechnet.
 - Der Pfeil neben dem Stand öffnet die Liste je Partie: die Zählung, dazu die Honneurs und das Ultimo. Eine Anzeige nennt dann das Ergebnis und die bezahlten Points.
