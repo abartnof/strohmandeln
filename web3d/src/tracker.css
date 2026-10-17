@@ -81,8 +81,8 @@
 /* Played by you: dimmed on a grey field and not struck through (a strike garbles K and C at this size);
    who played it, and when, is in the cell's title and the screen reader's sentences. */
 .tracker-cell[data-state="played"] { background: var(--md-sys-color-surface-container-highest); border-color: var(--md-sys-color-outline-variant); border-style: dashed; color: var(--md-sys-color-on-surface-variant); opacity: 0.75; }
-/* Played by your opponent: a dull red field and a bar under the label, so it is not colour alone. */
-.tracker-cell[data-state="theirs"] { background: var(--tracker-opp); border-color: var(--tracker-opp); color: var(--tracker-on-opp); box-shadow: inset 0 -3px 0 var(--tracker-on-opp); }
+/* Played by your opponent: one clear red, white label; set apart from a card played by you by its solid field and edge (yours is dimmed and dashed). */
+.tracker-cell[data-state="theirs"] { background: var(--tracker-opp); border-color: var(--tracker-opp); color: var(--tracker-on-opp); }
 
 .tracker-legend { display: flex; flex-wrap: wrap; gap: 0 10px; margin: 4px 0 0; padding: 0; list-style: none; font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
 .tracker-legend li { display: flex; align-items: center; gap: 4px; line-height: 1.2; }

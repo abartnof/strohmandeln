@@ -109,8 +109,9 @@ test("the opponent's played cell is red, apart from the grey one", () => {
   assert.ok(ratio(tracker["tracker-opp"], tracker[M + "surface-container-highest"]) < 2, "a red tint, not a text-weight contrast");
 });
 
-test("the opponent's played cell keeps a second cue and the high-contrast rule", () => {
-  assert.match(tcss, /\[data-state="theirs"\][^{]*\{[^}]*(box-shadow|border-bottom)/, "a mark beyond colour");
+test("the opponent's played cell is a single red, and keeps its high-contrast rule", () => {
+  const theirs = tcss.match(/\.tracker-cell\[data-state="theirs"\]\s*\{[^}]*\}/)[0];
+  assert.doesNotMatch(theirs, /box-shadow|border-bottom/, "one colour, so the legend's swatch reads as one kind of card");
   const more = tcss.slice(tcss.indexOf("prefers-contrast: more"));
   assert.match(more, /data-state="theirs"/);
 });
