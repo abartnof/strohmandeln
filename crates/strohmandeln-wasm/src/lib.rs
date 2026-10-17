@@ -109,7 +109,7 @@ fn drawn_of(style: Style, drawn: &Option<Value>, seed: u64) -> Result<Style, Fai
     match (style, drawn) {
         (Style::Random, None | Some(Value::Null)) => Ok(Style::drawn(seed)),
         (Style::Random, Some(Value::String(id))) => Style::parse(id)
-            .filter(|s| Style::POOL.contains(s))
+            .filter(|s| Style::CANDIDATES.contains(s))
             .ok_or(Fail::Field("drawn")),
         (_, None | Some(Value::Null)) => Ok(style),
         (_, Some(_)) => Err(Fail::Field("drawn")),
@@ -752,6 +752,13 @@ impl Table {
     }
 }
 
+/// `strohmandeln_styles`: the ids of the styles the dialog offers, which are
+/// the ones Random draws from (`Style::POOL`).
+pub fn styles_reply() -> Value {
+    let ids: Vec<&str> = Style::POOL.iter().map(|s| s.id()).collect();
+    json!({"protocol": PROTOCOL, "styles": ids})
+}
+
 /// The WebAssembly exports. Every call that has something to say leaves JSON
 /// for the host to read at `strohmandeln_out()`, `strohmandeln_out_len()`.
 pub mod ffi {
@@ -902,6 +909,12 @@ pub mod ffi {
     pub extern "C" fn strohmandeln_learner(len: usize) {
         let text = input(len);
         HOST.with(|h| h.borrow_mut().give_value(&super::tutor::learner_of(&text)))
+    }
+
+    /// The styles on offer: `{protocol, styles: [id, ..]}`. Stateless.
+    #[no_mangle]
+    pub extern "C" fn strohmandeln_styles() {
+        HOST.with(|h| h.borrow_mut().give_value(&super::styles_reply()))
     }
 
     /// The brief of the deal in the `len` bytes just written (`level n`, a

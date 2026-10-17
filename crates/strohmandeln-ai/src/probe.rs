@@ -425,7 +425,7 @@ impl Options {
             deals: 1000,
             seed: 5_000_000,
             skills: vec![3.0, 4.0],
-            styles: std::iter::once(Style::Normal).chain(Style::POOL).collect(),
+            styles: std::iter::once(Style::Normal).chain(Style::CANDIDATES).collect(),
             calib_hands: None,
             out: None,
             calibrate_only: false,
