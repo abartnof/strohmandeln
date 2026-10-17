@@ -184,8 +184,9 @@ def check_slate_tips(browser, failures):
         c = e["credits"][0]
         who = "you" if c["seat"] == human else "opp"
         kind = f"game.{e['result'] if e['result'] in ('declarer_win', 'declarer_loss') else 'simple_win'}.{who}" if c["cause"] == "game" else f"{c['cause']}.{who}"
-        pts = t("slate.tip.pt.one" if c["points"] == 1 else "slate.tip.pt.other").format(n=c["points"])
-        x2 = t("slate.tip.doubled").format(base=c["points"] // 2) if e["multiplier"] == 2 else ""
+        base = c["points"] // e["multiplier"]
+        pts = t("slate.tip.pt.one" if base == 1 else "slate.tip.pt.other").format(n=base)
+        x2 = t("slate.tip.doubled").format(n=c["points"]) if e["multiplier"] == 2 else ""
         want = t(f"slate.tip.{kind}").format(pts=pts, x2=x2)
         got = page.locator(".slate [data-deal]").first.locator(".slate-credit").first.get_attribute("title")
         fail_if(got != want, failures, f"slate_tips: the first credit says {got!r}, the record gives {want!r}")
@@ -206,7 +207,16 @@ def check_slate_tips(browser, failures):
     if ok:
         rest(page)
         got = page.locator(".slate .slate-credit").first.get_attribute("title") or ""
-        fail_if("{" in got or not got or "pays you" in got, failures, f"slate_tips: the German tip is {got!r}")
+        e = next(e for e in js(page, "log()") if e["type"] == "game_scored")
+        c = e["credits"][0]
+        human = state(page)["human"]
+        who = "you" if c["seat"] == human else "opp"
+        kind = f"game.{e['result'] if e['result'] in ('declarer_win', 'declarer_loss') else 'simple_win'}.{who}" if c["cause"] == "game" else f"{c['cause']}.{who}"
+        base = c["points"] // e["multiplier"]
+        pts = t("slate.tip.pt.one" if base == 1 else "slate.tip.pt.other", "de").format(n=base)
+        x2 = t("slate.tip.doubled", "de").format(n=c["points"]) if e["multiplier"] == 2 else ""
+        want = t(f"slate.tip.{kind}", "de").format(pts=pts, x2=x2)
+        fail_if(got != want, failures, f"slate_tips: the German tip is {got!r}, the record gives {want!r}")
     close_all(browser)
 
 

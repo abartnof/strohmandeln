@@ -676,11 +676,11 @@ Decided 17 Oct 2026 (the maintainer): a newcomer must be able to ask what any
 figure means.
 
 4.7.1 Every figure, heading and mark on the slate has a tooltip: each entry by
-its cause, the deal's total, the running account, the number, the dealer mark
-("G"), "Geber 1", "×2", the draw and throw-in notes, the Tour's number and its
+its cause, the deal's total, the running account, the number, the dealer mark,
+"Geber 1", "×2", the draw and throw-in notes, the Tour's number and its
 two accounts, "Extended", the header (the Touren, the settings), the balance and
 its direction, and each line of the settlement. The text says what it means in
-this sitting, from the record and the settings: who declared, who pays whom, the
+this sitting, from the record and the settings: who took it up, who pays whom, the
 Points (doubled or not), the kreuzer at 2 per Point. The templates are
 `slate.tip.*` in `web3d/strings.json`, en and de, at most 25 words, each
 resting on the rule it cites (R 9, 10, 11, 12, 14, 15). The Tour's two figures

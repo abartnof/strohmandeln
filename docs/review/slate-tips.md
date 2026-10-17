@@ -147,3 +147,20 @@ No tip states anything false about the rules. To fix before done: L1 (word count
 (settlement line order), K2 (auto-fold under keyboard), K3 (focus lost on re-render), L2 (German
 Aufnehmer), T1 (kreuzer on a deal's total). The rest are low. `slate_rows` is a pre-existing stale
 check, to be recorded as open.
+
+## Fixes
+
+17 Oct 2026, each test first.
+
+- L1: `header.rules` shortened ("Simple game 2, declarer wins 3, declarer loses 4 Points; Pagat ultimo 1 Point; both pass: played as a simple game"); the word-count test now reads every rendered tip, both both-pass settings included.
+- K1: the settlement heading takes its line number before the lines; a test walks Down through a settled sheet and Up again.
+- K2: focus on a figure or a key pressed in the sheet cancels the auto-fold timer (as a tap does); tested.
+- K3: a re-render keeps focus on the same figure when it was in the sheet, and keeps the caption text; tested.
+- L2, L3: German says "Aufnehmer gewinnt/verliert" and "aufgenommen"; "der Wert für ein gewonnenes/verlorenes Spiel"; tested.
+- T1: a deal's total tip says money is settled on the difference of the accounts at the end; no kreuzer figure.
+- T2: a doubled credit reads "3 Points, doubled to 6".
+- T3: the balance tips begin "Balance" / "Saldo". T4: "Pagat ultimo 1 Point".
+- N3: the German browser check compares with the German template.
+- Touch: the `click` path has a test. Escape returns focus to the slate tab in main (the `slate` kind of the Escape handler in `main.js`), so nothing to add.
+- TABLE3D 4.7.1 names "the dealer mark", not its letter.
+- Open: `slate_rows` (seed drift; another agent is re-seeding it). T5 (36 for 35 2/3) left as is.

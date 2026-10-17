@@ -194,7 +194,9 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
   let rover = null; // the tip that holds the tab stop
   let tipEls = [];
   const P = (n) => plural("slate.tip.pt", n);
-  const x2 = (points, multiplier) => (multiplier === 2 ? t("slate.tip.doubled", { base: points / 2 }) : "");
+  // A doubled deal shows the credit as "3 Points, doubled to 6" (R 14.2).
+  const base = (points, multiplier) => (multiplier === 2 ? points / 2 : points);
+  const x2 = (points, multiplier) => (multiplier === 2 ? t("slate.tip.doubled", { n: points }) : "");
   const tip = (cls, kind, params = {}) => ({
     class: `${cls} slate-tip`,
     role: "note",
@@ -212,8 +214,8 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
 
   const cell = (side, conto, b, mine) =>
     h(doc, "div", { class: "slate-cell" },
-      h(doc, "div", { class: "slate-credits" }, side.credits.map((c) => h(doc, "span", tip("slate-credit", creditKind(c, b.result, mine), { pts: P(c.points), x2: x2(c.points, b.multiplier) }), t("slate.entry", { cause: t(`slate.cause.${c.cause}`), n: c.points })))),
-      side.total > 0 ? h(doc, "div", tip("slate-total", `total.${youOpp(mine)}`, { pts: P(side.total), kr: kreuzer(side.total * KREUZER_PER_POINT) }), pts(side.total)) : null,
+      h(doc, "div", { class: "slate-credits" }, side.credits.map((c) => h(doc, "span", tip("slate-credit", creditKind(c, b.result, mine), { pts: P(base(c.points, b.multiplier)), x2: x2(c.points, b.multiplier) }), t("slate.entry", { cause: t(`slate.cause.${c.cause}`), n: c.points })))),
+      side.total > 0 ? h(doc, "div", tip("slate-total", `total.${youOpp(mine)}`, { pts: P(side.total) }), pts(side.total)) : null,
       conto === null ? null : h(doc, "div", tip("slate-conto", `conto.${youOpp(mine)}`, { deal: b.number, pts: P(conto) }), String(conto)));
 
   function dealRow(b) {
@@ -252,6 +254,8 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
       figures.push(
         () => h(doc, "div", { class: "slate-line slate-owed" }, h(doc, "span", tip("slate-label", "settle.owed", { pts: P(s.difference), kr }), t("slate.owed", { kr }))),
         () => h(doc, "div", { class: "slate-line slate-payer" }, h(doc, "span", tip("slate-label", `settle.payer.${s.payer}`, { pts: P(s.difference) }), t(`slate.payer.${s.payer}`))));
+    line += 1;
+    const title = h(doc, "h3", tip("slate-settle-title", "settle.title"), t("slate.settlement"));
     const lines = figures.map((make, i) => {
       line += 1;
       const f = make();
@@ -259,8 +263,7 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
       f.setAttribute("style", `--step:${i}`);
       return f;
     });
-    line += 1;
-    return h(doc, "div", { class: "slate-settlement" }, h(doc, "h3", tip("slate-settle-title", "settle.title"), t("slate.settlement")), lines);
+    return h(doc, "div", { class: "slate-settlement" }, title, lines);
   }
 
   // The tips in the order they stand on the sheet.
@@ -284,8 +287,11 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
     return el && el.getAttribute && el.getAttribute("data-tip") ? el : null;
   };
   let caption = null;
+  let captionText = ""; // kept across a re-render
+  let focused = false; // the focus is on a figure
   const say = (el) => {
-    if (caption && el) caption.textContent = el.getAttribute("title");
+    captionText = el ? el.getAttribute("title") : captionText;
+    if (caption && el) caption.textContent = captionText;
   };
   function onKey(ev) {
     const cur = tipOf(ev.target) ?? rover;
@@ -320,7 +326,7 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
       ? h(doc, "div", { class: "slate-rules" },
           h(doc, "span", tip("slate-header-touren", "header.touren", { touren: plural("slate.touren", m.header.touren), deals: m.header.touren * 2 }), plural("slate.touren", m.header.touren)),
           rules ? " · " : null,
-          rules ? h(doc, "span", tip("slate-header-rules", "header.rules", { simple, wins, loses, ultimo: st.ultimo, pass: t(`slate.tip.pass.${st.both_pass}`) }), rules) : null)
+          rules ? h(doc, "span", tip("slate-header-rules", "header.rules", { simple, wins, loses, ultimo: P(st.ultimo), pass: t(`slate.tip.pass.${st.both_pass}`) }), rules) : null)
       : null;
     line = 1;
     const first = h(doc, "small", tip("slate-first", "dealer1"), ` ${t("slate.dealer1")}`);
@@ -333,7 +339,7 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
     const balanceKind = foot.balance > 0 ? "ahead" : foot.balance < 0 ? "behind" : "level";
     const bal = h(doc, "span", tip("slate-balance", `balance.${balanceKind}`, { pts: P(Math.abs(foot.balance)), kr: kreuzer(foot.kreuzer) }), t("slate.balance", { n: signed(foot.balance), kr: kreuzer(foot.kreuzer) }));
     const dir = h(doc, "span", tip("slate-direction", `direction.${foot.direction}`, { kr: kreuzer(foot.kreuzer) }), foot.direction === "square" ? t("slate.square") : t(`slate.${foot.direction}`));
-    caption = h(doc, "div", { class: "slate-tip-caption", "aria-hidden": "true" }, t("slate.tip.caption"));
+    caption = h(doc, "div", { class: "slate-tip-caption", "aria-hidden": "true" }, captionText || t("slate.tip.caption"));
     const sheet = m.settlement ? settlement(m.settlement) : null;
     const board = h(doc, "div", { class: "slate-board", title: t("slate.tooltip") }, heads, header, cols, rows, h(doc, "div", { class: "slate-foot" }, bal, dir), sheet, caption);
     root.replaceChildren(board);
@@ -342,15 +348,25 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
     tipEls = collect(board);
     const keep = rover && tipEls.find((e) => e.getAttribute("data-tip") === rover.getAttribute("data-tip") && lineOf(e) === lineOf(rover));
     rover = null;
-    if (tipEls.length) setRover(keep ?? tipEls[0]);
+    if (tipEls.length) setRover(keep ?? tipEls[0], focused && !root.hidden && Boolean(keep));
     for (const ev of ["focusin", "mouseover", "click"])
       board.addEventListener(ev, (e) => {
         const el = tipOf(e.target);
         if (!el) return;
-        if (ev === "focusin") setRover(el);
+        if (ev === "focusin") {
+          keepOpen();
+          focused = true;
+          setRover(el);
+        }
         say(el);
       });
-    board.addEventListener("keydown", onKey);
+    board.addEventListener("focusout", (e) => {
+      if (e.relatedTarget && !root.contains(e.relatedTarget)) focused = false;
+    });
+    board.addEventListener("keydown", (e) => {
+      keepOpen();
+      onKey(e);
+    });
   }
 
   function open({ ms } = {}) {
@@ -363,6 +379,7 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
   function close() {
     if (timer !== null) cancel(timer);
     timer = null;
+    focused = false;
     root.hidden = true;
     root.setAttribute("aria-hidden", "true");
     root.classList.remove("slate-large");
@@ -370,6 +387,11 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
 
   // A tap on the sheet while it is folding itself keeps it open; a tap on the
   // backdrop folds it. (Escape is the page's: overlays.js.)
+  // Reading with the keyboard keeps the sheet open as a tap does.
+  const keepOpen = () => {
+    if (timer !== null) cancel(timer);
+    timer = null;
+  };
   root.addEventListener("click", (ev) => {
     if (timer !== null) {
       cancel(timer);

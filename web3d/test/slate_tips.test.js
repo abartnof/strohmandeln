@@ -47,13 +47,12 @@ const sets = [
   (lang, human) => made(lang, human, thrown, [0, 0]),
 ];
 
-test("every kind has a template in both languages, of at most 25 words in English", () => {
+test("every kind has a template in both languages", () => {
   for (const kind of TIP_KINDS) {
     const e = TABLE[`slate.tip.${kind}`];
     assert.ok(e && e.en && e.de, `slate.tip.${kind}`);
-    assert.ok(e.en.replace(/\{x2\}/g, " Counted double: 2 × 2.").replace(/\{(pts|total|kr)\}/g, "12 Points").replace(/\{\w+\}/g, "x").split(/\s+/).length <= 25, `${kind}: too long`);
   }
-  for (const k of ["slate.tip.pt.one", "slate.tip.pt.other", "slate.tip.doubled"]) assert.ok(TABLE[k]?.en && TABLE[k]?.de, k);
+  for (const k of ["slate.tip.pt.one", "slate.tip.pt.other", "slate.tip.doubled", "slate.tip.pass.play", "slate.tip.pass.throw_in"]) assert.ok(TABLE[k]?.en && TABLE[k]?.de, k);
 });
 
 test("every figure, heading and mark of a sample sitting carries a filled title and description; all kinds are covered", () => {
@@ -99,7 +98,7 @@ test("a loss, a simple game, ultimo, a valat and a doubled deal each say their c
   assert.match(by("game.declarer_loss.opp")[0], /you declared and lost, so you pay your opponent 4 Points/);
   assert.match(by("ultimo_won.you")[0], /Pagat/);
   assert.match(by("kings.opp")[0], /four kings/);
-  assert.match(by("game.simple_win.opp")[0], /both passed.*your opponent won the simple game.*4 Points.*Counted double: 2 × 2/);
+  assert.match(by("game.simple_win.opp")[0], /both passed.*your opponent won the simple game.*2 Points, doubled to 4/);
   assert.match(by("ultimo_lost.opp")[0], /you lost the last trick with the Pagat/);
   assert.match(by("valat.opp")[0], /Valat: your opponent took all 27 tricks.*12 Points/);
   assert.match(by("double")[0], /counts double: the last deal played ended in a draw/);
@@ -111,13 +110,13 @@ test("subtotals, balance and settlement say what they hold", () => {
   const by = (kind) => root.findAll((e) => e.getAttribute("data-tip") === kind).map((e) => e.getAttribute("title"));
   assert.equal(by("tour.you")[0], "Your account at the end of Tour 1: 5 Points credited to you so far, 5 of them in this Tour.");
   assert.match(by("tour.you")[1], /8 Points credited to you so far, 3 of them in this Tour/);
-  assert.equal(by("balance.behind")[0], "Difference of the two accounts: your opponent is 6 Points ahead, which is 12 kr. at 2 kreuzer a Point.");
+  assert.equal(by("balance.behind")[0], "Balance: your opponent is 6 Points ahead (the difference of the two accounts), which is 12 kr. at 2 kreuzer a Point.");
   assert.equal(by("direction.pay")[0], "At 2 kreuzer a Point, you would pay your opponent 12 kr. if the evening ended now.");
   assert.match(by("settle.owed")[0], /6 Points at 2 kreuzer each is 12 kr\./);
   assert.match(by("settle.payer.you")[0], /smaller one, by 6 Points/);
   const live = sets[0]("en", 0).root;
   const ahead = live.findAll((e) => e.getAttribute("data-tip") === "balance.ahead")[0];
-  assert.equal(ahead.getAttribute("title"), "Difference of the two accounts: you are 13 Points ahead, which is 26 kr. at 2 kreuzer a Point.");
+  assert.equal(ahead.getAttribute("title"), "Balance: you are 13 Points ahead (the difference of the two accounts), which is 26 kr. at 2 kreuzer a Point.");
 });
 
 test("a square sitting says nothing is owed", () => {
@@ -164,4 +163,103 @@ test("focus and hover show the text in the caption, for touch too", () => {
   const el2 = tips(root)[5];
   board.dispatch("mouseover", { target: el2 });
   assert.equal(root.byClass("slate-tip-caption")[0].textContent, el2.getAttribute("title"));
+});
+
+test("every filled tip, the header with either both-pass setting included, is at most 25 words in English", () => {
+  const words = (x) => x.split(/\s+/).length;
+  let rules = 0;
+  for (const human of [0, 1]) {
+    for (const make of sets) {
+      for (const el of tips(make("en", human).root)) {
+        const title = el.getAttribute("title");
+        assert.ok(words(title) <= 25, `${el.getAttribute("data-tip")}: ${words(title)} words: ${title}`);
+        if (el.getAttribute("data-tip") === "header.rules") rules += 1;
+      }
+    }
+  }
+  assert.ok(rules >= 2);
+  const throwIn = tips(sets[3]("en", 1).root).find((e) => e.getAttribute("data-tip") === "header.rules");
+  assert.match(throwIn.getAttribute("title"), /thrown in/);
+  assert.match(tips(sets[0]("en", 1).root).find((e) => e.getAttribute("data-tip") === "header.rules").getAttribute("title"), /Pagat ultimo 1 Point;/);
+});
+
+test("the German tips say Aufnehmer and aufgenommen, as the rest of the page does", () => {
+  const all = [0, 1].flatMap((h) => sets.flatMap((make) => tips(make("de", h).root).map((e) => e.getAttribute("title")))).join("\n");
+  assert.match(all, /aufgenommen und gewonnen/);
+  assert.match(all, /Aufnehmer gewinnt/);
+  assert.doesNotMatch(all, /angesagt und (gewonnen|verloren)|Spieler gewinnt|für gewonnen|für verloren/);
+});
+
+test("a deal's total says money moves only on the difference at the end", () => {
+  const { root } = sets[0]("en", 1);
+  const total = tips(root).find((e) => e.getAttribute("data-tip") === "total.you");
+  assert.match(total.getAttribute("title"), /difference of the accounts at the end/);
+});
+
+test("down and up walk the settlement lines in order, the heading first", () => {
+  const { root } = sets[1]("en", 1);
+  const board = root.byClass("slate-board")[0];
+  const kinds = [];
+  let at = tips(root).find((e) => e.getAttribute("data-tip") === "balance.behind");
+  for (let i = 0; i < 8; i++) {
+    board.dispatch("focusin", { target: at });
+    board.dispatch("keydown", { key: "ArrowDown", target: at });
+    const next = tips(root).find((e) => e.getAttribute("tabindex") === "0");
+    if (next === at) break;
+    at = next;
+    kinds.push(at.getAttribute("data-tip"));
+  }
+  const settle = kinds.filter((k) => k.startsWith("settle."));
+  assert.deepEqual(settle.slice(0, 3), ["settle.title", "settle.account", "settle.difference"]);
+  assert.ok(kinds.includes("settle.payer.you"), kinds.join());
+  // And back up from the last line to the one above it.
+  board.dispatch("focusin", { target: at });
+  board.dispatch("keydown", { key: "ArrowUp", target: at });
+  assert.notEqual(tips(root).find((e) => e.getAttribute("tabindex") === "0").getAttribute("data-tip"), "settle.title");
+});
+
+function clocked(events) {
+  const timers = [];
+  const cancelled = new Set();
+  const s = createStrings(TABLE);
+  const root = fakeRoot();
+  const slate = createSlate(root, { t: s.t, tn: s.tn, onLang: s.onLang, later: (ms, fn) => { timers.push({ ms, fn }); return timers.length; }, cancel: (id) => cancelled.add(id) });
+  slate.update({ human: 1, contos: [23, 10], balance: 0, over: false }, events);
+  return { root, slate, timers, cancelled };
+}
+
+test("a figure taking focus, or a key pressed on it, keeps the self-folding sheet open", () => {
+  for (const how of ["focusin", "keydown"]) {
+    const { root, slate, cancelled } = clocked(SITTING);
+    slate.open({ ms: 3000 });
+    const board = root.byClass("slate-board")[0];
+    board.dispatch(how, { target: tips(root)[2], key: "ArrowRight" });
+    assert.ok(cancelled.has(1), `${how} cancels the fold`);
+  }
+});
+
+test("a tap on a figure shows its text in the caption and keeps the sheet open", () => {
+  const { root, slate, cancelled } = clocked(SITTING);
+  slate.open({ ms: 3000 });
+  const el = tips(root)[4];
+  root.byClass("slate-board")[0].dispatch("click", { target: el });
+  assert.equal(root.byClass("slate-tip-caption")[0].textContent, el.getAttribute("title"));
+  root.click();
+  assert.ok(cancelled.has(1));
+});
+
+test("a re-render on a new event keeps focus on the same figure and the caption text", () => {
+  const { root, slate } = clocked(SITTING);
+  slate.open();
+  const board = root.byClass("slate-board")[0];
+  const el = tips(root)[3];
+  board.dispatch("focusin", { target: el });
+  el.focus();
+  const text = root.byClass("slate-tip-caption")[0].textContent;
+  slate.update({ human: 1, contos: [23, 10], balance: 0, over: false }, []);
+  const now = tips(root).find((e) => e.getAttribute("tabindex") === "0");
+  assert.notEqual(now, el, "a fresh element");
+  assert.equal(now.getAttribute("data-tip"), el.getAttribute("data-tip"));
+  assert.equal(now.focused, true);
+  assert.equal(root.byClass("slate-tip-caption")[0].textContent, text);
 });
