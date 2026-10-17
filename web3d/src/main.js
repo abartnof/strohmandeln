@@ -48,7 +48,7 @@ import { trackerPanel } from "./trackerview.js";
 import { createBriefing } from "./briefing.js";
 import { explainText, briefBlocks, nudgeText } from "./review.js";
 import { MAX_IMPORT, clearTutor, exportText, importText, loadDeals, refreshOne } from "./tutorstore.js";
-import { createTutor, extendPromptDue, hintsOn, PAGE_KEYS, publicSlots, takePublicNote, tutorialPages } from "./tutor.js";
+import { createTutor, extendPromptDue, hintsOn, PAGE_KEYS, publicSlots, RED_PIPS, redPipsNote, takePublicNote, tutorialPages } from "./tutor.js";
 import { helpBody, pageBody, reviewBody } from "./tutorview.js";
 import TUTORIAL_DE from "../tutorial.md";
 import TUTORIAL_EN from "../tutorial.en.md";
@@ -299,7 +299,11 @@ async function main() {
   function placeTracker() {
     const root = ui.trackerRoot;
     if (!root.firstChild) return;
-    const top = document.querySelector(".info").getBoundingClientRect().bottom + 6;
+    // Below the HUD as it is now (its by-deal list open or folded) and the "not 36" chips under it.
+    let below = 0;
+    for (const e of document.querySelectorAll(".info .hud, .info .tour-line")) below = Math.max(below, e.getBoundingClientRect().bottom);
+    for (const c of document.querySelectorAll(".floats .chip.edge")) below = Math.max(below, c.getBoundingClientRect().bottom);
+    const top = below + 6;
     let limit = ui.root.querySelector(".tutor-row").getBoundingClientRect().top;
     // The fan's outer cards reach up beside the panel on a narrower window.
     const lane = root.getBoundingClientRect();
@@ -460,7 +464,24 @@ async function main() {
     const events = tutorBuf;
     tutorBuf = [];
     if (tutorAuto && wasm) tutor.rest(wasm, events, { human, blocked: ui.dialogOpen() });
+    redPipsStep(events);
     publicNote();
+  }
+  // The backwards red pips, said once in the Kibitzer's note (6.2.5): a rule, so hints on or off;
+  // not while the tutor is off or muted, nor with a dialog (a page, the count) open: it waits for the next rest.
+  let redPipsOwed = null;
+  function redPipsStep(events) {
+    if (events.some((e) => e.type === "deal_start")) redPipsOwed = null;
+    redPipsOwed = redPipsNote(events, prefs.seen) ?? redPipsOwed;
+    if (!redPipsOwed || !tutorAuto || events.some((e) => e.type === "count")) return;
+    if (!prefs.tutor || prefs.muted) {
+      redPipsOwed = null;
+      return;
+    }
+    if (ui.dialogOpen() || !ui.settingsRoot.hidden) return;
+    kibitzNote(t("tutor.note.redpips", { win: cardName(redPipsOwed.win), lose: cardName(redPipsOwed.lose) }));
+    redPipsOwed = null;
+    save({ seen: [...prefs.seen, RED_PIPS] });
   }
   // The Kibitzer's note on the gold dot, once, the first time hints are on (TABLE3D 1.5.7).
   function publicNote() {
@@ -1562,6 +1583,9 @@ async function main() {
     showTracker(); // a window that no longer fits it, or now does
   }).observe(document.getElementById("overlay"));
   fitStrips();
+  // The cards-out panel follows the HUD's bottom as the by-deal list opens and folds, and the edge chips that come and go (6.6.6).
+  new ResizeObserver(placeTracker).observe(document.querySelector(".info .hud"));
+  new MutationObserver(placeTracker).observe(ui.root.querySelector(".floats"), { childList: true });
   stage.onReframe = () => S && director.relayout();
 
   stopped = () => ui.dialog({ id: "error", title: t("error.opponent-refused"), body: "", buttons: [{ label: t("ui.close"), act: "close", focus: true }] });

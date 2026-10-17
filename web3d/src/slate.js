@@ -15,6 +15,17 @@ import { kreuzer, signed, onLang as sharedOnLang } from "./strings.js";
 const VERSION = 1;
 const KREUZER_PER_POINT = 2; // docs/RULES.md 15.8
 
+// The kinds of tooltip, each a `slate.tip.<kind>` template in the strings
+// (docs/TABLE3D.md 4.7); the tests check the table has every one in en and de.
+const BY = ["you", "opp"];
+export const TIP_KINDS = Object.freeze([
+  "heading.you", "heading.opp", "dealer1", "header.touren", "header.rules",
+  "deal.no", "dealer.you", "dealer.opp", "double", "double.thrown", "note.draw", "note.thrown_in", "note.live",
+  ...["game.declarer_win", "game.declarer_loss", "game.simple_win", "trull", "kings", "ultimo_won", "ultimo_lost", "valat", "total", "conto", "tour"].flatMap((k) => BY.map((w) => `${k}.${w}`)),
+  "tour.no", "extended", "balance.ahead", "balance.behind", "balance.level", "direction.receive", "direction.pay", "direction.square",
+  "settle.title", "settle.account", "settle.you", "settle.opp", "settle.difference", "settle.owed", "settle.payer.you", "settle.payer.opp", "settle.square",
+]);
+
 // ---- the record ------------------------------------------------------------
 
 // A saved record is from storage or a file: trusted only if its shape is.
@@ -116,7 +127,8 @@ export function slateModel(rec, human) {
   const closers = (tour) => {
     const out = [];
     const end = rec.tourEnds[tour];
-    if (end) out.push({ type: "tour", tour, youConto: end.contos[human], oppConto: end.contos[other] });
+    const before = rec.tourEnds[tour - 1]?.contos ?? [0, 0];
+    if (end) out.push({ type: "tour", tour, youConto: end.contos[human], oppConto: end.contos[other], youBefore: before[human], oppBefore: before[other] });
     if (rec.extensions.includes(tour)) out.push({ type: "extended", tour });
     return out;
   };
@@ -172,67 +184,189 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
   root.setAttribute("role", "dialog");
 
   const pts = (n) => t("slate.pts-kr", { pts: t("slate.pts", { n }), kr: kreuzer(n * KREUZER_PER_POINT) });
-  const cell = (side, conto) =>
+
+  // ---- the tooltips (docs/TABLE3D.md 4.7) -----------------------------------
+  // Each figure, heading and mark is a `slate-tip`: a title (hover), the same
+  // text as its description (screen readers) and, on touch and keyboard, the
+  // caption at the foot of the sheet. One tab stop for all of them: the arrows
+  // move between them (left and right by figure, up and down by line).
+  let line = 0;
+  let rover = null; // the tip that holds the tab stop
+  let tipEls = [];
+  const P = (n) => plural("slate.tip.pt", n);
+  // A doubled deal shows the credit as "3 Points, doubled to 6" (R 14.2).
+  const base = (points, multiplier) => (multiplier === 2 ? points / 2 : points);
+  const x2 = (points, multiplier) => (multiplier === 2 ? t("slate.tip.doubled", { n: points }) : "");
+  const tip = (cls, kind, params = {}) => ({
+    class: `${cls} slate-tip`,
+    role: "note",
+    tabindex: "-1",
+    title: t(`slate.tip.${kind}`, params),
+    "aria-description": t(`slate.tip.${kind}`, params),
+    "data-tip": kind,
+    "data-line": line,
+  });
+  const youOpp = (mine) => (mine ? "you" : "opp");
+
+  // The credit's tooltip kind: game by the deal's result (docs/RULES.md 9.1,
+  // 9.2), the others by cause (10, 11, 12), each for whose credit it is.
+  const creditKind = (c, result, mine) => (c.cause === "game" ? `game.${result === "declarer_win" || result === "declarer_loss" ? result : "simple_win"}.${youOpp(mine)}` : `${c.cause}.${youOpp(mine)}`);
+
+  const cell = (side, conto, b, mine) =>
     h(doc, "div", { class: "slate-cell" },
-      h(doc, "div", { class: "slate-credits" }, side.credits.map((c) => h(doc, "span", { class: "slate-credit" }, t("slate.entry", { cause: t(`slate.cause.${c.cause}`), n: c.points })))),
-      side.total > 0 ? h(doc, "div", { class: "slate-total" }, pts(side.total)) : null,
-      conto === null ? null : h(doc, "div", { class: "slate-conto" }, String(conto)));
+      h(doc, "div", { class: "slate-credits" }, side.credits.map((c) => h(doc, "span", tip("slate-credit", creditKind(c, b.result, mine), { pts: P(base(c.points, b.multiplier)), x2: x2(c.points, b.multiplier) }), t("slate.entry", { cause: t(`slate.cause.${c.cause}`), n: c.points })))),
+      side.total > 0 ? h(doc, "div", tip("slate-total", `total.${youOpp(mine)}`, { pts: P(side.total) }), pts(side.total)) : null,
+      conto === null ? null : h(doc, "div", tip("slate-conto", `conto.${youOpp(mine)}`, { deal: b.number, pts: P(conto) }), String(conto)));
 
   function dealRow(b) {
+    line += 1;
+    const noteKind = b.status === "draw" ? "note.draw" : b.status === "thrown_in" ? "note.thrown_in" : b.status === "live" ? "note.live" : null;
     const note = b.status === "draw" ? t("slate.draw") : b.status === "thrown_in" ? t("slate.thrown-in") : b.status === "live" ? t("slate.live") : null;
     return h(doc, "div", { class: `slate-row slate-${b.status}`, "data-deal": b.number },
       h(doc, "div", { class: "slate-margin" },
-        h(doc, "span", { class: "slate-no", title: t("slate.deal", { n: b.number }) }, String(b.number)),
-        h(doc, "span", { class: "slate-dealer", title: t("slate.dealer.title"), "data-you": b.dealerIsYou ? "1" : "0" }, t("slate.dealer")),
-        b.multiplier === 2 ? h(doc, "span", { class: "slate-double" }, t("slate.double")) : null,
-        note ? h(doc, "span", { class: "slate-note" }, note) : null),
-      cell(b.you, b.youConto),
-      cell(b.opp, b.oppConto));
+        h(doc, "span", tip("slate-no", "deal.no", { deal: b.number, tour: b.tour }), String(b.number)),
+        h(doc, "span", { ...tip("slate-dealer", `dealer.${youOpp(b.dealerIsYou)}`), "data-you": b.dealerIsYou ? "1" : "0" }, t("slate.dealer")),
+        b.multiplier === 2 ? h(doc, "span", tip("slate-double", b.status === "thrown_in" ? "double.thrown" : "double"), t("slate.double")) : null,
+        note ? h(doc, "span", tip("slate-note", noteKind), note) : null),
+      cell(b.you, b.youConto, b, true),
+      cell(b.opp, b.oppConto, b, false));
   }
 
   function block(b) {
     if (b.type === "deal") return dealRow(b);
+    line += 1;
     if (b.type === "tour")
       return h(doc, "div", { class: "slate-rule slate-tour" },
-        h(doc, "span", { class: "slate-tour-no" }, t("slate.tour", { n: b.tour })),
-        h(doc, "span", { class: "slate-conto" }, String(b.youConto)),
-        h(doc, "span", { class: "slate-conto" }, String(b.oppConto)));
-    return h(doc, "div", { class: "slate-rule slate-extended" }, t("slate.extended"));
+        h(doc, "span", tip("slate-tour-no", "tour.no", { tour: b.tour }), t("slate.tour", { n: b.tour })),
+        h(doc, "span", tip("slate-conto", "tour.you", { tour: b.tour, total: P(b.youConto), gain: b.youConto - b.youBefore }), String(b.youConto)),
+        h(doc, "span", tip("slate-conto", "tour.opp", { tour: b.tour, total: P(b.oppConto), gain: b.oppConto - b.oppBefore }), String(b.oppConto)));
+    return h(doc, "div", tip("slate-rule slate-extended", "extended"), t("slate.extended"));
   }
 
   function settlement(s) {
+    const kr = kreuzer(s.kreuzer);
     const figures = [
-      h(doc, "div", { class: "slate-line" }, h(doc, "span", {}, t("slate.conto")), h(doc, "span", { class: "slate-conto" }, String(s.youConto)), h(doc, "span", { class: "slate-conto" }, String(s.oppConto))),
-      h(doc, "div", { class: "slate-line" }, h(doc, "span", {}, t("slate.difference")), h(doc, "span", {}, t("slate.pts", { n: s.difference }))),
+      () => h(doc, "div", { class: "slate-line" }, h(doc, "span", tip("slate-label", "settle.account"), t("slate.conto")), h(doc, "span", tip("slate-conto", "settle.you", { pts: P(s.youConto) }), String(s.youConto)), h(doc, "span", tip("slate-conto", "settle.opp", { pts: P(s.oppConto) }), String(s.oppConto))),
+      () => h(doc, "div", { class: "slate-line" }, h(doc, "span", tip("slate-label", "settle.difference", { pts: P(s.difference) }), t("slate.difference")), h(doc, "span", tip("slate-figure", "settle.difference", { pts: P(s.difference) }), t("slate.pts", { n: s.difference }))),
     ];
-    if (s.payer === null) figures.push(h(doc, "div", { class: "slate-line slate-square" }, t("slate.square")));
-    else figures.push(h(doc, "div", { class: "slate-line slate-owed" }, t("slate.owed", { kr: kreuzer(s.kreuzer) })), h(doc, "div", { class: "slate-line slate-payer" }, t(`slate.payer.${s.payer}`)));
-    figures.forEach((f, i) => {
+    if (s.payer === null) figures.push(() => h(doc, "div", { class: "slate-line slate-square" }, h(doc, "span", tip("slate-label", "settle.square"), t("slate.square"))));
+    else
+      figures.push(
+        () => h(doc, "div", { class: "slate-line slate-owed" }, h(doc, "span", tip("slate-label", "settle.owed", { pts: P(s.difference), kr }), t("slate.owed", { kr }))),
+        () => h(doc, "div", { class: "slate-line slate-payer" }, h(doc, "span", tip("slate-label", `settle.payer.${s.payer}`, { pts: P(s.difference) }), t(`slate.payer.${s.payer}`))));
+    line += 1;
+    const title = h(doc, "h3", tip("slate-settle-title", "settle.title"), t("slate.settlement"));
+    const lines = figures.map((make, i) => {
+      line += 1;
+      const f = make();
       f.classList.add("slate-step");
       f.setAttribute("style", `--step:${i}`);
+      return f;
     });
-    return h(doc, "div", { class: "slate-settlement" }, h(doc, "h3", {}, t("slate.settlement")), figures);
+    return h(doc, "div", { class: "slate-settlement" }, title, lines);
+  }
+
+  // The tips in the order they stand on the sheet.
+  function collect(el, out = []) {
+    for (const c of el.children ?? []) {
+      if (typeof c.getAttribute !== "function") continue;
+      if (c.getAttribute("data-tip")) out.push(c);
+      collect(c, out);
+    }
+    return out;
+  }
+  const lineOf = (el) => Number(el.getAttribute("data-line"));
+  function setRover(el, focus = false) {
+    if (rover && rover !== el) rover.setAttribute("tabindex", "-1");
+    rover = el;
+    el.setAttribute("tabindex", "0");
+    if (focus) el.focus();
+  }
+  const tipOf = (target) => {
+    const el = target?.closest ? target.closest("[data-tip]") : target;
+    return el && el.getAttribute && el.getAttribute("data-tip") ? el : null;
+  };
+  let caption = null;
+  let captionText = ""; // kept across a re-render
+  let focused = false; // the focus is on a figure
+  const say = (el) => {
+    captionText = el ? el.getAttribute("title") : captionText;
+    if (caption && el) caption.textContent = captionText;
+  };
+  function onKey(ev) {
+    const cur = tipOf(ev.target) ?? rover;
+    const i = tipEls.indexOf(cur);
+    if (i < 0) return;
+    let to = null;
+    if (ev.key === "ArrowRight") to = tipEls[Math.min(i + 1, tipEls.length - 1)];
+    else if (ev.key === "ArrowLeft") to = tipEls[Math.max(i - 1, 0)];
+    else if (ev.key === "Home") to = tipEls[0];
+    else if (ev.key === "End") to = tipEls[tipEls.length - 1];
+    else if (ev.key === "ArrowDown") to = tipEls.find((e) => lineOf(e) > lineOf(cur)) ?? cur;
+    else if (ev.key === "ArrowUp") {
+      const before = tipEls.filter((e) => lineOf(e) < lineOf(cur));
+      to = before.length ? before.find((e) => lineOf(e) === lineOf(before[before.length - 1])) : cur;
+    } else return;
+    ev.preventDefault();
+    setRover(to, true);
+    say(to);
   }
 
   function render() {
     const m = slateModel(ledger.snapshot(), human);
-    const rules = m.header.settings ? t("slate.rules", { values: m.header.settings.values, ultimo: m.header.settings.ultimo, both_pass: t(`slate.both_pass.${m.header.settings.both_pass}`) }) : "";
+    const st = m.header.settings;
+    const rules = st ? t("slate.rules", { values: st.values, ultimo: st.ultimo, both_pass: t(`slate.both_pass.${st.both_pass}`) }) : "";
     const foot = m.foot;
-    root.replaceChildren(
-      h(doc, "div", { class: "slate-board", title: t("slate.tooltip") },
-        h(doc, "div", { class: "slate-head" },
-          h(doc, "h2", {}, t("slate.title")),
-          h(doc, "button", { class: "slate-close", type: "button", "aria-label": t("slate.close"), onclick: () => close() }, "×")),
-        m.header.touren ? h(doc, "div", { class: "slate-rules" }, t("slate.header", { touren: plural("slate.touren", m.header.touren), rules })) : null,
-        h(doc, "div", { class: "slate-cols" },
-          h(doc, "span", { class: "slate-col-margin" }),
-          h(doc, "span", { class: "slate-col slate-col-you" }, t("slate.you"), m.header.youDealtFirst ? h(doc, "small", { class: "slate-first" }, ` ${t("slate.dealer1")}`) : null),
-          h(doc, "span", { class: "slate-col slate-col-opp" }, t("slate.opp"), m.header.touren && !m.header.youDealtFirst ? h(doc, "small", { class: "slate-first" }, ` ${t("slate.dealer1")}`) : null)),
-        m.blocks.length ? h(doc, "div", { class: "slate-rows" }, m.blocks.map(block)) : h(doc, "div", { class: "slate-empty" }, t("slate.empty")),
-        h(doc, "div", { class: "slate-foot" },
-          h(doc, "span", { class: "slate-balance" }, t("slate.balance", { n: signed(foot.balance), kr: kreuzer(foot.kreuzer) })),
-          h(doc, "span", { class: "slate-direction" }, foot.direction === "square" ? t("slate.square") : t(`slate.${foot.direction}`))),
-        m.settlement ? settlement(m.settlement) : null));
+    line = 0;
+    const heads = h(doc, "div", { class: "slate-head" },
+      h(doc, "h2", {}, t("slate.title")),
+      h(doc, "button", { class: "slate-close", type: "button", "aria-label": t("slate.close"), onclick: () => close() }, "×"));
+    const [simple, wins, loses] = st ? String(st.values).split("/") : [];
+    const header = m.header.touren
+      ? h(doc, "div", { class: "slate-rules" },
+          h(doc, "span", tip("slate-header-touren", "header.touren", { touren: plural("slate.touren", m.header.touren), deals: m.header.touren * 2 }), plural("slate.touren", m.header.touren)),
+          rules ? " · " : null,
+          rules ? h(doc, "span", tip("slate-header-rules", "header.rules", { simple, wins, loses, ultimo: P(st.ultimo), pass: t(`slate.tip.pass.${st.both_pass}`) }), rules) : null)
+      : null;
+    line = 1;
+    const first = h(doc, "small", tip("slate-first", "dealer1"), ` ${t("slate.dealer1")}`);
+    const cols = h(doc, "div", { class: "slate-cols" },
+      h(doc, "span", { class: "slate-col-margin" }),
+      h(doc, "span", tip("slate-col slate-col-you", "heading.you"), t("slate.you"), m.header.youDealtFirst ? first : null),
+      h(doc, "span", tip("slate-col slate-col-opp", "heading.opp"), t("slate.opp"), m.header.touren && !m.header.youDealtFirst ? first : null));
+    const rows = m.blocks.length ? h(doc, "div", { class: "slate-rows" }, m.blocks.map(block)) : h(doc, "div", { class: "slate-empty" }, t("slate.empty"));
+    line += 1;
+    const balanceKind = foot.balance > 0 ? "ahead" : foot.balance < 0 ? "behind" : "level";
+    const bal = h(doc, "span", tip("slate-balance", `balance.${balanceKind}`, { pts: P(Math.abs(foot.balance)), kr: kreuzer(foot.kreuzer) }), t("slate.balance", { n: signed(foot.balance), kr: kreuzer(foot.kreuzer) }));
+    const dir = h(doc, "span", tip("slate-direction", `direction.${foot.direction}`, { kr: kreuzer(foot.kreuzer) }), foot.direction === "square" ? t("slate.square") : t(`slate.${foot.direction}`));
+    caption = h(doc, "div", { class: "slate-tip-caption", "aria-hidden": "true" }, captionText || t("slate.tip.caption"));
+    const sheet = m.settlement ? settlement(m.settlement) : null;
+    const board = h(doc, "div", { class: "slate-board", title: t("slate.tooltip") }, heads, header, cols, rows, h(doc, "div", { class: "slate-foot" }, bal, dir), sheet, caption);
+    root.replaceChildren(board);
+    // The cols were built before the rows: the line numbers are in order of
+    // the sheet's top to bottom all the same (1 for the columns, then by block).
+    tipEls = collect(board);
+    const keep = rover && tipEls.find((e) => e.getAttribute("data-tip") === rover.getAttribute("data-tip") && lineOf(e) === lineOf(rover));
+    rover = null;
+    if (tipEls.length) setRover(keep ?? tipEls[0], focused && !root.hidden && Boolean(keep));
+    for (const ev of ["focusin", "mouseover", "click"])
+      board.addEventListener(ev, (e) => {
+        const el = tipOf(e.target);
+        if (!el) return;
+        if (ev === "focusin") {
+          keepOpen();
+          focused = true;
+          setRover(el);
+        }
+        say(el);
+      });
+    board.addEventListener("focusout", (e) => {
+      if (e.relatedTarget && !root.contains(e.relatedTarget)) focused = false;
+    });
+    board.addEventListener("keydown", (e) => {
+      keepOpen();
+      onKey(e);
+    });
   }
 
   function open({ ms } = {}) {
@@ -245,6 +379,7 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
   function close() {
     if (timer !== null) cancel(timer);
     timer = null;
+    focused = false;
     root.hidden = true;
     root.setAttribute("aria-hidden", "true");
     root.classList.remove("slate-large");
@@ -252,6 +387,11 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
 
   // A tap on the sheet while it is folding itself keeps it open; a tap on the
   // backdrop folds it. (Escape is the page's: overlays.js.)
+  // Reading with the keyboard keeps the sheet open as a tap does.
+  const keepOpen = () => {
+    if (timer !== null) cancel(timer);
+    timer = null;
+  };
   root.addEventListener("click", (ev) => {
     if (timer !== null) {
       cancel(timer);

@@ -81,7 +81,7 @@ Definitions the table leans on:
   inference, so the tutor judges with what rung 3 knows).
 - **Split suit**: the counting cards of the suit not yet played are shared
   about evenly between the two known holdings. The share is measured (section 11,
-  M8); the engine's rung 2 uses 30-70% of the suit's 18 points, a design choice.
+  M8); the engine's rung 2 uses 30-70% of the suit's 18 card points, a design choice.
 - **Exact**: both players' face-down packet cards are all turned, so the
   opponent's hand follows from the log by elimination.
 - A card played from a packet is a **cover** played (`source` "packet n").
@@ -269,6 +269,17 @@ a link, never in the bullets. Each bullet is `{lead, key, params}` (section 9).
    Where the consequence is in the log (a figure lost to a higher card of its
    suit) the clause says so; after the last trick every card is public.
 
+4. **Their style** (after-deal brief only, at most 14 words, after the three):
+   when the opponent's style is not Normal (Random included), what the sitting's
+   record so far shows of its bids, as a fact: "Your opponent has taken up 4 of
+   6 bids so far" (`tutor.style.took`, `-once`, `-none`). Said when at least 3
+   bids stand more than one standard deviation from Normal's 19% take-up rate
+   (`docs/STYLES.md` 9, stage 0); the bid is the one tell that separates the
+   offered styles from Normal in the counts, so it is the one counted. Never a
+   counter (none passed stage 2) and never a style's name, so under Random it is
+   the same line before and after the end. Not counted in the three bullets or
+   the 45 words; hidden with the tips off, as the other advice (`tell.rs`).
+
 No focus: bullet 2 says that nothing stood out (and to try the next opponent up,
 below the top of the dial), or that it is too early to say; bullet 3 is dropped.
 A skill is never praised and worked on in the same brief. A deal with fewer than
@@ -439,7 +450,7 @@ skill's entry.
 | | try.2 | Count first; sometimes a low card wins what the king would not. | Erst zählen; manchmal gewinnt eine kleine Karte, was der König nicht gewinnt. |
 | | nudge | The position is known now: count. | Die Lage ist jetzt bekannt: zählen. |
 | `bid` | name | taking up | das Aufnehmen |
-| | rule | Take up with 20 to 25 points of sure winners and 6 or 7 tarocks. | Aufnehmen mit 20 bis 25 Augen sicherer Stecher und 6 bis 7 Tarock. |
+| | rule | Take up with 20 to 25 card points of sure winners and 6 or 7 tarocks. | Aufnehmen mit 20 bis 25 Augen sicherer Stecher und 6 bis 7 Tarock. |
 | | fact | Sure winners: the Sküs, the Mond, kings, guarded queens. | Sichere Stecher: Sküs, Mond, Könige, besetzte Damen. |
 | | try.1 | Add up your sure winners: Sküs, Mond, kings, guarded queens. | Zählen Sie Ihre sicheren Stecher: Sküs, Mond, Könige, besetzte Damen. |
 | | try.2 | Count your tarocks too; few make the game risky. | Zählen Sie auch Ihre Tarock; wenige machen das Spiel riskant. |
@@ -631,7 +642,7 @@ Test first (`CLAUDE.md`). Engine (`cargo test`, deterministic):
 - **Purity.** The same record and assisted list give the same summary and brief;
   the evidence never reads a hidden card (twin deals, `testutil::blind_check`).
 - **Assisted.** An assisted decision is no evidence.
-- **Brief.** At most three bullets, at most 45 words of body (62 with the leads), every key present in English
+- **Brief.** At most three bullets (and, for a styled opponent, the fourth line of item 4), at most 45 words of body (62 with the leads), every key present in English
   and German, rules at most 15 words, no focus and mastery never in one brief, a
   short deal says so, every parameter named in a template is supplied, the
   kindness test passes. The keys of the code equal the keys of
@@ -645,7 +656,7 @@ Test first (`CLAUDE.md`). Engine (`cargo test`, deterministic):
 Node: the store round trip with injected storage; a newer store read as empty and
 not overwritten; import caps; no storage works; the brief rendered in both
 languages; the Worker and the main-thread fallback agree. Browser: the dialog
-opens after a scored deal, once, with the header line and at most three bullets;
+opens after a scored deal, once, with the header line and at most three bullets (and, for a styled opponent, the fourth line of item 4);
 muted shows nothing; a hint sets the decision's number in the assisted list.
 
 ## 13. Shared code: `kit/learner`
@@ -664,7 +675,7 @@ crate back; a test makes that safe.
 - focus selection over a prerequisite graph (`cleared`, `short`, `costly`, gain
   = cost less `top_cost`);
 - the summary's text form and versioning, `stale`;
-- the brief's shape: a bullet with a lead, at most three bullets, the order well /
+- the brief's shape: a bullet with a lead, at most three bullets (and, for a styled opponent, the fourth line of item 4), the order well /
   next / none, the "mastery only after the second game" and "enough skills seen"
   guards.
 
@@ -777,7 +788,7 @@ script inlined by `build.py`). Until then Strohmandeln copies them as patterns.
 ## 14. The table (desktop)
 
 The brief replaces the bullets of the dialog "How the deal went" (`docs/TABLE3D.md`
-6.4.1): the header line is the count (kept), then up to three bullets with bold
+6.4.1): the header line is the count (kept), then up to three bullets (and the style line for a styled opponent) with bold
 leads, then the folded "How is this worked out?" (`tutor.how`, `tutor.method`).
 The chip, the sitting review and the mute are as in 6.4 and 6.1; the tips shown
 by the nudge go in the Kibitzer's tab. `TABLE3D.md` 6.4 is written to this document

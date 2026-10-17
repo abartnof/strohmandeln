@@ -65,7 +65,11 @@ export function createBriefing({ store, engine, level = () => 4, head = () => ({
       const all = kept();
       const at = all.findIndex((d) => d.record === entry.record);
       const history = historyOf(at >= 0 ? all.slice(0, at) : all);
-      const r = engine.briefOfRecord(level(), entry.record, entry.assisted, history, styleOf());
+      // "Their style" counts the opponent's bids over this sitting so far: the earlier records of
+      // the sitting go with a styled opponent (Normal has no such line).
+      const style = styleOf();
+      const earlier = style && style.style !== "normal" && entry.sit ? all.slice(0, Math.max(at, 0)).filter((d) => d.sit === entry.sit).map((d) => d.record) : [];
+      const r = engine.briefOfRecord(level(), entry.record, entry.assisted, history, earlier.length ? { ...style, earlier } : style);
       const brief = r?.brief ?? null;
       if (brief && validSummary(brief.summary)) keepEvidence(entry.record, brief.summary, brief.detail);
       if (brief) cache.set(entry.record, brief);
