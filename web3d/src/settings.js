@@ -164,20 +164,21 @@ export function createSettings(rootEl, { t, prefs, onChange = () => {}, onAction
             (s.actions ?? []).map((a) => h(doc, "button", { class: "settings-action", type: "button", "data-action": a.name, onclick: () => onAction(a.name) }, t(a.labelKey)))))));
   }
 
+  let opener = null;
   function open() {
+    opener = doc.activeElement ?? null;
     rootEl.hidden = false;
     rootEl.setAttribute("aria-hidden", "false");
     const first = rootEl.findAll ? rootEl.findAll((e) => e.getAttribute("role") === "radio" && e.getAttribute("aria-checked") === "true")[0] : rootEl.querySelector?.('[role="radio"][aria-checked="true"]');
     first?.focus?.();
   }
+  // Escape is the page's (overlays.js); focus goes back to what opened the menu.
   function close() {
     rootEl.hidden = true;
     rootEl.setAttribute("aria-hidden", "true");
+    if (opener?.isConnected && !rootEl.contains?.(opener)) opener.focus?.();
+    opener = null;
   }
-
-  rootEl.addEventListener("keydown", (ev) => {
-    if (ev.key === "Escape") close();
-  });
   onLang(render);
   render();
 

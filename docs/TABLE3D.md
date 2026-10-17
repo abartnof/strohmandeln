@@ -516,8 +516,8 @@ the speech and the holds are unchanged, so nothing is missed.
 packets (one stop, `1 2 3` choose a packet, or arrows); the cards-out tab (6.6);
 the slate tab; the settings; then the cards-out panel, whose Fold button follows them. Keys: `Enter` or `Space` choose or play the focused card; `A`
 announce (first held honour); `T` take, `W` weiter; `S` the slate; `H` the hint;
-`M` mute the tutor (6.3); `?` the keys list; `Esc` closes a sheet or cancels the
-prompt. Keys are discoverable under `?`.
+`M` mute the tutor (6.3); `?` the keys list; `Esc` closes the topmost overlay (3.10.5).
+Keys are discoverable under `?`.
 
 3.10.2 **The screen reader** gets a live region (`aria-live="polite"`) with one
 sentence per event in the current language: the deal, each bid, each card
@@ -540,6 +540,25 @@ better; no information is carried by color alone (lit cards also lift). The
 accessible card lists (3.10.1) are a visually hidden 1 px box, reached by key or
 by a screen reader's own gestures, never by a finger on them; they are exempt from
 the 44 px rule as long as they stay hidden. A finger taps the cards on the canvas.
+
+3.10.5 **Escape** (17 Oct 2026, the maintainer: "'Escape' should get out of any
+menu/dialogue"). One press closes one layer, the topmost: a dialog (the last
+opened), then the settings menu (its language row with it), the slate, the score
+HUD's by-deal list, the cards-out panel, and last a card chosen by the first
+click or `Enter` (deselected). With nothing open it does nothing (it does not
+open or fold anything else). Focus returns to the control that opened the layer
+(dialog: the focused control at its opening; settings: the cog; slate, score
+list, cards-out panel: their tab or chevron). Dialogs that need an answer are
+not dismissed and hold back what lies beneath them, so Escape never chooses for
+the player: the extension prompt (One more Tour / Enough), the sitting's end,
+the welcome (Continue / New), and the new-sitting screen when no sitting is
+under way to go back to (with one, Escape is its Cancel). Dismissed without
+choosing: Help, a tutor page (as "Remind me", 6.2.2), the brief, the keys
+list, the announce prompt (the card is not played, it stays chosen), the
+clear-progress confirm (as No), an error notice. Not layers: the hint line, the
+count's popups, chips and the public-mark note (timed or inline, they close
+themselves). The logic is `web3d/src/overlays.js`; the browser check is
+`escape_closes`.
 
 ## 4. The slate
 
@@ -1356,6 +1375,7 @@ motion are saved to `web3d/test/out/`.
 
 ### 10.4 Slate, talk, tutor
 
+- `escape_closes`: every overlay opened in turn and closed by Escape, one per press, focus back (3.10.5).
 - `slate_open_close`: the tab, `S`, outside tap and `Esc`; auto-open at Tour end
   and at the extension; never during play or the count.
 - `slate_rows`: rows per deal with causes, "×2" on a doubled deal, "draw",

@@ -882,9 +882,68 @@ def check_deal_brief(browser, failures):
         check_offline(other, failures, "deal_brief: ")
 
 
+def check_escape_closes(browser, failures):
+    # Escape closes the topmost overlay, one per press, and focus goes back to what opened it (TABLE3D 3.10.5).
+    where = "escape_closes: "
+    page = tracker_page(browser, TRACKER_SIZES[0][1])
+    page.locator("[data-act=tracker]").click()  # folded and open again, so it has an opener
+    page.locator("[data-act=tracker]").click()
+    page.mouse.click(5, 5)
+
+    def focused():
+        return page.evaluate("(() => { const a = document.activeElement; return a ? (a.dataset.act || a.className || a.tagName) : ''; })()")
+
+    def open_flags():
+        return page.evaluate("""(() => ({
+          dialog: Array.from(document.querySelectorAll('.dialogs [data-shade]')).map((n) => n.dataset.shade),
+          settings: !document.querySelector('.settings-root').hidden,
+          slate: !document.querySelector('.slate-root').hidden,
+          hud: document.querySelector('.hud-chev').getAttribute('aria-expanded') === 'true',
+          tracker: Boolean(document.querySelector('.tracker')),
+        }))()""")
+
+    def press(expect, what, focus=None):
+        page.keyboard.press("Escape")
+        got = open_flags()
+        fail_if(got != expect, failures, f"{where}after Escape on {what}: {got}, expected {expect}")
+        if focus:
+            fail_if(focus not in focused(), failures, f"{where}after Escape on {what}: focus is on {focused()!r}, not {focus!r}")
+
+    base = {"dialog": [], "settings": False, "slate": False, "hud": False, "tracker": True}
+    fail_if(open_flags() != base, failures, f"{where}start: {open_flags()}")
+    # Everything open at once: the score list, the slate, the settings, then a dialog over them.
+    page.locator(".hud-chev").click()
+    page.keyboard.press("s")
+    page.locator("[data-act=settings]").focus()
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.wait_for_selector(".settings-root:not([hidden])", timeout=10_000)
+    page.locator("[data-act=tutor]").focus()
+    page.locator("[data-act=tutor]").dispatch_event("click")
+    page.wait_for_selector("[data-dialog=help]", timeout=10_000)
+    fail_if(open_flags() != {"dialog": ["help"], "settings": True, "slate": True, "hud": True, "tracker": True}, failures, f"{where}all open: {open_flags()}")
+    press({"dialog": [], "settings": True, "slate": True, "hud": True, "tracker": True}, "Help", "tutor")
+    press({"dialog": [], "settings": False, "slate": True, "hud": True, "tracker": True}, "settings", "settings")
+    press({"dialog": [], "settings": False, "slate": False, "hud": True, "tracker": True}, "the slate")
+    fail_if(page.locator("[data-act=slate]").get_attribute("aria-expanded") != "false", failures, f"{where}the slate tab still says open")
+    press({"dialog": [], "settings": False, "slate": False, "hud": False, "tracker": True}, "the score list", "hud-chev")
+    press({**base, "tracker": False}, "the cards-out panel", "tracker")
+    press({**base, "tracker": False}, "nothing")
+    # A confirm over the settings, and the keys list.
+    page.locator("[data-act=settings]").focus()
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.locator("[data-action=progress-clear]").dispatch_event("click")
+    page.wait_for_selector("[data-dialog=clear]", timeout=10_000)
+    press({**base, "tracker": False, "settings": True}, "the confirm")
+    press({**base, "tracker": False}, "settings")
+    page.keyboard.press("?")
+    page.wait_for_selector("[data-dialog=keys]", timeout=10_000)
+    press({**base, "tracker": False}, "the keys list")
+    check_offline(page, failures, where)
+
+
 CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_skill_speed,
     check_language_switch, check_language_switch_at_count, check_prefs_storage, check_save_restore, check_export_import_file,
-    check_tutor_pages, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_deal_brief,
+    check_tutor_pages, check_escape_closes, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_deal_brief,
 ]

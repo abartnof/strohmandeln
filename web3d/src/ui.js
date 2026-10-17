@@ -265,13 +265,19 @@ export function createUi(root, { t, onAct }) {
         if (b) onAct(`dialog:${id}:${b.dataset.dialogAct}`, {});
         else if (e.target === shade && onClose) onClose();
       });
+      shade.opener = document.activeElement; // Escape or a button gives focus back to it (TABLE3D 3.10.5)
       dialogs.append(shade);
       (box.querySelector("[data-focus]") ?? box.querySelector("button"))?.focus();
       return shade;
     },
     closeDialog(id = "dialog") {
-      dialogs.querySelector(`[data-shade="${id}"]`)?.remove();
+      const shade = dialogs.querySelector(`[data-shade="${id}"]`);
+      if (!shade) return;
+      const held = shade.contains(document.activeElement) || document.activeElement === document.body;
+      shade.remove();
+      if (held && shade.opener?.isConnected) shade.opener.focus();
     },
+    dialogIds: () => [...dialogs.children].map((n) => n.dataset.shade),
     dialogOpen: (id = null) => Boolean(id ? dialogs.querySelector(`[data-shade="${id}"]`) : dialogs.children.length),
 
     // For the screen reader: one sentence at a time.
