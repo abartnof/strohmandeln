@@ -1,15 +1,31 @@
 // The new-sitting screen's body (docs/TABLE3D.md 3.5.1): the length, the
-// three rule settings, the opponent's skill and the seat. The rows are the
-// settings menu's own (settings.js), so the choices and their words are one
-// set; this only arranges them for the screen that precedes a deal. The page
-// saves what was chosen when Deal is pressed (3.5.2).
+// three rule settings, the opponent's skill and the seat: the sitting's own
+// choices, offered here and nowhere else (the settings menu only reads the
+// sitting back, 7.1). It starts from the sitting on the table, else from the
+// kept prefs. The page saves what was chosen when Deal is pressed (3.5.2).
 import { h } from "./dom.js";
-import { ROWS } from "./settings.js";
+import { BOTH_PASS, VALUES, ULTIMO, TOUREN, SKILLS } from "./prefs.js";
+
+// "2/3/4" -> "v234" (a key's tail without slashes).
+const valuesKey = (v) => `v${v.replaceAll("/", "")}`;
+const row = (key, list, label = (v) => String(v), noteKey) => ({
+  key,
+  labelKey: `settings.${key}`,
+  options: list.map((value) => ({ value, labelKey: `settings.${key}.${label(value)}` })),
+  noteKey,
+});
+const ROWS = [
+  row("touren", TOUREN),
+  row("both_pass", BOTH_PASS, (v) => v, "settings.both_pass.note"),
+  row("values", VALUES, valuesKey, "settings.values.note"),
+  row("ultimo", ULTIMO, (v) => v, "settings.ultimo.note"),
+  row("skill", SKILLS),
+];
 
 // In the order of 3.5.1.
 export const NEW_KEYS = Object.freeze(["touren", "both_pass", "values", "ultimo", "skill"]);
 
-// The rows for these preferences: { key, labelKey, options: [{ value, labelKey, selected }] }.
+// The rows for these choices (the prefs' keys): { key, labelKey, options: [{ value, labelKey, selected }] }.
 export function newSittingModel(prefs) {
   return NEW_KEYS.map((key) => {
     const row = ROWS.find((r) => r.key === key);
@@ -23,8 +39,8 @@ export function newSittingModel(prefs) {
 }
 
 // Draws the body into a fresh element of `doc`; `values()` is what is chosen.
-export function createNewSitting(doc, { t, prefs }) {
-  const model = newSittingModel(prefs);
+export function createNewSitting(doc, { t, prefs, sitting = null }) {
+  const model = newSittingModel({ ...prefs, ...sitting });
   const chosen = Object.fromEntries(model.map((r) => [r.key, r.options.find((o) => o.selected)?.value ?? r.options[0].value]));
   const buttons = [];
 

@@ -33,7 +33,7 @@ import { momentsOf } from "./moments.js";
 import { check, emptyModel, fromState, reduce } from "./model.js";
 import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
 import { loadPrefsInfo, savePrefs, sittingConfig, speedScale, urlOverrides, withUrl } from "./prefs.js";
-import { createSettings } from "./settings.js";
+import { createSettings, sittingFrom } from "./settings.js";
 import { escapeTarget, selectGuard } from "./overlays.js";
 import { createSpeaker } from "./speaker.js";
 import { createSlate } from "./slate.js";
@@ -115,6 +115,7 @@ async function main() {
   // ---- state ------------------------------------------------------------------
   let wasm = null; // the module's last state
   let log = []; // every event of the sitting
+  let sittingOnTable = null; // sittingFrom's: the sitting's length, rules and level (settings.js)
   let S = null; // the director's state: { model, events }
   let human = 0;
   let sel = { chosen: null, scroll: -1e9 }; // a row of cards starts at its left end
@@ -319,9 +320,7 @@ async function main() {
 
   // The pages, for the sitting's rules: both-pass, game values and ultimo (6.2.2).
   function pagesNow() {
-    const begun = log.find((e) => e.type === "sitting_start");
-    const settings = begun?.settings ?? {};
-    const rule = (k) => settings[k] ?? prefs[k];
+    const rule = (k) => sittingOnTable?.[k] ?? prefs[k];
     return tutorialPages(getLang() === "de" ? TUTORIAL_DE : TUTORIAL_EN, PAGE_KEYS, { both_pass: rule("both_pass"), values: rule("values"), ultimo: rule("ultimo") });
   }
   function openPage(key, { help }) {
@@ -760,9 +759,8 @@ async function main() {
 
   // What a Point is worth on the deal now: the ultimo setting times the doubling.
   function pointsNow() {
-    const begun = log.find((e) => e.type === "sitting_start");
     const d = [...log].reverse().find((e) => e.type === "deal_start");
-    return { ultimo: (begun?.settings?.ultimo ?? 1) * (d?.multiplier ?? 1), honour: d?.multiplier ?? 1 };
+    return { ultimo: (sittingOnTable?.ultimo ?? 1) * (d?.multiplier ?? 1), honour: d?.multiplier ?? 1 };
   }
 
   function showResult(e) {
@@ -1066,7 +1064,6 @@ async function main() {
         for (const [key, value] of Object.entries(chosen)) {
           if (prefs[key] === value) continue;
           save({ [key]: value });
-          settings.set(key, value);
         }
         newSitting({ touren: prefs.touren });
       }
@@ -1095,6 +1092,7 @@ async function main() {
 
   // ---- a sitting ----------------------------------------------------------------------------
   function resetTable() {
+    onTable(null);
     director.cancelTimed();
     stepping = false;
     idleTimers.forEach(clearTimeout);
@@ -1141,7 +1139,7 @@ async function main() {
       return;
     }
     human = r.state.human;
-    settings.setSitting(true);
+    onTable(sittingFrom(r.events, r.state.level));
     ui.root.classList.toggle("left", prefs.leftHanded);
     talk.restore({});
     settleFocus();
@@ -1149,10 +1147,16 @@ async function main() {
     advance(r, { first: true });
   }
 
+  // The sitting on the table (settings.js sittingFrom): the menu's line, and the new-sitting screen's start.
+  function onTable(info) {
+    sittingOnTable = info;
+    settings.setSitting(info);
+  }
+
   // The new-sitting screen (3.5.1): what is chosen is kept as the next default (3.5.2).
   let newScreen = null;
   function askNew() {
-    newScreen = createNewSitting(document, { t, prefs });
+    newScreen = createNewSitting(document, { t, prefs, sitting: sittingOnTable });
     ui.dialog({ id: "new", title: t("ui.new.title"), body: newScreen.node, buttons: [{ label: t("ui.new.deal"), act: "deal", primary: true, focus: true }, ...(wasm && !sittingOver ? [{ label: t("ui.new.cancel"), act: "cancel" }] : [])] });
   }
 
@@ -1194,7 +1198,7 @@ async function main() {
     else sittingLength = log.find((e) => e.type === "sitting_start")?.touren ?? r.state.touren_total;
     if (ex.slate) slate.restore(ex.slate);
     if (ex.talk) talk.restore(ex.talk);
-    settings.setSitting(true);
+    onTable(sittingFrom(exported.record, r.state.level));
     director.restart(S, { dealt: false });
     restModel = model;
     trickShown = r.state.deal?.playing ? r.state.deal.trick_number : 0;
@@ -1604,6 +1608,9 @@ async function main() {
     clock: () => director.clock(),
     meshInfo: () => director.meshes.map((m) => ({ x: m.position.x, y: m.position.y, z: m.position.z, code: m.userData.code })),
     newSitting,
+    askNew,
+    pagesNow,
+    pointsNow,
     act: (action) => send(action),
     speed: (name) => changed("speed", name),
     step,

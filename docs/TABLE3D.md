@@ -476,15 +476,21 @@ shown. After a bid, the buttons vanish.
 
 3.5.1 The **new-sitting screen** (also reached by "New sitting" at the end and the
 plus at the top) offers: **Length**, "3 Touren (6 deals)" / "6 Touren (12 deals)",
-default 3 [R 15.2, 17.14]; the three rule settings (7.2); the opponent's skill
+default 3 [R 15.2, 17.14]; the three rule settings (7.2); the opponent's level
 (7.3); the seat's "Hand" (the human's seat is chosen by lot unless the page
-passes `human`); and **Deal** and **Cancel**. The screen's helper line says "A Tour
-is two deals, one dealt by each."
+passes `human`); and **Deal** and **Cancel**. The rules rows are shown on the
+screen, with no disclosure. The screen's helper line
+says "A Tour is two deals, one dealt by each." The screen is the only place
+these five are chosen (17 Oct 2026, the maintainer's request: what does not
+apply to this game in play belongs in the new-sitting choices).
 
-3.5.2 The choice is kept as the next sitting's default (7.7). A sitting in
-progress is never changed by the screen's controls except through
-Settings, and the three rule settings and the length are not changeable
-mid-sitting (they are shown, greyed, with "applies from the next sitting").
+3.5.2 The screen starts from the sitting on the table (its length, rules and
+level, as the record and the engine have them), else from the kept prefs; what
+is chosen when Deal is pressed is kept as the next default (7.7). A sitting in
+progress is never changed by the screen, and the Settings menu does not offer
+the length, the three rules or the opponent's level at all: it reads them back
+(7.1). The opponent's level is fixed for the sitting (a change would need a
+record event of its own, PROTOCOL "Creating a sitting"; not offered).
 
 ### 3.6 Extension prompt
 
@@ -1134,43 +1140,47 @@ fold, hidden when Hints is off) in `web3d/test/tracker.test.js`.
 Under the cog, in sections. `localStorage` key `strohmandeln.prefs`, version
 numbered (7.7).
 
-| Setting | Values | Default | Applies |
-|---|---|---|---|
-| Rule: both pass | play (simple game) / throw in | play | next sitting |
-| Rule: game values | 2/3/4 · 1/2/3 · 1/2/4 | 2/3/4 | next sitting |
-| Rule: Pagat ultimo value | 1 / 2 Points | 1 | next sitting |
-| Sitting length | 3 / 6 Touren | 3 | next sitting |
-| Opponent skill | 1 to 4 in halves (1, 1.5, ... 4) | 3 | next sitting |
-| Speed | Slow / Normal / Fast / Instant | Normal | now |
-| Table talk | All / Calls only / None | All | now |
-| Tutor | On / Off (off: no pages, no tips, no review chip) | On | now |
-| Tips from the Kibitzer | On / Off (off: no advice in the Kibitzer's tab and no "Next" in the review; it shows the count and what went well, 6.4.6) | On | now |
-| Hints | On / Off (the hint chip, the Cards-out tracker, the public mark on hand cards; 6.3.5) | Off | now |
-| Cards out | On / Off (the tracker, 6.6; shown only with Hints on) | On | now |
-| Explanations | On / Off | Off | now |
-| Announce automatically | Off / On (an honour is announced before it is played, with no prompt) | Off | now |
-| Slate opens by itself | On / Off | On | now |
-| Faces size | Auto / Classic / Jumbo | Auto | now |
-| Left-handed | On / Off | Off | now |
-| Reduced motion | System / On / Off | System | now |
-| Language | English / Deutsch | English | now |
-| Table top | the kit's surfaces (a random choice by default) | random | now |
+| Setting | Values | Default |
+|---|---|---|
+| Speed | Slow / Normal / Fast / Instant | Normal |
+| Table talk | All / Calls only / None | All |
+| Tutor | On / Off (off: no pages, no tips, no review chip) | On |
+| Tips from the Kibitzer | On / Off (off: no advice in the Kibitzer's tab and no "Next" in the review; it shows the count and what went well, 6.4.6) | On |
+| Hints | On / Off (the hint chip, the Cards-out tracker, the public mark on hand cards; 6.3.5) | Off |
+| Cards out | On / Off (the tracker, 6.6; shown only with Hints on) | On |
+| Explanations | On / Off | Off |
+| Announce automatically | Off / On (an honour is announced before it is played, with no prompt) | Off |
+| Slate opens by itself | On / Off | On |
+| Faces size | Auto / Classic / Jumbo | Auto |
+| Left-handed | On / Off | Off |
+| Reduced motion | System / On / Off | System |
+| Language | English / Deutsch | English |
+| Table top | a labelled dropdown: Random first, then the kit's 18 surfaces, named in English and German (`settings.surface.<id>`) | Random |
 
-The rule settings and the length apply to the next sitting: shown, greyed, in a
-sitting in progress. A mid-sitting change is never silent; the screen says
-"from the next sitting."
+Every row takes effect at once. The menu holds none of the sitting's own
+choices: the length, the three rules and the opponent's level are the
+new-sitting screen's (3.5). A read-only line at the top says what the sitting
+on the table is, read from the record's `sitting_start` and the engine's level
+and not from the prefs: "This sitting: 3 Touren, 2/3/4, ultimo 1, simple game,
+opponent level 3", then "A new sitting, from the plus at the top, chooses the
+next." It is hidden when there is no sitting, and a restored sitting shows its
+own rules, not the kept defaults. The table-top select is 16 px or more, at
+least a touch target high, and in the menu's colour pair. Escape on its open list closes
+only the list; on the closed select, focused, it closes the menu (3.10.5).
 
 ### 7.2 The three rule settings
 
 As R "Authority and settings": `both_pass`, `values`, `ultimo`. Each has a
 one-line explanation beside it, sourced as in the rules (`Werner 2/3/4`,
-`Dummett 1/2/3`, `Ulmann 1/2/4`). The new-sitting screen shows the three with
-the defaults; picking another is never penalised, and no other variant is
-offered (CLAUDE.md: no variants without the maintainer).
+`Dummett 1/2/3`, `Ulmann 1/2/4`). Only the new-sitting screen (3.5) offers the
+three, starting from the sitting on the table or the kept defaults; picking
+another is never penalised, and no other variant is offered (CLAUDE.md: no
+variants without the maintainer).
 
 ### 7.3 The opponent's skill
 
-A dial of 1 to 4 in halves, as Cassino's; passed as `level` in `new` [P] (an
+A dial of 1 to 4 in halves, as Cassino's, on the new-sitting screen (3.5) and not
+in the Settings menu; passed as `level` in `new` [P] (an
 integer for now: the dial maps to the engine's levels when the opponent
 package defines them; until then the wasm carries the opaque value). The
 label under the dial says in a sentence what the level plays like, once the
@@ -1423,6 +1433,10 @@ motion are saved to `web3d/test/out/`.
   unmute restores them.
 - `hint_and_explain`: the hint chip lights a card and shows a rendered key; explanations
   off leaves the line empty.
+- `hud_not_clipped`: at 1280 × 720, 1440 × 900, 1920 × 1080 and 1024 × 768, in both
+  languages, with "35⅔" a side, a wide ledger value and the bonus label's popup, every
+  HUD text lies inside the HUD box and the window, and each of the line's 36 segments is
+  at least 2 px wide.
 - `tracker_clear`: with Hints on, the cards-out panel is open at rest, of the trick at
   rest, with two to four lines and the 54-cell grid, and its rectangle meets none of
   the hand, the move bar, the prompt, the HUD or the Kibitzer's tabs at the window
@@ -1444,10 +1458,16 @@ motion are saved to `web3d/test/out/`.
 
 ### 10.5 Settings, language, persistence
 
-- `settings_rules`: the three rule settings and the length apply to the next sitting
-  and are greyed mid-sitting; `values` change the credits' amounts on the next
-  sitting.
-- `skill_speed`: the dial and the speed keep and apply.
+- `settings_rules`: the three rule settings and the length chosen for the next
+  sitting reach it (the record's `sitting_start`, the slate's header); `values`
+  change the credits' amounts.
+- `settings_no_rules`: the menu shows none of the length, the three rules and the
+  opponent's level, and no "applies" tag; it shows the "This sitting" line, equal to
+  the record, at the deal and after Continue (with the prefs changed meanwhile).
+- `new_sitting_from_table`: the new-sitting screen starts from the sitting on the
+  table, not the prefs, and shows the rules rows with no disclosure.
+- `skill_speed`: the speed keeps and applies; the level is read in the menu's line
+  and chosen on the new-sitting screen.
 - `language_switch`: mid-sitting (during a deal, after a reveal, at the count)
   English to German and back: every visible string, the faces' court labels,
   the HUD (rebuilt, numbers kept), the slate, the open tutorial page and the screen-reader text
