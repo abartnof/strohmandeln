@@ -1,332 +1,467 @@
 # Hints that teach: specification
 
-> Status: **proposed**, 17 Oct 2026. Builds on `docs/TUTOR.md` (the gate, 4, 11,
-> 15), `docs/MESSAGES.md` ("Hint reasons") and `docs/TABLE3D.md` 6.3, 6.5, 6.6.
-> A file of its own because the hint's wire format, wording and measure change
-> together, and `TUTOR.md` is the brief's and the learner's. Game claims cite
-> `research/07` (strategy, 1.2 to 1.5) and `research/16` (the ladder); "U" is
-> Ulmann, "W" Werner, "MS" Mayr & Sedlaczek, as there.
+> Status: **proposed**, 17 Oct 2026 (third revision the same day). Builds on
+> `docs/TUTOR.md` (the ladder 2, chances 4, brief 6, strings 9, gate 11, 15),
+> `docs/MESSAGES.md` ("Hint reasons") and `docs/TABLE3D.md` 6.2, 6.3, 6.5, 6.6.
+> A file of its own because the hint's wire format, wording and measures change
+> together and `TUTOR.md` is the brief's and the learner's. Game claims cite
+> `research/07` (strategy 1.2 to 1.5) and `research/16` (the ladder); "U" is
+> Ulmann, "W" Werner, "Be" Bermann, "MS" Mayr & Sedlaczek, as there.
 
-## 1. Problem
+## 0. The governing rule (maintainer, 17 Oct 2026)
 
-Two plays of 17 Oct 2026 (maintainer's notes), both from the level-4 hint:
+> The minimal amount of information the user needs to play the right card now;
+> and the minimal amount of strategy/gameplay guidance the user needs to
+> bootstrap this incident into a sense of "how the game is played right". The
+> user should always be able to play the right card given a hint, and know what to
+> do in a similar case in the future.
 
-- (a) A lead of the jack of diamonds, not the highest card held. The reason was
-  only the lead's sampled win rate (`lead-rate`, `lead-cheap`), which names no
-  cause and no alternative.
-- (b) Uhu (II) led; hint "Play Mond. Play Mond, not the Pagat: with 13 tarocks
-  ..." (`hold-pagat`). The Pagat cannot beat II; the card the learner weighs is
-  the cheapest winner, III.
+Two halves, each checked (7): **(1) the hint names the card unambiguously**,
+always; **(2) one generalising sentence states a condition the player can
+recognise in another deal, from what they can see (their hand, covers, the cards
+out), and what to do when it holds**: not a fact true only of this deal. Every
+draft wording below was checked against (2); where a draft can only state a fact
+(before its measure has passed, 5.2) it is marked as not meeting (2).
 
-Causes in the code: `explain_play` tests `hold-pagat` before anything else
-whenever the Pagat is the lowest legal tarock and the hand is strong, so it
-answers "why not the Pagat" where the contrast is the cheapest winner; `lead`,
-with no maxim on top, ends at the sample's rate, which compares nothing;
-`follow` has no sample; the table prints "Play X." twice (`hint.play`, then a
-reason beginning "Play {card}", `web3d/src/hinttext.js`).
+## 1. Problem, aim, assumption
 
-## 2. The hint's shape: two layers, four parts
+Two plays of 17 Oct 2026 (maintainer's notes): (a) a lead of the jack of
+diamonds, not the highest card held, with only the sample's win rate as reason
+(`lead-rate`); (b) Uhu (II) led, hint "Play Mond. Play Mond, not the Pagat: ..."
+(`hold-pagat`), which answers a question nobody asked (the Pagat cannot beat II;
+the card weighed is the cheapest winner, III).
 
-Every play hint answers, in this order:
+Code causes: `explain_play` tests `hold-pagat` first whenever the Pagat is the
+lowest legal tarock and the hand is strong; `lead` with no maxim on top ends at
+a rate that compares nothing; `follow` draws no sample; "Play X." is printed
+twice (`hint.play`, then a reason beginning "Play {card}", `web3d/src/hinttext.js`).
 
-| Part | Layer | Answers | Kind |
-|---|---|---|---|
-| Headline | | "Play X." (`hint.play`, once; no reason repeats it) | |
-| **Plan** | 1, this position | what X does, plainly: "takes II and the Mond's 13 thirds", "gives up the cheapest card" | fact |
-| **Instead of** | 1 | the natural alternative A (3.1) and what the sample says it does, against X | fact (sampled) |
-| **Facts** | 1 | at most two things that decided it (3.3), each found in the Cards-out tab | fact |
-| **The idea** | 2, the rationale | the general play X rests on, in plain words, with its source; or the honest fallback (5.3) | gated (5) |
+**Assumption (maintainer, 17 Oct 2026).** The player knows the legal moves and
+nothing of strategy. Working out what the player can do and what lies just
+beyond is the post-game tutor's job (`TUTOR.md` 5, 6); **the hint is not driven
+by the learner model**. The hint's job is to show how a good player thinks at
+this decision, so that the player thinks that way while playing. For a
+newcomer the hints are the main way the game is learned: they are load-bearing,
+and held to a checkable bar (7).
 
-Layer 1 says why *this* card *here*; layer 2 says what to take to the next deal.
-Both are in every play hint where they can be given truthfully. A forced card
-gives `only-card` alone. Bid and announce hints are unchanged.
+**The Kibitzer as the more knowledgeable other.** The zone of proximal
+development is "the space between what a learner is capable of doing
+unsupported and what the learner cannot do even with support", the range where
+the learner acts with support from a "more knowledgeable other", through whom
+the learner gradually, "through social interaction and sense-making", comes to
+solve problems independently (Wikipedia, "Zone of proximal development", lead;
+read 17 Oct 2026, copy in `research/sources/`, which is not in git; the page
+says Vygotsky introduced the concept but did not fully develop it). Only this
+is taken: the Kibitzer (`TABLE3D.md` 6.5) models the thinking during play, in
+short turns, and the player can ask for more. The zone itself, and what to teach
+next, belong to the brief.
 
-## 3. Layer 1
+## 2. The thinking routine: a few questions, always worded the same
 
-### 3.1 The natural alternative A
+A good player asks a few things at every decision. They are fixed, three to
+five for each kind of decision, in one wording, drawn from the sources:
 
-Fixed by rule, so the contrast is the same every time and cannot be picked to
-flatter the hint. A is a legal card other than X (the hinted card).
+| Key | Question (en / de) | Kind | Source | Answered by | Brief skill |
+|---|---|---|---|---|---|
+| `ask.beat` | Can I win it? / Kann ich ihn holen? | follow | research/16 `worth` (the classes: beats the card led, does not); the legal rule: no obligation to win (page `following`) | the cards that beat the card led | `worth` |
+| `ask.worth` | Is the trick worth what it costs? / Lohnt der Stich, was er kostet? | follow | Be p. 147 (whether a smaller trick will do or one should wait for a higher count, research/16 `worth`); research/07 1.3 (MS: "den König schinden und ein Skartindel zugeben"; the winner must lead) | the trick's thirds against the card spent | `worth` |
+| `ask.cheap` | What is the cheapest card that does the job? / Welche ist die billigste Karte, die es tut? | follow | research/16 `cheap` (MS "Das Nach-hinten-Spielen", U p. 75) | the lowest winner, else the lowest loser | `cheap` |
+| `ask.keep` | What does keeping this card give me later? / Was bringt mir diese Karte, wenn ich sie behalte? | both | research/07 1.4, 1.5 (Pagat: MS keep it with more than 11 tarocks, cash it with 7 or fewer; W p. 133; Mondfang, MS and U p. 74, research/16 "Guarding the Mond"); research/07 1.2 (W: keep a packet while his Pagat ultimo threatens) | a key card (Sküs, Mond, Pagat, a packet's card) and what is out | `pagat` (see 2.1) |
+| `ask.beneath` | What lies beneath, if I play this packet card? / Was liegt darunter, wenn ich dieses Paketblatt spiele? | both | research/07 1.2 (MS: play the packets off for "volle Einsicht"; exposed Dame or Cavall at once; W p. 134; U p. 71-75); research/16 `off` | cards face down under a cover, a card turned next | `off` |
+| `ask.out` | What is still out that beats it? / Was ist noch draußen, das sie schlägt? | lead | research/07 1.2 (W: "genaues Tarokzählen", which cards of each suit are out and which is major; MS: count how often each suit was played and trumped), 1.3 (MS: a king trumped); research/16 `void`, `endgame` | tarocks out, his shown voids, his covers, masters (Cards-out tab) | `void`, `endgame` |
+| `ask.suit` | Whose suit is this? / Wessen Farbe ist das? | lead | research/07 1.2 (MS: lead a suit he shows no card in, from your packets), 1.3 (MS and W p. 134-135: who opens a contested suit ends worse; W adds that no general rule can be given); research/16 `behind`, `void` | the suit's points: mine, his, shared evenly | `behind`, `void` |
+| `ask.trumps` | Am I strong enough in tarocks to draw his? / Bin ich in Tarock stark genug, seine zu ziehen? | lead | research/07 1.4 (MS: the tarock-stronger player tarockiert first, from a solid run; W: first shed tarocks, then play the suits); research/16 `run` | my tarocks against those unseen, a solid run | `run` |
 
-- **Following.** If X wins: A = the cheapest *loser* (least `thirds`, then least
-  `dearness`, as `follow`'s `cheapest`), or, with no loser, the next dearer
-  winner. If X loses: A = the cheapest winner (`dearness`: suits below tarocks,
-  then strength). In (b), X = Mond, so A = III. The Pagat is A only when it is
-  the cheapest winner or loser.
-- **Leading.** A = the highest card held: greatest `(is_tarock, strength)` among
-  the legal cards. If X is that card, A = the cheapest card (least `thirds`, then
-  `dearness`). This is the card the maintainer asked about in (a) and the lead a
-  beginner picks ("the best I have").
+Counts: a follow decision has five questions (`beat`, `worth`, `cheap`, `keep`,
+`beneath`); a lead has five (`keep`, `out`, `beneath`, `suit`, `trumps`).
 
-What the sample says of A is the hint's lesson: A is what the learner would play
-without it. Open question 1: with the Sküs or a long tarock run, A is a tarock;
-should it be the highest *suit* card there?
+### 2.1 Mismatches with the ladder, listed
 
-### 3.2 What the sample says of X and A
+- Two skills share a question: `void` and `endgame` use `ask.out`; `void` and
+  `behind` use `ask.suit`. Two questions share a skill: `worth` has `ask.beat` and
+  `ask.worth`.
+- `ask.keep` is `pagat`'s question, but it also covers **Mondfang** and a packet
+  kept under the threat of his Pagat ultimo, which have **no skill**
+  (research/16 parks both as rare; the canon pays no Mondfang bonus,
+  research/14 rule 24). They get a question and no brief line.
+- `bid` and `announce` are not card plays and keep their keys.
+- The sources disagree on the contested suit (W: no general rule; MS: do not
+  open it) and on shedding tarocks first (W) against tarockieren first (MS)
+  (research/07 1.3): the questions ask, they do not answer by rule.
 
-From the draw the hint already makes.
+## 3. The hint
 
-- **Lead**, rung 3 and up: `lead_sims` (1 000 worlds, `LEAD_WORLDS`) exists. For
-  X and for A one more pass each (play the card, the rollout policy replies)
-  gives `wins` (he leaves me the trick), `cost` (average thirds given when he
-  takes it) and `trumped` (he answers a suit lead with a tarock). Added cost: one
-  more pass over the sims; the whole `lead_wins` at 1 000 worlds is 1.9 ms
-  median, 13 ms p95 (`docs/OPPONENT.md`, "Hint evidence").
-- **Follow**, rung 4: the trick's outcome is known, so the lesson is the rest of
-  the deal. `odds_with` already solves 50 worlds and keeps one other card's
-  column; keep `table.scores` and `table.per_world` and read A's column:
-  `better` (worlds where X beats A) and `gain_thirds`. **No extra search**:
-  `odds` is generalised to take A (today it takes the best other card). Given
-  only when it agrees with the choice (`gain >= 1`, as today).
-- **Rungs 2 and below** (no sample): facts only: the trick's thirds and `spend()`
-  of X and A. No sampled figure is invented.
+### 3.1 Shape
 
-Latency stays inside `docs/OPPONENT.md`'s measure (lead median 4.6 ms, follow
-4.5 ms, p95 about 13 ms native, run 1): the build adds under 5 ms median, proved
-by `hintbench` rows (8).
+> **Play Mond.** Is it safe to keep? Not while the Sküs is out: play the Mond when it wins a trick.
 
-### 3.3 Facts
+Headline ("Play X.", once, `hint.play`, the card named so that it cannot be
+mistaken: half 1 of 0; nothing else repeats it), then **the decisive question,
+answered for this position, with the rule to carry away**: the answer is the
+condition as it stands here (read off what the player can see), the clause after
+the colon is what to do whenever it holds (half 2 of 0), in one sentence in the
+words of one idea. **Budget: 25 words in English, 30 in German, headline included**, a
+test. Basis: the repo's own bounds for what is read in play: tutorial page lines
+at most 25 words (`TABLE3D.md` 6.2.1), the whole brief about 45 (`TUTOR.md` 6).
+Everything else is behind **"Why?"** (a control, closed, per hint, key and
+wording `TABLE3D.md` 6.3's to fix): the answers to the other questions, the
+contrast with the natural alternative (4), the sampled figures, the rule sentence
+and the `odds`. Asking costs nothing and counts nothing (the hint marked the
+decision assisted already, `TUTOR.md` 3). A forced card: "{card} is your only
+legal card." and no question.
 
-At most two, by a fixed priority. Each comes from `Knowledge` or the tracker,
-never the hidden hand, and names where the learner finds it in the Cards-out
-panel (`TABLE3D.md` 6.6.5, lines 1 to 4, or the grid).
+### 3.2 Which question is decisive
 
-| Fact key | Parameters | Engine source | Status | Shown in |
+Each question has a test on the pair (X = the hinted card, A = the natural
+alternative, 4). It is **decisive** when X and A fall on opposite sides:
+
+| Question | Decisive when |
+|---|---|
+| `ask.keep` | X or A is a key card: the Sküs, Mond or Pagat, or a card that keeps a packet under his Pagat ultimo threat; and the other is not |
+| `ask.beneath` | exactly one of X, A is a packet cover |
+| `ask.out` (lead) | exactly one of X, A can be beaten by a card still out, or one leads a suit he has shown void |
+| `ask.suit` (lead) | X and A are of suits that differ in whose they are (mine solid, his, shared) |
+| `ask.trumps` (lead) | exactly one of X, A is a tarock |
+| `ask.worth` (follow) | exactly one of X, A wins the trick |
+| `ask.cheap` (follow) | X and A both win or both lose, and X is cheaper |
+| `ask.beat` | never decisive: its answer opens the "Why?" |
+
+Several decisive: the first in this order: follow `keep`, `beneath`, `worth`,
+`cheap`; lead `keep`, `out`, `beneath`, `suit`, `trumps`. Fixed so the same
+position always raises the same question; the order puts first what is
+rare and costly (`keep`), then what shows new cards (`beneath`, MS "volle
+Einsicht", research/07 1.2). **None decisive: the honest fallback (5.2).**
+
+### 3.3 The answer, and the causal clause
+
+The answer to the decisive question is a **fact** about this position, counted
+from known cards or from the hint's own sample: always allowed. The clause that
+says what to do whenever the condition holds (`so-*`) is a **claim of cause and
+of a general rule**, and is added only if the idea passed its measure (5.1);
+otherwise the sentence stops at the fact. **That sentence does not meet half 2 of
+0**: it is the honest form while the measure is missing, and the bar (7) counts
+how many hints are in it. The same words are used in the brief (6).
+
+## 4. The natural alternative A and the sample
+
+**A**, fixed by rule so the contrast cannot flatter the hint: *following*, X wins:
+the cheapest loser (least `thirds`, then `dearness`), or with none the next dearer
+winner; X loses: the cheapest winner. *Leading*: the highest card held, greatest
+`(is_tarock, strength)`; if X is that card, the cheapest card. `hold-pagat` is
+returned **only when the Pagat is A** (the fix of (b): II is beaten by III, not by
+the Pagat).
+
+**The sample** (computed with the hint, so the answer does not change when
+asked later):
+
+- *Lead*, rung 3 and up: the existing `lead_sims` (1 000 worlds) get one more pass
+  per card for `wins`, `cost`, `trumped`; added cost one pass over the sims
+  (`lead_wins` at 1 000 worlds: 1.9 ms median, 13 ms p95, `docs/OPPONENT.md`,
+  "Hint evidence").
+- *Follow*, rung 4: `odds_with` already solves 50 worlds; keep `per_world` and
+  read A's column: `better`, `gain_thirds`; **no extra search**; given only when
+  it agrees with the choice (`gain >= 1`).
+- *Rung 2 and below*: facts only (thirds, `spend()`); no sampled figure is
+  invented.
+
+Added latency under 5 ms median, shown by `hintbench` rows (lead 4.6 ms, follow
+4.5 ms, p95 about 13 ms before).
+
+## 5. The gates, and the fallback
+
+### 5.1 Which claims need a measure
+
+- **Not gated** (positions facts): the question, its answer, the contrast and
+  its figures, the facts of 5.3. Counts of known cards or of the same sample, as
+  `lead-rate` is.
+- **Gated by M5** (`TUTOR.md` 11; only `worth.rich` and `announce` passed, the
+  rest failed): the `Rule:` clause in "Why?", as today.
+- **Gated by M9, attribution** (new): the causal clause and naming an idea as the
+  reason ("so play it now"; "that is Mondfang"). M5 asks whether the engine
+  follows a prescription; an idea shown only where the engine already agrees
+  agrees by construction, and so says nothing about cause.
+
+**M9 (planned in `MEASUREMENTS.md`, committed before its first batch).** For each
+idea (a question with its prescribed class, e.g. `keep`: not the key card), in
+positions from rung 4's own sittings where its condition holds and the engine's
+card is in the prescribed class: search again with that class removed
+(`students.rs` style). The idea *explains* the choice when the best card outside
+the class is worse by at least `MARGIN` (10 thirds, M1) over the same worlds.
+Attribution = explained / fired, clustered by deal, Wilson lower bound at the
+effective sample, shown at 0.80, confirmed on fresh seeds; comparison, batch
+size, maximum looks and the O'Brien-Fleming boundary fixed first; stop as soon as
+the effect crosses or is plainly too small (`CLAUDE.md`). Rare conditions
+(Mondfang) are drawn by condition; one that cannot reach an effective sample gets
+no causal clause. About 50 ms a search, two a firing, some 10 000 firings: 15 to
+20 minutes CPU on 2 vCPU, a compute run: **the maintainer is consulted first**.
+
+### 5.2 The fallback, said honestly
+
+Two levels, both always allowed:
+
+1. **Question and fact, no rule** (the idea has not passed): "Is it safe to keep?
+   The Sküs is still out." The player still gets the thing to ask, but not yet a
+   rule to carry; it does not meet half 2 of 0, and is reported as such (7).
+2. **No question is decisive**: "No question settles this one; the sampled deals
+   favour it: 41 of 50 came out 7 thirds better." (`ask-none`). Where the engine's
+   card contradicts a sourced prescription whose condition holds, the "Why?" says
+   so ("The books lean the other way here ({idea}); the sampled deals favour this
+   card.", `ask-differ`), not nothing.
+
+No hint is without a "because": level 1's fact, level 2's sample, or `only-card`.
+
+### 5.3 Facts (the answers)
+
+At most two shown in the default's answer or the "Why?", each naming where the
+Cards-out tab shows it (`TABLE3D.md` 6.6.5):
+
+| Key | Parameters | Engine source | Status | Shown in |
 |---|---|---|---|---|
 | `fact-tarocks-out` | `out`, `mine` | `unseen_tarocks()`, `my_tarocks()` | have | line 1 |
-| `fact-skus-out` | `share`, `worlds` | Sküs unseen; share counted in the sample | share is new | tarock rows |
-| `fact-mond-open` | none | Mond mine, Sküs neither played nor mine | new, 3 lines | tarock rows |
+| `fact-skus-out` | `share`, `worlds` | Sküs unseen; share counted in the sample | share new | tarock rows |
+| `fact-mond-open` | none | Mond mine; Sküs neither played nor mine | new, 3 lines | tarock rows |
 | `fact-his-void` | `suit` | `opp_void` | have | line 3 |
-| `fact-master` | `card` | `Group.master` (with the "he may trump" mark) | have | line 2 |
+| `fact-master` | `card` | `Group.master` ("he may trump" mark) | have | line 2 |
 | `fact-his-covers` | `suit`, `n` | `opp_covers`, `opp_known` | have | his cover cells |
-| `fact-split` | `suit`, `mine`, `out` | suit group counts; the `behind` trigger (`SPLIT_SHARE`, M8) | have, a wrapper | the suit's row |
+| `fact-split` | `suit`, `mine`, `out` | suit group counts; `behind`'s trigger (`SPLIT_SHARE`, M8) | have, wrapper | the suit's row |
+| `fact-beneath` | `n` | `my_hidden` of the packet | have | his/your packet |
 
-Priority: the fact the contrast turns on (a Sküs fact when X or A is the Mond; a
-void when X or A leads into it), then the first true in table order. Each is a
-count of known cards: always allowed.
+## 6. The same words in the brief and on the pages
 
-## 4. Reason priority
+The post-game tutor and the Kibitzer's pages use the **questions' wording and the
+skills' names** the hint uses, so each reinforces the other.
 
-`explain_play` returns the parts in this order; the first applicable decides the
-plan, and the contrast and facts follow it.
+- **Brief** (`TUTOR.md` 6): bullet 2 names the focus skill (`tutor.name.*`, as
+  now) and its rule; the line "To try:" is the skill's main question verbatim
+  (replacing `try.1`, which are imperatives of the same meaning today; `try.2`
+  stays): `worth` `ask.worth`, `cheap` `ask.cheap`, `off` `ask.beneath`, `run`
+  `ask.trumps`, `pagat` `ask.keep`, `void` `ask.out`, `behind` `ask.suit`,
+  `endgame` `ask.out`. The hint's question is thus the brief's "to try", and a
+  decision the brief names is the same one the hint worded.
+- **Nudge** (`tutor.nudge`, "teaching is two touches", `TUTOR.md` 6): unchanged.
+- **Pages** (`TABLE3D.md` 6.2): `following` gains the line "Ask: can I win it? Is the
+  trick worth what it costs?"; `from-a-packet` "Ask: what lies beneath?";
+  `pagat-ultimo` "Ask: what does keeping this card give me later?" (each within
+  25 words a line and 150 a page, the test holds). The lead questions have no page
+  yet: a page `leading` opening at the human's first lead is added, due
+  no later than the first lead (pacing, 6.2.2).
+- One source of strings: the question and the skill name are one `strings.json`
+  key each, used by hint, brief and page; a test fails if one is redefined (11).
 
-1. `only-card`.
-2. The contrast keys (6), when A exists and the sample or the facts separate X
-   from A.
-3. `keep-packet` (his Pagat ultimo threatens): a position fact, kept.
-4. `hold-pagat`: **only when the Pagat is A.** This is the fix for (b): II
-   cannot be beaten by the Pagat, A is III, the Pagat is not mentioned.
-5. The existing `win-*`, `decline-*`, `lose-*`, `lead-*` keys, as the plan when
-   no contrast was sampled (rungs 2 and below).
+## 7. The quality bar
 
-## 5. Layer 2: the idea, and the gate
+For a newcomer the hint is the lesson, so it is held to a bar that is checked.
 
-### 5.1 Ideas
+**Fixed positions.** A set of 1 200 play decisions from 50 mirrored sittings at a
+fixed seed (as `hintbench`, level 4 both seats), in six cells of 200: kind (lead,
+follow) by phase (tricks 1 to 9, 10 to 18, 19 to 27). The seed, the cells and the
+targets are fixed in `MEASUREMENTS.md` before the first run.
 
-An idea is a sourced piece of play with a condition on the view and a
-prescription (a class of cards). It is told as "the idea here", never as "Rule:".
-
-| Idea | Condition here | Prescribes | Source |
+| # | Bar | Target | Measure |
 |---|---|---|---|
-| `behind` | a suit split evenly between the hands | lead another suit; make him open it | research/07 1.3 (MS: whoever opens the contested suit first ends worse in it; W p. 134-135 adds that no general rule can be given); research/16 `behind` |
-| `spare-honour` | a poor trick that a figure would win | the least that wins, or a pip | research/07 1.3 (MS "den König schinden und ein Skartindel zugeben"); research/16 `worth`, `cheap` |
-| `draw-trumps` | tarock-strong, a solid run | lead the run | research/07 1.4 (MS) |
-| `pagat-last` | many tarocks | keep the Pagat | research/07 1.4, 1.5 (more than 11 for a silent ultimo) |
-| `pagat-cash` | 7 tarocks or fewer | cash the Pagat early | research/07 1.4 (MS) |
-| `mondfang` | Mond mine, Sküs out | bank the Mond on a trick it takes safely, or keep a small tarock to bring him to lead | research/07 1.5 (MS "Mondfang": "ein oder zwei kleine Tarock"); U p. 74 ("den Mond ... rechtzeitig heimzubringen"), as cited in research/16, "Guarding the Mond". The canon pays no Mondfang bonus (research/14 rule 24), so it is told only as saving the Mond's 13 thirds |
-| `packets-off` | covers legal | play covers and exposed figures off | research/07 1.2 (U, MS) |
-| `not-into-void` | he has shown the suit void | do not lead it | research/16 `void` |
+| Q0 | **Half 1**: the hint names exactly one legal card, as the headline | 100% | test, free |
+| Q1 | Every hint has a "because" (a fact, a sample line or `only-card`) | 100% | test, free |
+| Q2 | **Question share**: a decisive question is named (not level 2 of 5.2) | at least 85% per kind, at least 70% in every cell | the run |
+| Q3 | **Half 2, form**: the `so-*` sentence is a pair {condition, action} whose condition parameters are all visible state (the player's hand and covers, the cards out, the trick), none of the sample's counts, his hidden cards or a card code | 100% of the hints that carry one | test, free (the registry types each parameter) |
+| Q3b | **Half 2, reach and truth**: in the fixed positions, how often the condition holds, and how often the engine's card satisfies the action when it does (a pair is shown only at precision 0.80: the M5 and M9 gates) | the share of hints carrying a `so-*`: goal 50% overall, not a gate; reach at least 20 positions per pair, else the pair is not shown | the run |
+| Q4 | Default within 25 words en, 30 de; "Why?" within 90 | 100% | test, free |
+| Q5 | **Readable by someone who knows only the legal moves**: every term is in the list below, defined before use | 100% | static check over strings, and over the run's hints for the pages due by that trick |
 
-### 5.2 Does "the idea here" keep the gate's intent?
+**Terms the hints may use**, each with where it is defined (everything else is
+everyday English or German; a hint may use "ultimo", "Mondfang", "master" or
+"void" only in "Why?" and with its gloss):
 
-No, not by itself. The M5 gate (`TUTOR.md` 11, 15; `MEASUREMENTS.md`, M5) stops
-a prescription being given as advice unless the strongest rung follows it when
-its trigger fires (Wilson lower bound 0.80; two of twelve pass). Showing an idea
-only where the engine's card already agrees and the condition holds is a weaker
-filter: agreement is given by construction, so it says nothing of whether the
-idea is the *cause* of the choice. A sourced idea that merely coincides with the
-card would be taught as the reason, which is what the gate exists to prevent.
-"The idea here" rewords the claim; it does not change it. So:
+| Term | Defined by |
+|---|---|
+| trick, lead, win a trick | page `playing` |
+| follow suit, trump | page `following` |
+| tarock(s), Sküs, Mond, Pagat | page `the-cards`; Trull, `honours` |
+| packet, cover, "beneath", turn up | pages `packets`, `from-a-packet` |
+| point(s), thirds, "costs", "worth" | page `thirds` |
+| "the last trick" (for ultimo) | page `pagat-ultimo` |
+| "still out", "highest left" | the Cards-out legend and line 2 (`TABLE3D.md` 6.6.4, 6.6.5) |
+| "he showed no {suit}" | Cards-out line 3 |
+| "shared" (a suit) | glossed in the hint: "shared evenly between us" |
+| "sampled deals" | the "Why?" header always says: "I deal his hidden cards at random 1,000 times and play it out." |
 
-- `Rule:` stays gated by M5, unchanged (`worth.rich` and `announce` today).
-- An **idea** is a weaker, new claim ("here, this idea explains the choice")
-  with its own measure, **M9, attribution**. An idea that has not passed is not
-  shown as an idea (5.3).
+A hint is checked against the pages **due at that trick** (`TABLE3D.md` 6.2.2,
+the pacing table): one that needs a page not yet due glosses the term inline or
+uses the everyday word.
 
-**M9 (to be planned in `MEASUREMENTS.md` and committed before its first batch).**
-For each idea, in positions from rung 4's own sittings where its condition holds
-and the engine's card is in the prescribed class: re-run the search with the
-class removed (a knock-out as in `students.rs`). The idea *explains* the choice
-when the best card outside the class is worse by at least `MARGIN` (10 thirds,
-M1) over the same worlds. Attribution = explained / fired, clustered by deal;
-Wilson lower bound at the effective sample; shown at 0.80 and confirmed on fresh
-seeds, as M5. The comparison, batch size, maximum looks and the O'Brien-Fleming
-boundary are fixed before the first batch (`CLAUDE.md`); stop as soon as the
-effect crosses, or is plainly too small. Rare conditions (`mondfang`) are
-drawn by condition (deals dealt until enough firings); one that cannot reach an
-effective sample is not shown. Estimate: two searches a firing, about 50 ms each
-on 2 vCPU; some 10 000 firings is 15 to 20 minutes of CPU. It is a compute run:
-**consult the maintainer first** (`CLAUDE.md`), with that estimate.
+**Cost.** Q1, Q4 and the static half of Q5 are `cargo test`, free. Q2, Q3 and the
+run half of Q5 need 1 200 hints at 20 to 65 ms (`docs/OPPONENT.md`) and the
+sittings that make the positions: **under 5 minutes of CPU**, a cheap run, not a
+long compute run.
 
-Until M9 has run, only the two fallbacks of 5.3 and the M5 `Rule:` lines ship.
+**If M9 passes few ideas.** Q2 is unaffected, because an answer is a fact; Q3b
+falls, and most hints stop at level 1 of 5.2 ("question and fact"), which does
+not meet half 2 of 0. That is the honest form and it still teaches the routine,
+but the principle is then unmet for those hints, and the report says so. The rule
+is not given without its measure: the options are more positions for M9, or
+measuring condition-and-action pairs directly on the engine's own play (the M5
+method, for pairs the books do not state), or accepting level 1; the gate is
+never lowered. **M9 is therefore on the critical path of half 2.** If Q2 falls under its floor in a cell
+(an endgame cell, say), the **questions** are wrong for that kind and phase and
+are revised; the target is not.
 
-### 5.3 The fallback, said honestly
+## 8. Keys, with drafts
 
-When no idea passed, none has its condition here, or the engine's card
-disagrees with the idea whose condition holds, the idea line is the sampled
-reason, told as that and not as a book idea:
+Kibitzer voice, short and kind (`TABLE3D.md` 6.5). `*_thirds` print as points with
+their unit. No text begins with the play imperative of its own card.
 
-- With a sample: "No book rule covers this; the sampled deals favour it: 41 of
-  50 came out 7 thirds better." (`idea-none-sampled`.)
-- Where the engine's card contradicts a sourced idea whose condition holds: the
-  box says so (`idea-books-differ`); the disagreement is the more useful lesson,
-  and W (p. 134) and MS differ on the contested suit themselves (research/07
-  1.3).
-- Without a sample (rungs 2 and below): the idea line is omitted rather than
-  filled.
-
-## 6. Keys, with drafts
-
-Kibitzer voice (`TABLE3D.md` 6.5): short, kind; "if I may" belongs to the tab's
-intro, not each hint. **Budget** for plan, contrast, facts and idea together, the
-headline excluded: at most 55 words in English and 70 in German; each part one
-sentence of at most 20 words (25 in German). `*_thirds` print as points with
-their unit. No reason begins with the play imperative of its own card: the
-headline carries it.
-
-Contrast keys (plan and contrast in one sentence):
-
-| Key | Parameters | English | Deutsch |
-|---|---|---|---|
-| `vs-lead` | `card`, `alt`, `wins`, `alt_wins`, `worlds`, `cost_thirds`, `alt_cost_thirds` | {card} takes the trick in {wins} of {worlds} sampled deals and costs {cost_thirds} when it does not; {alt} takes it in {alt_wins} and costs {alt_cost_thirds}. | {card} gewinnt den Stich in {wins} von {worlds} durchgespielten Austeilungen und kostet {cost_thirds}, wenn nicht; {alt} gewinnt {alt_wins} und kostet {alt_cost_thirds}. |
-| `vs-lead-trumped` | `card`, `alt`, `trumped`, `alt_trumped`, `worlds` | He trumps {alt} in {alt_trumped} of {worlds} sampled deals, {card} in {trumped}. | {alt} sticht er in {alt_trumped} von {worlds} durchgespielten Austeilungen, {card} in {trumped}. |
-| `vs-follow-win` | `card`, `alt`, `trick_thirds`, `better`, `worlds`, `gain_thirds` | {card} takes {trick_thirds}; {alt} would too and spends less, but over the rest of the deal {card} was better in {better} of {worlds} sampled deals, by {gain_thirds}. | {card} holt {trick_thirds}; {alt} täte es auch und käme billiger, aber über den Rest der Partie war {card} in {better} von {worlds} durchgespielten Austeilungen besser, um {gain_thirds}. |
-| `vs-follow-give` | same | {card} gives up the trick ({trick_thirds}) where {alt} would win it; in {better} of {worlds} sampled deals that was worth {gain_thirds} more. | {card} gibt den Stich ({trick_thirds}) her, wo {alt} ihn holte; in {better} von {worlds} durchgespielten Austeilungen war das {gain_thirds} mehr wert. |
-| `vs-facts-follow` | `card`, `alt`, `trick_thirds`, `cost_thirds`, `alt_cost_thirds` | {card} wins {trick_thirds} for {cost_thirds}; {alt} wins it too, for {alt_cost_thirds}. (no sample) | {card} holt {trick_thirds} für {cost_thirds}; {alt} holt ihn auch, für {alt_cost_thirds}. |
-
-`hold-pagat` and `keep-packet` lose their "Play {card}": "The Pagat is worth more
-kept: with {tarocks} tarocks it can win the last trick." / "Der Pagat ist
-aufgehoben mehr wert: mit {tarocks} Tarock kann er den letzten Stich holen."; "His
-Pagat ultimo threatens: keep the fullest packet unplayed." / "Sein Pagat ultimo
-droht: das vollste Paket liegen lassen."
-
-Facts (one sentence, 12 words or fewer):
+The questions are the table of 2 (en/de). Answers (`ans-*`, with the causal clause
+`so-*`, added only when allowed, 5.1):
 
 | Key | English | Deutsch |
 |---|---|---|
-| `fact-tarocks-out` | {out} tarocks are still out; you hold {mine}. | Noch {out} Tarock sind draußen; Sie halten {mine}. |
-| `fact-skus-out` | The Sküs is still out, in his hand in {share} of {worlds} sampled deals. | Der Sküs ist noch draußen, in seiner Hand in {share} von {worlds} Austeilungen. |
-| `fact-mond-open` | Your Mond is unguarded: the Sküs is still out. | Ihr Mond ist ungedeckt: der Sküs ist noch draußen. |
-| `fact-his-void` | He showed no {suit}. | Er zeigte keine {suit}. |
-| `fact-master` | Nothing higher than your {card} is out. | Nichts Höheres als Ihr {card} ist draußen. |
-| `fact-his-covers` | He shows {n} {suit} cards on his covers. | Er zeigt {n} {suit} auf den Päckchen. |
-| `fact-split` | {suit} is split: {mine} of its points yours, {out} out. | {suit} ist geteilt: {mine} Augen bei Ihnen, {out} draußen. |
+| `ans-keep-mond` / `so-keep-mond` | The Sküs is still out. / Not while the Sküs is out: play the Mond when it wins a trick. | Der Sküs ist noch draußen. / Nicht, solange der Sküs draußen ist: den Mond spielen, wenn er einen Stich holt. |
+| `ans-keep-pagat` / `so-keep-pagat` | You hold {tarocks} tarocks. / With that many, keep the Pagat for the last trick. | Sie halten {tarocks} Tarock. / Mit so vielen den Pagat für den letzten Stich behalten. |
+| `ans-beneath` / `so-beneath` | {card} lies on a packet; {n} cards are beneath it. / A card on a packet: play it off to see what lies beneath. | {card} liegt auf einem Päckchen; darunter liegen {n} Karten. / Ein Blatt auf einem Päckchen: abspielen, um zu sehen, was darunter liegt. |
+| `ans-worth-poor` / `so-worth-poor` | {led} is a poor trick: {trick_thirds}. / When a low card is led, do not win it with a king: give a small card. | {led} ist ein armer Stich: {trick_thirds}. / Wird eine niedrige Karte angespielt, nicht mit einem König stechen: ein Skartindel zugeben. |
+| `ans-worth-rich` / `so-worth-rich` | He led {led}: {led_thirds}. / When he leads a card worth 7 thirds or more, take the trick. | Er spielte {led} an: {led_thirds}. / Spielt er eine Karte von 7 Dritteln oder mehr an, holen Sie den Stich. |
+| `ans-cheap` / `so-cheap` | {card} is the lowest card that wins; {alt} costs more. / When two cards both win, play the lower. | {card} ist die kleinste Karte, die sticht; {alt} kostet mehr. / Stechen zwei Karten, die kleinere spielen. |
+| `ans-out-void` / `so-out-void` | He showed no {suit}, and {out} tarocks are out. / A suit he lacks, he trumps: lead another. | Er zeigte keine {suit}, und noch {out} Tarock sind draußen. / Eine Farbe, die ihm fehlt, sticht er: eine andere anspielen. |
+| `ans-out-master` / `so-out-master` | Only a tarock beats {card} in its suit. / A card only a tarock can beat is safe to lead once he has shown no tarock. | Nur ein Tarock schlägt {card} in seiner Farbe. / Eine Karte, die nur ein Tarock schlägt, ist sicher anzuspielen, sobald er kein Tarock gezeigt hat. |
+| `ans-suit` / `so-suit` | {suit} is shared evenly: {mine} of its points yours, {out} out. / A suit shared evenly is a bad one to open: lead another and make him open it. | {suit} ist gleichmäßig geteilt: {mine} Augen bei Ihnen, {out} draußen. / Eine gleichmäßig geteilte Farbe eröffnet man nicht gern: eine andere anspielen, er soll sie eröffnen. |
+| `ans-trumps` / `so-trumps` | You hold {mine} tarocks to {out} unseen, a solid run from {card}. / With a solid run of tarocks, lead from it to draw his. | Sie halten {mine} Tarock gegen {out} unbekannte, eine geschlossene Reihe ab {card}. / Mit einer geschlossenen Tarockreihe daraus anspielen, um seine zu ziehen. |
 
-Ideas (the second layer):
+Each `so-*` is checked against half 2 of 0: its condition is visible to the
+player (their hand and covers, the cards out, the card led) and its action is what
+to do whenever it holds. They run 9 to 18 words, so the default runs 20 to 28 in
+English; the test fails any draft over 25 (30), and the build shortens the
+question line or the condition (open question 7).
 
-| Key | English | Deutsch |
-|---|---|---|
-| `idea-behind` | The idea here: a split suit goes to whoever opens it last, so make him open it. | Der Gedanke hier: eine geteilte Farbe nützt dem, der sie zuletzt anspielt; er soll sie eröffnen. |
-| `idea-spare-honour` | The idea here: no honour on a poor trick; a pip does the same. | Der Gedanke hier: keinen Honneur auf einen armen Stich; ein Skartindel tut es auch. |
-| `idea-draw-trumps` | The idea here: the tarock-strong player draws trumps first, from a solid run. | Der Gedanke hier: wer in Tarock stark ist, tarockiert zuerst, aus einer geschlossenen Reihe. |
-| `idea-pagat-last` | The idea here: with many tarocks the Pagat waits for the last trick. | Der Gedanke hier: mit vielen Tarock wartet der Pagat auf den letzten Stich. |
-| `idea-pagat-cash` | The idea here: with few tarocks, cash the Pagat when you can. | Der Gedanke hier: mit wenigen Tarock den Pagat bei Gelegenheit einstechen. |
-| `idea-mondfang` | The idea here (Mondfang): bank the Mond on a trick it takes safely; the Sküs can still catch it later. | Der Gedanke hier (Mondfang): den Mond auf einen sicheren Stich bringen; der Sküs kann ihn später noch fangen. |
-| `idea-packets-off` | The idea here: play the covers off to see what lies beneath. | Der Gedanke hier: die Päckchen abspielen, um zu sehen, was darunter liegt. |
-| `idea-not-into-void` | The idea here: he trumps a suit he cannot follow; lead another. | Der Gedanke hier: was er nicht bedienen kann, sticht er; eine andere Farbe anspielen. |
-| `idea-none-sampled` | No book rule covers this; the sampled deals favour it: {better} of {worlds} came out {gain_thirds} better. | Keine Regel der Bücher deckt das ab; die durchgespielten Austeilungen sprechen dafür: {better} von {worlds} waren um {gain_thirds} besser. |
-| `idea-books-differ` | The books lean the other way here ({idea}); the sampled deals favour this card. | Die Bücher raten hier anders ({idea}); die durchgespielten Austeilungen sprechen für diese Karte. |
+"Why?" lines: the other questions' answers in the table's order; the contrast
+(`vs-lead`, `vs-lead-trumped`, `vs-follow-win`, `vs-follow-give`, `vs-facts-follow`:
+as in the earlier draft, "Instead of {alt}: it takes the trick in {alt_wins} of
+{worlds} sampled deals and costs {alt_cost_thirds}; {card} takes it in {wins} and
+costs {cost_thirds}.", each at most 30 words); `ask-none` and `ask-differ` (5.2);
+the rule sentence and its source (M5); the `odds`. Fact keys and their words are
+the draft table of 5.3's parameters ("{out} tarocks are still out; you hold {mine}."
+and so on, 12 words or fewer, en and de). The plain local reasons (`win-*`,
+`lose-*`, `lead-*`) lose their "Play {card}" and remain for rung 2 and below.
 
-**Rules and facts.** Gated: the `Rule:` clause (M5, unchanged) and every
-`idea-*` key but the two fallbacks (M9). Always allowed: plan, contrast and
-facts, all counts of known cards or of the same sample (as `lead-rate` is), and
-the two fallbacks, which state only the sample.
+## 9. Wire and table
 
-## 7. Wire and table
+`strohmandeln_hint(view, seed, level)` (no learner argument) returns `{hint,
+question, answer, so, why}`: `question` a key of 2, `answer` `{key, params}` (or
+the `ask-none` line), `so` `{key, params}` or null (gated), `why` `{answers[],
+contrast, facts[{key, params, anchor}], rule, odds}`; `reason` stays as the old key
+for the older page. `anchor` is `line1`-`line4` or `row:<kind>`: the page may
+highlight it in the open Cards-out panel, never opens it (6.6.2). `hinttext.js`:
+`hintLines` returns `{lead, question, answer, so, why}`; the box shows the first
+four and a "Why?" control. `MESSAGES.md` takes the tables; the existing test holds
+it to `KEYS`. Phone layout is deferred.
 
-- `strohmandeln_hint` returns `{hint, plan, contrast, facts, idea, rule, odds}`:
-  `plan` and `contrast` are `{key, params}` (`contrast` may be null), `facts` is
-  `[{key, params, anchor}]`, `idea` is `{key, params}` or null. `reason` stays as
-  the plan's key for the older page. `anchor` is `line1` to `line4` or
-  `row:<kind>`; the page may highlight it in the open Cards-out panel and never
-  opens it (`TABLE3D.md` 6.6.2). The key tables of 6 go in `MESSAGES.md`; the
-  existing test holds it to `KEYS`.
-- `web3d/src/hinttext.js`: `hintLines` returns `{lead, plan, contrast, facts,
-  idea, more}`; `lead` is the only place "Play X." appears; a null part is
-  dropped. Phone layout is deferred (maintainer, 15 Oct 2026).
+## 10. Worked cases
 
-## 8. Tests
+The notes do not record the hands: cards and numbers are **illustrative**, the
+shape being what is specified (the build reproduces each position and asserts the
+structure). *Now* is what ships before M9 has run.
 
-Rust (`explain.rs`, `hint.rs`; positions from `testutil::know`):
+**(a) Lead of the jack of diamonds** (J♦ is a cover of yours with 3 cards beneath;
+the highest card held is XIX). A = XIX. Decisive: `keep` no; `out` no; **`beneath`**
+(J♦ is a cover, XIX is not).
 
-1. `hold_pagat_only_when_the_pagat_is_the_alternative`: 13 tarocks incl. I, III,
-   XXI, II led: the plan is not `hold-pagat`, A = III; a hand where the Pagat is
-   the cheapest legal tarock and the lead is a suit: `hold-pagat` still returned.
-2. `follow_alt_is_the_cheapest_winner_or_loser`: each branch of 3.1.
-3. `lead_alt_is_the_highest_card_or_the_cheapest`.
-4. `lead_contrast_counts_x_and_a_in_one_sample`: X's `wins` equals today's
-   `lead_wins`; two calls equal.
-5. `follow_contrast_reads_a_from_the_search_table`: `odds_with(.., alt)` equals
-   `better` counted over `per_world`; one `move_table` call only (a counter).
-6. `contrast_given_only_when_it_agrees` (`gain < 1`: none, not a wrong one).
-7. `facts_are_counts_of_known_cards`: each fact's parameters recomputed from
-   `Knowledge` and `tracker`; twin deals differing only in hidden cards give the
-   same facts (`blind_check_values`).
-8. `no_reason_starts_with_the_play_imperative`: no English or German text in
-   `MESSAGES.md` begins "Play {card}" or "{card} spielen".
-9. The two worked positions of 9, from legal views: the test asserts structure
-   (A, keys, facts). Where the engine plays another card, the test records it;
-   the spec fixes the structure, not the move.
-10. `an_idea_needs_its_measure`: the shipped idea list equals the ideas M9
-    passed (a constant checked against `docs/MEASUREMENTS.md`, as the rule gates).
-11. The `MESSAGES.md` tables hold every new key in both languages, within the
-    word budget of 6.
+- *Default, M9 passed for `off`* (20 words): "**Play J♦.** What lies beneath?
+  Three cards. A card on a packet: play it off to see what lies beneath." Half 1: the card is named. Half 2: condition "a card
+  on a packet" (visible), action "play it off".
+- *Now* (no rule; does not meet half 2): "**Play J♦.** What lies beneath? J♦ lies
+  on a packet; three cards are beneath it."
+- *"Why?"*: "I deal his hidden cards at random 1,000 times and play it out. Can he
+  beat it? Only a tarock; 7 are out. Whose suit is this? Diamonds are shared
+  evenly: 11 of 24 points yours. Instead of XIX: it takes the trick in 940 of
+  1,000 sampled deals but spends your best tarock on a 4-thirds trick; J♦ takes
+  it in 130 and costs 4 thirds when it does not." (No `Rule:` line: M5 failed for
+  `off`, `MEASUREMENTS.md`.)
 
-Node (`web3d/test/hinttext.test.js`): the lead appears once and no part repeats
-it; null parts dropped; English and German; the spoken string has each part
-once; word totals within budget for each worked case; a fact's anchor names a
-cell in the tracker fixture. The browser check `hint_and_explain` is updated.
+**(b) Uhu (II) led, the Mond over III** (13 tarocks; A = III). Decisive: **`keep`**
+(the Mond is a key card, III is not). The Pagat is not mentioned (4).
 
-Measure: `hintbench` gains lead and follow rows with the contrast (median added
-under 5 ms); M9 as 5.2.
+- *Default, M9 passed* (21 words): "**Play Mond.** Is it safe to keep? Not while
+  the Sküs is out: play the Mond when it wins a trick." Half 2: condition "the Sküs
+  is still out" (Cards-out tab), action "play the Mond when it wins a trick".
+- *Now* (no rule; does not meet half 2): "**Play Mond.** What does keeping it give
+  me later? The Sküs is still out."
+- *"Why?"*: "Can I win it? Yes, with III or the Mond. Is the trick worth it? II is
+  1 third, and the Mond brings its own 13 home. What is the cheapest card? III.
+  Instead of III, which also wins and spends less: over the rest of the deal the
+  Mond was better in 41 of 50 sampled deals, by 7 thirds. The Sküs is in his hand
+  in 380 of 1,000. The books lean the other way here (the cheapest card); the
+  sampled deals favour the Mond. Mondfang: play the Mond on a trick it takes
+  safely, while the Sküs can still catch it (U p. 74, MS)." The last sentence only if
+  Mondfang passed M9.
 
-## 9. Worked cases
+This answers "why not III": the question about the cheapest card is named in
+the "Why?" and the hint says it does not decide here.
 
-The notes do not record the hands, so numbers below are **illustrative**: the
-shape, not a measurement. The build reproduces each position from a constructed
-view (test 9).
+## 11. Tests
 
-**(a) The jack of diamonds.** Hand with a king, a queen and the jack of
-diamonds; the highest card held is a tarock. X = J of diamonds, A = that tarock
-(3.1). Layer 1: "The jack takes the trick in 130 of 1,000 sampled deals and costs
-4 thirds when it does not; XIX takes it in 940 and costs 4 thirds." Fact:
-"Diamonds are split: 11 of 24 points yours, 13 out." (row: diamonds). Layer 2,
-if `behind` has passed M9: "The idea here: a split suit goes to whoever opens it
-last, so make him open it." Else `idea-none-sampled`. Either way the learner
-sees the highest card is not the aim: the lead is chosen for what it costs and
-what it asks of him, with the diamonds' row of the tab to check. About 50 words.
+Rust (`explain.rs`, `hint.rs`, `testutil::know`):
 
-**(b) Uhu led, hint Mond.** 13 tarocks; he leads II. X = Mond, A = III (the
-cheapest winner); the Pagat is not mentioned (4, rule 4). Layer 1: "Mond takes
-II and the Mond's 13 thirds; III would win too and spends less, but over the rest
-of the deal the Mond was better in 41 of 50 sampled deals, by 7 thirds." Fact:
-"The Sküs is still out, in his hand in 380 of 1,000 sampled deals." (tarock
-rows). Layer 2: if `mondfang` has passed M9 (rare, so perhaps not): "The idea
-here (Mondfang): bank the Mond on a trick it takes safely; the Sküs can still
-catch it later." Otherwise `idea-none-sampled`, which says only what the sample
-shows. If the engine plays III here, the hint is `vs-follow-win` with X = III
-and A = the cheapest loser.
+1. `hold_pagat_only_when_the_pagat_is_the_alternative` (13 tarocks, II led: A =
+   III, no `hold-pagat`; Pagat the cheapest legal tarock with a suit lead: still
+   returned).
+2. `the_alternative_is_fixed_by_rule`: each branch of 4.
+3. `the_decisive_question_follows_the_table`: each row of 3.2 (X and A on opposite
+   sides), the order, and `ask.beat` never decisive; the same position gives the
+   same question twice and under blind twins (`blind_check_values`).
+4. `no_decisive_question_gives_the_sample_line`, and `ask-differ` where the
+   engine's card contradicts a sourced prescription.
+5. `the_cause_needs_its_measure`: `so` is null unless the idea's slug is in the
+   passed list (a constant checked against `docs/MEASUREMENTS.md`); with it null,
+   the sentence is question and fact.
+6. `lead_contrast_counts_x_and_a_in_one_sample`;
+   `follow_contrast_reads_a_from_the_search_table` (one `move_table` call);
+   `contrast_given_only_when_it_agrees`.
+7. `facts_are_counts_of_known_cards` (recomputed from `Knowledge`, `tracker`).
+8. `default_hint_within_budget` (25 / 30 words; "Why?" 90) over every key;
+   `no_reason_starts_with_the_play_imperative`.
+9. `every_hint_term_is_defined` (the list of 7, over `strings.json` en and de) and
+   `one_question_one_string` (hint, brief and pages use the same key).
+10. `quality_bar` (`#[ignore]`, the run of 7: Q2, Q3, the run half of Q5; prints the
+    cells).
+11. The worked positions of 10: structure only; where the engine plays another
+    card, the test records it.
 
-## 10. Open questions for the maintainer
+Node (`web3d/test/hinttext.test.js`): the lead once and no part repeating it; "Why?"
+closed by default and per hint; null parts dropped (`so`); both languages; word
+totals for the worked cases; a fact's anchor names a cell of the tracker fixture;
+the new page `leading` and the three "Ask:" lines within their limits
+(`tutorial.test.js`). Browser: `hint_and_explain` updated.
 
-1. A on a lead when the highest card is the Sküs or a top tarock: the highest
-   card (3.1, the plain reading of the notes) or the highest suit card?
-   Recommendation: the highest card; add the highest suit card as a second
-   contrast only when X is a suit card.
-2. M9: approve the plan and its estimate (15 to 20 minutes CPU on 2 vCPU) before
-   the batch. Recommendation: yes; ship the layer 1 parts and the honest
-   fallbacks first.
-3. The word budget (55 / 70) against the hint box on a small window; desktop only
-   while the phone layout is deferred.
-4. A follow at rung 3 and below has no sample (3.2): facts only, or a one-trick
-   rollout? Recommendation: facts only.
+## 12. Open questions for the maintainer, and the build
+
+1. **A on a lead** when the highest card is the Sküs or a top tarock: the highest
+   card (4) or the highest suit card? Recommendation: the highest card.
+2. **M9** (15 to 20 minutes CPU): approve before the batch? Recommendation: yes;
+   ship the question-and-fact form first, which needs no M9.
+3. **Targets of 7** (85% / 70% / 50%): fixed here as a first proposal, to be
+   confirmed in `MEASUREMENTS.md` before the first run.
+4. **A lead page** `leading` (6): add it with this work? Recommendation: yes, its
+   questions are otherwise defined nowhere.
+5. **Mondfang and a kept packet** have a question and no skill (2.1). Leave them
+   outside the ladder, or add them as parked skills? Recommendation: leave.
+6. **`try.1` replaced by the main question** in the brief (6): a change to
+   `TUTOR.md` 9 and to `strings.json`; yes?
+7. **Word budget against half 2**: the default runs 20 to 28 words with a full
+   `so-*`. Keep 25 (shorten the condition) or move the budget to 30?
+   Recommendation: keep 25; a hint that cannot say its rule in 25 words is two
+   ideas.
+8. **Half 2 before M9**: until M9 (or a direct measure of the pairs) has run, no
+   hint meets half 2 except the M5 passes (`worth.rich`, `announce`).
+   Recommendation: run M9 for the nine pairs first (15 to 20 minutes CPU, on
+   approval) before the hint form ships; ship level 1 only if the maintainer
+   prefers.
+
+**Build estimate.** About 750 to 850 lines of Rust (the question table and the
+decisive test, the selection in `explain.rs`, the contrast and facts) and 500 of
+tests; about 120 lines of JS and CSS (the "Why?" control, `hintLines`); some 45
+key pairs in `strings.json` and `MESSAGES.md`; the `leading` page and three page
+lines; the quality-bar test; M9 about 300 lines in `measure.rs`, run only after
+approval. Against the earlier revision this drops the learner plumbing (no
+`learner` argument, no chance function in the hint) and adds the question table
+and the quality bar: about 100 lines more in all. Order: the questions and
+the default form with the `hold-pagat` fix and the duplicate fix (one package,
+reviewed), then the contrast and the "Why?", then the pages and the brief's
+change, then the bar's run, then M9.
