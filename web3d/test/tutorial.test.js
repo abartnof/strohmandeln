@@ -94,8 +94,10 @@ test("the spec and the pages state the count as RULES 8.1 does: value less two-t
   assert.match(row, /less two-thirds/);
   assert.doesNotMatch(row, /one-third/);
   const text = (lang) => pages(lang).find((p) => p.key === "thirds").blocks.flatMap((b) => (b.spans ? [b.spans] : b.items)).map((s) => s.map((x) => x.text).join("")).join("\n");
-  assert.match(text("en"), /two-thirds[^\n]*sum less 2/);
-  assert.match(text("de"), /zwei Drittel[^\n]*Summe weniger 2/);
+  assert.match(text("en"), /in threes[^\n]*take off 2/);
+  assert.match(text("en"), /two-thirds off each/);
+  assert.match(text("de"), /Dreiern[^\n]*2 ab/);
+  assert.match(text("de"), /zwei Drittel ab von jeder/);
 });
 
 test("the pages hold to RULES 5.4, 6.1, 7.1 and 12.1: trump beats suit, the last card goes to hand, the Pagat is simply paid", () => {
@@ -146,7 +148,6 @@ test("a block may name several settings, and is kept only when all of them hold"
 // The cards page (research/15 "For the tutor"): the tarocks, the Cavall, what the faces leave out.
 test("the cards page says what the tarocks and the C are, with the dates, in both languages", () => {
   const en = text("en", "the-cards");
-  assert.match(en, /trumps: I to XXI, and the Sküs/);
   assert.match(en, /Tarot cards were made to play with, in Italy, by 1442/);
   assert.match(en, /Fortune-telling is first heard of in 1781, in France/);
   assert.match(en, /1442/);
@@ -154,13 +155,10 @@ test("the cards page says what the tarocks and the C are, with the dates, in bot
   assert.match(en, /Nothing here tells your fortune/);
   assert.match(en, /Austrians still play Tarock, and Piatnik still sells Tarock packs/);
   assert.doesNotMatch(en, /Vienna|this pack|If I may/, "what research/15-S11 shows and no more");
-  assert.match(en, /hence the mix-ups/);
-  assert.match(en, /Tarock for the game, Tarot for/);
   assert.match(en, /C is the Cavall, a knight[^\n]*worth 3 points/);
   assert.match(en, /52-card pack dropped him/);
-  assert.match(en, /big letters and corner numbers are for a quick look/);
+  assert.match(en, /big letters are for a quick look/);
   const de = text("de", "the-cards");
-  assert.match(de, /Trümpfe: I bis XXI, und der Sküs/);
   assert.match(de, /1442/);
   assert.match(de, /1781/);
   assert.match(de, /kein Schicksal/);
@@ -168,12 +166,66 @@ test("the cards page says what the tarocks and the C are, with the dates, in bot
   assert.doesNotMatch(de, /Wien|dieses Blatt|erlauben/);
   assert.match(de, /Tarockkarten wurden zum Spielen gemacht, in Italien, spätestens 1442/);
   assert.match(de, /ab 1781 die Rede, in Frankreich/);
-  assert.match(de, /Tarock[^\n]*Tarot/);
   assert.match(de, /C ist der Cavall[^\n]*Reiter[^\n]*3 Augen wert/);
-  assert.match(de, /französische Blatt zu 52 Karten nicht/);
-  assert.match(de, /Buchstaben und Eckzahlen sind für den raschen Blick/);
+  assert.match(de, /Blatt zu 52 Karten hat ihn nicht/);
+  assert.match(de, /In Österreich spielt man noch Tarock/);
+  assert.match(de, /Buchstaben sind für den raschen Blick/);
   assert.doesNotMatch(de, /Points/, "a card's value is in Augen; a Point is a payment");
   assert.doesNotMatch(en, /\bPoints?\b/);
+});
+
+test("the cards page ranks the cards: Sküs highest, I (the Pagat) lowest, K Q C J with the C between queen and jack, the pips; rank is not value", () => {
+  const en = text("en", "the-cards");
+  assert.match(en, /Sküs[^\n]*highest[^\n]*XXI[^\n]*II[^\n]*\bI\b[^\n]*Pagat[^\n]*lowest/);
+  assert.match(en, /Rank is not value[^\n]*Pagat[^\n]*5[^\n]*Sküs[^\n]*XXI/);
+  assert.match(en, /K, Q, C, J[^\n]*Cavall[^\n]*between[^\n]*queen and jack/);
+  assert.match(en, /10 9 8 7[^\n]*clubs and spades/);
+  assert.match(en, /1 2 3 4[^\n]*hearts and diamonds[^\n]*1 (is )?highest/);
+  const de = text("de", "the-cards");
+  assert.match(de, /Sküs[^\n]*höchste[^\n]*XXI[^\n]*II[^\n]*\bI\b[^\n]*Pagat[^\n]*niedrigste/);
+  assert.match(de, /Rang[^\n]*Wert[^\n]*Pagat[^\n]*5[^\n]*Sküs[^\n]*XXI/);
+  assert.match(de, /K, D, C, B[^\n]*Cavall[^\n]*zwischen Dame und Bube/);
+  assert.match(de, /10 9 8 7[^\n]*Kreuz und Pik/);
+  assert.match(de, /1 2 3 4[^\n]*Herz und Karo[^\n]*1 (ist )?(die )?höchste/);
+});
+
+test("the values the pages list add up to 106 and the groups of three take 36 off, leaving 70", () => {
+  for (const lang of ["en", "de"]) {
+    const rows = page(lang, "scoring-full").blocks.find((b) => b.items && b.items[0][0]?.bold && /^\d+$/.test(b.items[0][0].text)).items.map((r) => Number(r[0].text));
+    assert.deepEqual(rows, [5, 4, 3, 2, 1]);
+    const count = { 5: 7, 4: 4, 3: 4, 2: 4, 1: 54 - 19 };
+    const sum = rows.reduce((n, v) => n + v * count[v], 0);
+    assert.equal(sum, 106);
+    assert.equal(sum - 2 * (54 / 3), 70);
+  }
+});
+
+test("the thirds page leads with the groups of three and the example, then the leftovers, then why thirds, the 70, and the target: 36 is 35⅔ or more, 35⅓ falls short", () => {
+  for (const lang of ["en", "de"]) {
+    const ls = text(lang, "thirds").split("\n");
+    const at = (re) => ls.findIndex((l) => re.test(l));
+    const group = lang === "en" ? /in threes[^\n]*take (off|away) 2/ : /Dreiern[^\n]*2 ab/;
+    const ex = /5 \+ 2 \+ 1 = 8/;
+    const left = lang === "en" ? /left over/ : /übrig/;
+    const total = lang === "en" ? /always count 70/ : /machen immer 70/;
+    const rounded = lang === "en" ? /36[^\n]*35⅔[^\n]*35⅓[^\n]*short/ : /36[^\n]*35⅔[^\n]*35⅓[^\n]*nicht/;
+    const why = lang === "en" ? /two-thirds off each/ : /zwei Drittel ab von jeder/;
+    const idx = [group, ex, left, why, total, rounded].map(at);
+    assert.ok(idx.every((i) => i >= 0), `${lang}: ${idx}`);
+    assert.deepEqual([...idx].sort((a, b) => a - b), idx, `${lang}: order ${idx}`);
+  }
+});
+
+test("scoring-full counts in threes from the concrete: groups first, the example, then why thirds; and ranks the cards", () => {
+  for (const lang of ["en", "de"]) {
+    const t = text(lang, "scoring-full");
+    const ls = t.split("\n");
+    const gi = ls.findIndex((l) => lang === "en" ? /in threes[^\n]*take (off|away) 2/.test(l) : /Dreiergruppen[^\n]*2 ab/.test(l));
+    const wi = ls.findIndex((l) => /two-thirds off each|zwei Drittel abzuziehen/.test(l));
+    assert.ok(gi >= 0 && wi > gi, `${lang}: ${gi} ${wi}`);
+    assert.match(t, lang === "en" ? /K, Q, C, J[^\n]*Cavall[^\n]*between[^\n]*queen and jack/ : /K, D, C, B[^\n]*Cavall[^\n]*zwischen Dame und Bube/);
+    assert.match(t, lang === "en" ? /Pagat[^\n]*lowest[^\n]*tarock/i : /Pagat[^\n]*niedrigste/);
+  }
 });
 
 test("the cards page is a few lines under the ordinary pop-up limits, with no exemption", () => {

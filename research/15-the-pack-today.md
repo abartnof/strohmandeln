@@ -136,11 +136,11 @@ The page `the-cards` (`web3d/tutorial.en.md`, `tutorial.md`) says these lines, a
    - Tarockkarten wurden zum Spielen gemacht, in Italien, spätestens 1442. Vom Wahrsagen mit ihnen ist erst ab 1781 die Rede, in Frankreich.
 3. **Still played.** Nothing here tells your fortune. Austrians still play Tarock, and Piatnik still sells Tarock packs. [15-S10][15-S11] The Piatnik page names neither Vienna nor the pattern; "Piatnik of Vienna" and "this pack" are inferences and are not said.
    - Hier wird kein Schicksal gedeutet. In Österreich spielt man noch immer Tarock, und Piatnik verkauft heute noch Tarockblätter.
-4. **Tarock, tarot.** German keeps two words: Tarock for the game, Tarot for the fortune-telling deck. English uses one for both, hence the mix-ups. [15-S7][15-S8]
+4. **Tarock, tarot.** (Not on the page since 17 Oct 2026: the rank order took the space.) German keeps two words: Tarock for the game, Tarot for the fortune-telling deck. English uses one for both, hence the mix-ups. [15-S7][15-S8]
    - Im Deutschen heißt das Spiel Tarock und das Blatt zum Wahrsagen Tarot. Das Englische hat für beides ein Wort, daher die Verwechslung.
 5. **The C.** The C is the Cavall, a knight on horseback, worth 3 points. Tarock packs kept him; the 52-card pack dropped him. [15-S12][15-S1, p. 6][15-S14]
    - Das C ist der Cavall, ein Reiter zu Pferd, 3 Augen wert. Tarockblätter haben ihn, das französische Blatt zu 52 Karten nicht.
-6. **Our faces.** On a real pack the courts carry pictures, not letters. These big letters and corner numbers are for a quick look. [08-S9][08-S10][15-S1, p. 6]
+6. **Our faces.** On a real pack the courts carry pictures, not letters. These big letters and corner numbers are for a quick look. (The page says "These big letters are for a quick look" since 17 Oct 2026: the rank order took the space.) [08-S9][08-S10][15-S1, p. 6]
    - Auf einem echten Blatt tragen die Hofkarten Bilder statt Buchstaben. Unsere großen Buchstaben und Eckzahlen sind für den raschen Blick.
 
 Dropped for length: the origin of "trump" in *trionfi* [15-S2][15-S7]. "Points" is for payments only; a card's value is "points" (en) and "Augen" (de).
