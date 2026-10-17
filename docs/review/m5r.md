@@ -257,3 +257,24 @@ Not a sign of an error, a sign of the design and of the world:
 | 7 | nit | test loosened after the run (`fits_budget`) | record it in the M5r section |
 | 8 | nit | CPU times not committed; "five of seven" is six of seven by rule | print wall seconds; reword |
 | 9 | nit | seed reuse with `measure` defaults; deal clusters within a sitting | note |
+
+## Fixes (17 Oct 2026)
+
+Plan v2 and the re-run are in `docs/MEASUREMENTS.md` (M5r); the first run is kept
+there as superseded.
+
+| # | Finding | Fix |
+|---|---|---|
+| 1 | `tu` atoms counted unseen tarocks | `Knowledge::out_tarocks` (not mine, not played; the Cards-out line 1 count) used by the `tu` atoms; test `out_tarocks_equal_the_trackers_count_on_sample_views`; re-run. `fact-tarocks-out` (`explain.rs`, not touched here) still reads `unseen_tarocks()` and should call `out_tarocks()`. |
+| 2 | Banned words in the templates | Templates rewritten (fewest-points, your opponent, next in rank, points not thirds); test `no_template_uses_a_banned_word` over atoms, classes and leads. |
+| 3 | No family correction | Bonferroni over the classes taken forward (k = 6, fixed and committed before the confirmation): `stats::obf_boundaries(0.05 / k, 4)` = 5.34 / 3.77 / 3.08 / 2.67. `pagat/keep` and `trumps/suit` fail under it; `run/any` and `void/avoid` are never shipped (`NOT_SHIPPED`). |
+| 4 | `emit` not reproducible | `selection.tsv`, `confirmed.tsv`, `settings.tsv` committed as `docs/measurements/m5r-*.tsv`; `emit_source` is a function; test `emit_reproduces_the_rules_file`. |
+| 5 | Triggers missing; "low lead" | Each class has a lead ("Following with" / "With") and an action carrying its trigger (a king of yours that would win; following; a tarock and a suit card for leading); "low lead" dropped; points, not thirds. |
+| 6 | The tarock count is a phase proxy | `late10`, `late19` and `late` (80% or more of the firings after trick 9) in each rule's data. |
+| 7 | Test loosened after the run | Recorded in the plan v2 (`fits_budget`). |
+| 8 | CPU not committed; "five of seven" | CPU recorded (user time) in the M5r result; the reading counts by rule. |
+| 9 | Seed reuse | Fresh blocks 71, 76, 77 to 80 million; the plan notes that 80 million is also M8's first seed. |
+
+Unrelated and not touched: `brief::tests::every_key_of_the_brief_is_documented`
+(`tutor.note.redpips`) and `lessons::tests::the_keys_of_the_lessons_are_the_keys_of_the_document`
+fail on the merged main.
