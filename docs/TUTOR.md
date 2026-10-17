@@ -642,7 +642,7 @@ Test first (`CLAUDE.md`). Engine (`cargo test`, deterministic):
 - **Purity.** The same record and assisted list give the same summary and brief;
   the evidence never reads a hidden card (twin deals, `testutil::blind_check`).
 - **Assisted.** An assisted decision is no evidence.
-- **Brief.** At most three bullets, at most 45 words of body (62 with the leads), every key present in English
+- **Brief.** At most three bullets (and, for a styled opponent, the fourth line of item 4), at most 45 words of body (62 with the leads), every key present in English
   and German, rules at most 15 words, no focus and mastery never in one brief, a
   short deal says so, every parameter named in a template is supplied, the
   kindness test passes. The keys of the code equal the keys of
@@ -656,7 +656,7 @@ Test first (`CLAUDE.md`). Engine (`cargo test`, deterministic):
 Node: the store round trip with injected storage; a newer store read as empty and
 not overwritten; import caps; no storage works; the brief rendered in both
 languages; the Worker and the main-thread fallback agree. Browser: the dialog
-opens after a scored deal, once, with the header line and at most three bullets;
+opens after a scored deal, once, with the header line and at most three bullets (and, for a styled opponent, the fourth line of item 4);
 muted shows nothing; a hint sets the decision's number in the assisted list.
 
 ## 13. Shared code: `kit/learner`
@@ -675,7 +675,7 @@ crate back; a test makes that safe.
 - focus selection over a prerequisite graph (`cleared`, `short`, `costly`, gain
   = cost less `top_cost`);
 - the summary's text form and versioning, `stale`;
-- the brief's shape: a bullet with a lead, at most three bullets, the order well /
+- the brief's shape: a bullet with a lead, at most three bullets (and, for a styled opponent, the fourth line of item 4), the order well /
   next / none, the "mastery only after the second game" and "enough skills seen"
   guards.
 
@@ -788,7 +788,7 @@ script inlined by `build.py`). Until then Strohmandeln copies them as patterns.
 ## 14. The table (desktop)
 
 The brief replaces the bullets of the dialog "How the deal went" (`docs/TABLE3D.md`
-6.4.1): the header line is the count (kept), then up to three bullets with bold
+6.4.1): the header line is the count (kept), then up to three bullets (and the style line for a styled opponent) with bold
 leads, then the folded "How is this worked out?" (`tutor.how`, `tutor.method`).
 The chip, the sitting review and the mute are as in 6.4 and 6.1; the tips shown
 by the nudge go in the Kibitzer's tab. `TABLE3D.md` 6.4 is written to this document

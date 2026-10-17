@@ -967,7 +967,7 @@ person reads after a scored deal and at the sitting's end, a few bullets at most
 small "Review" chip appears at the tutor's tab and stays until the next deal is
 scored (and for a sitting, until the farewell). It opens a dialog, **"How the
 deal went"**: the **count** as the header line (`review.say.count`, the result,
-not advice), then **at most three bullets** with a bold lead, from the engine's
+not advice), then **at most three bullets** (and, for a styled opponent, the fourth line of 7.3) with a bold lead, from the engine's
 brief (message keys with parameters, `docs/MESSAGES.md` "Tutor keys"):
 
 1. *Went well:* a skill just mastered, else the deal's best strength (all
@@ -1471,7 +1471,7 @@ motion are saved to `web3d/test/out/`.
   note to its closing) the dots appear with a tooltip, the note once and kept as seen; off, or
   the Kibitzer muted, takes the dots away at once, and back on returns them (1.5.7).
 - `deal_brief`: after a scored deal the chip opens "How the deal went": the count as
-  the header, at most three bullets with a bold lead each, the method folded; none
+  the header, at most three bullets (and, for a styled opponent, the fourth line of 7.3) with a bold lead each, the method folded; none
   after a void deal or a throw-in; in German in German; muted it shows nothing; with the
   tips off one bullet at most and no "Next:"; a hint shown marks its decision assisted,
   and so does the nudge, which comes once a deal in the Kibitzer's tab.

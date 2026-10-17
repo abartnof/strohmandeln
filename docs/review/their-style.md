@@ -69,3 +69,13 @@ re-run on main here, so unconfirmed that the failure is identical).
 
 No blocking defect. Fix item 4 (four doc lines, and a word-cap test) before the
 work package is called done; items 2, 3, 5 are notes.
+
+## Fixes
+
+- Item 4: the cap's other statements now add the fourth line for a styled
+  opponent (`docs/TUTOR.md` acceptance, the dialog line and the brief's shape,
+  the dialog list; `docs/TABLE3D.md` 6.4 and the check list). The word cap is
+  held by `tell::tests::every_line_is_short_in_both_languages_and_its_slots_are_supplied`
+  (at most 14 words in en and de, every slot filled), already in the branch.
+- Item 5: `docs/PROTOCOL.md` says "kept" earlier deals.
+- Items 2, 3: notes, no change; "bids" stays (the game's chance to speak).
