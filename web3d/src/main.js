@@ -34,6 +34,7 @@ import { check, emptyModel, fromState, reduce } from "./model.js";
 import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
 import { loadPrefsInfo, savePrefs, sittingConfig, speedScale, urlOverrides, withUrl } from "./prefs.js";
 import { createSettings } from "./settings.js";
+import { escapeTarget, selectGuard } from "./overlays.js";
 import { createSpeaker } from "./speaker.js";
 import { createSlate } from "./slate.js";
 import { hintLines, hintSpoken } from "./hinttext.js";
@@ -1445,21 +1446,51 @@ async function main() {
     director.rearrange();
   }
 
+  // Closes one layer. A dialog and the settings give focus back themselves (ui.js, settings.js);
+  // the panels hand it to the control that opens them.
+  function closeLayer({ kind, id }) {
+    if (kind === "focus") ui.root.querySelector(`[data-shade="${id}"] [data-focus]`)?.focus(); // never chooses for the player
+    else if (kind === "dialog") {
+      if (id === "page") dismissPage(true);
+      else if (id === "welcome") onDialog(["welcome", "continue"]); // its default; nothing is lost
+      else ui.closeDialog(id); // help, review, keys, announce (the card stays chosen), clear (No), error, new (Cancel)
+    } else if (kind === "settings") settings.close();
+    else if (kind === "slate") {
+      toggleSlate();
+      ui.root.querySelector("[data-act=slate]")?.focus();
+    } else if (kind === "hud") {
+      hud.fold();
+      ui.root.querySelector(".hud-chev")?.focus();
+    } else if (kind === "tracker") {
+      toggleTracker();
+      ui.root.querySelector("[data-act=tracker]")?.focus();
+    } else if (kind === "selection") {
+      sel = { ...sel, chosen: null };
+      refresh();
+      director.rearrange();
+    }
+  }
+
+  // An open native <select> takes its own Escape (overlays.js).
+  const selects = selectGuard();
+  for (const type of ["mousedown", "keydown", "change", "focusout"]) window.addEventListener(type, (e) => selects.observe(e), true);
   window.addEventListener("keydown", (e) => {
     if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === "Escape") {
-      if (ui.dialogOpen("page")) dismissPage(true);
-      else if (ui.dialogOpen("help") || ui.dialogOpen("review")) {
-        ui.closeDialog("help");
-        ui.closeDialog("review");
-      } else if (ui.dialogOpen("announce")) ui.closeDialog("announce");
-      else if (ui.dialogOpen("keys")) ui.closeDialog("keys");
-      else if (!ui.slateRoot.hidden) toggleSlate();
-      else if (sel.chosen) {
-        sel = { ...sel, chosen: null };
-        refresh();
-        director.rearrange();
-      }
+      if (selects.swallows(e)) return;
+      // One press closes the topmost layer (overlays.js, TABLE3D 3.10.5).
+      const target = escapeTarget({
+        dialogs: ui.dialogIds(),
+        settings: !ui.settingsRoot.hidden,
+        slate: !ui.slateRoot.hidden,
+        hud: hud.isOpen(),
+        tracker: Boolean(ui.trackerRoot.firstChild),
+        chosen: Boolean(sel.chosen),
+        canCancelNew: Boolean(wasm && !sittingOver),
+      });
+      if (!target) return;
+      e.preventDefault();
+      closeLayer(target);
       return;
     }
     if (e.target instanceof Element && e.target.closest("input, select, textarea, .settings, .slate")) return;
