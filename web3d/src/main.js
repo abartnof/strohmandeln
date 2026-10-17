@@ -979,8 +979,9 @@ async function main() {
     return send({ action: "play", card: code });
   }
 
-  // The tutor's hint: the engine's own answer for this position, shown by the
-  // card it names and one sentence from its reason's key. It never plays.
+  // The tutor's hint: the engine's own answer for this position, shown as the card
+  // it names, the decisive question and one sentence (docs/HINTS.md 3.1). It never
+  // plays.
   function askHint() {
     if (!wasm || wasm.prompt !== "you" || director.busy() || pending > 0 || !prefs.hints) return;
     if (prefs.tutor && prefs.muted) return ui.setAid(t("hint.muted")); // "§ 13": only his tap un-mutes (6.3.4)
@@ -993,7 +994,7 @@ async function main() {
     }
     hintCard = r.hint.action === "play" ? r.hint.card : null;
     const lines = hintLines(r, { t, cardName: romanName, thirds, count });
-    ui.setAid([lines.lead, lines.reason].filter(Boolean).join(" "), lines.more);
+    ui.setAid([lines.lead, lines.question, lines.text].filter(Boolean).join(" "));
     ui.live(hintSpoken(hintLines(r, { t, cardName, thirds, count })));
     director.redecorate();
   }

@@ -684,9 +684,22 @@ mod tests {
     }
 
     #[test]
+    fn docs_messages_md_gives_every_question_and_sentence_in_english_and_german() {
+        let doc = include_str!("../../../docs/MESSAGES.md");
+        let rows = rows(doc, "\n### Hint questions, sentences", "\n## Review keys");
+        let documented: Vec<&str> = rows.iter().map(|r| r[1].trim_matches('`')).collect();
+        let mut want: Vec<&str> = crate::ask::QUESTIONS.to_vec();
+        want.extend(SENTENCES);
+        assert_eq!(documented, want, "same keys, same order");
+        for r in &rows {
+            assert!(!r[3].is_empty() && !r[4].is_empty(), "{}", r[1]);
+        }
+    }
+
+    #[test]
     fn docs_messages_md_gives_every_rule_with_its_basis() {
         let doc = include_str!("../../../docs/MESSAGES.md");
-        let rows = rows(doc, "\n### Hint rules", "\n## Review keys");
+        let rows = rows(doc, "\n### Hint rules", "\n### Hint odds");
         let documented: Vec<&str> = rows.iter().map(|r| r[1].trim_matches('`')).collect();
         assert_eq!(documented, RULES, "same rules, same order");
         for r in &rows {

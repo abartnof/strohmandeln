@@ -57,8 +57,8 @@ English and German the table shows.
 | `bid-sampled-take` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth {sure_thirds}, and {tarocks} tarocks are short of the book's measure, but in most sampled deals taking it up pays. | Karten, die sicher stechen, im Wert von {sure_thirds} und {tarocks} Tarock reichen nicht ganz für die Regel, aber in den meisten durchgespielten Austeilungen lohnt sich das Aufnehmen. |
 | `bid-sampled-pass` | `sure_thirds`, `tarocks` | Cards sure to take a trick, worth {sure_thirds}, and {tarocks} tarocks meet the book's measure, but in most sampled deals the simple game is better. | Karten, die sicher stechen, im Wert von {sure_thirds} und {tarocks} Tarock genügen der Regel, aber in den meisten durchgespielten Austeilungen ist das einfache Spiel besser. |
 | `only-card` | `card` | {card} is your only legal card. | {card} ist Ihre einzige erlaubte Karte. |
-| `hold-pagat` | `card`, `tarocks` | Play {card}, not the Pagat: with {tarocks} tarocks you can bring the Pagat home in the last trick. | {card} spielen, nicht den Pagat: mit {tarocks} Tarock lässt sich der Pagat im letzten Stich heimbringen. |
-| `keep-packet` | `card` | His Pagat ultimo threatens: play {card} and keep the fullest packet unplayed. | Sein Pagat ultimo droht: {card} spielen und das vollste Paket liegen lassen. |
+| `hold-pagat` | none | The Pagat is worth more kept. | Der Pagat ist aufgehoben mehr wert. |
+| `keep-packet` | none | His Pagat ultimo threatens: keep the fullest packet unplayed. | Sein Pagat ultimo droht: das vollste Paket liegen lassen. |
 | `win-cheapest` | `card`, `led`, `alt`, `trick_thirds` | {card} beats {led} and takes {trick_thirds}; it is the cheapest winner, and {alt} also wins but costs more to spend. | {card} sticht {led} und holt {trick_thirds}; es ist der billigste Stecher, und {alt} würde auch stechen, ist aber teurer. |
 | `win-over-cheaper` | `card`, `led`, `alt`, `trick_thirds` | {card} rather than {alt}: both beat {led} for {trick_thirds}, but {card} is the better play here. | {card} statt {alt}: beide stechen {led} für {trick_thirds}, aber {card} ist hier das bessere Spiel. |
 | `win-sole` | `card`, `led`, `trick_thirds` | Only {card} beats {led}: it takes {trick_thirds}. | Nur {card} sticht {led}: es holt {trick_thirds}. |
@@ -105,6 +105,62 @@ It comes from a fresh sample and is given only when it agrees with the choice
 (a gain of at least a third of a point); otherwise `odds` is `null`. Shown as
 "Against {alt}: ahead in {better} of {worlds} sampled deals, by {gain_thirds} on average." / "Gegen {alt}: vorn in {better} von {worlds} durchgespielten Austeilungen, im Schnitt um {gain_thirds}.". The table leads with the card:
 "Play {card}." / "{card} spielen."
+
+### Hint questions, sentences and the "Why?"
+
+The default hint is the headline ("Play {card}.", `hint.play`), a question and one
+sentence (`docs/HINTS.md` 3.1). The wire (`docs/PROTOCOL.md`, "The hint") names
+the question by its key and the sentence as `{key, params}`; the table's string
+for a sentence is `hint.<key>`, for a question the key itself. `{keep}` is the
+card `keep` names, with its article ("the Mond"). A parameter ending `_thirds` is
+told in points, a `suit` by its name, the rest as for the reasons. Word budget
+of headline, question and sentence: 25 in English, 30 in German, a placeholder one word
+(`web3d/test/hinttext.test.js`). A reason key (`reason.<key>`) may stand as the
+sentence where the question has none.
+
+| Key | Parameters | English | Deutsch |
+|---|---|---|---|
+| `ask.beat` | none | Can I win it? | Kann ich ihn holen? |
+| `ask.worth` | none | Is the trick worth it? | Lohnt der Stich? |
+| `ask.cheap` | none | Which card costs least? | Welche Karte kostet am wenigsten? |
+| `ask.keep` | `keep` | Is {keep} safe to keep? | Ist {keep} sicher aufgehoben? |
+| `ask.beneath` | none | What lies beneath? | Was liegt darunter? |
+| `ask.out` | none | What can still beat it? | Was kann sie noch schlagen? |
+| `ask.suit` | none | Whose suit is this? | Wessen Farbe ist das? |
+| `ask.trumps` | none | Should I lead a tarock? | Soll ich ein Tarock anspielen? |
+
+`so` is a rule that passed M5 (`docs/HINTS.md` 5); `ans` is the fact; `fact.*`
+and `vs.*` are the "Why?" (`facts` carry an `anchor`, `line1` to `line4` or `row:<kind>`,
+the Cards-out tab's line or row).
+
+| Key | Parameters | English | Deutsch |
+|---|---|---|---|
+| `ans.keep-mond` | none | The Sküs has not been played. | Der Sküs ist noch nicht gespielt. |
+| `ans.keep-mond-safe` | none | The Sküs is not out. | Der Sküs ist nicht mehr draußen. |
+| `ans.keep-pagat` | `tarocks` | You hold {tarocks} tarocks. | Sie halten {tarocks} Tarock. |
+| `ans.keep-skus` | `out`, `mine` | {out} tarocks are still out; you hold {mine}. | Noch {out} Tarock sind draußen; Sie halten {mine}. |
+| `ans.beneath` | `card`, `n` | {card} lies on a packet; {n} cards are beneath it. | {card} liegt auf einem Paket; darunter liegen {n} Karten. |
+| `ans.worth-poor` | `led`, `trick_thirds` | {led} is a poor trick: {trick_thirds}. | {led} ist ein armer Stich: {trick_thirds}. |
+| `ans.worth-rich` | `led`, `led_thirds` | He led {led}, worth {led_thirds}. | Er spielte {led} an, im Wert von {led_thirds}. |
+| `ans.cheap` | `card`, `alt` | {card} wins for less than {alt}. | {card} sticht billiger als {alt}. |
+| `ans.cheap-lose` | `card`, `alt` | {card} costs less than {alt}. | {card} kostet weniger als {alt}. |
+| `ans.ask-differ` | `card`, `a`, `b`, `w` | The books prefer the cheaper card; in {w} sampled deals {card} was better {b} times, the other {a}. | Die Bücher bevorzugen die billigere Karte; in {w} durchgespielten Austeilungen war {card} {b}-mal besser, die andere {a}-mal. |
+| `ans.ask-none` | `better`, `worlds`, `gain_thirds` | No question settles this one; the sampled deals favour it: {better} of {worlds} came out {gain_thirds} better. | Keine Frage entscheidet das; die durchgespielten Austeilungen sprechen dafür: {better} von {worlds} waren um {gain_thirds} besser. |
+| `ans.out-void` | `suit`, `out` | He showed no {suit}; {out} tarocks are out. | Er zeigte keine {suit}; {out} Tarock sind draußen. |
+| `ans.out-master` | `card` | Only a tarock can beat {card}. | Nur ein Tarock kann {card} schlagen. |
+| `ans.out-master-tarock` | `card` | Nothing higher than {card} is out. | Nichts Höheres als {card} ist draußen. |
+| `ans.suit` | `suit`, `mine_thirds`, `out_thirds` | {suit}: yours {mine_thirds}, out {out_thirds}. | {suit}: Ihre {mine_thirds}, draußen {out_thirds}. |
+| `ans.trumps` | `mine`, `out` | You hold {mine} tarocks; {out} are unseen. | Sie halten {mine} Tarock; {out} sind unbekannt. |
+| `so.worth-rich` | none | When he leads a card worth 7 thirds or more, take the trick. | Spielt er eine Karte von 7 Dritteln oder mehr an, den Stich holen. |
+| `fact.tarocks-out` | `out`, `mine` | {out} tarocks are still out; you hold {mine}. | Noch {out} Tarock sind draußen; Sie halten {mine}. |
+| `fact.skus-out` | none | The Sküs has not been played. | Der Sküs ist noch nicht gespielt. |
+| `fact.his-void` | `suit` | He showed no {suit}. | Er zeigte keine {suit}. |
+| `fact.master` | `card` | Nothing higher than your {card} is out. | Nichts Höheres als {card} ist draußen. |
+| `fact.split` | `suit`, `mine_thirds`, `out_thirds` | {suit}: yours {mine_thirds}, out {out_thirds}. | {suit}: Ihre {mine_thirds}, draußen {out_thirds}. |
+| `fact.beneath` | `n` | {n} cards lie beneath it. | Darunter liegen {n} Karten. |
+| `vs.lead` | `card`, `alt`, `worlds`, `wins`, `alt_wins`, `cost_thirds`, `alt_cost_thirds` | Instead of {alt}: it took the trick in {alt_wins} of {worlds} deals and cost {alt_cost_thirds} when it did not; {card} took it in {wins} and cost {cost_thirds}. | Statt {alt}: gewann den Stich in {alt_wins} von {worlds} Austeilungen und kostete {alt_cost_thirds}, wenn nicht; {card} gewann {wins} und kostete {cost_thirds}. |
+| `vs.lead-trumped` | `card`, `alt`, `worlds`, `trumped`, `alt_trumped` | He trumped {alt} in {alt_trumped} of {worlds} deals, {card} in {trumped}. | {alt} stach er in {alt_trumped} von {worlds} Austeilungen, {card} in {trumped}. |
+| `vs.follow` | `card`, `alt`, `w`, `b`, `a` | Instead of {alt}: over the rest of the deal {card} was better in {b} of {w} deals, {alt} in {a}, the rest equal. | Statt {alt}: über den Rest der Partie war {card} in {b} von {w} Austeilungen besser, {alt} in {a}, sonst gleich. |
 
 ## Review keys
 
