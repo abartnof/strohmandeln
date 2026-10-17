@@ -172,7 +172,7 @@ test("the Mond over III: the card once, the question with its article, the fact;
 
 test("the cover lead: the question about tarocks and the counts, no part repeats the headline", () => {
   const en = hintLines(coverCase, words("en"));
-  assert.deepEqual([en.lead, en.question, en.text], ["Play jack of diamonds.", "Lead a tarock?", "Not yet: you hold 6 of the 22 still out."]);
+  assert.deepEqual([en.lead, en.question, en.text], ["Play jack of diamonds.", "Lead a tarock?", "Not yet: you hold 6 of the 22 tarocks left."]);
   for (const part of [en.question, en.text]) assert.doesNotMatch(part, /^Play\b/);
   assert.equal(en.lead.split("Play").length, 2, "the imperative once");
   assert.equal(hintLines(coverCase, words("de")).question, "Tarock anspielen?");

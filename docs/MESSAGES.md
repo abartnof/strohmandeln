@@ -157,8 +157,8 @@ the Cards-out tab's line or row).
 | `ans.out-master` | `card` | Only a tarock can beat {card}. | Nur ein Tarock kann {card} schlagen. |
 | `ans.out-master-tarock` | `card` | Nothing higher than {card} is out. | Nichts Höheres als {card} ist draußen. |
 | `ans.suit` | `suit`, `mine_thirds`, `out_thirds` | {suit}: yours {mine_thirds}, out {out_thirds}. | {suit}: Ihre {mine_thirds}, draußen {out_thirds}. |
-| `ans.trumps-no` | `mine`, `total` | Not yet: you hold {mine} of the {total} still out. | Noch nicht: Sie halten {mine} der {total} Tarock im Spiel. |
-| `ans.trumps-yes` | `mine`, `total` | Yes: you hold {mine} of the {total} still out. | Ja: Sie halten {mine} der {total} Tarock im Spiel. |
+| `ans.trumps-no` | `mine`, `total` | Not yet: you hold {mine} of the {total} tarocks left. | Noch nicht: Sie halten {mine} der {total} Tarock im Spiel. |
+| `ans.trumps-yes` | `mine`, `total` | Yes: you hold {mine} of the {total} tarocks left. | Ja: Sie halten {mine} der {total} Tarock im Spiel. |
 | `so.worth-rich` | none | When he leads a card worth 2⅓ card points or more, take the trick. | Spielt er eine Karte von 2⅓ Augen oder mehr an, den Stich holen. |
 | `fact.tarocks-out` | `out`, `mine` | {out} tarocks are still out; you hold {mine}. | Noch {out} Tarock sind draußen; Sie halten {mine}. |
 | `fact.skus-out` | none | The Sküs has not been played. | Der Sküs ist noch nicht gespielt. |
