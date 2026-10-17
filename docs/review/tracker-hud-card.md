@@ -1,0 +1,23 @@
+# Review: the cards-out card under the score HUD (86d0853..860681d)
+
+Scope: `kit/css/hud.css`, `kit/js/hud.js`, `kit/STAMP`, `kit/test/test_build.py`; `web3d/src/{main.js,ui.js,trackerview.js,tracker.css,style.css}`, `web3d/strings.json`, `web3d/test/{tracker,colour}.test.js`, `web3d/test/browser_aids.py`; `docs/TABLE3D.md` 3.10.1, 6.6, 10.4.
+
+Run: `cd web3d && npm test` 646 pass, 0 fail; `python3 kit/build.py --check` rc 0; `python3 -m unittest discover -s kit/test` 25 ok; `CHECK_TIMEOUT=900 bin/browser-full tracker_clear,tracker_open_and_settings,tracker_languages,escape_closes,hud_not_clipped,left_handed` 6 ok (174 s).
+
+## Verified
+
+- Selectors: every remaining bare `.hud-chev` / `.hud` consumer is scoped (`.hud .hud-chev`, `.tracker-card .hud-chev`) in main.js and browser_aids.py; the only unscoped `.hud-chev` queries are in `ui.trackerRoot`. `ui.js:93` resolves `closest("[data-act]")` to the chevron first, so a chevron press toggles once; the head's own `data-act` serves a mouse press on the title only.
+- No stale `tracker-fold`, `tracker-tab`, `tracker.tab*`, `tracker.fold*`, `--tracker-top`, `placeTracker` outside `docs/review/*` (history) and one test asserting the keys are gone (`tracker.test.js:266`). "Fold" survives only in `research/07` (the game's own rule) and PLAN.md's row 15 (history).
+- Strings: `tracker.show`, `tracker.hide` have en and de; removed keys have no remaining reader. No poker words in the new strings.
+- Kit: `.hud-card` shares only the custom properties and the open-chevron rules; `CHEVRON_SVG` is the HUD's own markup, now one copy. STAMP rows and `test_build.py` updated; `--check` clean. Promotion rule satisfied (the chevron is shared by the HUD and a second card; nothing game-specific moved into kit).
+- Focus: rebuild refocuses `.hud-chev` only when the active element is the tracker's own chevron; Escape returns focus to `.tracker-card .hud-chev`. Screen-reader sentences and counts unchanged (`tracker-sr` untouched; 5-sentence check passes).
+- fitStrips now measures `.tour-line`, so the table frame does not move when the card opens (card lies over the table, as 6.6.6 says).
+
+## Findings
+
+1. Low (doc wrong). `docs/TABLE3D.md` 6.6.6 says the "not 36" edge chips "lie over" the card. They are in `.floats` (no z-index, DOM before `.info`), `.info` is z-index 13 (`style.css:87`), so the card paints over a chip that overlaps it. The chips are placed from `director.handEdge` (`main.js:504-508, 621-623`), centred on the table, so overlap is only possible in narrow windows. Fix: either say "the card lies over them" or give `.floats` a z-index above 13 and check that the HUD itself is not then covered; add a 1024x768 browser step if overlap is claimed either way.
+2. Low (doc wrong). `TABLE3D.md` 3.10.1 now lists the Tab order as "...slate tab; the settings; the score HUD's chevron, then the cards-out card's chevron". In `ui.js:25-33` `.info` (both chevrons) comes before `.controls` and `.top-right` in the DOM, so the real order is HUD chevron, card chevron, move bar, hand, slate, settings. The HUD chevron placement predates this change; the old text put the panel's Fold after the tabs and the new text copies that. Fix: correct the sentence to the DOM order, or move `.info` after `.top-right` in `ui.js` if the intended order is as written.
+3. Low (nit). `main.js:1659` leaves a whitespace-only line where the MutationObserver on `.floats` was removed. Fix: delete the line.
+4. Low (accessibility, nit). `trackerview.js:18`: the section's `aria-label` ("Cards out") duplicates the visible `h2`; use `aria-labelledby` on the h2 (id) so the name is not read twice by readers that read both. The head's `data-act="tracker"` makes the whole title row clickable, which is a mouse-only affordance (no role); acceptable because the chevron is the keyboard and screen-reader control, but say so in 6.6.2.
+5. Low (tests). The only new automated check of the kit change is `test_build.py`'s `.hud,.hud-card{` string. Nothing asserts `CHEVRON_SVG` is the markup `createHud` renders, or that `:is(.hud, .hud-card).open` rules exist. Add a kit JS test: `createHud(...)` chevron `innerHTML === CHEVRON_SVG`.
+6. Info. `sizeTracker` bounds `--tracker-max` by the tutor row and fan cards that overlap the `.tracker-root` lane; the lane is now the 384 px `.info` column (was 400 px), so fan overlap is slightly less likely. `tracker_clear` passes at all four sizes, English and German, list closed and open. No collision with the Kibitzer's tabs observed. Hidden below 700 px / upright is unchanged (`tracker.css` media query, `tracker_languages` upright case).
