@@ -49,3 +49,21 @@ test("the seat is by lot, and shown as such", () => {
   assert.ok(text.includes(s.t("ui.new.hand")) && text.includes(s.t("ui.new.hand.lot")));
   assert.ok(text.includes(s.t("settings.skill")), "the skill row is labelled in German");
 });
+
+test("the screen starts from the sitting on the table, else from the prefs", () => {
+  const s = createStrings(TABLE, "en");
+  const doc = fakeRoot().ownerDocument;
+  const sitting = { touren: 6, both_pass: "throw_in", values: "1/2/3", ultimo: 2, skill: 1.5 };
+  const ns = createNewSitting(doc, { t: s.t, prefs: { ...DEFAULTS }, sitting });
+  assert.deepEqual(ns.values(), sitting);
+  const from = createNewSitting(doc, { t: s.t, prefs: { ...DEFAULTS, skill: 2 }, sitting: null });
+  assert.equal(from.values().skill, 2);
+});
+
+test("the rules rows are on the screen, not behind a disclosure; the note no longer points at Settings", () => {
+  const s = createStrings(TABLE, "en");
+  const ns = createNewSitting(fakeRoot().ownerDocument, { t: s.t, prefs: { ...DEFAULTS } });
+  assert.equal(ns.node.findAll((e) => e.tagName === "DETAILS").length, 0);
+  for (const k of NEW_KEYS) assert.equal(ns.node.findAll((e) => e.getAttribute("data-row") === k).length, 1, k);
+  assert.doesNotMatch(TABLE["ui.new.kept"].en + TABLE["ui.new.kept"].de, /Settings|Einstellungen/);
+});

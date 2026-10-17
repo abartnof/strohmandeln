@@ -476,15 +476,21 @@ shown. After a bid, the buttons vanish.
 
 3.5.1 The **new-sitting screen** (also reached by "New sitting" at the end and the
 plus at the top) offers: **Length**, "3 Touren (6 deals)" / "6 Touren (12 deals)",
-default 3 [R 15.2, 17.14]; the three rule settings (7.2); the opponent's skill
+default 3 [R 15.2, 17.14]; the three rule settings (7.2); the opponent's level
 (7.3); the seat's "Hand" (the human's seat is chosen by lot unless the page
-passes `human`); and **Deal** and **Cancel**. The screen's helper line says "A Tour
-is two deals, one dealt by each."
+passes `human`); and **Deal** and **Cancel**. The rules rows are shown on the
+screen, with no disclosure. The screen's helper line
+says "A Tour is two deals, one dealt by each." The screen is the only place
+these five are chosen (17 Oct 2026, the maintainer's request: what does not
+apply to this game in play belongs in the new-sitting choices).
 
-3.5.2 The choice is kept as the next sitting's default (7.7). A sitting in
-progress is never changed by the screen's controls except through
-Settings, and the three rule settings and the length are not changeable
-mid-sitting (they are shown, greyed, with "applies from the next sitting").
+3.5.2 The screen starts from the sitting on the table (its length, rules and
+level, as the record and the engine have them), else from the kept prefs; what
+is chosen when Deal is pressed is kept as the next default (7.7). A sitting in
+progress is never changed by the screen, and the Settings menu does not offer
+the length, the three rules or the opponent's level at all: it reads them back
+(7.1). The opponent's level is fixed for the sitting (a change would need a
+record event of its own, PROTOCOL "Creating a sitting"; not offered).
 
 ### 3.6 Extension prompt
 
@@ -525,8 +531,8 @@ the speech and the holds are unchanged, so nothing is missed.
 packets (one stop, `1 2 3` choose a packet, or arrows); the cards-out tab (6.6);
 the slate tab; the settings; then the cards-out panel, whose Fold button follows them. Keys: `Enter` or `Space` choose or play the focused card; `A`
 announce (first held honour); `T` take, `W` weiter; `S` the slate; `H` the hint;
-`M` mute the tutor (6.3); `?` the keys list; `Esc` closes a sheet or cancels the
-prompt. Keys are discoverable under `?`.
+`M` mute the tutor (6.3); `?` the keys list; `Esc` closes the topmost overlay (3.10.5).
+Keys are discoverable under `?`.
 
 3.10.2 **The screen reader** gets a live region (`aria-live="polite"`) with one
 sentence per event in the current language: the deal, each bid, each card
@@ -549,6 +555,30 @@ better; no information is carried by color alone (lit cards also lift). The
 accessible card lists (3.10.1) are a visually hidden 1 px box, reached by key or
 by a screen reader's own gestures, never by a finger on them; they are exempt from
 the 44 px rule as long as they stay hidden. A finger taps the cards on the canvas.
+
+3.10.5 **Escape** (17 Oct 2026, the maintainer: "'Escape' should get out of any
+menu/dialogue"). One press closes one layer, the topmost: a dialog (the last
+opened), then the settings menu (its language row with it), the slate, the score
+HUD's by-deal list, the cards-out panel, and last a card chosen by the first
+click or `Enter` (deselected). With nothing open it does nothing (it does not
+open or fold anything else). Focus returns to the control that opened the layer
+(dialog: the focused control at its opening; settings: the cog; slate, score
+list, cards-out panel: their tab or chevron); where that control is gone, hidden
+or the page body, to the move bar's first button (dialogs) or the cog
+(settings). Dialogs that need an answer are never dismissed, so Escape never
+chooses for the player: on the extension prompt (One more Tour / Enough), the
+sitting's end, and the new-sitting screen when no sitting is under way to go
+back to, Escape only moves focus to the dialog's default button and holds back
+what lies beneath. The welcome acts as its default, Continue (nothing is lost;
+17 Oct 2026). With a sitting under way, Escape on the new-sitting screen is its
+Cancel. Dismissed without choosing: Help, a tutor page (as "Remind me", 6.2.2),
+the brief, the keys list, the public-mark note, the announce prompt (the card
+is not played, it stays chosen), the clear-progress confirm (as No), an error
+notice. An open native select takes its own Escape (it closes the select only;
+the next press is the page's). Not layers: the hint line, the count's popups
+and chips (timed or inline, they close themselves). The logic is
+`web3d/src/overlays.js`; the browser check is
+`escape_closes`.
 
 ## 4. The slate
 
@@ -1110,43 +1140,47 @@ fold, hidden when Hints is off) in `web3d/test/tracker.test.js`.
 Under the cog, in sections. `localStorage` key `strohmandeln.prefs`, version
 numbered (7.7).
 
-| Setting | Values | Default | Applies |
-|---|---|---|---|
-| Rule: both pass | play (simple game) / throw in | play | next sitting |
-| Rule: game values | 2/3/4 · 1/2/3 · 1/2/4 | 2/3/4 | next sitting |
-| Rule: Pagat ultimo value | 1 / 2 Points | 1 | next sitting |
-| Sitting length | 3 / 6 Touren | 3 | next sitting |
-| Opponent skill | 1 to 4 in halves (1, 1.5, ... 4) | 3 | next sitting |
-| Speed | Slow / Normal / Fast / Instant | Normal | now |
-| Table talk | All / Calls only / None | All | now |
-| Tutor | On / Off (off: no pages, no tips, no review chip) | On | now |
-| Tips from the Kibitzer | On / Off (off: no advice in the Kibitzer's tab and no "Next" in the review; it shows the count and what went well, 6.4.6) | On | now |
-| Hints | On / Off (the hint chip, the Cards-out tracker, the public mark on hand cards; 6.3.5) | Off | now |
-| Cards out | On / Off (the tracker, 6.6; shown only with Hints on) | On | now |
-| Explanations | On / Off | Off | now |
-| Announce automatically | Off / On (an honour is announced before it is played, with no prompt) | Off | now |
-| Slate opens by itself | On / Off | On | now |
-| Faces size | Auto / Classic / Jumbo | Auto | now |
-| Left-handed | On / Off | Off | now |
-| Reduced motion | System / On / Off | System | now |
-| Language | English / Deutsch | English | now |
-| Table top | the kit's surfaces (a random choice by default) | random | now |
+| Setting | Values | Default |
+|---|---|---|
+| Speed | Slow / Normal / Fast / Instant | Normal |
+| Table talk | All / Calls only / None | All |
+| Tutor | On / Off (off: no pages, no tips, no review chip) | On |
+| Tips from the Kibitzer | On / Off (off: no advice in the Kibitzer's tab and no "Next" in the review; it shows the count and what went well, 6.4.6) | On |
+| Hints | On / Off (the hint chip, the Cards-out tracker, the public mark on hand cards; 6.3.5) | Off |
+| Cards out | On / Off (the tracker, 6.6; shown only with Hints on) | On |
+| Explanations | On / Off | Off |
+| Announce automatically | Off / On (an honour is announced before it is played, with no prompt) | Off |
+| Slate opens by itself | On / Off | On |
+| Faces size | Auto / Classic / Jumbo | Auto |
+| Left-handed | On / Off | Off |
+| Reduced motion | System / On / Off | System |
+| Language | English / Deutsch | English |
+| Table top | a labelled dropdown: Random first, then the kit's 18 surfaces, named in English and German (`settings.surface.<id>`) | Random |
 
-The rule settings and the length apply to the next sitting: shown, greyed, in a
-sitting in progress. A mid-sitting change is never silent; the screen says
-"from the next sitting."
+Every row takes effect at once. The menu holds none of the sitting's own
+choices: the length, the three rules and the opponent's level are the
+new-sitting screen's (3.5). A read-only line at the top says what the sitting
+on the table is, read from the record's `sitting_start` and the engine's level
+and not from the prefs: "This sitting: 3 Touren, 2/3/4, ultimo 1, simple game,
+opponent level 3", then "A new sitting, from the plus at the top, chooses the
+next." It is hidden when there is no sitting, and a restored sitting shows its
+own rules, not the kept defaults. The table-top select is 16 px or more, at
+least a touch target high, and in the menu's colour pair. Escape on its open list closes
+only the list; on the closed select, focused, it closes the menu (3.10.5).
 
 ### 7.2 The three rule settings
 
 As R "Authority and settings": `both_pass`, `values`, `ultimo`. Each has a
 one-line explanation beside it, sourced as in the rules (`Werner 2/3/4`,
-`Dummett 1/2/3`, `Ulmann 1/2/4`). The new-sitting screen shows the three with
-the defaults; picking another is never penalised, and no other variant is
-offered (CLAUDE.md: no variants without the maintainer).
+`Dummett 1/2/3`, `Ulmann 1/2/4`). Only the new-sitting screen (3.5) offers the
+three, starting from the sitting on the table or the kept defaults; picking
+another is never penalised, and no other variant is offered (CLAUDE.md: no
+variants without the maintainer).
 
 ### 7.3 The opponent's skill
 
-A dial of 1 to 4 in halves, as Cassino's; passed as `level` in `new` [P] (an
+A dial of 1 to 4 in halves, as Cassino's, on the new-sitting screen (3.5) and not
+in the Settings menu; passed as `level` in `new` [P] (an
 integer for now: the dial maps to the engine's levels when the opponent
 package defines them; until then the wasm carries the opaque value). The
 label under the dial says in a sentence what the level plays like, once the
@@ -1376,6 +1410,7 @@ motion are saved to `web3d/test/out/`.
 
 ### 10.4 Slate, talk, tutor
 
+- `escape_closes`, `escape_dialogs`: every overlay opened in turn and closed by Escape, one per press, focus back (3.10.5).
 - `slate_open_close`: the tab, `S`, outside tap and `Esc`; auto-open at Tour end
   and at the extension; never during play or the count.
 - `slate_rows`: rows per deal with causes, "×2" on a doubled deal, "draw",
@@ -1398,6 +1433,10 @@ motion are saved to `web3d/test/out/`.
   unmute restores them.
 - `hint_and_explain`: the hint chip lights a card and shows a rendered key; explanations
   off leaves the line empty.
+- `hud_not_clipped`: at 1280 × 720, 1440 × 900, 1920 × 1080 and 1024 × 768, in both
+  languages, with "35⅔" a side, a wide ledger value and the bonus label's popup, every
+  HUD text lies inside the HUD box and the window, and each of the line's 36 segments is
+  at least 2 px wide.
 - `tracker_clear`: with Hints on, the cards-out panel is open at rest, of the trick at
   rest, with two to four lines and the 54-cell grid, and its rectangle meets none of
   the hand, the move bar, the prompt, the HUD or the Kibitzer's tabs at the window
@@ -1419,10 +1458,16 @@ motion are saved to `web3d/test/out/`.
 
 ### 10.5 Settings, language, persistence
 
-- `settings_rules`: the three rule settings and the length apply to the next sitting
-  and are greyed mid-sitting; `values` change the credits' amounts on the next
-  sitting.
-- `skill_speed`: the dial and the speed keep and apply.
+- `settings_rules`: the three rule settings and the length chosen for the next
+  sitting reach it (the record's `sitting_start`, the slate's header); `values`
+  change the credits' amounts.
+- `settings_no_rules`: the menu shows none of the length, the three rules and the
+  opponent's level, and no "applies" tag; it shows the "This sitting" line, equal to
+  the record, at the deal and after Continue (with the prefs changed meanwhile).
+- `new_sitting_from_table`: the new-sitting screen starts from the sitting on the
+  table, not the prefs, and shows the rules rows with no disclosure.
+- `skill_speed`: the speed keeps and applies; the level is read in the menu's line
+  and chosen on the new-sitting screen.
 - `language_switch`: mid-sitting (during a deal, after a reveal, at the count)
   English to German and back: every visible string, the faces' court labels,
   the HUD (rebuilt, numbers kept), the slate, the open tutorial page and the screen-reader text

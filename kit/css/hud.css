@@ -40,6 +40,7 @@
 }
 .hud-line {
   flex: 1;
+  min-width: 0; /* a grid item: without it the line keeps its margins' width and squeezes the score */
   display: flex;
   align-items: center;
   height: 22px;
@@ -63,6 +64,13 @@
   border-radius: 6px;
   background-color: var(--dark);
   transition: height 460ms var(--sp-fast), background-color 200ms var(--sp-fx);
+}
+/* A game with many segments sets --seg-gap / --seg-gap-group on .hud. */
+.seg + .seg {
+  margin-left: var(--seg-gap, 3px);
+}
+.seg.grp {
+  margin-left: var(--seg-gap-group, 8px);
 }
 .seg.reached {
   height: 6px;

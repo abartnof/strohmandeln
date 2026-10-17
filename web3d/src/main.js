@@ -33,7 +33,8 @@ import { momentsOf } from "./moments.js";
 import { check, emptyModel, fromState, reduce } from "./model.js";
 import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
 import { loadPrefsInfo, savePrefs, sittingConfig, speedScale, urlOverrides, withUrl } from "./prefs.js";
-import { createSettings } from "./settings.js";
+import { createSettings, sittingFrom } from "./settings.js";
+import { escapeTarget, selectGuard } from "./overlays.js";
 import { createSpeaker } from "./speaker.js";
 import { createSlate } from "./slate.js";
 import { hintLines, hintSpoken } from "./hinttext.js";
@@ -114,6 +115,7 @@ async function main() {
   // ---- state ------------------------------------------------------------------
   let wasm = null; // the module's last state
   let log = []; // every event of the sitting
+  let sittingOnTable = null; // sittingFrom's: the sitting's length, rules and level (settings.js)
   let S = null; // the director's state: { model, events }
   let human = 0;
   let sel = { chosen: null, scroll: -1e9 }; // a row of cards starts at its left end
@@ -318,9 +320,7 @@ async function main() {
 
   // The pages, for the sitting's rules: both-pass, game values and ultimo (6.2.2).
   function pagesNow() {
-    const begun = log.find((e) => e.type === "sitting_start");
-    const settings = begun?.settings ?? {};
-    const rule = (k) => settings[k] ?? prefs[k];
+    const rule = (k) => sittingOnTable?.[k] ?? prefs[k];
     return tutorialPages(getLang() === "de" ? TUTORIAL_DE : TUTORIAL_EN, PAGE_KEYS, { both_pass: rule("both_pass"), values: rule("values"), ultimo: rule("ultimo") });
   }
   function openPage(key, { help }) {
@@ -759,9 +759,8 @@ async function main() {
 
   // What a Point is worth on the deal now: the ultimo setting times the doubling.
   function pointsNow() {
-    const begun = log.find((e) => e.type === "sitting_start");
     const d = [...log].reverse().find((e) => e.type === "deal_start");
-    return { ultimo: (begun?.settings?.ultimo ?? 1) * (d?.multiplier ?? 1), honour: d?.multiplier ?? 1 };
+    return { ultimo: (sittingOnTable?.ultimo ?? 1) * (d?.multiplier ?? 1), honour: d?.multiplier ?? 1 };
   }
 
   function showResult(e) {
@@ -1066,7 +1065,6 @@ async function main() {
         for (const [key, value] of Object.entries(chosen)) {
           if (prefs[key] === value) continue;
           save({ [key]: value });
-          settings.set(key, value);
         }
         newSitting({ touren: prefs.touren });
       }
@@ -1095,6 +1093,7 @@ async function main() {
 
   // ---- a sitting ----------------------------------------------------------------------------
   function resetTable() {
+    onTable(null);
     director.cancelTimed();
     stepping = false;
     idleTimers.forEach(clearTimeout);
@@ -1141,7 +1140,7 @@ async function main() {
       return;
     }
     human = r.state.human;
-    settings.setSitting(true);
+    onTable(sittingFrom(r.events, r.state.level));
     ui.root.classList.toggle("left", prefs.leftHanded);
     talk.restore({});
     settleFocus();
@@ -1149,10 +1148,16 @@ async function main() {
     advance(r, { first: true });
   }
 
+  // The sitting on the table (settings.js sittingFrom): the menu's line, and the new-sitting screen's start.
+  function onTable(info) {
+    sittingOnTable = info;
+    settings.setSitting(info);
+  }
+
   // The new-sitting screen (3.5.1): what is chosen is kept as the next default (3.5.2).
   let newScreen = null;
   function askNew() {
-    newScreen = createNewSitting(document, { t, prefs });
+    newScreen = createNewSitting(document, { t, prefs, sitting: sittingOnTable });
     ui.dialog({ id: "new", title: t("ui.new.title"), body: newScreen.node, buttons: [{ label: t("ui.new.deal"), act: "deal", primary: true, focus: true }, ...(wasm && !sittingOver ? [{ label: t("ui.new.cancel"), act: "cancel" }] : [])] });
   }
 
@@ -1194,7 +1199,7 @@ async function main() {
     else sittingLength = log.find((e) => e.type === "sitting_start")?.touren ?? r.state.touren_total;
     if (ex.slate) slate.restore(ex.slate);
     if (ex.talk) talk.restore(ex.talk);
-    settings.setSitting(true);
+    onTable(sittingFrom(exported.record, r.state.level));
     director.restart(S, { dealt: false });
     restModel = model;
     trickShown = r.state.deal?.playing ? r.state.deal.trick_number : 0;
@@ -1446,21 +1451,51 @@ async function main() {
     director.rearrange();
   }
 
+  // Closes one layer. A dialog and the settings give focus back themselves (ui.js, settings.js);
+  // the panels hand it to the control that opens them.
+  function closeLayer({ kind, id }) {
+    if (kind === "focus") ui.root.querySelector(`[data-shade="${id}"] [data-focus]`)?.focus(); // never chooses for the player
+    else if (kind === "dialog") {
+      if (id === "page") dismissPage(true);
+      else if (id === "welcome") onDialog(["welcome", "continue"]); // its default; nothing is lost
+      else ui.closeDialog(id); // help, review, keys, announce (the card stays chosen), clear (No), error, new (Cancel)
+    } else if (kind === "settings") settings.close();
+    else if (kind === "slate") {
+      toggleSlate();
+      ui.root.querySelector("[data-act=slate]")?.focus();
+    } else if (kind === "hud") {
+      hud.fold();
+      ui.root.querySelector(".hud-chev")?.focus();
+    } else if (kind === "tracker") {
+      toggleTracker();
+      ui.root.querySelector("[data-act=tracker]")?.focus();
+    } else if (kind === "selection") {
+      sel = { ...sel, chosen: null };
+      refresh();
+      director.rearrange();
+    }
+  }
+
+  // An open native <select> takes its own Escape (overlays.js).
+  const selects = selectGuard();
+  for (const type of ["mousedown", "keydown", "change", "focusout"]) window.addEventListener(type, (e) => selects.observe(e), true);
   window.addEventListener("keydown", (e) => {
     if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === "Escape") {
-      if (ui.dialogOpen("page")) dismissPage(true);
-      else if (ui.dialogOpen("help") || ui.dialogOpen("review")) {
-        ui.closeDialog("help");
-        ui.closeDialog("review");
-      } else if (ui.dialogOpen("announce")) ui.closeDialog("announce");
-      else if (ui.dialogOpen("keys")) ui.closeDialog("keys");
-      else if (!ui.slateRoot.hidden) toggleSlate();
-      else if (sel.chosen) {
-        sel = { ...sel, chosen: null };
-        refresh();
-        director.rearrange();
-      }
+      if (selects.swallows(e)) return;
+      // One press closes the topmost layer (overlays.js, TABLE3D 3.10.5).
+      const target = escapeTarget({
+        dialogs: ui.dialogIds(),
+        settings: !ui.settingsRoot.hidden,
+        slate: !ui.slateRoot.hidden,
+        hud: hud.isOpen(),
+        tracker: Boolean(ui.trackerRoot.firstChild),
+        chosen: Boolean(sel.chosen),
+        canCancelNew: Boolean(wasm && !sittingOver),
+      });
+      if (!target) return;
+      e.preventDefault();
+      closeLayer(target);
       return;
     }
     if (e.target instanceof Element && e.target.closest("input, select, textarea, .settings, .slate")) return;
@@ -1574,6 +1609,9 @@ async function main() {
     clock: () => director.clock(),
     meshInfo: () => director.meshes.map((m) => ({ x: m.position.x, y: m.position.y, z: m.position.z, code: m.userData.code })),
     newSitting,
+    askNew,
+    pagesNow,
+    pointsNow,
     act: (action) => send(action),
     speed: (name) => changed("speed", name),
     step,
