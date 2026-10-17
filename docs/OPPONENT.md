@@ -35,7 +35,7 @@ meaning.
 (`BidRule`) and Rung 4's band (`style.rs`, each parameter tagged T, I or E with
 its passage). Normal is every default; `golden_tests.rs` hashes its decisions at
 levels 2, 3 and 4. At rung 4 a style acts in the bid (a margin per style,
-`style::MARGINS`, 0.0 until `stage0` has calibrated it) and in a band of 2
+`style::MARGINS`, from `stage0`: STYLES 9) and in a band of 2
 thirds where the maxims decide (Normal 0.34).
 `cargo build --release -p strohmandeln-ai --bin stage0`: the stage-0 probe
 (divergence from Normal, bid rate, the rung-4 margin calibration, the tells'

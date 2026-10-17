@@ -306,3 +306,30 @@ fn a_style_carries_its_calibrated_rung_four_margin() {
     }
     assert_eq!(cfg(Style::Normal).bid_margin, Some(0.0));
 }
+
+#[test]
+fn the_margins_are_stage_0_figures_relative_to_normals_and_ordered_by_the_rules_shares() {
+    // Stage 0 (docs/STYLES.md 9): calibrated margins, less Normal's 0.100 so
+    // that Normal's own margin stays 0.
+    for (s, m) in [
+        (Style::Bermann, 0.362),
+        (Style::Ulmann, -0.075),
+        (Style::Ms, 0.450),
+        (Style::Werner, 0.188),
+        (Style::Bold, -0.575),
+        (Style::Cautious, 0.450),
+        (Style::Hunter, 0.0),
+    ] {
+        assert!((s.rung4_margin() - m).abs() < 1e-9, "{s:?}");
+    }
+    // A rule that takes up on fewer hands has the higher margin.
+    let cal = crate::probe::Calibration::sample(0..300, 1);
+    for a in Style::POOL {
+        for b in Style::POOL {
+            let (sa, sb) = (cal.share(cfg(a).bid), cal.share(cfg(b).bid));
+            if sa + 0.02 < sb {
+                assert!(a.rung4_margin() >= b.rung4_margin(), "{a:?} {b:?}");
+            }
+        }
+    }
+}

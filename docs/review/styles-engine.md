@@ -206,7 +206,7 @@ nit: 2.3, 2.4, 2.5, 2.7, 3 (`rungs()`), 4 (STYLES 6), 5.3, 5.5.
 |---|---|
 | 5.1 | The CSV's `decisions` and `diverged` are `meta_decisions` and `meta_diverged`, last; stage1 reads only the public columns (documented in `stage0.rs`, `probe::Features`); a test holds the split. |
 | 5.4 | `stage0 --calibrate-only` runs the calibration alone (`probe::Options`); an empty `--skills` is an error without it, not a panic. Order as the review gave it; `style::MARGINS` stays 0.0 until the measured margins are pasted. |
-| 5.5 | Open: the margin test stays tautological until real margins are in; then a test of the styled rung-4 bid rate against the rule's share. |
+| 5.5 | The margins are in `style::MARGINS` (stage 0, STYLES 9); the test holds the figures and orders them by the rules' bid shares. |
 | 2.1 | An honour count takes the Pagat only with six tarocks (U 78), for Ulmann and Werner; tested short and long. |
 | 2.2 | Ulmann's dealer clause and `bid_as`'s `dealer` parameter are deleted (`bid_with` is the one entry); the comment in `rung2.rs`, `style.rs` and STYLES 2.1 says it could change nothing. |
 | 2.6 | Bermann's `guard-mond` is tagged I. |

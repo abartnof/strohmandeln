@@ -40,15 +40,16 @@ const BAND: f64 = 2.0;
 /// Rung 4's bid margin for each style, in Points: the advantage at which
 /// Normal's rung-4 sample bids the share of hands the style's rule bids
 /// (`probe::Calibration`, `stage0`). Rung 4 bids by the sampled advantage, not
-/// by `BidRule`. 0.0 is Normal's, and stands for "not yet calibrated" until
-/// stage 0 has run.
+/// by `BidRule`. Stage 0 (17 Oct 2026, `docs/STYLES.md` 9) calibrated each rule;
+/// the figures here are those less Normal's own calibrated 0.100, so that
+/// Normal stays at margin 0 (the golden).
 const MARGINS: [(Style, f64); 7] = [
-    (Style::Bermann, 0.0),
-    (Style::Ulmann, 0.0),
-    (Style::Ms, 0.0),
-    (Style::Werner, 0.0),
-    (Style::Bold, 0.0),
-    (Style::Cautious, 0.0),
+    (Style::Bermann, 0.362),
+    (Style::Ulmann, -0.075),
+    (Style::Ms, 0.450),
+    (Style::Werner, 0.188),
+    (Style::Bold, -0.575),
+    (Style::Cautious, 0.450),
     (Style::Hunter, 0.0),
 ];
 
