@@ -238,9 +238,10 @@ when both pass have one block for each value of `values`, `ultimo` and
 - **3** each: the four cavalls (C).
 - **2** each: the four jacks (J).
 - **1** each: every other card, that is the tarocks II to XX and the numbered suit cards.
-- Rank is another matter. Tarocks run Sküs (highest), XXI, XX down to II, then I, the Pagat, the lowest tarock. Each suit runs K, Q, C, J, the Cavall between queen and jack, then the pips: 10 9 8 7 in clubs and spades, 1 2 3 4 in hearts and diamonds, the 1 highest.
 
-- The faces show the letters K, Q, C and J, and the tarocks in Roman numerals. The Sküs is the highest tarock, the Mond is XXI, the Pagat is I.
+- Rank is another matter. Tarocks run Sküs (highest), XXI, XX down to II, then I, the Pagat, the lowest tarock.
+- Each suit runs K, Q, C, J, the Cavall between queen and jack, then the pips: 10 9 8 7 in clubs and spades, 1 2 3 4 in hearts and diamonds, the 1 highest.
+- The faces show the letters K, Q, C and J, and the tarocks in Roman numerals.
 - Add all 54 cards at these values and you get 106. The count in threes brings that down to 70.
 
 ## Counting in threes

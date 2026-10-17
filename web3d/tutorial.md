@@ -147,11 +147,12 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 
 ## So wird gezählt
 
-- Zählen Sie Ihre gewonnenen Karten in Dreiern: drei Werte zusammen, 2 ab.
+- Zählen Sie gewonnene Karten in Dreiern: drei Werte zusammen, 2 ab.
 - Beispiel: ein König, ein Bube und eine Sieben sind 5 + 2 + 1 = 8, weniger 2 = 6.
-- Karte für Karte zählt jede ihren Wert weniger zwei Drittel: bei drei Karten die Summe weniger 2. Bleiben eine oder zwei übrig, verliert jede zwei Drittel.
-- So machen beide Spieler zusammen 70 Augen.
-- Das Ziel ist 36, geschrieben **35⅔**, weil die Zählung Drittel behält (gerundet 36). **35⅓** reicht nicht.
+- Karte für Karte zählt jede ihren Wert weniger zwei Drittel: bei dreien die Summe weniger 2.
+- Bleiben eine oder zwei übrig, verliert jede zwei Drittel.
+- Beide Spieler zusammen machen 70 Augen.
+- Das Ziel ist 36, geschrieben **35⅔**, weil Drittel gezählt werden (gerundet 36). **35⅓** reicht nicht.
 - Der Stand oben läuft mit, während Sie Stiche machen.
 - [Mehr zur Abrechnung](#scoring-full)
 
@@ -240,9 +241,10 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - **3** je Karte: die vier Cavalle (C).
 - **2** je Karte: die vier Buben (B).
 - **1** je Karte: jede andere Karte, also die Tarocks II bis XX und die Zahlkarten der Farben.
-- Der Rang ist etwas anderes. Die Tarocke laufen vom Sküs (höchste) über XXI, XX bis II, zuletzt I, der Pagat, das niedrigste Tarock. Jede Farbe läuft K, D, C, B, der Cavall zwischen Dame und Bube, dann die Zahlkarten: 10 9 8 7 in Kreuz und Pik, 1 2 3 4 in Herz und Karo, die 1 die höchste.
 
-- Die Karten zeigen die Buchstaben K, D, C und B, die Tarocks in römischen Ziffern. Der Sküs ist das höchste Tarock, der Mond ist XXI, der Pagat ist I.
+- Der Rang ist etwas anderes. Die Tarocke laufen vom Sküs (höchste) über XXI, XX bis II, zuletzt I, der Pagat, das niedrigste Tarock.
+- Jede Farbe läuft K, D, C, B, der Cavall zwischen Dame und Bube, dann die Zahlkarten: 10 9 8 7 in Kreuz und Pik, 1 2 3 4 in Herz und Karo, die 1 die höchste.
+- Die Karten zeigen die Buchstaben K, D, C und B, die Tarocks in römischen Ziffern.
 - Alle 54 Karten mit diesen Werten zusammen ergeben 106. Die Zählung in Dreiergruppen macht daraus 70.
 
 ## Zählen in Dreiergruppen
