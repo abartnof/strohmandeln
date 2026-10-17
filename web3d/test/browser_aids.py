@@ -688,11 +688,15 @@ BOXES = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); re
     hand: window.strohmandeln3d.cardRects('your-hand') }; })()"""
 
 
-def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0"):
-    page = with_prefs(browser, {"hints": True, "slateAuto": False, "trackerFolded": False, **(prefs or {})}, query, viewport=size)
+def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0", unfold=True):
+    # The panel starts folded (6.6.2); unfold it by its tab, where the window shows one.
+    page = with_prefs(browser, {"hints": True, "seen": ["public-mark"], "slateAuto": False, **(prefs or {})}, query, viewport=size)
     take_if_bidding(page)
     drive(page, lambda s, log: sum(e["type"] == "trick_won" for e in log) >= 3 or s["prompt"] == "over")
     rest(page)
+    tab = page.locator("[data-act=tracker]:not([hidden])")
+    if unfold and tab.count() and tab.is_visible():
+        tab.click()
     return page
 
 
@@ -729,10 +733,13 @@ def check_tracker_fold_and_settings(browser, failures):
     where = "tracker_fold_and_settings: "
     page = tracker_page(browser, TRACKER_SIZES[0][1])
     tab = page.locator("[data-act=tracker]")
-    # A tap on the tab folds it, and is kept; another opens it.
+    # A tap on the tab folds it; another opens it. A fresh page starts folded, at this large window too.
+    fresh = tracker_page(browser, TRACKER_SIZES[0][1], unfold=False)
+    fail_if(fresh.locator(".tracker").count(), failures, f"{where}the panel starts open")
+    fail_if(fresh.locator("[data-act=tracker]").get_attribute("aria-expanded") != "false", failures, f"{where}the fresh tab says open")
+    fresh.close()
     tab.click()
     fail_if(page.locator(".tracker").count(), failures, f"{where}the tab did not fold the panel")
-    fail_if(js(page, "prefs()")["trackerFolded"] is not True, failures, f"{where}the fold was not kept")
     fail_if(tab.get_attribute("aria-expanded") != "false", failures, f"{where}the tab says open while folded")
     tab.click()
     fail_if(page.locator(".tracker").count() != 1, failures, f"{where}the tab did not open the panel")
@@ -761,6 +768,11 @@ def check_tracker_fold_and_settings(browser, failures):
     fail_if(page.locator(".tracker").count(), failures, f"{where}the muted Kibitzer kept the panel")
     page.keyboard.press("m")
     fail_if(page.locator(".tracker").count() != 1, failures, f"{where}unmuting did not bring the panel back")
+    # The next deal of the sitting starts folded again, though the person had it open.
+    drive(page, lambda s, log: sum(e["type"] == "deal_start" for e in log) >= 2)
+    rest(page)
+    fail_if(page.locator(".tracker").count(), failures, f"{where}the next deal kept the panel open")
+    fail_if(page.locator("[data-act=tracker]").get_attribute("aria-expanded") != "false", failures, f"{where}the next deal's tab says open")
     check_offline(page, failures, where)
 
 
@@ -790,7 +802,7 @@ BRIEF_KEPT = "(() => { const b = window.strohmandeln3d.briefing(); return b.kept
 
 
 def brief_page(browser, prefs, query="seed=7&speed=instant&human=1"):
-    page = with_prefs(browser, {"hints": True, "slateAuto": False, **prefs}, query)
+    page = with_prefs(browser, {"hints": True, "seen": ["public-mark"], "slateAuto": False, **prefs}, query)
     return page
 
 
@@ -800,6 +812,49 @@ def scored_deal(page):
     rest(page)
     page.wait_for_function(BRIEF_KEPT, timeout=60_000)
     return ok
+
+
+PAGES_SEEN = ["the-cards", "packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension", "scoring-full"]  # no page opens
+
+
+def check_public_mark(browser, failures):
+    """The gold dot is a hint (TABLE3D 1.5.7): absent with hints off, shown at once when they are
+    switched on, with the note once; it goes with them and with the Kibitzer's mute."""
+    where = "public_mark: "
+    page = with_prefs(browser, {"hints": False, "seen": PAGES_SEEN, "slateAuto": False}, "seed=7&speed=instant&human=1")
+    take_if_bidding(page)
+    if not drive(page, has("card_pulled")):
+        return failures.append(f"{where}no card was pulled")
+    rest(page)
+    dots = lambda: page.locator(".tag.public").count()
+    fail_if(dots(), failures, f"{where}a dot with hints off")
+    fail_if(page.locator("[data-dialog=note]").count(), failures, f"{where}the note with hints off")
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.wait_for_selector(".settings-root:not([hidden])", timeout=10_000)
+    page.locator("[data-row=hints] [data-value=toggle]").click()
+    fail_if(page.locator("[data-dialog=note]").count(), failures, f"{where}the note over the open menu")
+    page.locator(".settings-close").click()
+    page.wait_for_selector("[data-dialog=note]", timeout=10_000)
+    fail_if(not dots(), failures, f"{where}no dot after hints were switched on")
+    fail_if(not page.locator(".tag.public").first.get_attribute("title"), failures, f"{where}the dot has no tooltip")
+    fail_if("public-mark" not in js(page, "prefs()")["seen"], failures, f"{where}the note was not kept as seen")
+    stored = page.evaluate("localStorage.getItem('strohmandeln.prefs')")
+    fail_if("public-mark" not in stored, failures, f"{where}seen was not stored")
+    page.locator("[data-dialog=note] [data-dialog-act=close]").click()
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.wait_for_selector(".settings-root:not([hidden])", timeout=10_000)
+    page.locator("[data-row=hints] [data-value=toggle]").click()
+    fail_if(dots(), failures, f"{where}a dot after hints were switched off")
+    page.locator("[data-row=hints] [data-value=toggle]").click()
+    page.locator(".settings-close").click()
+    fail_if(page.locator("[data-dialog=note]").count(), failures, f"{where}the note again")
+    fail_if(not dots(), failures, f"{where}no dot after hints were switched on again")
+    page.evaluate("document.activeElement.blur()")  # the keys are not read inside the menu
+    page.keyboard.press("m")
+    fail_if(dots(), failures, f"{where}a dot with the Kibitzer muted")
+    page.keyboard.press("m")
+    fail_if(not dots(), failures, f"{where}no dot after unmuting")
+    check_offline(page, failures, where)
 
 
 def check_deal_brief(browser, failures):
@@ -882,9 +937,116 @@ def check_deal_brief(browser, failures):
         check_offline(other, failures, "deal_brief: ")
 
 
+def check_escape_closes(browser, failures):
+    # Escape closes the topmost overlay, one per press, and focus goes back to what opened it (TABLE3D 3.10.5).
+    where = "escape_closes: "
+    page = tracker_page(browser, TRACKER_SIZES[0][1])
+    page.locator("[data-act=tracker]").click()  # folded and open again, so it has an opener
+    page.locator("[data-act=tracker]").click()
+    page.mouse.click(5, 5)
+
+    def focused():
+        return page.evaluate("(() => { const a = document.activeElement; return a ? (a.dataset.act || a.className || a.tagName) : ''; })()")
+
+    def open_flags():
+        return page.evaluate("""(() => ({
+          dialog: Array.from(document.querySelectorAll('.dialogs [data-shade]')).map((n) => n.dataset.shade),
+          settings: !document.querySelector('.settings-root').hidden,
+          slate: !document.querySelector('.slate-root').hidden,
+          hud: document.querySelector('.hud-chev').getAttribute('aria-expanded') === 'true',
+          tracker: Boolean(document.querySelector('.tracker')),
+        }))()""")
+
+    def press(expect, what, focus=None):
+        page.keyboard.press("Escape")
+        got = open_flags()
+        fail_if(got != expect, failures, f"{where}after Escape on {what}: {got}, expected {expect}")
+        if focus:
+            fail_if(focus not in focused(), failures, f"{where}after Escape on {what}: focus is on {focused()!r}, not {focus!r}")
+
+    base = {"dialog": [], "settings": False, "slate": False, "hud": False, "tracker": True}
+    fail_if(open_flags() != base, failures, f"{where}start: {open_flags()}")
+    # Everything open at once: the score list, the slate, the settings, then a dialog over them.
+    page.locator(".hud-chev").click()
+    page.keyboard.press("s")
+    page.locator("[data-act=settings]").focus()
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.wait_for_selector(".settings-root:not([hidden])", timeout=10_000)
+    page.locator("[data-act=tutor]").focus()
+    page.locator("[data-act=tutor]").dispatch_event("click")
+    page.wait_for_selector("[data-dialog=help]", timeout=10_000)
+    fail_if(open_flags() != {"dialog": ["help"], "settings": True, "slate": True, "hud": True, "tracker": True}, failures, f"{where}all open: {open_flags()}")
+    press({"dialog": [], "settings": True, "slate": True, "hud": True, "tracker": True}, "Help", "tutor")
+    press({"dialog": [], "settings": False, "slate": True, "hud": True, "tracker": True}, "settings", "settings")
+    press({"dialog": [], "settings": False, "slate": False, "hud": True, "tracker": True}, "the slate")
+    fail_if(page.locator("[data-act=slate]").get_attribute("aria-expanded") != "false", failures, f"{where}the slate tab still says open")
+    press({"dialog": [], "settings": False, "slate": False, "hud": False, "tracker": True}, "the score list", "hud-chev")
+    press({**base, "tracker": False}, "the cards-out panel", "tracker")
+    press({**base, "tracker": False}, "nothing")
+    # A confirm over the settings, and the keys list.
+    page.locator("[data-act=settings]").focus()
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.locator("[data-action=progress-clear]").dispatch_event("click")
+    page.wait_for_selector("[data-dialog=clear]", timeout=10_000)
+    press({**base, "tracker": False, "settings": True}, "the confirm")
+    press({**base, "tracker": False}, "settings")
+    page.keyboard.press("?")
+    page.wait_for_selector("[data-dialog=keys]", timeout=10_000)
+    press({**base, "tracker": False}, "the keys list")
+    check_offline(page, failures, where)
+
+
+def check_escape_dialogs(browser, failures):
+    # The tutor page and the announce prompt are dismissed without choosing; a dialog that needs an answer only takes focus.
+    from browser_scenarios import find_honour, honour_card, until_extend
+    from browser import click_card
+
+    where = "escape_dialogs: "
+    page = open_page(browser, "seed=7&speed=instant&human=1")
+    take_if_bidding(page)
+    page.locator("[data-act=tutor]").focus()
+    page.locator("[data-act=tutor]").dispatch_event("click")
+    page.wait_for_selector("[data-dialog=help]", timeout=10_000)
+    page.locator("[data-dialog=help] [data-act=page]").first.click()
+    page.wait_for_selector("[data-dialog=page]", timeout=10_000)
+    page.keyboard.press("Escape")
+    fail_if(page.locator("[data-dialog=page]").count() or not page.locator("[data-dialog=help]").count(), failures, f"{where}Escape on a page: closes it, Help stays")
+    page.keyboard.press("Escape")
+    fail_if(page.locator("[data-dialog]").count(), failures, f"{where}Escape on Help left a dialog")
+    fail_if(page.evaluate("document.activeElement === document.body"), failures, f"{where}focus is lost after Help")
+    close_all(browser)
+
+    page = open_page(browser, "seed=1&speed=instant&human=1")
+    honour = find_honour(page)
+    card = honour_card(page, honour) if honour else None
+    fail_if(card is None, failures, f"{where}no honour card for the announce prompt")
+    if card:
+        before = len(js(page, "log()"))
+        click_card(page, card)
+        still(page)
+        click_card(page, card)
+        page.wait_for_selector(".dialog [data-dialog-act^=\"do:\"]", timeout=30_000)
+        page.keyboard.press("Escape")
+        fail_if(page.locator("[data-dialog=announce]").count(), failures, f"{where}Escape left the announce prompt")
+        fail_if(len(js(page, "log()")) != before, failures, f"{where}Escape played or announced for the player")
+        fail_if(card not in [a.get("card") for a in state(page)["legal"]], failures, f"{where}the card is no longer in the hand")
+    close_all(browser)
+
+    page = open_page(browser, "seed=7&speed=instant&human=0")
+    fail_if(not drive(page, until_extend()), failures, f"{where}no extension offered")
+    rest(page)
+    page.wait_for_selector("[data-dialog=extend]", timeout=30_000)
+    page.mouse.click(5, 5)
+    page.keyboard.press("Escape")
+    fail_if(not page.locator("[data-dialog=extend]").count(), failures, f"{where}Escape answered the extension prompt")
+    fail_if(state(page)["phase"] != "extend", failures, f"{where}the sitting moved on")
+    fail_if(not page.evaluate("document.activeElement.closest('[data-dialog=extend]') !== null"), failures, f"{where}focus is not on the prompt's default after Escape")
+    close_all(browser)
+
+
 CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_skill_speed,
     check_language_switch, check_language_switch_at_count, check_prefs_storage, check_save_restore, check_export_import_file,
-    check_tutor_pages, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_deal_brief,
+    check_tutor_pages, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief,
 ]
