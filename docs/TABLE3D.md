@@ -1182,7 +1182,7 @@ mit" (6.5).
 
 6.6.6 **Where it lies.** It must not cover the hand, the move bar, the prompt, the
 HUD or the Kibitzer's tabs, and it lies under the dialogs and the slate (z-order). A
-card of 300 px at the left, under the HUD, scrolling inside if it is taller. Its top
+card of 400 px at the left, under the HUD, scrolling inside if it is taller. Its top
 follows the HUD's actual bottom (the tour line and the "not 36" chips included) and
 slides down when the by-deal list opens and back when it folds (17 Oct 2026, the
 maintainer: the two should be on screen together, not colliding);
@@ -1194,10 +1194,12 @@ apart at 1280 × 720, 1024 × 768, 1440 × 900 and 1920 × 1080, in English and 
 
 6.6.7 **Accessibility.** The panel is a labelled region; the lines are a list; the grid
 is hidden from the screen reader and replaced by one visually hidden sentence per
-suit and for the tarocks ("Hearts: yours queen; still out king, cavall"). It does
+suit and for the tarocks, with the kind's three counts ("Hearts: yours queen; still out
+king, cavall. Counted: you 2, your opponent 1, seen 3"). It does
 not announce itself on every update. The tab and the Fold button are 44 px targets
-with visible focus. Colours are the table's tokens (`--md-sys-color-*`, the
-human's `--cassino-you` and the opponent's `--cassino-them`); under
+with visible focus. The panel sets its own `--md-sys-color-*` on `.tracker-root`,
+the score HUD's dark greys in either colour scheme, and `--tracker-opp` for his
+cards; text reaches AA on its ground (`colour.test.js`); under
 `prefers-contrast: more` borders are solid and tints are dropped; under
 `prefers-reduced-motion` nothing animates.
 
