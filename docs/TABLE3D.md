@@ -1146,7 +1146,10 @@ cell played by you; the panel keeps the score HUD's dark greys in either colour 
 (17 Oct 2026, the maintainer: one colour, so the legend shows one kind of card he played); under `prefers-contrast: more` both are struck through, his
 dashed (17 Oct 2026, the maintainer: the cards he played should differ from the
 grey of "not seen yet"); **still out** (unseen, or face up in his hand or on his
-cover) is outlined. A legend names the four; its "Still out" says it holds your own face-down packet cards ("Still
+cover) is outlined. Each row ends with three counts under the headings You, Opp., Seen
+(Sie, Geg., Ges.): your cards in the row (held or played by you), the ones he played, and
+the two together, so 8 (6) less the cells still out (17 Oct 2026, the maintainer). A legend
+names the four, his as "Red: played by your opponent"; its "Still out" says it holds your own face-down packet cards ("Still
 out, with your face-down packet cards"), which a beginner would otherwise take for
 his. Who played a card, and in which trick, is in the cell's title (the faces'
 numerals: "tarock V: played by your opponent, trick 3") and in the screen reader's
