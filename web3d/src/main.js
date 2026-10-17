@@ -576,7 +576,7 @@ async function main() {
       const who = seat === m.human ? "you" : "them";
       const edge = director.handEdge(who);
       const dx = key === "dealer" ? -1 : 1;
-      list.push({ id: key, text, x: edge.x + dx * (key === "dealer" ? 150 : 100), y: edge.y + (who === "you" ? -14 : 14), kind: key, title });
+      list.push({ id: key, text, x: edge.x + dx * (key === "dealer" ? 150 : 100), y: edge.y + (who === "you" ? -14 : 14), kind: key, tip: title });
     }
     markDeclarer(declarerMark(m, t));
     // The public mark on a hand card the other player has seen.

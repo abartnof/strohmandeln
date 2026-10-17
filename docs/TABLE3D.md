@@ -319,11 +319,11 @@ motion, the groups fade in place.
 
 2.5.8 **The declarer on the HUD** (17 Oct 2026, the maintainer's request: "Put the D
 (declarer) on the scoring HUD ... a mouseover tooltip explains the D"). The name column
-marks the declarer's row from the bid until the deal ends: "You (D)" / "Your opponent (D)",
-in German "Sie (A)" / "Ihr Gegner (A)" (Aufnehmer). A simple game (both passed) has no
-declarer and no mark. The mark has a tooltip (`title`, and its accessible name) "Declarer:
+marks the declarer's row from the bid until the deal ends: "You (D)" / "Opponent (D)" (the HUD's short names),
+in German "Sie (A)" / "Gegner (A)" (Aufnehmer). A simple game (both passed) has no
+declarer and no mark. The mark has a tooltip (a bubble from `data-tip`, and its accessible name) "Declarer:
 took it up; needs 36 card points of 70 to win." / "Aufnehmer: hat aufgenommen; braucht
-36 Augen von 70 zum Gewinn.", shown on hover and on keyboard focus (the mark takes Tab).
+36 Augen von 70 zum Gewinn.", shown on hover and on focus or tap (the mark takes Tab). The dealer chip's tooltip is the same bubble, reachable the same ways.
 The dealer's chip (the `deal_start` row) is a word so that "D" means one thing.
 
 ### 2.6 The game scored, the draw, the void deal, the throw-in
@@ -623,7 +623,7 @@ once.
 4.3.1 Two columns, "Sie" / "You" and "Ihr Gegner" / "Your opponent"; the player
 who deals the first deal is marked "Geber 1" in the left margin.
 **A row per deal**: its number ("1"), the dealer's mark (a small "G", in
-English "Dl", at the row's margin), and for each player the **credits** of that deal (R 15.9):
+English "Dlr", at the row's margin), and for each player the **credits** of that deal (R 15.9):
 cause and Points, in chalk shorthand, the cause named in words by language:
 
 | Cause | de | en |

@@ -23,3 +23,21 @@ Run: `node --test kit/test web3d/test` 578/578 pass; `kit/build.py --check` clea
 - **Aria / focus (4).** The span is `tabindex=0`, `role=note`, with `aria-label`; focus ring visible; the bubble is `pointer-events: none`. `title` plus `aria-label` duplicates the text for some readers (finding 3).
 - **Tests (7).** `kit/test/hud.test.js` and `web3d/test/declarer.test.js` are meaningful (they fail without the code: names, tooltip, reset, clearing, the bid-to-next-deal lifetime over a played sitting, no mark in a simple game). The browser check covers the take-up, the simple game, Tab reachability, the focus bubble and the dealer's word. Gaps in finding 6.
 - **TABLE3D.** 2.5.8 and the `deal_start`, `bid`, 4.3.1 and browser-check edits match the code and are terse.
+
+## Fixes
+
+Merged with main (card-points wording, slate tips, tracker, red pips, styles); wasm and page rebuilt. Node 612/612, `kit/build.py --check` clean; `declarer_mark`, `hud_not_clipped`, `slate_tips` pass singly.
+
+| # | Fix |
+|---|---|
+| 1 | `hud.opp` is "Opponent" / "Gegner" (the HUD only). `hud_not_clipped` asserts a name is at most two lines (36 px) with the mark on both rows. |
+| 2 | `kit/STAMP` lines for `js/hud.js`, `css/hud.css` ("verbatim" dropped) and `test/hud.test.js`; a comment in `hud.js`. |
+| 3 | The mark's tooltip is one styled bubble from `data-tip`, on `:hover` and `:focus`; `aria-label` names it; no `title`. `declarer_mark` checks hover, focus and blur. |
+| 4 | The bubble has a 1 px border (`#5b6472`). |
+| 5 | The dealer chip has the same bubble from `data-tip`, `tabindex=0`, `role=note`, `aria-label`; `ui.tags` hides each tag from a reader except one with a tip (the layer is no longer `aria-hidden`). `declarer_mark` checks focus on the chip. |
+| 6 | `declarer_mark` switches to German and back with the mark up and asserts mark and tip; and restores a kept sitting mid-deal and asserts the mark. |
+| 7 | English slate dealer mark "Dlr" (German "G"). The slate's own tips ("Dealer: you dealt this deal ...") still fit: they say "Dealer", which "Dlr" abbreviates. |
+
+## Open
+
+- At 800x500 the dealer chip lies under the open HUD (finding 5): its word and tooltip are unreachable there. For the small-window layout pass (phone layout is deferred).

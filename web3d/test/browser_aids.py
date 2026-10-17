@@ -812,6 +812,7 @@ def check_hud_not_clipped(browser, failures):
             page.wait_for_timeout(900)
             widths = page.evaluate("[...document.querySelectorAll('.hud-line .seg')].map((e) => e.getBoundingClientRect().width)")
             names = page.evaluate("[...document.querySelectorAll('.hud-name')].map((n) => [n.textContent, n.getBoundingClientRect().height, n.querySelector('.hud-mark')?.getBoundingClientRect().right <= n.getBoundingClientRect().right + 0.5])")
+            fail_if(any(h > 36 for _, h, _ in names), failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']}: a name takes more than two lines {names}")
             fail_if(any(not ok for _, _, ok in names), failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']}: the (D) mark leaves its name cell {names}")
             print(f"hud segments {lang} {size['width']}: n={len(widths)} min={min(widths, default=0):.2f}")
             fail_if(not widths or min(widths) < 2, failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']}: a segment is {min(widths, default=0):.2f}px wide ({len(widths)} segments)")
@@ -824,8 +825,8 @@ def check_hud_not_clipped(browser, failures):
 def declarer_state(page):
     return page.evaluate(
         """() => ({
-          marks: [...document.querySelectorAll('.hud-side')].map((r) => ({ side: r.classList.contains('you') ? 'you' : 'opp', name: r.querySelector('.hud-name').textContent, mark: r.querySelector('.hud-mark') ? { text: r.querySelector('.hud-mark').textContent, title: r.querySelector('.hud-mark').title, tab: r.querySelector('.hud-mark').tabIndex } : null })),
-          dealer: [...document.querySelectorAll('.tag.dealer')].map((n) => ({ text: n.textContent, title: n.title })),
+          marks: [...document.querySelectorAll('.hud-side')].map((r) => ({ side: r.classList.contains('you') ? 'you' : 'opp', name: r.querySelector('.hud-name').textContent, mark: r.querySelector('.hud-mark') ? { text: r.querySelector('.hud-mark').textContent, tip: r.querySelector('.hud-mark').dataset.tip, title: r.querySelector('.hud-mark').getAttribute('title'), tab: r.querySelector('.hud-mark').tabIndex } : null })),
+          dealer: [...document.querySelectorAll('.tag.dealer')].map((n) => ({ text: n.textContent, tip: n.dataset.tip, tab: n.tabIndex, label: n.getAttribute('aria-label') })),
         })"""
     )
 
@@ -846,7 +847,11 @@ def check_declarer_mark(browser, failures):
         fail_if(any(r["mark"] for r in before["marks"]), failures, f"{where}{lang}: a mark before the bid {before['marks']}")
         chip = before["dealer"]
         fail_if(len(chip) != 1 or chip[0]["text"] != STRINGS["hud.dealer"][lang], failures, f"{where}{lang}: the dealer chip is not the word {chip}")
-        fail_if(chip and not chip[0]["title"], failures, f"{where}{lang}: the dealer chip has no tooltip")
+        fail_if(chip and (not chip[0]["tip"] or chip[0]["tab"] != 0 or not chip[0]["label"]), failures, f"{where}{lang}: the dealer chip's tooltip is not reachable by keyboard {chip}")
+        bubble = lambda sel: page.evaluate("(sel) => getComputedStyle(document.querySelector(sel), '::after').content", sel)
+        page.keyboard.press("Shift")
+        page.locator(".tag.dealer").focus()
+        fail_if(chip and chip[0]["tip"][:12] not in bubble(".tag.dealer"), failures, f"{where}{lang}: focus shows no tooltip on the dealer chip")
         page.locator("[data-act=take]").click()
         rest(page)
         after = declarer_state(page)
@@ -855,17 +860,43 @@ def check_declarer_mark(browser, failures):
         if marked:
             m = marked[0]["mark"]
             fail_if(m["text"] != f"({STRINGS['hud.declarer.mark'][lang]})", failures, f"{where}{lang}: the mark reads {m['text']}")
-            fail_if(m["title"] != STRINGS["hud.declarer.tip"][lang], failures, f"{where}{lang}: the tooltip reads {m['title']}")
+            fail_if(m["tip"] != STRINGS["hud.declarer.tip"][lang] or m["title"] is not None, failures, f"{where}{lang}: the tooltip reads {m}")
             fail_if(m["tab"] != 0, failures, f"{where}{lang}: the mark is not reachable by keyboard")
             fail_if(marked[0]["name"] != f"{STRINGS['hud.you'][lang]} ({STRINGS['hud.declarer.mark'][lang]})", failures, f"{where}{lang}: the name cell reads {marked[0]['name']}")
             page.keyboard.press("Shift")  # keyboard use, so the script focus counts as :focus-visible
             page.locator(".hud-mark").focus()
-            tip = page.evaluate("getComputedStyle(document.querySelector('.hud-mark'), '::after').content")
-            fail_if(STRINGS["hud.declarer.tip"][lang][:20] not in tip, failures, f"{where}{lang}: focus shows no tooltip ({tip})")
+            fail_if(STRINGS["hud.declarer.tip"][lang][:20] not in bubble(".hud-mark"), failures, f"{where}{lang}: focus shows no tooltip")
+            page.evaluate("document.activeElement.blur()")
+            fail_if("Declarer" in bubble(".hud-mark") or "Aufnehmer" in bubble(".hud-mark"), failures, f"{where}{lang}: the tooltip stays after focus leaves")
+            page.locator(".hud-mark").hover()
+            fail_if(STRINGS["hud.declarer.tip"][lang][:20] not in bubble(".hud-mark"), failures, f"{where}{lang}: hover shows no tooltip")
         page.screenshot(path=str(out / f"declarer-{lang}.png"))
-        # The mark and the tooltip follow the language switch.
-        page.evaluate("document.activeElement.blur()")
+        if lang == "en":
+            # The mark and its tooltip follow the language switch, and back.
+            for to in ("de", "en"):
+                open_settings(page)
+                page.locator(f"[data-row=lang] [data-value={to}]").click()
+                page.locator(".settings-close").click()
+                page.wait_for_timeout(300)
+                got = [r for r in declarer_state(page)["marks"] if r["mark"]]
+                fail_if(len(got) != 1 or got[0]["mark"]["text"] != f"({STRINGS['hud.declarer.mark'][to]})" or got[0]["mark"]["tip"] != STRINGS["hud.declarer.tip"][to], failures, f"{where}after switching to {to} the mark is {got}")
         context.close()
+    # A sitting restored mid-deal brings the mark back.
+    context = browser.new_context(viewport=FAST)
+    context.set_offline(True)
+    context.add_init_script(NO_DRAW)
+    page = context.new_page()
+    goto(page, "seed=7&human=1&speed=instant&keep=1")
+    rest(page)
+    page.locator("[data-act=take]").click()
+    rest(page)
+    goto(page, "human=1&hook=1")
+    page.wait_for_selector("[data-dialog=welcome]", timeout=60_000)
+    page.locator("[data-dialog-act=continue]").click()
+    rest(page)
+    got = [r for r in declarer_state(page)["marks"] if r["mark"]]
+    fail_if(len(got) != 1 or got[0]["side"] != "you", failures, f"{where}after a restore the mark is {got}")
+    context.close()
     # A simple game (both passed): no declarer, no mark, to the deal's end.
     for seed in range(1, 9):
         page = open_page(browser, f"seed={seed}&speed=instant&human=1")

@@ -115,7 +115,8 @@ test("a mark after a side's name, with its tooltip; it outlasts a reset and goes
   hud.mark("you", { text: "D", title: "Declarer: took it up." });
   assert.deepEqual(all(hud.node, "hud-name").map(text), ["Opp", "You (D)"]);
   assert.equal(mark().length, 1);
-  assert.equal(mark()[0].getAttribute("title"), "Declarer: took it up.");
+  assert.equal(mark()[0].getAttribute("data-tip"), "Declarer: took it up.");
+  assert.equal(mark()[0].getAttribute("title"), null, "one tooltip: the bubble, not the browser's");
   assert.equal(mark()[0].getAttribute("tabindex"), "0");
   assert.equal(mark()[0].getAttribute("aria-label"), "Declarer: took it up.");
   hud.reset({ hands: [], live: null }, { you: "Cora", opp: "Dirk" });

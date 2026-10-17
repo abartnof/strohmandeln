@@ -61,6 +61,7 @@ test("the dealer's chip says the word, with who speaks first in its tooltip", ()
 
 test("no bare letter stands for the dealer: the chip has its word, the slate's English mark is not a lone G", () => {
   assert.equal(TABLE["hud.dealer.short"], undefined);
-  assert.equal(TABLE["slate.dealer"].en, "Dl");
+  assert.equal(TABLE["slate.dealer"].en, "Dlr");
+  assert.deepEqual(TABLE["hud.opp"], { en: "Opponent", de: "Gegner" }, "the HUD's short name, so a mark leaves it two lines at most");
   assert.equal(TABLE["slate.dealer"].de, "G");
 });

@@ -12,6 +12,8 @@
 // words -- so a game that scores by counting cards (in thirds, to 36 of 70)
 // uses it as it stands.
 //
+// Changed from cassino: `mark(side, spec)` puts a role mark after a name (see STAMP).
+//
 // The model is a per-hand ledger, the totals derived from it; every scoring
 // event carries its hand, so a popup played late still lands in its own.
 
@@ -138,11 +140,12 @@ export function createHud(root, game, { later = (ms, fn) => setTimeout(fn, ms), 
   const queue = { you: [], opp: [] };
   const busyUntil = { you: false, opp: false };
 
-  // A side's name, and after it its mark (a "(D)" with a tooltip; focusable, so a keyboard reaches it).
+  // A side's name, and after it its mark (a "(D)" with a tooltip, drawn by hud.css from data-tip on hover and
+  // focus; focusable, so a keyboard or a tap reaches it).
   function drawName(side) {
     const mark = marks[side];
     blocks[side].nameNode.replaceChildren(
-      ...(mark ? [`${names[side]} `, el("span", { class: "hud-mark", tabindex: "0", role: "note", title: mark.title, "aria-label": mark.title }, `(${mark.text})`)] : [names[side]]),
+      ...(mark ? [`${names[side]} `, el("span", { class: "hud-mark", tabindex: "0", role: "note", "data-tip": mark.title, "aria-label": mark.title }, `(${mark.text})`)] : [names[side]]),
     );
   }
 
