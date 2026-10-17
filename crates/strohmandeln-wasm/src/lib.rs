@@ -1366,8 +1366,17 @@ mod tests {
     }
 
     #[test]
-    fn the_level_is_clamped_to_half_steps_and_echoed() {
-        for (given, shown) in [("3", 3.0), ("2.4", 2.5), ("9", 4.0), ("0", 1.0)] {
+    fn the_level_snaps_to_the_dial_and_is_echoed() {
+        for (given, shown) in [
+            ("3", 3.0),
+            ("2.4", 2.0),
+            ("1.5", 1.0),
+            ("2.5", 2.0),
+            ("3.5", 3.5),
+            ("3.3", 3.5),
+            ("9", 4.0),
+            ("0", 1.0),
+        ] {
             let h = host(&format!(r#"{{"seed":7,"touren":3,"level":{given}}}"#));
             assert_eq!(out(&h)["state"]["level"], shown, "{given}");
         }

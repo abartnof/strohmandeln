@@ -7,7 +7,8 @@
 //!                [--seed S] [--out FILE.tsv]
 //! ```
 //!
-//! A and B are specs: a level (`1` to `4`, or in halves `2.5`), optionally
+//! A and B are specs: a level on the dial (`1`, `2`, `3`, `3.5`, `4`; a half
+//! snaps to the nearest, ties down), optionally
 //! followed by `@` and comma-separated settings, such as `2@bid=40/5` (the
 //! rung-2 bid rule: sure-winner thirds / least tarocks); `worlds=`, `nodes=`,
 //! `bidworlds=` and `bidmargin=` set rung 4's search; `w.burden=2` and the

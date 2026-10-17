@@ -66,6 +66,9 @@ pub struct Weights {
     pub spare_lead: f64,
     /// Rung 4: the margin (thirds) within which the maxims decide.
     pub band: f64,
+    /// Ties are settled by the card order, not by a draw (level 1: the seed
+    /// breaks no tie, so the play is readable).
+    pub stable_ties: bool,
 }
 
 impl Default for Weights {
@@ -93,6 +96,7 @@ impl Default for Weights {
             cash_mond: 0.0,
             spare_lead: 0.0,
             band: 0.34,
+            stable_ties: false,
         }
     }
 }
@@ -527,6 +531,9 @@ pub fn best_card(k: &Knowledge, rng: &mut Rng, wt: &Weights) -> Choice {
     let scored = score_cards(k, wt);
     let top = scored[0].score;
     let tied: Vec<&Choice> = scored.iter().filter(|c| top - c.score < 1e-9).collect();
+    if wt.stable_ties {
+        return *tied[0];
+    }
     *tied[rng.below(tied.len() as u64) as usize]
 }
 
