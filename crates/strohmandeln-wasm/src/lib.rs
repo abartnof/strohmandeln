@@ -17,6 +17,7 @@ use strohmandeln_ai::explain::Param as HintParam;
 use strohmandeln_ai::hint::hint as ai_hint;
 use strohmandeln_ai::opponent::{Config as AiConfig, Level, Opponent};
 use strohmandeln_ai::review::{explain_last, review_last, review_sitting, Bullet, Param, Review};
+use strohmandeln_ai::style::Style;
 use strohmandeln_ai::tracker::{tracker as ai_tracker, Place};
 use strohmandeln_ai::tutor::Skill;
 use strohmandeln_core::agents::Player;
@@ -26,26 +27,30 @@ use strohmandeln_core::types::{Action, Event, Seat, Settings, SetupError, Source
 use strohmandeln_core::view::{filter_events, view, View};
 
 mod detail;
+#[cfg(test)]
+mod style_tests;
 pub mod tutor;
 
 /// Bumped whenever the wire format changes in a way a client would notice.
 pub const PROTOCOL: u32 = 1;
 
-/// Builds the opponent for a seat from the sitting's seed and the `level`
-/// (1 to 4 in half steps, `docs/OPPONENT.md`) the host passed.
-pub type OpponentFactory = fn(seed: u64, seat: Seat, level: f64) -> Box<dyn Player>;
+/// Builds the opponent for a seat from the sitting's seed, the `level` (the
+/// dial of `docs/OPPONENT.md`: 1, 2, 3, 3.5, 4) and the `style` (resolved:
+/// never `Random`, `docs/STYLES.md`) the host passed.
+pub type OpponentFactory = fn(seed: u64, seat: Seat, level: f64, style: Style) -> Box<dyn Player>;
 
-/// The ladder's opponent (`strohmandeln-ai`) at the requested level. A level
-/// outside 1 to 4 is clamped, one that is not a number is the top.
-pub fn default_opponent(seed: u64, seat: Seat, level: f64) -> Box<dyn Player> {
+/// The ladder's opponent (`strohmandeln-ai`) at the requested level and
+/// style. A level off the dial snaps to the nearest position (ties down),
+/// outside 1 to 4 is clamped, and one that is not a number is the top.
+pub fn default_opponent(seed: u64, seat: Seat, level: f64, style: Style) -> Box<dyn Player> {
     let seed = seed ^ (u64::from(seat.index() as u8) + 1).rotate_left(56);
-    Box::new(Opponent::new(Level::from_f64(level), seed).with_config(browser_config()))
+    Box::new(Opponent::new(Level::from_f64(level), seed).with_config(browser_config(style)))
 }
 
-/// The tuning the browser plays with: the crate's defaults (the search budget
-/// is capped there; `docs/OPPONENT.md`).
-fn browser_config() -> AiConfig {
-    AiConfig::default()
+/// The tuning the browser plays with: the crate's defaults for the style (the
+/// search budget is capped there; `docs/OPPONENT.md`).
+fn browser_config(style: Style) -> AiConfig {
+    AiConfig::for_style(style, 0)
 }
 
 /// The level of the tutor's hint: always the top rung, whole.
@@ -79,10 +84,36 @@ struct Config {
     /// The opponent's level, 1 to 4 in half steps (default 1).
     #[serde(default = "one")]
     level: f64,
+    /// The opponent's style, an id of `docs/STYLES.md` (default `normal`).
+    #[serde(default)]
+    style: Option<Value>,
 }
 
 fn one() -> f64 {
     1.0
+}
+
+/// The style a JSON value names (`null` or absent: Normal).
+fn style_of(v: &Option<Value>, field: &'static str) -> Result<Style, Fail> {
+    match v {
+        None | Some(Value::Null) => Ok(Style::Normal),
+        Some(Value::String(id)) => Style::parse(id).ok_or(Fail::Field(field)),
+        Some(_) => Err(Fail::Field(field)),
+    }
+}
+
+/// The style a Random sitting drew. A saved `drawn` is authoritative (the
+/// pool may have changed since); without one the seed's hash decides. Only a
+/// Random sitting has one, and it is a member of the pool.
+fn drawn_of(style: Style, drawn: &Option<Value>, seed: u64) -> Result<Style, Fail> {
+    match (style, drawn) {
+        (Style::Random, None | Some(Value::Null)) => Ok(Style::drawn(seed)),
+        (Style::Random, Some(Value::String(id))) => Style::parse(id)
+            .filter(|s| Style::POOL.contains(s))
+            .ok_or(Fail::Field("drawn")),
+        (_, None | Some(Value::Null)) => Ok(style),
+        (_, Some(_)) => Err(Fail::Field("drawn")),
+    }
 }
 
 /// What a saved sitting holds.
@@ -92,6 +123,10 @@ struct Saved {
     human: u8,
     #[serde(default = "one")]
     level: f64,
+    #[serde(default)]
+    style: Option<Value>,
+    #[serde(default)]
+    drawn: Option<Value>,
     record: Record,
 }
 
@@ -137,6 +172,10 @@ pub struct Table {
     sitting: Sitting,
     human: Seat,
     level: f64,
+    /// The style chosen (`Random` included) and the style that plays (what
+    /// Random drew; the chosen one otherwise).
+    style: Style,
+    drawn: Style,
     opponent: Box<dyn Player>,
     /// How many of the sitting's events the host has been sent.
     sent: usize,
@@ -176,6 +215,7 @@ impl Table {
         sitting: Sitting,
         human: Seat,
         level: f64,
+        (style, drawn): (Style, Style),
         factory: OpponentFactory,
         sent: usize,
     ) -> Table {
@@ -184,10 +224,12 @@ impl Table {
         let seed = sitting.seed() ^ (sitting.record().moves.len() as u64).rotate_left(32);
         let level = normal_level(level);
         Table {
-            opponent: factory(seed, human.other(), level),
+            opponent: factory(seed, human.other(), level, drawn),
             sitting,
             human,
             level,
+            style,
+            drawn,
             sent,
         }
     }
@@ -197,7 +239,16 @@ impl Table {
         let c: Config = serde_json::from_str(config).map_err(|_| Fail::Field("config"))?;
         let human = seat_of(c.human, "human")?;
         let sitting = Sitting::new(c.seed, settings_of(c.settings)?, c.touren)?;
-        Ok(Table::build(sitting, human, c.level, factory, 0))
+        let style = style_of(&c.style, "style")?;
+        let drawn = style.resolve(c.seed);
+        Ok(Table::build(
+            sitting,
+            human,
+            c.level,
+            (style, drawn),
+            factory,
+            0,
+        ))
     }
 
     /// Restores a sitting from the JSON of `export`.
@@ -207,9 +258,18 @@ impl Table {
             return Err(Fail::Field("protocol"));
         }
         let human = seat_of(s.human, "human")?;
+        let style = style_of(&s.style, "style")?;
+        let drawn = drawn_of(style, &s.drawn, s.record.seed)?;
         let sitting = Sitting::replay(&s.record)?;
         let sent = sitting.events().len();
-        Ok(Table::build(sitting, human, s.level, factory, sent))
+        Ok(Table::build(
+            sitting,
+            human,
+            s.level,
+            (style, drawn),
+            factory,
+            sent,
+        ))
     }
 
     pub fn human(&self) -> Seat {
@@ -283,6 +343,10 @@ impl Table {
             m.insert("phase".into(), json!(self.phase()));
             m.insert("human".into(), json!(self.human));
             m.insert("level".into(), json!(self.level));
+            m.insert("style".into(), json!(self.style.id()));
+            // What Random drew is shown when the sitting is over, not before.
+            let show = self.style == Style::Random && self.sitting.is_over();
+            m.insert("drawn".into(), json!(show.then(|| self.drawn.id())));
             // The actions made in this deal, both seats': the number the next
             // action will have in the deal's record (`docs/TUTOR.md` 3).
             m.insert(
@@ -369,6 +433,8 @@ impl Table {
             "protocol": PROTOCOL,
             "human": self.human,
             "level": self.level,
+            "style": self.style.id(),
+            "drawn": (self.style == Style::Random).then(|| self.drawn.id()),
             "record": self.sitting.record(),
         })
     }
