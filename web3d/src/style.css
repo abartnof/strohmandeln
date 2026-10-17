@@ -87,6 +87,7 @@ button { font: inherit; }
 .info { z-index: 13; /* an opened HUD lies over the cards-out panel (z 12), not under it */ position: absolute; top: 8px; left: 8px; width: min(384px, calc(100vw - 150px)); pointer-events: none; }
 .info .hud { pointer-events: auto; }
 /* The score reaches "35⅔": room for it beside the line, and for "opponent" in the name column. */
+.info .hud { --seg-gap: 1px; --seg-gap-group: 3px; } /* 36 segments a line */
 .info .hud-side { grid-template-columns: 3.9em 1fr; }
 .tour-line { margin: 4px 2px 0; font-size: 13px; color: #44474f; text-shadow: 0 0 3px #fff; }
 .top-right { position: absolute; top: 8px; right: 8px; display: flex; gap: 8px; pointer-events: auto; z-index: 30; }

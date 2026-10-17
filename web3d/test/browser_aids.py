@@ -516,7 +516,8 @@ HUD_CLIPPED = """(popped) => {
 
 
 def check_hud_not_clipped(browser, failures):
-    """The widest realistic numbers (35 2/3 a side, 135 2/3 in the ledger, a bonus label's popup) fit the HUD."""
+    """The widest realistic numbers fit the HUD: 35 2/3 a side and a bonus label's popup are real; 135 2/3 in the
+    ledger is a chosen wide value. Every one of the line's segments is at least 2px wide."""
     for lang in ("en", "de"):
         for size in ({"width": 1280, "height": 720}, {"width": 1440, "height": 900}, {"width": 1920, "height": 1080}, {"width": 1024, "height": 768}):
             context = browser.new_context(viewport=size)
@@ -536,6 +537,9 @@ def check_hud_not_clipped(browser, failures):
                 STRINGS["hud.bonus"][lang],
             )
             page.wait_for_timeout(900)
+            widths = page.evaluate("[...document.querySelectorAll('.hud-line .seg')].map((e) => e.getBoundingClientRect().width)")
+            print(f"hud segments {lang} {size['width']}: n={len(widths)} min={min(widths, default=0):.2f}")
+            fail_if(not widths or min(widths) < 2, failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']}: a segment is {min(widths, default=0):.2f}px wide ({len(widths)} segments)")
             for popped in (False, True):
                 bad = page.evaluate(HUD_CLIPPED, popped)
                 fail_if(bool(bad), failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']} popped={popped}: {bad[:4]}")
