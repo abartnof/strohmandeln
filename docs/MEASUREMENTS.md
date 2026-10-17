@@ -997,6 +997,15 @@ else as v1.
   crates/strohmandeln-ai/src/m5r_rules.rs`. Wall seconds are printed; CPU
   is `time`'s user time, recorded below.
 
+**Plan v2, fixed after the selection and before the first confirmation
+batch.** The selection (`docs/measurements/m5r-select.txt`,
+`m5r-selection.tsv`) took six classes forward: `worth.poor/no-king` (ml7),
+`cheap/outcome` (tu4), `cheap/winner` (tu8 + ml7), `run/any` (tu8),
+`pagat/keep` (ml7), `trumps/suit` (skus). So **k = 6**, the two-sided level
+0.05 / 6 = 0.0083 (one-sided overall 0.025 / 6 = 0.0042), and the boundaries
+at the four looks (`m5r bounds --k 6`) are **5.34 / 3.77 / 3.08 / 2.67**.
+Confirmation: `m5r confirm --k 6`.
+
 ## M6 Diagnosis
 
 ### Plan (2026-10-15, before the run)

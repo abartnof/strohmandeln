@@ -1,0 +1,22 @@
+M5r selection: 2400 deals (400 sittings from 71000000), 278s wall
+class                 fired   base baseLB  cand elig  best candidate (atoms, fired, p, n_eff, lower, reach, late10)
+worth.poor/no-king     2018  0.817  0.799    63   19  ml7  1147 0.841 1147 0.819 0.332 0.754
+cheap/outcome         20437  0.730  0.724    74   34  tu4  6979 0.853 5632 0.843 0.971 0.998
+cheap/winner          14392  0.712  0.704    74   33  tu8,ml7  6303 0.819 5878 0.809 0.927 0.982
+off/follow-cover       4639  0.533  0.518    62    0  none
+off/lead-cover        24885  0.269  0.263    62    0  none
+off/figure-cover      11399  0.320  0.311    62    0  none
+off/figure-higher     11399  0.202  0.195    62    0  none
+run/top                9471  0.047  0.043    66    0  none
+run/any                9471  0.756  0.747    66   39  tu8  7253 0.816 7220 0.807 0.772 0.942
+pagat/keep             3761  0.827  0.814    71   19  ml7  2352 0.825 2074 0.808 0.366 0.690
+pagat/cash             3761  0.173  0.161    71    0  none
+void/avoid            12716  0.613  0.604    73    0  none
+mond/mond              2357  0.245  0.228    69    0  none
+trumps/tarock         29893  0.257  0.251    69    0  none
+trumps/suit           29893  0.743  0.736    69    2  skus  14628 0.809 8312 0.800 0.613 0.488
+6 classes taken forward; total 278s wall
+
+real	4m38.223s
+user	2m20.211s
+sys	0m0.555s
