@@ -210,10 +210,12 @@ async function main() {
 
   // The opponent has one voice: lines wait their turn, and chatter yields to the calls (5.2.2).
   const boxes = new Map();
+  // A line is said in the language of the moment it is heard, not of the moment it was chosen (a switch may fall between).
+  const lineText = (line) => (line.key && WORDS.texts[line.key]?.[getLang()]) || line.text;
   const speaker = createSpeaker({
     clock: () => director.clock(),
     later: (ms, fn, kind) => director.at(ms, fn, kind),
-    show: (line) => boxes.set(line, showLine(line.text)),
+    show: (line) => boxes.set(line, showLine(lineText(line))),
     hide: (line) => {
       boxes.get(line)?.remove();
       boxes.delete(line);
@@ -223,7 +225,7 @@ async function main() {
     words: WORDS,
     getLang,
     rng: Math.random,
-    say: ({ text, call, who }) => (who === "kibitz" ? kibitzNote(text) : speaker.offer({ text, call })),
+    say: ({ key, text, call, who }) => (who === "kibitz" ? kibitzNote(text) : speaker.offer({ key, text, call })),
   });
   talk.setMode(prefs.talk);
 
@@ -1304,6 +1306,10 @@ async function main() {
     document.title = t("ui.title");
     canvas.setAttribute("aria-label", t("ui.stage"));
     ui.relabel();
+    boxes.forEach((box, line) => {
+      box.dataset.text = lineText(line);
+      box.textContent = box.dataset.text;
+    });
     mirror.relabel();
     redrawFaces(COURT_CODES);
     const totals = hud.totals();
