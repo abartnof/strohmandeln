@@ -140,7 +140,15 @@ by at least a card's half-height.
 1.5.7 **Pulled cards enter the hand in place**: the hand reflows (fan or row) to
 make room; public cards (pulled, [R 13.4]) carry a small mark in the hand: a
 ringed gold dot at the card's lower left, so the human can tell the cards the opponent
-has seen (3.7 explains it).
+has seen (3.7 explains it). The dot is a memory aid, so it is a hint: shown only
+while hints are on (6.3.4: Hints set, the Kibitzer not muted), on neither hand
+otherwise, and it comes and goes at once when Hints is toggled. The first time
+hints are on and a dot is on the table (Hints is off by default, so: once the player
+switches it on and a card is pulled or an honour announced), a short note in a table
+dialog (title "The gold dot", Close; not the Kibitzer's tab, shown with the tutor off
+too) explains it, once (key `public-mark` in the `seen` list; never again after a
+reload). It waits while cards move, a dialog or the menu is open; a language switch
+draws it again. Decision of 17 Oct 2026, the maintainer's.
 
 1.5.8 **Opponent's hand count** (`opponent_hand_size`) shown as cards, never as a
 number alone; at least one back is visible until it is empty.
@@ -468,15 +476,22 @@ shown. After a bid, the buttons vanish.
 
 3.5.1 The **new-sitting screen** (also reached by "New sitting" at the end and the
 plus at the top) offers: **Length**, "3 Touren (6 deals)" / "6 Touren (12 deals)",
-default 3 [R 15.2, 17.14]; the three rule settings (7.2); the opponent's skill
-(7.3); the seat's "Hand" (the human's seat is chosen by lot unless the page
-passes `human`); and **Deal** and **Cancel**. The screen's helper line says "A Tour
-is two deals, one dealt by each."
+default 3 [R 15.2, 17.14]; the three rule settings (7.2); the opponent's level
+and style (7.3); the seat's "Hand" (the human's seat is chosen by lot unless the page
+passes `human`); and **Deal** and **Cancel**. The rules rows are shown on the
+screen, with no disclosure. The screen's helper line
+says "A Tour is two deals, one dealt by each." The screen is the only place
+these six are chosen (17 Oct 2026, the maintainer's request: what does not
+apply to this game in play belongs in the new-sitting choices; the style, the
+same day, the maintainer's request for a style dropdown, `docs/STYLES.md`).
 
-3.5.2 The choice is kept as the next sitting's default (7.7). A sitting in
-progress is never changed by the screen's controls except through
-Settings, and the three rule settings and the length are not changeable
-mid-sitting (they are shown, greyed, with "applies from the next sitting").
+3.5.2 The screen starts from the sitting on the table (its length, rules and
+level and style, as the record and the engine have them), else from the kept prefs; what
+is chosen when Deal is pressed is kept as the next default (7.7). A sitting in
+progress is never changed by the screen, and the Settings menu does not offer
+the length, the three rules, the opponent's level or style at all: it reads them
+back (7.1). The opponent's level and style are fixed for the sitting (a change would need a
+record event of its own, PROTOCOL "Creating a sitting"; not offered).
 
 ### 3.6 Extension prompt
 
@@ -489,7 +504,8 @@ prompt; the chip says "Your opponent has had enough." (key `ext-opp-no`).
 
 Public hand cards (pulled; and cards of an announced honour, R 13.5) carry the
 mark of 1.5.7 on both hands. The legend is in the tutor's page on packets and
-in the card's tooltip ("The other player has seen this card.").
+in the card's tooltip ("Seen by both players" / "Von beiden gesehen"), in the note
+of 1.5.7 and in one line of the packets page (6.2.2). With hints off there is no mark.
 
 ### 3.8 Left-handed mode
 
@@ -516,8 +532,8 @@ the speech and the holds are unchanged, so nothing is missed.
 packets (one stop, `1 2 3` choose a packet, or arrows); the cards-out tab (6.6);
 the slate tab; the settings; then the cards-out panel, whose Fold button follows them. Keys: `Enter` or `Space` choose or play the focused card; `A`
 announce (first held honour); `T` take, `W` weiter; `S` the slate; `H` the hint;
-`M` mute the tutor (6.3); `?` the keys list; `Esc` closes a sheet or cancels the
-prompt. Keys are discoverable under `?`.
+`M` mute the tutor (6.3); `?` the keys list; `Esc` closes the topmost overlay (3.10.5).
+Keys are discoverable under `?`.
 
 3.10.2 **The screen reader** gets a live region (`aria-live="polite"`) with one
 sentence per event in the current language: the deal, each bid, each card
@@ -541,6 +557,30 @@ accessible card lists (3.10.1) are a visually hidden 1 px box, reached by key or
 by a screen reader's own gestures, never by a finger on them; they are exempt from
 the 44 px rule as long as they stay hidden. A finger taps the cards on the canvas.
 
+3.10.5 **Escape** (17 Oct 2026, the maintainer: "'Escape' should get out of any
+menu/dialogue"). One press closes one layer, the topmost: a dialog (the last
+opened), then the settings menu (its language row with it), the slate, the score
+HUD's by-deal list, the cards-out panel, and last a card chosen by the first
+click or `Enter` (deselected). With nothing open it does nothing (it does not
+open or fold anything else). Focus returns to the control that opened the layer
+(dialog: the focused control at its opening; settings: the cog; slate, score
+list, cards-out panel: their tab or chevron); where that control is gone, hidden
+or the page body, to the move bar's first button (dialogs) or the cog
+(settings). Dialogs that need an answer are never dismissed, so Escape never
+chooses for the player: on the extension prompt (One more Tour / Enough), the
+sitting's end, and the new-sitting screen when no sitting is under way to go
+back to, Escape only moves focus to the dialog's default button and holds back
+what lies beneath. The welcome acts as its default, Continue (nothing is lost;
+17 Oct 2026). With a sitting under way, Escape on the new-sitting screen is its
+Cancel. Dismissed without choosing: Help, a tutor page (as "Remind me", 6.2.2),
+the brief, the keys list, the public-mark note, the announce prompt (the card
+is not played, it stays chosen), the clear-progress confirm (as No), an error
+notice. An open native select takes its own Escape (it closes the select only;
+the next press is the page's). Not layers: the hint line, the count's popups
+and chips (timed or inline, they close themselves). The logic is
+`web3d/src/overlays.js`; the browser check is
+`escape_closes`.
+
 ## 4. The slate
 
 The running account (Conto, [R 15.5, 15.9]) shown as a slate in the manner of
@@ -562,10 +602,9 @@ itself" (7.1) turns the first two off.
 ### 4.2 The look
 
 A dark green-black board with a wooden frame (a CSS border), chalk white and
-two chalk colors (yellow and pale blue for the two players), set in a
-hand-drawn chalk face (a web font embedded in the page; Cassino's single-file
-rule keeps it small), with a fallback of a system cursive that remains
-legible at 14 px. Rows are ruled with a chalk line. Low-contrast chalk
+two chalk colors (yellow and pale blue for the two players). The slate uses
+the page's font (the maintainer, 17 Oct 2026). Rows are ruled with a chalk
+line. Low-contrast chalk
 (pale on dark) is held to a 4.5:1 ratio; a high-contrast setting renders pure
 white and a flat board. No glow effect. Reduced motion draws each entry at
 once.
@@ -832,7 +871,7 @@ such page.
 
 | Page key | Opens at | Says |
 |---|---|---|
-| `the-cards` | the first `dealt`, first of the pages due at that rest (the cards are the first thing a newcomer sees) | what the cards are: the tarocks are trumps I to XXI and the Sküs, made for play (Italy, by 1442; fortune-telling is French and later, 1781), nothing here tells a fortune; Austrians still play Tarock and Piatnik still sells Tarock packs; German keeps Tarock (the game) and Tarot (the divining deck) apart, English has one word; the C is the Cavall, a knight worth 3 points, kept by the Tarock pack and dropped by the 52-card pack; the faces show big letters and corner numbers where a real pack has pictures and no suit-card index. Wording and sources: `research/15-the-pack-today.md` ("For the tutor") |
+| `the-cards` | the first `dealt`, first of the pages due at that rest (the cards are the first thing a newcomer sees) | which card beats which (RULES 1.4, 1.5): the Sküs highest, XXI down to II, the Pagat (I) lowest; rank is not value (the Pagat is lowest yet worth 5); each suit K, Q, C, J (the Cavall, a knight worth 3 points, between queen and jack; the 52-card pack dropped him), then the pips, 10 9 8 7 in clubs and spades, 1 2 3 4 in hearts and diamonds with the 1 highest; tarocks were made for play (Italy, by 1442; fortune-telling is French and later, 1781), nothing here tells a fortune; Austrians still play Tarock and Piatnik still sells Tarock packs; the faces show big letters where a real pack has pictures. The Tarock/Tarot word note and the corner-numbers line are not on the page (17 Oct 2026: the rank order took the space). Wording and sources: `research/15-the-pack-today.md` ("For the tutor") |
 | `packets` | the first `dealt`, after `the-cards` | what the three packets are, the face-up card on top, the count of hidden cards beneath, that you and your opponent each have three, that a cover is yours to play |
 | `bidding` | the first `bid` turn (the human's, or the first `bid` event seen) | who speaks first; "Ich nehme auf" or "Weiter"; the declarer; the card values (RULES 1.7, with the court letters the faces show: K Q C J, German K D C B), that the 54 cards count 70 in threes and 36 are needed, and a link to `thirds`; what is won and lost by the `values` setting; both pass plays a simple game (and what it pays) or throws in, by the setting |
 | `the-pull` | the first `reveal_start` (no decision is asked: the cards turn themselves) | the cards are turned in turn; a tarock or a king goes to the hand; the turning continues; a low card stays; the last card of a packet always goes |
@@ -908,6 +947,16 @@ line; off, the line is empty. The game's result is said whatever.
 6.3.4 Hints and explanations are asked only with the cards at rest (the director's
 `rested`), once per position, never in an animation. If the muted tutor is
 asked for a hint, the chip says "Tips are off (§ 13)" / "Tipps sind aus (§ 13)", unmuting only by the human's tap.
+
+6.3.5 Hints' contents: the hint chip and its sentence, the Cards-out tracker (6.6)
+and the public mark on hand cards (1.5.7), all under one condition: Hints set and
+the Kibitzer not muted (the chip keeps Hints and the mute apart to say "Tips are
+off"). The mark has a first-time note (1.5.7): "A gold dot marks a card both of you
+have seen: pulled from a packet, or shown when an honour was announced. At a real
+table you would have to remember it; with hints on, I mark it." / "Ein goldener
+Punkt bezeichnet eine Karte, die Sie beide gesehen haben: aus einem Paket gezogen
+oder beim Ansagen einer Ehre gezeigt. An einem echten Tisch müssten Sie sie sich
+merken; bei eingeschalteten Hinweisen merke ich sie für Sie."
 
 ### 6.4 The end-of-deal brief
 
@@ -1012,9 +1061,11 @@ the tracker is never called a slate.)
 6.6.2 **When it shows.** Hints on (7.1), the setting "Cards out" on (default on), the
 tutor not muted (as the hint, 6.3.4), and a deal under way. A tab "Cards out" /
 "Ausgespielt" in the top row, left of the slate's, folds and unfolds it
-(`aria-expanded`); so does the panel's own "Fold" button. The fold is kept
-(`trackerFolded` in the preferences, 7.7): unset, the panel starts open when the
-window is at least 900 × 600 px and folded on a smaller one. On a phone it is not
+(`aria-expanded`); so does the panel's own "Fold" button. The panel is folded
+on load and at the start of every deal, at any window size, as the score HUD's
+by-deal list is, and opens only when the person opens it; nothing is kept
+(17 Oct 2026, the maintainer's play-through notes; an old saved `trackerFolded`
+is ignored). On a phone it is not
 shown at all, and the engine is not asked for it (6.6.6, `trackerFits`).
 
 6.6.3 **When it changes.** With the cards at rest (the director's `rested`, as 6.3.4):
@@ -1090,47 +1141,65 @@ fold, hidden when Hints is off) in `web3d/test/tracker.test.js`.
 Under the cog, in sections. `localStorage` key `strohmandeln.prefs`, version
 numbered (7.7).
 
-| Setting | Values | Default | Applies |
-|---|---|---|---|
-| Rule: both pass | play (simple game) / throw in | play | next sitting |
-| Rule: game values | 2/3/4 · 1/2/3 · 1/2/4 | 2/3/4 | next sitting |
-| Rule: Pagat ultimo value | 1 / 2 Points | 1 | next sitting |
-| Sitting length | 3 / 6 Touren | 3 | next sitting |
-| Opponent skill | 1 to 4 in halves (1, 1.5, ... 4) | 3 | next sitting |
-| Speed | Slow / Normal / Fast / Instant | Normal | now |
-| Table talk | All / Calls only / None | All | now |
-| Tutor | On / Off (off: no pages, no tips, no review chip) | On | now |
-| Tips from the Kibitzer | On / Off (off: no advice in the Kibitzer's tab and no "Next" in the review; it shows the count and what went well, 6.4.6) | On | now |
-| Hints | On / Off (the hint chip) | Off | now |
-| Cards out | On / Off (the tracker, 6.6; shown only with Hints on) | On | now |
-| Explanations | On / Off | Off | now |
-| Announce automatically | Off / On (an honour is announced before it is played, with no prompt) | Off | now |
-| Slate opens by itself | On / Off | On | now |
-| Faces size | Auto / Classic / Jumbo | Auto | now |
-| Left-handed | On / Off | Off | now |
-| Reduced motion | System / On / Off | System | now |
-| Language | English / Deutsch | English | now |
-| Table top | the kit's surfaces (a random choice by default) | random | now |
+| Setting | Values | Default |
+|---|---|---|
+| Speed | Slow / Normal / Fast / Instant | Normal |
+| Table talk | All / Calls only / None | All |
+| Tutor | On / Off (off: no pages, no tips, no review chip) | On |
+| Tips from the Kibitzer | On / Off (off: no advice in the Kibitzer's tab and no "Next" in the review; it shows the count and what went well, 6.4.6) | On |
+| Hints | On / Off (the hint chip, the Cards-out tracker, the public mark on hand cards; 6.3.5) | Off |
+| Cards out | On / Off (the tracker, 6.6; shown only with Hints on) | On |
+| Explanations | On / Off | Off |
+| Announce automatically | Off / On (an honour is announced before it is played, with no prompt) | Off |
+| Slate opens by itself | On / Off | On |
+| Faces size | Auto / Classic / Jumbo | Auto |
+| Left-handed | On / Off | Off |
+| Reduced motion | System / On / Off | System |
+| Language | English / Deutsch | English |
+| Table top | a labelled dropdown: Random first, then the kit's 18 surfaces, named in English and German (`settings.surface.<id>`) | Random |
 
-The rule settings and the length apply to the next sitting: shown, greyed, in a
-sitting in progress. A mid-sitting change is never silent; the screen says
-"from the next sitting."
+Every row takes effect at once. The menu holds none of the sitting's own
+choices: the length, the three rules and the opponent's level are the
+new-sitting screen's (3.5). A read-only line at the top says what the sitting
+on the table is, read from the record's `sitting_start` and the engine's level
+and not from the prefs: "This sitting: 3 Touren, 2/3/4, ultimo 1, simple game,
+opponent level 3, style Normal", then "A new sitting, from the plus at the top, chooses the
+next." It is hidden when there is no sitting, and a restored sitting shows its
+own rules, not the kept defaults. The table-top select is 16 px or more, at
+least a touch target high, and in the menu's colour pair. Escape on its open list closes
+only the list; on the closed select, focused, it closes the menu (3.10.5).
 
 ### 7.2 The three rule settings
 
 As R "Authority and settings": `both_pass`, `values`, `ultimo`. Each has a
 one-line explanation beside it, sourced as in the rules (`Werner 2/3/4`,
-`Dummett 1/2/3`, `Ulmann 1/2/4`). The new-sitting screen shows the three with
-the defaults; picking another is never penalised, and no other variant is
-offered (CLAUDE.md: no variants without the maintainer).
+`Dummett 1/2/3`, `Ulmann 1/2/4`). Only the new-sitting screen (3.5) offers the
+three, starting from the sitting on the table or the kept defaults; picking
+another is never penalised, and no other variant is offered (CLAUDE.md: no
+variants without the maintainer).
 
 ### 7.3 The opponent's skill
 
-A dial of 1 to 4 in halves, as Cassino's; passed as `level` in `new` [P] (an
-integer for now: the dial maps to the engine's levels when the opponent
-package defines them; until then the wasm carries the opaque value). The
-label under the dial says in a sentence what the level plays like, once the
-package defines it.
+A dial of 1, 2, 3, 3½, 4 (no other half steps, `docs/STYLES.md` 1.1; a kept 1.5
+or 2.5 snaps to 1 or 2 as the engine does), on the new-sitting screen (3.5) and not
+in the Settings menu; passed as `level` in `new` [P].
+
+**The style** (17 Oct 2026, the maintainer's request; `docs/STYLES.md` 2, 5): a
+native select under the dial, 16 px or more: Normal (default), Random, then the
+offered styles. The list is the engine's alone (`strohmandeln_styles()`, `docs/PROTOCOL.md`;
+`docs/STYLES.md` 9): Bermann, Mayr and Sedlaczek, Bold, Cautious today. Werner, Ulmann and
+Hunter are not offered and Random does not draw them, but an imported record can name
+them, so their strings stay. A writer is a school ("After Bermann"), never the
+opponent's name; a temperament is the table's own character. Labels and lines are
+`style.<id>.name` and `.line` in `strings.json`; at skills 3½ and 4, for any style
+but Normal, a note says the style shows mostly in the bidding
+(`style.note.bidding`). Passed as `style` in `new`; the last choice is kept. Under
+**Random** the menu's line says "Random (shown at the end)" and, once the sitting is
+over, "Random: After Bermann"; the end-of-sitting dialog and brief name the drawn
+style in quotes (`style.reveal`), the engine withholding it until the brief's
+`reveal` flag. Open: the after-deal brief's "Their style" bullet (`docs/STYLES.md`
+5) waits on the engine; a Random sitting left by a new sitting reveals nothing yet;
+the end dialog's reveal does not follow a language switch made at the end.
 
 ### 7.4 Speed
 
@@ -1188,7 +1257,8 @@ sitting, 9), `strohmandeln.tutor` (the tutor's deals and summaries, 6.4.4),
 (a private window, cleared site data) means defaults, a one-time notice, and a
 page that works as a single sitting.
 
-7.7.3 The prefs record is `{v, ...all settings, defaults too}`, `v` the version of
+7.7.3 The prefs record is `{v, ...all settings, defaults too}` (version 2 adds
+`style`, and drops the half levels), `v` the version of
 the defaults it was kept under, as Cassino's: a default changed later is not
 mistaken for the person's choice. A store written by a newer page (`v` above
 this page's) is read as empty and left as it is, and said once. A record whose
@@ -1258,7 +1328,7 @@ sentence and changes nothing; over 1 MB refused).
 
 9.5 **Offline single file.** `web3d/strohmandeln.html`, built by `kit/build.py` from
 `web3d/game.toml`: the bundle, the wasm, the faces, `words.json`,
-`strings.json`, the tutorial pages, the chalk font and the HUD's CSS inlined; no
+`strings.json`, the tutorial pages and the HUD's CSS inlined; no
 network request (the browser test blocks them all). Target size under 10 MB, the
 guideline in `game.toml`; the weigh-in names the kit's, three.js's and the
 game's bytes. `kit/build.py --check` fails if the committed page differs.
@@ -1356,6 +1426,7 @@ motion are saved to `web3d/test/out/`.
 
 ### 10.4 Slate, talk, tutor
 
+- `escape_closes`, `escape_dialogs`: every overlay opened in turn and closed by Escape, one per press, focus back (3.10.5).
 - `slate_open_close`: the tab, `S`, outside tap and `Esc`; auto-open at Tour end
   and at the extension; never during play or the count.
 - `slate_rows`: rows per deal with causes, "×2" on a doubled deal, "draw",
@@ -1378,15 +1449,23 @@ motion are saved to `web3d/test/out/`.
   unmute restores them.
 - `hint_and_explain`: the hint chip lights a card and shows a rendered key; explanations
   off leaves the line empty.
+- `hud_not_clipped`: at 1280 × 720, 1440 × 900, 1920 × 1080 and 1024 × 768, in both
+  languages, with "35⅔" a side, a wide ledger value and the bonus label's popup, every
+  HUD text lies inside the HUD box and the window, and each of the line's 36 segments is
+  at least 2 px wide.
 - `tracker_clear`: with Hints on, the cards-out panel is open at rest, of the trick at
   rest, with two to four lines and the 54-cell grid, and its rectangle meets none of
   the hand, the move bar, the prompt, the HUD or the Kibitzer's tabs at the window
   sizes of 6.6.6, with the whole legend inside it (no scrolling).
-- `tracker_fold_and_settings`: the tab and Fold fold and open it and the fold is
-  kept; it follows the cards at rest; Hints off, its own setting off, or the
-  Kibitzer muted takes it away, and back on returns it.
+- `tracker_fold_and_settings`: a fresh page starts folded at 1280 × 720; the tab
+  and Fold open and fold it; it follows the cards at rest; Hints off, its own
+  setting off, or the Kibitzer muted takes it away, and back on returns it; the
+  next deal starts folded again.
 - `tracker_languages`: the tab, the lines and the court labels are German in
   German, and the German legend is whole inside the panel; held upright it is not shown.
+- `public_mark`: with hints off no gold dot and no note; switched on (the menu open defers the
+  note to its closing) the dots appear with a tooltip, the note once and kept as seen; off, or
+  the Kibitzer muted, takes the dots away at once, and back on returns them (1.5.7).
 - `deal_brief`: after a scored deal the chip opens "How the deal went": the count as
   the header, at most three bullets with a bold lead each, the method folded; none
   after a void deal or a throw-in; in German in German; muted it shows nothing; with the
@@ -1395,10 +1474,23 @@ motion are saved to `web3d/test/out/`.
 
 ### 10.5 Settings, language, persistence
 
-- `settings_rules`: the three rule settings and the length apply to the next sitting
-  and are greyed mid-sitting; `values` change the credits' amounts on the next
-  sitting.
-- `skill_speed`: the dial and the speed keep and apply.
+- `settings_rules`: the three rule settings and the length chosen for the next
+  sitting reach it (the record's `sitting_start`, the slate's header); `values`
+  change the credits' amounts.
+- `settings_no_rules`: the menu shows none of the length, the three rules and the
+  opponent's level, and no "applies" tag; it shows the "This sitting" line, equal to
+  the record, at the deal and after Continue (with the prefs changed meanwhile).
+- `new_sitting_from_table`: the new-sitting screen starts from the sitting on the
+  table, not the prefs, and shows the rules rows with no disclosure.
+- `skill_speed`: the speed keeps and applies; the level is read in the menu's line
+  and chosen on the new-sitting screen, which offers 1, 2, 3, 3½, 4.
+- `new_sitting_style`: the Style select offers Normal, Random and the offered
+  styles, with the style's line under it and, at skills 3½ and 4, the bidding
+  note; the choice starts the sitting, is kept as the next default, and shows in
+  the menu's line and in the exported record; the screen starts from it (7.3).
+- `random_style_hidden`: under Random the menu's line says "Random (shown at the
+  end)" and the state's `drawn` is null; at the sitting's end the drawn style is
+  named in the dialog, the menu's line and the sitting's brief (7.3).
 - `language_switch`: mid-sitting (during a deal, after a reveal, at the count)
   English to German and back: every visible string, the faces' court labels,
   the HUD (rebuilt, numbers kept), the slate, the open tutorial page and the screen-reader text

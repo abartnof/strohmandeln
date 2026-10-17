@@ -16,7 +16,7 @@ test("an empty store gives the defaults of the spec", () => {
   assert.equal(p.tutor, true);
   assert.equal(p.hints, false);
   assert.equal(p.tracker, true, "the tracker is on, and shows once Hints is");
-  assert.equal(p.trackerFolded, null, "its fold is unset: open on a large window");
+  assert.equal("trackerFolded" in p, false, "no fold is kept: the panel starts folded each deal");
   assert.equal(p.slateAuto, true);
   assert.equal(p.faces, "auto");
   assert.equal(p.lang, "en");
@@ -72,9 +72,23 @@ test("a record from a newer page is read as empty, left as it is, and said", () 
   assert.equal(store.map.get(KEY), newer);
 });
 
-test("skill is one of the dial's halves", () => {
-  assert.deepEqual(SKILLS, [1, 1.5, 2, 2.5, 3, 3.5, 4]);
-  assert.equal(loadPrefs(fakeStore({ [KEY]: JSON.stringify({ v: 1, skill: 2.5 }) })).skill, 2.5);
+test("the skill dial is 1, 2, 3, 3½, 4; a kept half level snaps as the engine does (1.5 to 1, 2.5 to 2)", () => {
+  assert.deepEqual(SKILLS, [1, 2, 3, 3.5, 4]);
+  const skill = (v) => loadPrefs(fakeStore({ [KEY]: JSON.stringify({ v: 1, skill: v }) })).skill;
+  assert.equal(skill(3.5), 3.5);
+  assert.equal(skill(1.5), 1);
+  assert.equal(skill(2.5), 2);
+  assert.equal(skill(9), 3, "anything else takes the default");
+});
+
+test("the style is kept; one that is not offered (any more) is Normal", () => {
+  assert.equal(DEFAULTS.style, "normal");
+  const style = (v) => loadPrefs(fakeStore({ [KEY]: JSON.stringify({ v: 1, style: v }) })).style;
+  for (const id of ["normal", "random", "bermann", "ms", "bold", "cautious"]) assert.equal(style(id), id);
+  assert.equal(style("Not An Id!"), "normal");
+  assert.equal(style(5), "normal");
+  assert.equal(sittingConfig({ ...DEFAULTS, style: "random" }, {}).style, "random");
+  assert.equal(sittingConfig({ ...DEFAULTS }, {}).style, "normal");
 });
 
 test("URL overrides are for tests", () => {
@@ -91,7 +105,7 @@ test("URL overrides are for tests", () => {
 
 test("the config for strohmandeln_new follows the protocol", () => {
   const cfg = sittingConfig({ ...DEFAULTS, both_pass: "throw_in", values: "1/2/3", ultimo: 2, touren: 6, skill: 4 }, { seed: 7, human: 1 });
-  assert.deepEqual(cfg, { seed: 7, touren: 6, human: 1, level: 4, settings: { both_pass: "throw_in", values: "1/2/3", ultimo: 2 } });
+  assert.deepEqual(cfg, { seed: 7, touren: 6, human: 1, level: 4, style: "normal", settings: { both_pass: "throw_in", values: "1/2/3", ultimo: 2 } });
   const no = sittingConfig({ ...DEFAULTS }, {});
   assert.ok(!("human" in no));
   assert.equal(no.level, DEFAULTS.skill);
@@ -106,12 +120,9 @@ test("speed scales: slow longer, instant nothing", () => {
   assert.equal(speedScale("instant"), 0);
 });
 
-test("the tracker's setting and fold are read field by field", () => {
+test("the tracker's setting is read field by field", () => {
   const read = (o) => loadPrefs(fakeStore({ [KEY]: JSON.stringify({ v: 1, ...o }) }));
   assert.equal(read({ tracker: false }).tracker, false);
   assert.equal(read({ tracker: "no" }).tracker, true);
-  assert.equal(read({ trackerFolded: true }).trackerFolded, true);
-  assert.equal(read({ trackerFolded: false }).trackerFolded, false);
-  assert.equal(read({ trackerFolded: null }).trackerFolded, null);
-  assert.equal(read({ trackerFolded: "yes" }).trackerFolded, null);
+  assert.equal("trackerFolded" in read({ trackerFolded: false }), false, "an old saved fold is dropped");
 });

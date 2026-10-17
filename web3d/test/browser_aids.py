@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
 from phrases import german_in  # noqa: E402
 
-from browser import NO_DRAW, PAGE, ROOT, WORDS, STRINGS, check_offline, close_all, fail_if, intersects, js, rest, state, still
+from browser import LANDSCAPE, NO_DRAW, PAGE, ROOT, WORDS, STRINGS, check_offline, close_all, fail_if, intersects, js, rest, state, still
 from browser_scenarios import (
     FAST,
     choose,
@@ -347,14 +347,6 @@ def open_settings(page):
 def check_settings_rows(browser, failures):
     page = open_page(browser, "seed=7&speed=instant&human=1")
     open_settings(page)
-    # The rule rows are greyed mid-sitting and say so; touching one changes nothing.
-    for key in ("both_pass", "values", "ultimo", "touren"):
-        row = page.locator(f"[data-row={key}]")
-        fail_if("settings-locked" not in (row.get_attribute("class") or ""), failures, f"settings_rules: {key} is not greyed mid-sitting")
-        fail_if(row.locator(".settings-when").count() != 1, failures, f"settings_rules: {key} does not say when it applies")
-        before = js(page, "prefs()")[key]
-        row.locator("button:not([aria-checked=true])").first.click(force=True)
-        fail_if(js(page, "prefs()")[key] != before, failures, f"settings_rules: {key} changed mid-sitting")
     # Every row that applies now changes the prefs, and is kept.
     now_rows = {"speed": "fast", "faces": "jumbo", "reducedMotion": "off", "talk": "calls", "lang": "de"}
     for key, value in now_rows.items():
@@ -369,8 +361,25 @@ def check_settings_rows(browser, failures):
     stored = page.evaluate("JSON.parse(localStorage.getItem('strohmandeln.prefs'))")
     for key, value in now_rows.items():
         fail_if(stored.get(key) != value, failures, f"settings_rows: {key} was not kept ({stored.get(key)!r})")
-    surfaces = page.locator("[data-row=surface] button").count()
-    fail_if(surfaces < 2, failures, "settings_rows: the table top offers no choice")
+    # The table top is a native select: Random and the kit's 18, and a pick is applied and kept.
+    surface = page.locator("[data-row=surface] select")
+    fail_if(surface.count() != 1, failures, "settings_rows: the table top is not one select")
+    fail_if(surface.locator("option").count() != 19, failures, f"settings_rows: the table top offers {surface.locator('option').count()} options, not 19")
+    fail_if(surface.locator("option").first.get_attribute("value") != "random", failures, "settings_rows: Random is not first")
+    fail_if(page.locator("[data-row=surface] button").count() != 0, failures, "settings_rows: the table top still has buttons")
+    surface.select_option("dot-grid")
+    fail_if(js(page, "prefs()")["surface"] != "dot-grid", failures, f"settings_rows: the table top gave {js(page, 'prefs()')['surface']!r}")
+    fail_if(surface.evaluate("(e) => parseFloat(getComputedStyle(e).fontSize)") < 16, failures, "settings_rows: the select's font is under 16px")
+    fail_if(surface.bounding_box()["height"] < 40, failures, "settings_rows: the select is not touch-sized")
+    # Escape on the select: an open list closes alone; a closed, focused select passes it on and the menu closes (TABLE3D 7.1).
+    surface.focus()
+    page.keyboard.press("Escape")
+    fail_if(page.locator(".settings-root").get_attribute("hidden") is None, failures, "settings_rows: Escape on the closed select did not close the menu")
+    open_settings(page)
+    surface.focus()
+    page.keyboard.press("Alt+ArrowDown")
+    page.keyboard.press("Escape")
+    fail_if(page.locator(".settings-root").get_attribute("hidden") is not None, failures, "settings_rows: Escape on the open select closed the menu")
     check_offline(page, failures, "settings_rows: ")
 
 
@@ -394,6 +403,97 @@ def check_settings_next_sitting(browser, failures):
     fail_if("1/2/3" not in rules or "Ultimo 2" not in rules, failures, f"settings_rules: the slate header says {rules!r}")
 
 
+def check_settings_no_rules(browser, failures):
+    prefs = json.dumps({"v": 1, "values": "1/2/3", "ultimo": 2, "both_pass": "throw_in", "touren": 6})
+    context = browser.new_context(viewport=FAST)
+    context.set_offline(True)
+    context.add_init_script(NO_DRAW)
+    context.add_init_script(f"try {{ if (!localStorage.getItem('strohmandeln.sitting')) localStorage.setItem('strohmandeln.prefs', JSON.stringify({prefs})); }} catch (e) {{}}")
+    page = context.new_page()
+    page.errors = []
+    page.on("pageerror", lambda e: page.errors.append(str(e)))
+    want = "This sitting: 6 Touren, 1/2/3, ultimo 2, throw-in, opponent level 1"
+
+    def check_menu(label, want=want):
+        open_settings(page)
+        for key in ("both_pass", "values", "ultimo", "touren", "skill"):
+            fail_if(page.locator(f"[data-row={key}]").count() != 0, failures, f"settings_no_rules: {key} is in the menu {label}")
+        fail_if(page.locator(".settings-when, .settings-locked").count() != 0, failures, f"settings_no_rules: an applies tag is in the menu {label}")
+        line = page.locator("[data-row=this-sitting]")
+        fail_if(line.count() != 1, failures, f"settings_no_rules: no This-sitting line {label}")
+        text = line.inner_text() if line.count() else ""
+        fail_if(want not in text, failures, f"settings_no_rules: the line says {text!r} {label}")
+        page.locator(".settings-close").dispatch_event("click")
+
+    goto(page, "seed=7&speed=instant&human=1&keep=1")
+    rest(page)
+    check_menu("at the deal")
+    # After Continue the line, the live point value and the Kibitzer's pages read the record, not the prefs (reset here to the defaults).
+    page.evaluate("localStorage.setItem('strohmandeln.prefs', JSON.stringify({v: 1}))")
+    goto(page, "human=1&hook=1")
+    page.wait_for_selector("[data-dialog=welcome]", timeout=60_000)
+    page.locator("[data-dialog-act=continue]").click()
+    rest(page)
+    check_menu("after Continue")
+    fail_if(js(page, "pointsNow()")["ultimo"] != 2 * js(page, "pointsNow()")["honour"], failures, f"settings_no_rules: the live ultimo is {js(page, 'pointsNow()')} after Continue, the record's is 2")
+    fail_if("thrown in" not in json.dumps(js(page, "pagesNow()")), failures, "settings_no_rules: the Kibitzer's pages do not follow the record's both-pass rule after Continue")
+    kept = page.evaluate("localStorage.getItem('strohmandeln.sitting')")
+    # A language switch redraws the line from the same record.
+    open_settings(page)
+    page.locator("[data-row=lang] [data-value=de]").dispatch_event("click")
+    page.locator(".settings-close").dispatch_event("click")
+    check_menu("in German", want="Dieser Abend: 6 Touren, 1/2/3, Ultimo 2, Einwerfen, Gegner Stufe 1")
+    open_settings(page)
+    page.locator("[data-row=lang] [data-value=en]").dispatch_event("click")
+    page.locator(".settings-close").dispatch_event("click")
+    # Deal from the dialog mid-sitting: it starts from the sitting; the line follows the new one.
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    page.locator("[data-dialog=new] [data-row=touren] [data-value=\"3\"]").click()
+    page.locator("[data-dialog=new] [data-row=both_pass] [data-value=play]").click()
+    page.locator("[data-dialog-act=deal]").click()
+    rest(page)
+    check_menu("after a new sitting", want="This sitting: 3 Touren, 1/2/3, ultimo 2, simple game, opponent level 1")
+    # A loaded file brings its own rules back, whatever the prefs now are (a fresh page: its own sitting is the defaults').
+    files = Path(tempfile.mkdtemp(prefix="sitting-"))
+    (files / "kept.json").write_text(json.dumps({**json.loads(kept), "protocol": 1}))  # the saved file is the kept sitting plus its protocol
+    page = open_page(browser, "seed=7&speed=instant&human=1")
+    open_settings(page)
+    fail_if("3 Touren, 2/3/4, ultimo 1" not in page.locator("[data-row=this-sitting]").inner_text(), failures, "settings_no_rules: a fresh page's line is not the defaults'")
+    with page.expect_file_chooser() as chooser:
+        page.locator("[data-action=load]").click()
+    chooser.value.set_files(str(files / "kept.json"))
+    page.wait_for_function("window.strohmandeln3d.state().touren_total === 6", timeout=30_000)
+    rest(page)
+    check_menu("after a loaded file")
+    fail_if(page.errors, failures, f"settings_no_rules: errors {page.errors[:3]}")
+
+
+def check_new_sitting_from_table(browser, failures):
+    prefs = json.dumps({"v": 1, "values": "1/2/3", "ultimo": 2, "both_pass": "throw_in", "touren": 6})
+    context = browser.new_context(viewport=FAST)
+    context.set_offline(True)
+    context.add_init_script(NO_DRAW)
+    context.add_init_script(f"try {{ if (!localStorage.getItem('strohmandeln.sitting')) localStorage.setItem('strohmandeln.prefs', JSON.stringify({prefs})); }} catch (e) {{}}")
+    page = context.new_page()
+    page.errors = []
+    page.on("pageerror", lambda e: page.errors.append(str(e)))
+    goto(page, "seed=7&speed=instant&human=1&keep=1")
+    rest(page)
+    # The prefs go back to the defaults; the sitting on the table keeps its rules.
+    page.evaluate("localStorage.setItem('strohmandeln.prefs', JSON.stringify({v: 1}))")
+    goto(page, "human=1&hook=1")
+    page.wait_for_selector("[data-dialog=welcome]", timeout=60_000)
+    page.locator("[data-dialog-act=continue]").click()
+    rest(page)
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    on = {k: page.locator(f"[data-dialog=new] [data-row={k}] [aria-checked=true]").get_attribute("data-value") for k in ("touren", "both_pass", "values", "ultimo", "skill")}
+    fail_if(on != {"touren": "6", "both_pass": "throw_in", "values": "1/2/3", "ultimo": "2", "skill": "1"}, failures, f"new_sitting_from_table: the screen starts from {on}")
+    fail_if(page.locator("[data-dialog=new] details").count() != 0, failures, "new_sitting_from_table: the rules are behind a disclosure")
+    fail_if(page.errors, failures, f"new_sitting_from_table: errors {page.errors[:3]}")
+
+
 def check_skill_speed(browser, failures):
     context = browser.new_context(viewport=FAST)
     context.set_offline(True)
@@ -406,11 +506,7 @@ def check_skill_speed(browser, failures):
     open_settings(page)
     page.locator("[data-row=speed] [data-value=fast]").click()
     fail_if(js(page, "prefs()")["speed"] != "fast", failures, "skill_speed: the speed did not apply")
-    skill = page.locator("[data-row=skill]")
-    fail_if(skill.count() != 1, failures, "skill_speed: no skill dial")
-    options = skill.locator("button").all_inner_texts()
-    fail_if(options != ["1", "1½", "2", "2½", "3", "3½", "4"], failures, f"skill_speed: the dial offers {options}")
-    # The dial is a next-sitting setting: locked here, so it is set and read before the sitting.
+    fail_if(page.locator("[data-row=skill]").count() != 0, failures, "skill_speed: the opponent's level is in the menu")
     goto(page, "seed=7&human=1")
     page.wait_for_function("window.strohmandeln3d.prefs().speed === 'fast'", timeout=30_000)
     fail_if(js(page, "prefs()")["speed"] != "fast", failures, "skill_speed: the speed was not kept across a reload")
@@ -425,9 +521,126 @@ def check_skill_speed(browser, failures):
     page.on("pageerror", lambda e: page.errors.append(str(e)))
     goto(page, "seed=7&human=1&speed=instant")
     rest(page)
+    # The level is the new-sitting screen's, fixed for the sitting: the menu only reads it (the page's level=1 is the engine's rung).
     open_settings(page)
-    selected = page.locator("[data-row=skill] [aria-checked=true]").all_inner_texts()
-    fail_if(selected != ["2"], failures, f"skill_speed: the stored skill shows as {selected}")
+    line = page.locator("[data-row=this-sitting]").inner_text()
+    fail_if("opponent level 1" not in line, failures, f"skill_speed: the line says {line!r}")
+    page.locator(".settings-close").click()
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    options = page.locator("[data-dialog=new] [data-row=skill] button").all_inner_texts()
+    fail_if(options != ["1", "2", "3", "3½", "4"], failures, f"skill_speed: the dial offers {options}")
+    selected = page.locator("[data-dialog=new] [data-row=skill] [aria-checked=true]").all_inner_texts()
+    fail_if(selected != ["1"], failures, f"skill_speed: the dial starts at {selected}")
+
+
+def choose_style(page, style):
+    page.locator("[data-dialog=new] [data-row=style] select").select_option(style)
+
+
+def deal_new_sitting(page):
+    page.locator("[data-dialog=new] [data-dialog-act=deal]").click()
+    page.wait_for_selector("[data-dialog=new]", state="detached", timeout=10_000)
+    rest(page)
+
+
+def sitting_line(page):
+    open_settings(page)
+    line = page.locator("[data-row=this-sitting] p").first.inner_text()
+    page.locator(".settings-close").dispatch_event("click")  # a dialog may cover it
+    return line
+
+
+def check_new_sitting_style(browser, failures):
+    page = open_page(browser, "seed=7&speed=instant&human=1&hook=1", FAST)
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    select = page.locator("[data-dialog=new] [data-row=style] select")
+    values = select.locator("option").evaluate_all("(os) => os.map((o) => o.value)")
+    fail_if(values != ["normal", "random", "bermann", "ms", "bold", "cautious"], failures, f"new_sitting_style: the select offers {values}")
+    fail_if(select.input_value() != "normal", failures, f"new_sitting_style: it starts at {select.input_value()!r}")
+    fail_if(select.evaluate("(e) => parseFloat(getComputedStyle(e).fontSize)") < 16, failures, "new_sitting_style: the select's font is under 16px")
+    choose_style(page, "bermann")
+    line = page.locator("[data-dialog=new] [data-role=style-line]").inner_text()
+    fail_if(line != t("style.bermann.line"), failures, f"new_sitting_style: the line under the select is {line!r}")
+    note = page.locator("[data-dialog=new] [data-role=style-note]")
+    fail_if(note.inner_text() != "", failures, "new_sitting_style: a note shows at skill 3")
+    page.locator("[data-dialog=new] [data-row=skill] [data-value='3.5']").click()
+    fail_if(note.inner_text() != t("style.note.bidding"), failures, f"new_sitting_style: the note at skill 3.5 is {note.inner_text()!r}")
+    page.locator("[data-dialog=new] [data-row=skill] [data-value='3']").click()
+    fail_if(note.inner_text() != "", failures, "new_sitting_style: the note stayed at skill 3")
+    deal_new_sitting(page)
+    fail_if(js(page, "prefs()")["style"] != "bermann", failures, "new_sitting_style: the style was not kept as the next default")
+    fail_if(js(page, "state()")["style"] != "bermann", failures, f"new_sitting_style: the engine has {js(page, 'state()')['style']!r}")
+    fail_if(js(page, "engine.export()")["style"] != "bermann", failures, "new_sitting_style: the exported record does not carry the style")
+    line = sitting_line(page)
+    fail_if("style After Bermann" not in line, failures, f"new_sitting_style: the This-sitting line is {line!r}")
+    # the screen starts from the sitting on the table; German names the school
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    fail_if(page.locator("[data-dialog=new] [data-row=style] select").input_value() != "bermann", failures, "new_sitting_style: the screen does not start from the sitting's style")
+    options = page.locator("[data-dialog=new] [data-row=skill] button").all_inner_texts()
+    fail_if(options != ["1", "2", "3", "3½", "4"], failures, f"new_sitting_style: the dial offers {options}")
+    page.locator("[data-dialog-act=cancel]").click()
+    fail_if(page.errors if hasattr(page, "errors") else [], failures, "new_sitting_style: page errors")
+    check_offline(page, failures, "new_sitting_style: ")
+
+
+OFFERED = ("bermann", "ms", "bold", "cautious")
+
+
+def check_random_style_hidden(browser, failures):
+    # Seeds 2 and 10 drew Werner and Ulmann before Random's pool was the offered list (STYLES 2.3); 7 draws Bold.
+    for seed in (7, 2, 10):
+        random_sitting(browser, failures, seed)
+
+
+def random_sitting(browser, failures, seed):
+    where = f"random_style_hidden (seed {seed}): "
+    page = open_page(browser, f"seed={seed}&speed=instant&human=1&hook=1&keep=1", FAST)
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    fail_if(page.locator("[data-dialog=new] [data-role=style-line]").inner_text() != t("style.normal.line"), failures, where + "the Normal line is not shown first")
+    choose_style(page, "random")
+    fail_if(page.locator("[data-dialog=new] [data-role=style-line]").inner_text() != t("style.random.line"), failures, where + "the Random line is not shown")
+    deal_new_sitting(page)
+    s = state(page)
+    fail_if(s["style"] != "random" or s["drawn"] is not None, failures, f"{where}the state says {s['style']!r}, {s['drawn']!r}")
+    line = sitting_line(page)
+    fail_if(t("style.random.hidden") not in line, failures, f"{where}the line is {line!r}")
+    if seed == 7:
+        # a language switch before the end keeps it hidden, in German too
+        open_settings(page)
+        page.locator("[data-row=lang] [data-value=de]").click()
+        line = page.locator("[data-row=this-sitting] p").first.inner_text()
+        fail_if(t("style.random.hidden", "de") not in line, failures, f"{where}the German line is {line!r}")
+        page.locator("[data-row=lang] [data-value=en]").click()
+        page.locator(".settings-close").dispatch_event("click")
+        # a restored sitting does not know it either: the saved record carries it, the page does not show it
+        drive(page, has("trick_won"))
+        rest(page)
+        goto(page, "human=1&hook=1&speed=instant")
+        page.wait_for_selector("[data-dialog=welcome]", timeout=120_000)
+        page.locator("[data-dialog-act=continue]").click()
+        rest(page)
+        s = state(page)
+        fail_if(s["style"] != "random" or s["drawn"] is not None, failures, f"{where}after a restore the state says {s['style']!r}, {s['drawn']!r}")
+        line = sitting_line(page)
+        fail_if(t("style.random.hidden") not in line, failures, f"{where}after a restore the line is {line!r}")
+    drive(page, until_over())
+    page.wait_for_selector("[data-dialog=over]", timeout=30_000)
+    drawn = js(page, "state()")["drawn"]
+    fail_if(drawn not in OFFERED, failures, f"{where}the sitting's end gave drawn {drawn!r}, which is not offered")
+    name = t(f"style.{drawn}.name") if drawn else "?"
+    fail_if(name not in page.locator("[data-dialog=over]").inner_text(), failures, f"{where}the end dialog does not name {name!r}")
+    line = sitting_line(page)
+    fail_if(f"style Random: {name}" not in line, failures, f"{where}the line after the end is {line!r}")
+    js(page, "openReview()")
+    page.wait_for_selector("[data-dialog=review]", timeout=10_000)
+    reveal = page.locator("[data-dialog=review] .tutor-reveal").inner_text() if page.locator("[data-dialog=review] .tutor-reveal").count() else ""
+    fail_if(name not in reveal, failures, f"{where}the sitting's brief reveals {reveal!r}, not {name!r}")
+    check_offline(page, failures, where)
+    page.context.close()
 
 
 # ---- language -------------------------------------------------------------------------------------------
@@ -531,6 +744,55 @@ def check_language_switch_at_count(browser, failures):
         left = english_left(visible_strings(page))
         fail_if(left, failures, f"language_switch_count: English left at the count: {left[:5]}")
     check_offline(page, failures, "language_switch_count: ")
+
+
+HUD_CLIPPED = """(popped) => {
+  const hud = document.querySelector('.hud').getBoundingClientRect();
+  document.querySelectorAll('.hud-block').forEach((b) => b.classList.toggle('popped', popped));
+  const bad = [];
+  for (const e of document.querySelectorAll('.hud *')) {
+    if (e.closest('.hud-pop') && !popped) continue;
+    if (e.closest('.hud-score') && popped) continue;
+    if (!e.textContent.trim() || e.children.length) continue;
+    const b = e.getBoundingClientRect();
+    if (!b.width) continue;
+    const spill = e.scrollWidth > e.clientWidth + 1;
+    const out = b.left < hud.left - 0.5 || b.right > hud.right + 0.5 || b.left < 0 || b.right > innerWidth;
+    if (spill || out) bad.push(e.className + ' "' + e.textContent.slice(0, 24) + '" ' + e.scrollWidth + '/' + e.clientWidth + ' ' + Math.round(b.left) + '..' + Math.round(b.right));
+  }
+  return bad;
+}"""
+
+
+def check_hud_not_clipped(browser, failures):
+    """The widest realistic numbers fit the HUD: 35 2/3 a side and a bonus label's popup are real; 135 2/3 in the
+    ledger is a chosen wide value. Every one of the line's segments is at least 2px wide."""
+    for lang in ("en", "de"):
+        for size in ({"width": 1280, "height": 720}, {"width": 1440, "height": 900}, {"width": 1920, "height": 1080}, {"width": 1024, "height": 768}):
+            context = browser.new_context(viewport=size)
+            context.add_init_script(f"try {{ localStorage.setItem('strohmandeln.prefs', JSON.stringify({{ v: 1, lang: '{lang}' }})); }} catch (e) {{}}")
+            context.set_offline(True)
+            page = context.new_page()
+            page.goto(f"{PAGE.as_uri()}?seed=7&speed=instant&lowfx=1&level=1", wait_until="commit", timeout=120_000)
+            page.wait_for_function("window.strohmandeln3d !== undefined", timeout=180_000)
+            rest(page)
+            page.evaluate(
+                """(label) => {
+                  document.querySelectorAll('.hud-num, .hud-pop-pts').forEach((n) => { n.textContent = '35\\u2154'; });
+                  document.querySelectorAll('.hud-pop-label').forEach((n) => { n.textContent = label; });
+                  document.querySelectorAll('.hud-v, .hud-sv, .hud-tot-you, .hud-tot-opp').forEach((n) => { n.textContent = '135\\u2154'; });
+                  document.querySelector('.hud-chev').click();
+                }""",
+                STRINGS["hud.bonus"][lang],
+            )
+            page.wait_for_timeout(900)
+            widths = page.evaluate("[...document.querySelectorAll('.hud-line .seg')].map((e) => e.getBoundingClientRect().width)")
+            print(f"hud segments {lang} {size['width']}: n={len(widths)} min={min(widths, default=0):.2f}")
+            fail_if(not widths or min(widths) < 2, failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']}: a segment is {min(widths, default=0):.2f}px wide ({len(widths)} segments)")
+            for popped in (False, True):
+                bad = page.evaluate(HUD_CLIPPED, popped)
+                fail_if(bool(bad), failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']} popped={popped}: {bad[:4]}")
+            context.close()
 
 
 # ---- persistence ------------------------------------------------------------------------------------------
@@ -724,11 +986,15 @@ BOXES = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); re
     hand: window.strohmandeln3d.cardRects('your-hand') }; })()"""
 
 
-def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0"):
-    page = with_prefs(browser, {"hints": True, "slateAuto": False, "trackerFolded": False, **(prefs or {})}, query, viewport=size)
+def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0", unfold=True):
+    # The panel starts folded (6.6.2); unfold it by its tab, where the window shows one.
+    page = with_prefs(browser, {"hints": True, "seen": ["public-mark"], "slateAuto": False, **(prefs or {})}, query, viewport=size)
     take_if_bidding(page)
     drive(page, lambda s, log: sum(e["type"] == "trick_won" for e in log) >= 3 or s["prompt"] == "over")
     rest(page)
+    tab = page.locator("[data-act=tracker]:not([hidden])")
+    if unfold and tab.count() and tab.is_visible():
+        tab.click()
     return page
 
 
@@ -765,10 +1031,13 @@ def check_tracker_fold_and_settings(browser, failures):
     where = "tracker_fold_and_settings: "
     page = tracker_page(browser, TRACKER_SIZES[0][1])
     tab = page.locator("[data-act=tracker]")
-    # A tap on the tab folds it, and is kept; another opens it.
+    # A tap on the tab folds it; another opens it. A fresh page starts folded, at this large window too.
+    fresh = tracker_page(browser, TRACKER_SIZES[0][1], unfold=False)
+    fail_if(fresh.locator(".tracker").count(), failures, f"{where}the panel starts open")
+    fail_if(fresh.locator("[data-act=tracker]").get_attribute("aria-expanded") != "false", failures, f"{where}the fresh tab says open")
+    fresh.close()
     tab.click()
     fail_if(page.locator(".tracker").count(), failures, f"{where}the tab did not fold the panel")
-    fail_if(js(page, "prefs()")["trackerFolded"] is not True, failures, f"{where}the fold was not kept")
     fail_if(tab.get_attribute("aria-expanded") != "false", failures, f"{where}the tab says open while folded")
     tab.click()
     fail_if(page.locator(".tracker").count() != 1, failures, f"{where}the tab did not open the panel")
@@ -797,6 +1066,11 @@ def check_tracker_fold_and_settings(browser, failures):
     fail_if(page.locator(".tracker").count(), failures, f"{where}the muted Kibitzer kept the panel")
     page.keyboard.press("m")
     fail_if(page.locator(".tracker").count() != 1, failures, f"{where}unmuting did not bring the panel back")
+    # The next deal of the sitting starts folded again, though the person had it open.
+    drive(page, lambda s, log: sum(e["type"] == "deal_start" for e in log) >= 2)
+    rest(page)
+    fail_if(page.locator(".tracker").count(), failures, f"{where}the next deal kept the panel open")
+    fail_if(page.locator("[data-act=tracker]").get_attribute("aria-expanded") != "false", failures, f"{where}the next deal's tab says open")
     check_offline(page, failures, where)
 
 
@@ -826,7 +1100,7 @@ BRIEF_KEPT = "(() => { const b = window.strohmandeln3d.briefing(); return b.kept
 
 
 def brief_page(browser, prefs, query="seed=7&speed=instant&human=1"):
-    page = with_prefs(browser, {"hints": True, "slateAuto": False, **prefs}, query)
+    page = with_prefs(browser, {"hints": True, "seen": ["public-mark"], "slateAuto": False, **prefs}, query)
     return page
 
 
@@ -836,6 +1110,49 @@ def scored_deal(page):
     rest(page)
     page.wait_for_function(BRIEF_KEPT, timeout=60_000)
     return ok
+
+
+PAGES_SEEN = ["the-cards", "packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension", "scoring-full"]  # no page opens
+
+
+def check_public_mark(browser, failures):
+    """The gold dot is a hint (TABLE3D 1.5.7): absent with hints off, shown at once when they are
+    switched on, with the note once; it goes with them and with the Kibitzer's mute."""
+    where = "public_mark: "
+    page = with_prefs(browser, {"hints": False, "seen": PAGES_SEEN, "slateAuto": False}, "seed=7&speed=instant&human=1")
+    take_if_bidding(page)
+    if not drive(page, has("card_pulled")):
+        return failures.append(f"{where}no card was pulled")
+    rest(page)
+    dots = lambda: page.locator(".tag.public").count()
+    fail_if(dots(), failures, f"{where}a dot with hints off")
+    fail_if(page.locator("[data-dialog=note]").count(), failures, f"{where}the note with hints off")
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.wait_for_selector(".settings-root:not([hidden])", timeout=10_000)
+    page.locator("[data-row=hints] [data-value=toggle]").click()
+    fail_if(page.locator("[data-dialog=note]").count(), failures, f"{where}the note over the open menu")
+    page.locator(".settings-close").click()
+    page.wait_for_selector("[data-dialog=note]", timeout=10_000)
+    fail_if(not dots(), failures, f"{where}no dot after hints were switched on")
+    fail_if(not page.locator(".tag.public").first.get_attribute("title"), failures, f"{where}the dot has no tooltip")
+    fail_if("public-mark" not in js(page, "prefs()")["seen"], failures, f"{where}the note was not kept as seen")
+    stored = page.evaluate("localStorage.getItem('strohmandeln.prefs')")
+    fail_if("public-mark" not in stored, failures, f"{where}seen was not stored")
+    page.locator("[data-dialog=note] [data-dialog-act=close]").click()
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.wait_for_selector(".settings-root:not([hidden])", timeout=10_000)
+    page.locator("[data-row=hints] [data-value=toggle]").click()
+    fail_if(dots(), failures, f"{where}a dot after hints were switched off")
+    page.locator("[data-row=hints] [data-value=toggle]").click()
+    page.locator(".settings-close").click()
+    fail_if(page.locator("[data-dialog=note]").count(), failures, f"{where}the note again")
+    fail_if(not dots(), failures, f"{where}no dot after hints were switched on again")
+    page.evaluate("document.activeElement.blur()")  # the keys are not read inside the menu
+    page.keyboard.press("m")
+    fail_if(dots(), failures, f"{where}a dot with the Kibitzer muted")
+    page.keyboard.press("m")
+    fail_if(not dots(), failures, f"{where}no dot after unmuting")
+    check_offline(page, failures, where)
 
 
 def check_deal_brief(browser, failures):
@@ -918,9 +1235,116 @@ def check_deal_brief(browser, failures):
         check_offline(other, failures, "deal_brief: ")
 
 
+def check_escape_closes(browser, failures):
+    # Escape closes the topmost overlay, one per press, and focus goes back to what opened it (TABLE3D 3.10.5).
+    where = "escape_closes: "
+    page = tracker_page(browser, TRACKER_SIZES[0][1])
+    page.locator("[data-act=tracker]").click()  # folded and open again, so it has an opener
+    page.locator("[data-act=tracker]").click()
+    page.mouse.click(5, 5)
+
+    def focused():
+        return page.evaluate("(() => { const a = document.activeElement; return a ? (a.dataset.act || a.className || a.tagName) : ''; })()")
+
+    def open_flags():
+        return page.evaluate("""(() => ({
+          dialog: Array.from(document.querySelectorAll('.dialogs [data-shade]')).map((n) => n.dataset.shade),
+          settings: !document.querySelector('.settings-root').hidden,
+          slate: !document.querySelector('.slate-root').hidden,
+          hud: document.querySelector('.hud-chev').getAttribute('aria-expanded') === 'true',
+          tracker: Boolean(document.querySelector('.tracker')),
+        }))()""")
+
+    def press(expect, what, focus=None):
+        page.keyboard.press("Escape")
+        got = open_flags()
+        fail_if(got != expect, failures, f"{where}after Escape on {what}: {got}, expected {expect}")
+        if focus:
+            fail_if(focus not in focused(), failures, f"{where}after Escape on {what}: focus is on {focused()!r}, not {focus!r}")
+
+    base = {"dialog": [], "settings": False, "slate": False, "hud": False, "tracker": True}
+    fail_if(open_flags() != base, failures, f"{where}start: {open_flags()}")
+    # Everything open at once: the score list, the slate, the settings, then a dialog over them.
+    page.locator(".hud-chev").click()
+    page.keyboard.press("s")
+    page.locator("[data-act=settings]").focus()
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.wait_for_selector(".settings-root:not([hidden])", timeout=10_000)
+    page.locator("[data-act=tutor]").focus()
+    page.locator("[data-act=tutor]").dispatch_event("click")
+    page.wait_for_selector("[data-dialog=help]", timeout=10_000)
+    fail_if(open_flags() != {"dialog": ["help"], "settings": True, "slate": True, "hud": True, "tracker": True}, failures, f"{where}all open: {open_flags()}")
+    press({"dialog": [], "settings": True, "slate": True, "hud": True, "tracker": True}, "Help", "tutor")
+    press({"dialog": [], "settings": False, "slate": True, "hud": True, "tracker": True}, "settings", "settings")
+    press({"dialog": [], "settings": False, "slate": False, "hud": True, "tracker": True}, "the slate")
+    fail_if(page.locator("[data-act=slate]").get_attribute("aria-expanded") != "false", failures, f"{where}the slate tab still says open")
+    press({"dialog": [], "settings": False, "slate": False, "hud": False, "tracker": True}, "the score list", "hud-chev")
+    press({**base, "tracker": False}, "the cards-out panel", "tracker")
+    press({**base, "tracker": False}, "nothing")
+    # A confirm over the settings, and the keys list.
+    page.locator("[data-act=settings]").focus()
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.locator("[data-action=progress-clear]").dispatch_event("click")
+    page.wait_for_selector("[data-dialog=clear]", timeout=10_000)
+    press({**base, "tracker": False, "settings": True}, "the confirm")
+    press({**base, "tracker": False}, "settings")
+    page.keyboard.press("?")
+    page.wait_for_selector("[data-dialog=keys]", timeout=10_000)
+    press({**base, "tracker": False}, "the keys list")
+    check_offline(page, failures, where)
+
+
+def check_escape_dialogs(browser, failures):
+    # The tutor page and the announce prompt are dismissed without choosing; a dialog that needs an answer only takes focus.
+    from browser_scenarios import find_honour, honour_card, until_extend
+    from browser import click_card
+
+    where = "escape_dialogs: "
+    page = open_page(browser, "seed=7&speed=instant&human=1")
+    take_if_bidding(page)
+    page.locator("[data-act=tutor]").focus()
+    page.locator("[data-act=tutor]").dispatch_event("click")
+    page.wait_for_selector("[data-dialog=help]", timeout=10_000)
+    page.locator("[data-dialog=help] [data-act=page]").first.click()
+    page.wait_for_selector("[data-dialog=page]", timeout=10_000)
+    page.keyboard.press("Escape")
+    fail_if(page.locator("[data-dialog=page]").count() or not page.locator("[data-dialog=help]").count(), failures, f"{where}Escape on a page: closes it, Help stays")
+    page.keyboard.press("Escape")
+    fail_if(page.locator("[data-dialog]").count(), failures, f"{where}Escape on Help left a dialog")
+    fail_if(page.evaluate("document.activeElement === document.body"), failures, f"{where}focus is lost after Help")
+    close_all(browser)
+
+    page = open_page(browser, "seed=1&speed=instant&human=1")
+    honour = find_honour(page)
+    card = honour_card(page, honour) if honour else None
+    fail_if(card is None, failures, f"{where}no honour card for the announce prompt")
+    if card:
+        before = len(js(page, "log()"))
+        click_card(page, card)
+        still(page)
+        click_card(page, card)
+        page.wait_for_selector(".dialog [data-dialog-act^=\"do:\"]", timeout=30_000)
+        page.keyboard.press("Escape")
+        fail_if(page.locator("[data-dialog=announce]").count(), failures, f"{where}Escape left the announce prompt")
+        fail_if(len(js(page, "log()")) != before, failures, f"{where}Escape played or announced for the player")
+        fail_if(card not in [a.get("card") for a in state(page)["legal"]], failures, f"{where}the card is no longer in the hand")
+    close_all(browser)
+
+    page = open_page(browser, "seed=7&speed=instant&human=0")
+    fail_if(not drive(page, until_extend()), failures, f"{where}no extension offered")
+    rest(page)
+    page.wait_for_selector("[data-dialog=extend]", timeout=30_000)
+    page.mouse.click(5, 5)
+    page.keyboard.press("Escape")
+    fail_if(not page.locator("[data-dialog=extend]").count(), failures, f"{where}Escape answered the extension prompt")
+    fail_if(state(page)["phase"] != "extend", failures, f"{where}the sitting moved on")
+    fail_if(not page.evaluate("document.activeElement.closest('[data-dialog=extend]') !== null"), failures, f"{where}focus is not on the prompt's default after Escape")
+    close_all(browser)
+
+
 CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_english, check_talk_setting,
-    check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_skill_speed,
-    check_language_switch, check_language_switch_at_count, check_prefs_storage, check_save_restore, check_export_import_file,
-    check_tutor_pages, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_deal_brief,
+    check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_settings_no_rules, check_new_sitting_from_table, check_skill_speed, check_new_sitting_style, check_random_style_hidden,
+    check_language_switch, check_language_switch_at_count, check_hud_not_clipped, check_prefs_storage, check_save_restore, check_export_import_file,
+    check_tutor_pages, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief,
 ]
