@@ -159,15 +159,14 @@ function made(lang = "en") {
 }
 const stateOf = (over = {}) => ({ human: 1, contos: [4, 5], balance: -1, touren_total: 3, over: false, ...over });
 
-test("open and close toggle the sheet; the escape key closes it", () => {
+test("open and close toggle the sheet; Escape is the page's (overlays.js)", () => {
   const { root, slate } = made();
   assert.equal(root.hidden, true);
   slate.open();
   assert.equal(root.hidden, false);
   assert.equal(root.getAttribute("aria-hidden"), "false");
   root.dispatch("keydown", { key: "Escape" });
-  assert.equal(root.hidden, true);
-  slate.open();
+  assert.equal(root.hidden, false);
   slate.close();
   assert.equal(root.hidden, true);
 });

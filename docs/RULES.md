@@ -68,8 +68,8 @@ other trump [02-S1 via 02 §1 "Skis highest trump"][14 rule 1].
 1.5 **Suit order**, high to low:
 - clubs and spades: `K Q C J 10 9 8 7`;
 - hearts and diamonds: `K Q C J 1 2 3 4` (the 1 is the highest pip, the 4 the
-  lowest) [14 rule 1][08-S9]. [D: the high-to-low reading of the listed order;
-  see 17.2.]
+  lowest) [14 rule 1][08-S9][17-R1 Bermann p. 17 "sticht unter den leeren
+  Blättern die arithmetisch niederere Karte, also das Aß die Zwei"][17].
 
 1.6 **Kings** are `Kh Kd Kc Ks`. The **Troule** (trull) is `SK`, `T21`, `T1`
 [03-S12].
@@ -551,11 +551,10 @@ doubling, a Valat (`PLAN.md` work package 3).
 protocol needs strings that cannot be confused; `SK` and `Ks` differ by case and
 by form.
 
-17.2 **Red pips rank `1 2 3 4` from high to low** (1.5). The sources list the red
-suit as "K Q C J 1 2 3 4" and do not say which end is high [08-S9][14 rule 1];
-the listed order is read from high to low, as the black suit's "10 9 8 7". Reason:
-one reading for both lists. The tests state the order outright, since a wrong
-order changes tricks.
+17.2 *Settled 17 Oct 2026:* the red pip order is stated by the sources
+(`research/17-red-pip-order.md`: Bermann 1894 p. 17, Königrufen 1840 pp. 8-9,
+Werner § 1, Ulmann 1899, Dummett 1980 ch. 22, pagat), so 1.5 is no longer a
+decision. The number is kept so later clauses keep theirs.
 
 17.3 **Packet form and top-first order** (2.4). Reason: the tests need a
 deterministic deal from a deck order.

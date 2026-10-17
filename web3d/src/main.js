@@ -33,7 +33,8 @@ import { momentsOf } from "./moments.js";
 import { check, emptyModel, fromState, reduce } from "./model.js";
 import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
 import { loadPrefsInfo, savePrefs, sittingConfig, speedScale, urlOverrides, withUrl } from "./prefs.js";
-import { createSettings } from "./settings.js";
+import { createSettings, sittingFrom } from "./settings.js";
+import { escapeTarget, selectGuard } from "./overlays.js";
 import { createSpeaker } from "./speaker.js";
 import { createSlate } from "./slate.js";
 import { hintLines, hintSpoken } from "./hinttext.js";
@@ -46,7 +47,7 @@ import { trackerPanel } from "./trackerview.js";
 import { createBriefing } from "./briefing.js";
 import { explainText, briefBlocks, nudgeText } from "./review.js";
 import { MAX_IMPORT, clearTutor, exportText, importText, loadDeals, refreshOne } from "./tutorstore.js";
-import { createTutor, extendPromptDue, PAGE_KEYS, tutorialPages } from "./tutor.js";
+import { createTutor, extendPromptDue, hintsOn, PAGE_KEYS, publicSlots, takePublicNote, tutorialPages } from "./tutor.js";
 import { helpBody, pageBody, reviewBody } from "./tutorview.js";
 import TUTORIAL_DE from "../tutorial.md";
 import TUTORIAL_EN from "../tutorial.en.md";
@@ -114,6 +115,7 @@ async function main() {
   // ---- state ------------------------------------------------------------------
   let wasm = null; // the module's last state
   let log = []; // every event of the sitting
+  let sittingOnTable = null; // sittingFrom's: the sitting's length, rules and level (settings.js)
   let S = null; // the director's state: { model, events }
   let human = 0;
   let sel = { chosen: null, scroll: -1e9 }; // a row of cards starts at its left end
@@ -121,6 +123,7 @@ async function main() {
   let hintCard = null;
   let trackerData = null; // the engine's tracker at the last rest (6.6)
   let trackerSig = "";
+  let trackerUnfolded = false; // folded at every deal and on load (6.6.2)
   let pending = 0; // scheduled moments not yet come
   let restModel = null; // the model at the last rest, for the tags
   let sittingOver = false;
@@ -192,6 +195,7 @@ async function main() {
     onChange: (key, value) => changed(key, value),
     onAction: (name) => settingsAction(name),
   });
+  new MutationObserver(() => publicNote()).observe(ui.settingsRoot, { attributes: true, attributeFilter: ["hidden"] });
   // The slate's self-folding timer must be cancellable (director.at returns no id): a fold set at a
   // Tour's end would otherwise close the settlement opened at the sitting's end.
   const slateTimers = new Set();
@@ -244,7 +248,7 @@ async function main() {
   let pageLinked = false; // ... and it was reached by a link from a page that was due
   // The brief (docs/TUTOR.md 6, 8): the deals' records and summaries are kept, the evidence is
   // worked out once the deal has settled, on this thread (a tenth of a second in the module).
-  const briefing = createBriefing({ store: tutorStore(), engine, level: () => wasm?.level ?? prefs.skill });
+  const briefing = createBriefing({ store: tutorStore(), engine, level: () => wasm?.level ?? prefs.skill, head: () => ({ style: wasm?.style, drawn: wasm?.drawn, over: sittingOver }) });
   let assisted = []; // the actions of the deal in progress a hint or a nudge was shown for (TUTOR 3)
   let scored = null; // the deal just scored: its kept entry, briefed when the cards are still
   let owed = []; // entries whose evidence is not yet worked out
@@ -258,6 +262,8 @@ async function main() {
   const showTutor = () => {
     ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip, working: owed.length > 0 || settling });
     showTracker(); // the Kibitzer's mute is the slate's too (6.6.2)
+    if (S) director.redecorate(); // the mute and the tutor setting take the gold dots too (1.5.7)
+    publicNote();
   };
   const tutorWords = () => ({ t, lang: getLang(), cardName: romanName, thirds, signed, suitName: (c) => (getLang() === "en" ? suitName(c).toLowerCase() : suitName(c)) });
   showTutor();
@@ -271,7 +277,7 @@ async function main() {
   }
   function showTracker() {
     const on = Boolean(wasm?.deal) && trackerShown();
-    const open = on && trackerOpen(prefs, { width: window.innerWidth, height: window.innerHeight });
+    const open = on && trackerOpen({ unfolded: trackerUnfolded });
     if (on && !trackerData && !director.busy() && pending === 0) trackerData = engine.tracker()?.tracker ?? null;
     const sig = JSON.stringify([on, open, trackerData, getLang()]);
     if (sig === trackerSig) return placeTracker();
@@ -300,10 +306,9 @@ async function main() {
     root.style.setProperty("--tracker-top", `${Math.round(top)}px`);
     root.style.setProperty("--tracker-max", `${Math.max(120, Math.round(limit - top - 6))}px`);
   }
-  // The fold is the person's, and kept.
+  // The person's fold, for this deal only.
   function toggleTracker() {
-    const open = trackerOpen(prefs, { width: window.innerWidth, height: window.innerHeight });
-    save({ trackerFolded: open });
+    trackerUnfolded = !trackerUnfolded;
     showTracker();
   }
 
@@ -315,9 +320,7 @@ async function main() {
 
   // The pages, for the sitting's rules: both-pass, game values and ultimo (6.2.2).
   function pagesNow() {
-    const begun = log.find((e) => e.type === "sitting_start");
-    const settings = begun?.settings ?? {};
-    const rule = (k) => settings[k] ?? prefs[k];
+    const rule = (k) => sittingOnTable?.[k] ?? prefs[k];
     return tutorialPages(getLang() === "de" ? TUTORIAL_DE : TUTORIAL_EN, PAGE_KEYS, { both_pass: rule("both_pass"), values: rule("values"), ultimo: rule("ultimo") });
   }
   function openPage(key, { help }) {
@@ -456,6 +459,14 @@ async function main() {
     const events = tutorBuf;
     tutorBuf = [];
     if (tutorAuto && wasm) tutor.rest(wasm, events, { human, blocked: ui.dialogOpen() });
+    publicNote();
+  }
+  // The Kibitzer's note on the gold dot, once, the first time hints are on (TABLE3D 1.5.7).
+  function publicNote() {
+    if (!wasm || director.busy() || pending > 0 || ui.dialogOpen() || !ui.settingsRoot.hidden) return; // after the menu closes
+    const dots = Boolean(S) && [...S.model.hand, ...S.model.opp].some((c) => c.public);
+    if (!takePublicNote(() => prefs, save, dots)) return;
+    ui.dialog({ id: "note", title: t("ui.public.note.title"), body: t("ui.public.note"), buttons: [{ label: t("ui.close"), act: "close", primary: true, focus: true }] });
   }
 
   // A line in a box by the opponent's hand, clear of the cards and the controls.
@@ -535,7 +546,8 @@ async function main() {
       list.push({ id: key, text, x: edge.x + dx * (key === "dealer" ? 150 : 100), y: edge.y + (who === "you" ? -14 : 14), kind: key });
     }
     // The public mark on a hand card the other player has seen.
-    for (const slot of placement.filter((x) => (x.zone === "your-hand" || x.zone === "their-hand") && x.public)) {
+    // A hint (TABLE3D 1.5.7): drawn only while hints are on.
+    for (const slot of publicSlots(placement, prefs)) {
       const corner = new Vector3(-CARD.width / 2 + 0.2, -CARD.height / 2 + 0.2, CARD.thickness / 2);
       const at = director.toScreen(corner.applyQuaternion(slot.pose.quaternion).add(slot.pose.position));
       list.push({ id: `pub:${slot.zone}:${slot.index}`, text: "", x: at.x + 8, y: at.y - 6, kind: "public", width: 10, height: 10, title: t("ui.public.tip") });
@@ -663,6 +675,7 @@ async function main() {
         hud.dealt(1);
         showTour();
         ui.hideBanner();
+        trackerUnfolded = false; // every deal starts folded (6.6.2)
         showTutor();
         break;
       case "trick_won":
@@ -746,9 +759,8 @@ async function main() {
 
   // What a Point is worth on the deal now: the ultimo setting times the doubling.
   function pointsNow() {
-    const begun = log.find((e) => e.type === "sitting_start");
     const d = [...log].reverse().find((e) => e.type === "deal_start");
-    return { ultimo: (begun?.settings?.ultimo ?? 1) * (d?.multiplier ?? 1), honour: d?.multiplier ?? 1 };
+    return { ultimo: (sittingOnTable?.ultimo ?? 1) * (d?.multiplier ?? 1), honour: d?.multiplier ?? 1 };
   }
 
   function showResult(e) {
@@ -764,6 +776,8 @@ async function main() {
 
   function endSitting(e, { live = true } = {}) {
     sittingOver = true;
+    // Random names its style now (STYLES 2.3): the menu's line, and the dialog below.
+    if (sittingOnTable?.style === "random") onTable({ ...sittingOnTable, drawn: wasm?.drawn ?? null });
     slate.settle(e);
     clearSitting();
     // The sitting's review, offered by the chip; its tally is kept for trends (6.4.2, 6.4.4).
@@ -773,7 +787,7 @@ async function main() {
     ui.dialog({
       id: "over",
       title: t("ui.prompt.over"),
-      body: "",
+      body: sittingOnTable?.drawn ? t("style.reveal", { drawn: t(`style.${sittingOnTable.drawn}.name`) }) : "",
       buttons: [{ label: t("ui.new.plus"), act: "new", primary: true, focus: true }],
     });
   }
@@ -853,6 +867,7 @@ async function main() {
         });
       }
     }
+    // The chip is a hint (hintsOn); it keeps Hints and the mute apart to say "Tips are off" (6.3.4).
     if (mine && !busy && prefs.hints && wasm.phase !== "extend") groups.push({ kind: "hint", buttons: [{ act: "hint", label: t("ui.hint"), enabled: true }] });
     ui.setBar(groups, { left: prefs.leftHanded });
     // The extension prompt.
@@ -1051,7 +1066,6 @@ async function main() {
         for (const [key, value] of Object.entries(chosen)) {
           if (prefs[key] === value) continue;
           save({ [key]: value });
-          settings.set(key, value);
         }
         newSitting({ touren: prefs.touren });
       }
@@ -1080,6 +1094,7 @@ async function main() {
 
   // ---- a sitting ----------------------------------------------------------------------------
   function resetTable() {
+    onTable(null);
     director.cancelTimed();
     stepping = false;
     idleTimers.forEach(clearTimeout);
@@ -1112,6 +1127,7 @@ async function main() {
     log = [];
     restModel = null;
     trackerData = null;
+    trackerUnfolded = false;
     showTracker();
   }
 
@@ -1125,7 +1141,7 @@ async function main() {
       return;
     }
     human = r.state.human;
-    settings.setSitting(true);
+    onTable(sittingFrom(r.events, r.state.level, r.state.style, r.state.drawn));
     ui.root.classList.toggle("left", prefs.leftHanded);
     talk.restore({});
     settleFocus();
@@ -1133,10 +1149,16 @@ async function main() {
     advance(r, { first: true });
   }
 
+  // The sitting on the table (settings.js sittingFrom): the menu's line, and the new-sitting screen's start.
+  function onTable(info) {
+    sittingOnTable = info;
+    settings.setSitting(info);
+  }
+
   // The new-sitting screen (3.5.1): what is chosen is kept as the next default (3.5.2).
   let newScreen = null;
   function askNew() {
-    newScreen = createNewSitting(document, { t, prefs });
+    newScreen = createNewSitting(document, { t, prefs, sitting: sittingOnTable, styles: engine.styles() });
     ui.dialog({ id: "new", title: t("ui.new.title"), body: newScreen.node, buttons: [{ label: t("ui.new.deal"), act: "deal", primary: true, focus: true }, ...(wasm && !sittingOver ? [{ label: t("ui.new.cancel"), act: "cancel" }] : [])] });
   }
 
@@ -1178,7 +1200,7 @@ async function main() {
     else sittingLength = log.find((e) => e.type === "sitting_start")?.touren ?? r.state.touren_total;
     if (ex.slate) slate.restore(ex.slate);
     if (ex.talk) talk.restore(ex.talk);
-    settings.setSitting(true);
+    onTable(sittingFrom(exported.record, r.state.level, r.state.style, r.state.drawn));
     director.restart(S, { dealt: false });
     restModel = model;
     trickShown = r.state.deal?.playing ? r.state.deal.trick_number : 0;
@@ -1275,6 +1297,10 @@ async function main() {
       case "tips":
         settleFocus();
         break;
+      case "hints":
+        director.redecorate(); // the gold dots come and go at once
+        publicNote();
+        break;
       case "surface":
         stage.setSurface(chooseSurface({ chosen: value === "random" ? null : value, saved: null }));
         break;
@@ -1325,6 +1351,10 @@ async function main() {
     // An open page is drawn again in the new language; the lists are closed.
     ui.closeDialog("help");
     ui.closeDialog("review");
+    if (ui.dialogOpen("note")) {
+      ui.closeDialog("note");
+      ui.dialog({ id: "note", title: t("ui.public.note.title"), body: t("ui.public.note"), buttons: [{ label: t("ui.close"), act: "close", primary: true, focus: true }] });
+    }
     if (tutor.current() && ui.dialogOpen("page")) openPage(tutor.current(), { help: pageHelp });
     stage.render();
   });
@@ -1422,21 +1452,51 @@ async function main() {
     director.rearrange();
   }
 
+  // Closes one layer. A dialog and the settings give focus back themselves (ui.js, settings.js);
+  // the panels hand it to the control that opens them.
+  function closeLayer({ kind, id }) {
+    if (kind === "focus") ui.root.querySelector(`[data-shade="${id}"] [data-focus]`)?.focus(); // never chooses for the player
+    else if (kind === "dialog") {
+      if (id === "page") dismissPage(true);
+      else if (id === "welcome") onDialog(["welcome", "continue"]); // its default; nothing is lost
+      else ui.closeDialog(id); // help, review, keys, announce (the card stays chosen), clear (No), error, new (Cancel)
+    } else if (kind === "settings") settings.close();
+    else if (kind === "slate") {
+      toggleSlate();
+      ui.root.querySelector("[data-act=slate]")?.focus();
+    } else if (kind === "hud") {
+      hud.fold();
+      ui.root.querySelector(".hud-chev")?.focus();
+    } else if (kind === "tracker") {
+      toggleTracker();
+      ui.root.querySelector("[data-act=tracker]")?.focus();
+    } else if (kind === "selection") {
+      sel = { ...sel, chosen: null };
+      refresh();
+      director.rearrange();
+    }
+  }
+
+  // An open native <select> takes its own Escape (overlays.js).
+  const selects = selectGuard();
+  for (const type of ["mousedown", "keydown", "change", "focusout"]) window.addEventListener(type, (e) => selects.observe(e), true);
   window.addEventListener("keydown", (e) => {
     if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === "Escape") {
-      if (ui.dialogOpen("page")) dismissPage(true);
-      else if (ui.dialogOpen("help") || ui.dialogOpen("review")) {
-        ui.closeDialog("help");
-        ui.closeDialog("review");
-      } else if (ui.dialogOpen("announce")) ui.closeDialog("announce");
-      else if (ui.dialogOpen("keys")) ui.closeDialog("keys");
-      else if (!ui.slateRoot.hidden) toggleSlate();
-      else if (sel.chosen) {
-        sel = { ...sel, chosen: null };
-        refresh();
-        director.rearrange();
-      }
+      if (selects.swallows(e)) return;
+      // One press closes the topmost layer (overlays.js, TABLE3D 3.10.5).
+      const target = escapeTarget({
+        dialogs: ui.dialogIds(),
+        settings: !ui.settingsRoot.hidden,
+        slate: !ui.slateRoot.hidden,
+        hud: hud.isOpen(),
+        tracker: Boolean(ui.trackerRoot.firstChild),
+        chosen: Boolean(sel.chosen),
+        canCancelNew: Boolean(wasm && !sittingOver),
+      });
+      if (!target) return;
+      e.preventDefault();
+      closeLayer(target);
       return;
     }
     if (e.target instanceof Element && e.target.closest("input, select, textarea, .settings, .slate")) return;
@@ -1550,6 +1610,9 @@ async function main() {
     clock: () => director.clock(),
     meshInfo: () => director.meshes.map((m) => ({ x: m.position.x, y: m.position.y, z: m.position.z, code: m.userData.code })),
     newSitting,
+    askNew,
+    pagesNow,
+    pointsNow,
     act: (action) => send(action),
     speed: (name) => changed("speed", name),
     step,

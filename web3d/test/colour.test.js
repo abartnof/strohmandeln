@@ -28,7 +28,7 @@ const PAIRS = [
   ["cassino-you", M + "surface-container-high"], // slate: your column
   ["cassino-them", M + "surface-container-high"], // slate: your opponent's column
   [M + "on-primary", M + "primary"], // big.primary, announce chip
-  [M + "on-secondary-container", M + "secondary-container"], // big, settings options
+  [M + "on-secondary-container", M + "secondary-container"], // big, settings options and select
   [M + "on-primary-container", M + "primary-container"], // selected option, review chip
   [M + "on-tertiary-container", M + "tertiary-container"], // tutor buttons
   [M + "on-tertiary", M + "tertiary"], // won chip
@@ -47,10 +47,14 @@ for (const [name, set] of [["light", light], ["dark", dark]]) {
   });
 }
 
-test("locked setting rows keep full-contrast text (no opacity fade)", () => {
+test("the table-top select is in the chrome's pair, 16px or more, touch-sized", () => {
   const table = readFileSync(new URL("../src/table.css", import.meta.url), "utf8");
-  const rule = table.match(/\.settings-locked \.settings-option\s*\{[^}]*\}/)[0];
-  assert.ok(!/opacity/.test(rule), rule);
+  const rule = table.match(/\.settings-select\s*\{[^}]*\}/)[0];
+  assert.match(rule, /color:\s*var\(--md-sys-color-on-secondary-container\)/);
+  assert.match(rule, /background:\s*var\(--md-sys-color-secondary-container\)/);
+  assert.match(rule, /font-size:\s*(1[6-9]|[2-9]\d)px/);
+  assert.match(rule, /min-height:\s*var\(--target\)/);
+  for (const set of [light, dark]) assert.ok(ratio(set[M + "on-secondary-container"], set[M + "secondary-container"]) >= 4.5);
 });
 
 test("the light tokens are cassino's", () => {
