@@ -134,3 +134,23 @@ Mond on Uhu (II) led and for a lead of II with the Pagat the lowest tarock.
    them, so the verdict cannot change. `bin/gate` will still ask for the rerun
    (about 100 s) and the publish step runs it anyway: rerun once before merge to
    refresh the stamp.
+
+## Fixes (17 Oct 2026)
+
+| Finding | Fix |
+|---|---|
+| H1 | On a lead `ask.keep` is raised only by a key card X or two tarocks (`ask.rs` `keep_case`); `HINTS.md` 3.3 and 14. Test `on_a_lead_keep_is_asked_only_of_a_key_card_or_between_two_tarocks`. |
+| H2 | The keep sentences have a direction: `ans.keep-mond-play` (X is the Mond, a tarock led, the Sküs out), `-hold` (A is the Mond, the Sküs out), `ans.keep-pagat-hold` (8 or more tarocks), `ans.keep-packet`; with the Sküs not out the Mond raises no question. The `-hold` sentence is the reviewer's, backed by the Mondfang note of `research/07` 1.5 as cited in `HINTS.md` 2. Test `a_keep_sentence_points_the_way_of_the_play` matches the key's direction to who is kept, over several positions. |
+| M3 | `ask.trumps` is "Lead a tarock?" with `ans.trumps-no` / `-yes` ("Not yet: you hold 6 of the 22 still out."); every sentence of a yes/no question opens with its verdict (Node test, en and de); `ans.worth-*` are "No: ..." / "Yes: ...". The total is mine plus tarocks out, so it is 22 less the played, not the reviewer's 15 (which counted only his side). |
+| M4 | `ans.trumps-*` and `ans.out-void` use `tarocks_out`, as the fact does; test `the_tarock_counts_of_the_sentence_and_the_fact_agree`. |
+| M5 | Package 2 is built on this branch: the "Why?" button in the hint box (intro, contrast, `trumped`, facts with `data-anchor`, rule clause, odds; at most 90 words, last lines dropped first), reachable by keyboard, closed by Escape (`overlays.js` layer `why`) and by each new hint; browser check `hint_why`. A position with no decisive question gets `ans.ask-none`, or `ans.ask-none-even` when the search sees under a third of a point, in place of the plain `lead-*` reasons. |
+| L6 | German "kein {suit}" in `ans.out-void` and `fact.his-void`. |
+| L7 | `lead-draw`, `lead-exposed`, `lead-his-none` lose "lead {card}"; the Node test rejects `(lead|play) {card}` and `{card} (anspielen|spielen)` in any reason. |
+| L8 | Every reason that can stand as the sentence is within the budget with the headline (Node test). |
+| L9 | `so.worth-rich` is in points ("2⅓ points or more"); its reach (X the sole winner only) is recorded in `HINTS.md` 14. |
+| L10 | The direction, count and verdict tests above were written before the changes and watched failing. |
+| Lesions | `bin/lesions` rerun after the changes: ok, stamp `6e2a6c42...` (in `target/`, not in git). |
+
+Open: `answers` of the "Why?" is empty; the anchors are not highlighted in the
+Cards-out tab; the Mond-held sentence has no measured rule behind it (a fact
+about the Sküs, counted as half 1 only).
