@@ -610,3 +610,12 @@ Dial: style at 3 against Normal at 2, must beat it (lower end above 0):
 
 Each style at skill 3 plays as Normal at 3 within about +-0.8 Points a pair,
 and clears Normal at 2 by 0.9 to 1.7.
+
+### Stage 3: the dial through rung 4 (17 Oct 2026)
+
+Normal, plan fixed before the first batch: batches of 50 mirrored pairs, at most 4
+looks, boundaries 4.05 / 2.86 / 2.34 / 2.02, `--negligible 1.0`.
+`tournament 3.5 3 --batch 50 --looks 4 --negligible 1.0 --seed 6000000`: clear at
+look 1, +5.30 +- 0.90 (95% +3.53 to +7.07). `tournament 4 3.5 ... --seed 6100000`:
+clear at look 2, +2.12 +- 0.64 (95% +0.86 to +3.38). The dial is ordered 3 < 3.5 < 4.
+Stage 4 (rung-4 exploits) is not run: no counter paid at rung 3 (stage 2).
