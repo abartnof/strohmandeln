@@ -98,6 +98,22 @@
 .slate-line.slate-payer,
 .slate-line.slate-square { display: block; font-size: 18px; }
 
+/* The tooltips (4.7): a focus ring on the figure, and the caption at the foot. */
+.slate-tip { cursor: help; }
+.slate-tip:focus-visible { outline: 2px solid var(--chalk); outline-offset: 1px; border-radius: 3px; }
+.slate-tip-caption {
+  position: sticky;
+  bottom: -14px;
+  margin: 10px -14px -14px;
+  padding: 8px 14px;
+  min-height: 2.6em;
+  font-size: 13px;
+  color: var(--chalk);
+  background: var(--board);
+  border-top: 1px solid var(--chalk-dim);
+  border-radius: 0 0 20px 20px;
+}
+
 /* Each figure is written as the chalk would: a wipe, 120 ms a figure. */
 .slate-step { animation: slate-write 120ms steps(6, end) both; animation-delay: calc(var(--step, 0) * 120ms); }
 @keyframes slate-write {
