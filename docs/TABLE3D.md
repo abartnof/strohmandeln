@@ -571,10 +571,9 @@ itself" (7.1) turns the first two off.
 ### 4.2 The look
 
 A dark green-black board with a wooden frame (a CSS border), chalk white and
-two chalk colors (yellow and pale blue for the two players), set in a
-hand-drawn chalk face (a web font embedded in the page; Cassino's single-file
-rule keeps it small), with a fallback of a system cursive that remains
-legible at 14 px. Rows are ruled with a chalk line. Low-contrast chalk
+two chalk colors (yellow and pale blue for the two players). The slate uses
+the page's font (the maintainer, 17 Oct 2026). Rows are ruled with a chalk
+line. Low-contrast chalk
 (pale on dark) is held to a 4.5:1 ratio; a high-contrast setting renders pure
 white and a flat board. No glow effect. Reduced motion draws each entry at
 once.
@@ -1279,7 +1278,7 @@ sentence and changes nothing; over 1 MB refused).
 
 9.5 **Offline single file.** `web3d/strohmandeln.html`, built by `kit/build.py` from
 `web3d/game.toml`: the bundle, the wasm, the faces, `words.json`,
-`strings.json`, the tutorial pages, the chalk font and the HUD's CSS inlined; no
+`strings.json`, the tutorial pages and the HUD's CSS inlined; no
 network request (the browser test blocks them all). Target size under 10 MB, the
 guideline in `game.toml`; the weigh-in names the kit's, three.js's and the
 game's bytes. `kit/build.py --check` fails if the committed page differs.

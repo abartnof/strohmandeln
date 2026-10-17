@@ -1,7 +1,7 @@
 /* The slate and the settings menu (docs/TABLE3D.md 4, 7). Only classes
    prefixed .slate and .settings are here; the rest of the table's styling is
-   the table's own. The chalk face is a web font the build embeds; until it is
-   there, a system cursive that stays legible at 14 px. */
+   the table's own. They use the page's font (style.css), as the maintainer
+   asked on 17 Oct 2026. */
 
 .slate,
 .settings {
@@ -12,7 +12,7 @@
   --board: var(--md-sys-color-surface-container-high);
   --board-edge: var(--md-sys-color-outline-variant);
   --target: 44px;
-  font-family: "Chalk", "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive, sans-serif;
+  font-family: inherit;
   font-size: 15px;
   color: var(--chalk);
 }
