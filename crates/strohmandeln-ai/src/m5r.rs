@@ -720,7 +720,10 @@ pub fn collect(first: u64, sittings: u64, index0: u64, settings: Settings) -> Lo
                     let mut out = Vec::new();
                     let mut i = t;
                     while i < sittings {
-                        out.push((i, sitting_log(first + i, settings, (index0 + i) % 2 == 0)));
+                        out.push((
+                            i,
+                            sitting_log(first + i, settings, (index0 + i).is_multiple_of(2)),
+                        ));
                         i += THREADS;
                     }
                     out

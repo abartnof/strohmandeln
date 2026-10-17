@@ -475,7 +475,7 @@ fn no_template_uses_a_banned_word() {
             .map(str::to_lowercase)
             .collect()
     };
-    let mut check = |what: &str, text: &str, banned: &[&str], prefix: &[&str]| {
+    let check = |what: &str, text: &str, banned: &[&str], prefix: &[&str]| {
         for w in words(text) {
             assert!(!banned.contains(&w.as_str()), "{what}: '{w}' in '{text}'");
             assert!(
