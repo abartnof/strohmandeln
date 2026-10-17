@@ -521,7 +521,7 @@ def check_new_sitting_style(browser, failures):
     page.wait_for_selector("[data-dialog=new]", timeout=10_000)
     select = page.locator("[data-dialog=new] [data-row=style] select")
     values = select.locator("option").evaluate_all("(os) => os.map((o) => o.value)")
-    fail_if(values != ["normal", "random", "bermann", "ms", "bold", "cautious", "hunter"], failures, f"new_sitting_style: the select offers {values}")
+    fail_if(values != ["normal", "random", "bermann", "ms", "bold", "cautious"], failures, f"new_sitting_style: the select offers {values}")
     fail_if(select.input_value() != "normal", failures, f"new_sitting_style: it starts at {select.input_value()!r}")
     fail_if(select.evaluate("(e) => parseFloat(getComputedStyle(e).fontSize)") < 16, failures, "new_sitting_style: the select's font is under 16px")
     choose_style(page, "bermann")
@@ -550,7 +550,7 @@ def check_new_sitting_style(browser, failures):
     check_offline(page, failures, "new_sitting_style: ")
 
 
-OFFERED = ("bermann", "ms", "bold", "cautious", "hunter")
+OFFERED = ("bermann", "ms", "bold", "cautious")
 
 
 def check_random_style_hidden(browser, failures):

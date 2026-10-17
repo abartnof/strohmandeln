@@ -17,24 +17,10 @@ export const VALUES = Object.freeze(["2/3/4", "1/2/3", "1/2/4"]);
 export const ULTIMO = Object.freeze([1, 2]);
 export const TOUREN = Object.freeze([3, 6]);
 export const SKILLS = Object.freeze([1, 2, 3, 3.5, 4]);
-// The styles the new-sitting screen offers after Normal and Random, in order (docs/STYLES.md 9:
-// Werner and Ulmann fell out; Hunter is provisional). The engine's `styles()` is the source
-// once it exists (offeredStyles); this list is the fallback until then, and is deleted with it.
-export const OFFERED_STYLES = Object.freeze(["bermann", "ms", "bold", "cautious", "hunter"]);
-
+// The styles the new-sitting screen offers come from the engine (engine.styles(), docs/PROTOCOL.md);
+// the prefs keep any id-shaped one and the screen reads one that is not offered as Normal.
 const styleId = (x) => typeof x === "string" && /^[a-z]{2,16}$/.test(x);
 
-// The offered styles: the engine's own list when it has one (a list of ids, or {styles: [...]}), else the fallback.
-export function offeredStyles(engine) {
-  let got = null;
-  try {
-    got = engine?.styles?.() ?? null;
-  } catch {
-    got = null;
-  }
-  if (got && !Array.isArray(got)) got = got.styles;
-  return Array.isArray(got) && got.length && got.every(styleId) ? got : OFFERED_STYLES;
-}
 export const SPEEDS = Object.freeze(["slow", "normal", "fast", "instant"]);
 export const TALKS = Object.freeze(["all", "calls", "none"]);
 export const FACES = Object.freeze(["auto", "classic", "jumbo"]);

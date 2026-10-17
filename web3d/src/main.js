@@ -32,7 +32,7 @@ import { createNewSitting } from "./newsitting.js";
 import { momentsOf } from "./moments.js";
 import { check, emptyModel, fromState, reduce } from "./model.js";
 import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
-import { loadPrefsInfo, offeredStyles, savePrefs, sittingConfig, speedScale, urlOverrides, withUrl } from "./prefs.js";
+import { loadPrefsInfo, savePrefs, sittingConfig, speedScale, urlOverrides, withUrl } from "./prefs.js";
 import { createSettings, sittingFrom } from "./settings.js";
 import { escapeTarget, selectGuard } from "./overlays.js";
 import { createSpeaker } from "./speaker.js";
@@ -1158,7 +1158,7 @@ async function main() {
   // The new-sitting screen (3.5.1): what is chosen is kept as the next default (3.5.2).
   let newScreen = null;
   function askNew() {
-    newScreen = createNewSitting(document, { t, prefs, sitting: sittingOnTable, styles: offeredStyles(engine) });
+    newScreen = createNewSitting(document, { t, prefs, sitting: sittingOnTable, styles: engine.styles() });
     ui.dialog({ id: "new", title: t("ui.new.title"), body: newScreen.node, buttons: [{ label: t("ui.new.deal"), act: "deal", primary: true, focus: true }, ...(wasm && !sittingOver ? [{ label: t("ui.new.cancel"), act: "cancel" }] : [])] });
   }
 
