@@ -631,6 +631,31 @@ page "Touren and the slate" (6.2), in one line ("This is how an evening of
 Tarock was kept. No source says Strohmandl was kept this way: we have borrowed
 it.") and in the slate's tooltip. It is not repeated.
 
+### 4.7 Tooltips on the figures
+
+Decided 17 Oct 2026 (the maintainer): a newcomer must be able to ask what any
+figure means.
+
+4.7.1 Every figure, heading and mark on the slate has a tooltip: each entry by
+its cause, the deal's total, the running account, the number, the dealer mark
+("G"), "Geber 1", "×2", the draw and throw-in notes, the Tour's number and its
+two accounts, "Extended", the header (the Touren, the settings), the balance and
+its direction, and each line of the settlement. The text says what it means in
+this sitting, from the record and the settings: who declared, who pays whom, the
+Points (doubled or not), the kreuzer at 2 per Point. The templates are
+`slate.tip.*` in `web3d/strings.json`, en and de, at most 25 words, each
+resting on the rule it cites (R 9, 10, 11, 12, 14, 15). The Tour's two figures
+are the accounts at its end (R 15.5, running), with the Tour's own gain beside
+them. Under Random style no text names the style.
+
+4.7.2 A tooltip is the element's `title` (hover) and its `aria-description`
+(screen reader), and the same text appears in a caption at the foot of the
+sheet on hover, tap and focus, so touch has it too.
+
+4.7.3 Keyboard: the figures are one tab stop (roving `tabindex`). Left and Right
+move one figure, Up and Down one line, Home and End the first and last; the
+focused figure's text is in the caption.
+
 ## 5. Talk
 
 The opponent speaks from the phrase bank (`web3d/words.json`, [PH]), generated
