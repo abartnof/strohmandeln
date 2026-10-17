@@ -96,3 +96,8 @@ The "×2" is a word in the tour line below the HUD (`hud.double`), not a chip in
 tour line is 380 px wide and "Tour 2 of 3 · Deal 3 · ×2 · Trick 27 / 27" fits on one line in
 both languages. The valat chip is a table chip placed at the seat, not in the HUD. The
 bonus label's popup is covered by the check (`popped=True`).
+
+## Fixes
+
+- Finding 1 (36 segments ~0.1 px wide): the kit's segment gaps are CSS custom properties (`--seg-gap` 3 px, `--seg-gap-group` 8 px by default, so Cassino's 21 segments are unchanged; a group start is a `.grp` class, not an inline margin). Strohmandeln sets 1 px and 3 px on `.info .hud`. Narrowest segment, every size and language: 0.11 px before, 2.97 px after. `hud_not_clipped` asserts >= 2 px. The name column stays at 3.9em: "Your opponent" still wraps to two lines.
+- TABLE3D section 10 names `hud_not_clipped`; its docstring says 135 2/3 is a chosen wide value.
