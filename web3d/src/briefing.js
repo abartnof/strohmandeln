@@ -13,9 +13,17 @@
 // storage; with none, the brief rests on the deals of this page alone.
 import { MAX_NUMBER, addDeal, historyOf, loadDeals, setEvidence, setSummary, summaryVersion, validSummary } from "./tutorstore.js";
 
-export function createBriefing({ store, engine, level = () => 4, now = () => Math.floor(Date.now() / 1000) }) {
+export function createBriefing({ store, engine, level = () => 4, head = () => ({}), now = () => Math.floor(Date.now() / 1000) }) {
   let memory = []; // the deals of this page, whatever the store keeps
   const cache = new Map(); // record -> brief
+
+  // The sitting's style for the engine: head() is { style, drawn, over }. What Random drew is
+  // handed over, with `reveal`, only once the sitting is over; the engine withholds it otherwise.
+  const styleOf = () => {
+    const { style, drawn, over } = head();
+    if (!style) return undefined;
+    return over ? { style, drawn: drawn ?? undefined, reveal: true } : { style };
+  };
 
   // The deals the tutor reads: the store's, else this page's.
   const kept = () => {
@@ -57,7 +65,7 @@ export function createBriefing({ store, engine, level = () => 4, now = () => Mat
       const all = kept();
       const at = all.findIndex((d) => d.record === entry.record);
       const history = historyOf(at >= 0 ? all.slice(0, at) : all);
-      const r = engine.briefOfRecord(level(), entry.record, entry.assisted, history);
+      const r = engine.briefOfRecord(level(), entry.record, entry.assisted, history, styleOf());
       const brief = r?.brief ?? null;
       if (brief && validSummary(brief.summary)) keepEvidence(entry.record, brief.summary, brief.detail);
       if (brief) cache.set(entry.record, brief);
@@ -94,10 +102,10 @@ export function createBriefing({ store, engine, level = () => 4, now = () => Mat
       const before = historyOf(all.slice(0, all.indexOf(mine[0])));
       let list = deals(false);
       if (!list.length) return null;
-      let r = engine.briefSitting(level(), list, before);
+      let r = engine.briefSitting(level(), list, before, styleOf());
       if (r?.error === "bad-input") {
         list = deals(true);
-        r = list.length ? engine.briefSitting(level(), list, before) : null;
+        r = list.length ? engine.briefSitting(level(), list, before, styleOf()) : null;
       }
       return r?.brief ?? null;
     },

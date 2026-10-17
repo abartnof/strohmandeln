@@ -68,7 +68,9 @@ export const ROWS = SECTIONS.flatMap((s) => s.rows);
 // null when there is none. `source` is the reply's events (the sitting_start
 // among them, a new sitting) or the export's record ({touren, settings}, a
 // restored one: the state's events hold only the deal in progress).
-export function sittingFrom(source, level) {
+// `style` and `drawn` are the engine's (state or export): the style chosen, and what Random drew
+// (null until the sitting is over).
+export function sittingFrom(source, level, style, drawn) {
   const begun = Array.isArray(source) ? source.find((e) => e.type === "sitting_start") : source;
   if (!begun || !begun.touren) return null;
   const rule = begun.settings ?? {};
@@ -78,6 +80,8 @@ export function sittingFrom(source, level) {
     values: rule.values ?? DEFAULTS.values,
     ultimo: rule.ultimo ?? DEFAULTS.ultimo,
     skill: level ?? DEFAULTS.skill,
+    style: style ?? DEFAULTS.style,
+    ...(style === "random" ? { drawn: drawn ?? null } : {}),
   };
 }
 
@@ -156,10 +160,16 @@ export function createSettings(rootEl, { t, prefs, onChange = () => {}, onAction
       row.noteKey ? h(doc, "span", { class: "settings-note" }, t(row.noteKey)) : null);
   }
 
+  // The style's name; Random is named only at the end (STYLES 2.3): "Random (shown at the end)", then "Random: After Ulmann".
+  const styleName = (x) => {
+    if (x.style !== "random") return t(`style.${x.style}.name`);
+    return x.drawn ? t("style.random.drawn", { drawn: t(`style.${x.drawn}.name`) }) : t("style.random.hidden");
+  };
+
   // "This sitting: 3 Touren, 2/3/4, ultimo 1, simple game, opponent level 3", from the record.
   function thisSitting(x) {
     return h(doc, "div", { class: "settings-this", "data-row": "this-sitting" },
-      h(doc, "p", {}, t("settings.sitting", { touren: t(`settings.touren.${x.touren}`), values: x.values, ultimo: x.ultimo, both_pass: t(`settings.sitting.${x.both_pass}`), level: t(`settings.skill.${x.skill}`) })),
+      h(doc, "p", {}, t("settings.sitting", { touren: t(`settings.touren.${x.touren}`), values: x.values, ultimo: x.ultimo, both_pass: t(`settings.sitting.${x.both_pass}`), level: t(`settings.skill.${x.skill}`), style: styleName(x) })),
       h(doc, "p", { class: "settings-note" }, t("settings.sitting.next")));
   }
 

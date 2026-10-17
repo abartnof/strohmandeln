@@ -79,6 +79,8 @@ export function briefBlocks(brief, review, fmt, { whole = false, tips = true } =
     title: t(whole ? "review.sitting" : "review.deal"),
     header,
     bullets,
+    // What Random drew: the engine gives `style.drawn` only with the sitting's `reveal` (STYLES 2.3).
+    reveal: whole && brief?.style?.drawn ? t("style.reveal", { drawn: t(`style.${brief.style.drawn}.name`) }) : null,
     how: t("tutor.how"),
     method: t(brief?.method ?? "tutor.method"),
   };

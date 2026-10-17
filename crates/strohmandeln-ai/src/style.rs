@@ -32,11 +32,6 @@ pub enum Style {
     Hunter,
 }
 
-/// The rung-4 maxim band of every style but Normal, in thirds: Normal's is
-/// 0.34 (`rung4::best_card`). E (`docs/STYLES.md` 3); set against the style's
-/// cost in the measurement of 4.3.
-const BAND: f64 = 2.0;
-
 /// Rung 4's bid margin for each style, in Points: the advantage at which
 /// Normal's rung-4 sample bids the share of hands the style's rule bids
 /// (`probe::Calibration`, `stage0`). Rung 4 bids by the sampled advantage, not
@@ -67,9 +62,9 @@ impl Style {
         Style::Hunter,
     ];
 
-    /// What Random draws from: the candidates, until the gates of
-    /// `docs/STYLES.md` 3 and 4.1 drop some. Never `Normal`.
-    pub const POOL: [Style; 7] = [
+    /// Every style the code plays: what a record's `drawn` may name, and what
+    /// the measurements run. Never `Normal` or `Random`.
+    pub const CANDIDATES: [Style; 7] = [
         Style::Bermann,
         Style::Ulmann,
         Style::Ms,
@@ -78,6 +73,11 @@ impl Style {
         Style::Cautious,
         Style::Hunter,
     ];
+
+    /// What Random draws from, and the dialog offers: the candidates that
+    /// passed the gates of `docs/STYLES.md` 9 (Ulmann, Werner and Hunter did
+    /// not).
+    pub const POOL: [Style; 4] = [Style::Bermann, Style::Ms, Style::Bold, Style::Cautious];
 
     /// The id on the wire and in the record.
     pub fn id(self) -> &'static str {
@@ -138,7 +138,6 @@ impl Style {
         }
         c.bid_margin = Some(self.rung4_margin());
         let w: &mut Weights = &mut c.weights;
-        w.band = BAND;
         match self {
             Style::Normal | Style::Random => {}
             Style::Bermann => {
@@ -243,6 +242,33 @@ impl Config {
     pub fn for_style(style: Style, seed: u64) -> Config {
         let mut c = Config::default();
         style.resolve(seed).apply(&mut c);
+        c
+    }
+}
+
+impl Config {
+    /// Normal's tuning moved as `docs/STYLES.md` 2.1 and 2.2 advise against
+    /// `style` (the player's counter, not the opponent's own play); Normal's
+    /// own for a style with no counter. A counter changes weights and
+    /// constants only.
+    pub fn counter(style: Style) -> Config {
+        let mut c = Config::default();
+        match style {
+            // 2.2: "bid threshold up 10 thirds against it".
+            Style::Bold => c.bid.sure_thirds += 10,
+            // 2.1 MS, 2.2 Cautious: "take up lighter after its pass"; the
+            // size is E, 10 thirds, the mirror of Bold's.
+            Style::Cautious | Style::Ms => c.bid.sure_thirds -= 10,
+            // 2.1 Bermann: do not lead small tarocks into the Mond it
+            // reserves for (`keep_tarocks` up), do not leave a blank on top of
+            // a packet over a figure you mean to keep (`keep_packet` up); the
+            // sizes are E (x2 and x1.5).
+            Style::Bermann => {
+                c.weights.keep_tarocks *= 2.0;
+                c.weights.keep_packet *= 1.5;
+            }
+            _ => {}
+        }
         c
     }
 }

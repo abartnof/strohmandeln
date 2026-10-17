@@ -48,7 +48,7 @@ test("the Kibitzer's tab and mute say what they do, and § 13 is only the flavou
 });
 
 test("keys are namespaced", () => {
-  const ok = /^(ui|chip|banner|hud|slate|refusal|hint|explain|review|sr|card|settings|error|tutor|tracker|keys)\./;
+  const ok = /^(ui|chip|banner|hud|slate|refusal|hint|explain|review|sr|card|settings|error|tutor|tracker|keys|style)\./;
   for (const key of Object.keys(TABLE)) assert.match(key, ok, key);
 });
 
@@ -266,4 +266,11 @@ test("a scrolled or resized hand forgets where the first click fell", () => {
   const main = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
   assert.equal((main.match(/scroll: clampScroll\([^;]*\), at: null/g) ?? []).length, 2, "drag-scroll and wheel");
   assert.match(main, /sel = \{ \.\.\.sel, at: null \}; \/\/ cards move on a resize/);
+});
+
+// The ids the engine can name (docs/PROTOCOL.md `style`), offered or not: an imported record can carry any.
+test("every style id the engine can name has a name and a line in both languages", () => {
+  for (const id of ["normal", "random", "bermann", "ulmann", "ms", "werner", "bold", "cautious", "hunter"]) {
+    for (const k of [`style.${id}.name`, `style.${id}.line`]) assert.ok(TABLE[k]?.en && TABLE[k]?.de, k);
+  }
 });

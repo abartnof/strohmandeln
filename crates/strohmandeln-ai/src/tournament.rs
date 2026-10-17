@@ -35,6 +35,20 @@ pub fn mirrored(seed: u64, settings: Settings, touren: u32, a: Factory, b: Facto
     first - second
 }
 
+/// What `a` gains over `base` against `b` on one seed: Points `a` takes from
+/// `b` over a mirrored pair, less Points `base` takes from `b` on the same
+/// deals (the exploit's D, `docs/STYLES.md` 4.3).
+pub fn paired_gain(
+    seed: u64,
+    settings: Settings,
+    touren: u32,
+    a: Factory,
+    base: Factory,
+    b: Factory,
+) -> i32 {
+    mirrored(seed, settings, touren, a, b) - mirrored(seed, settings, touren, base, b)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -63,6 +77,17 @@ mod tests {
             |seed, _| -> Box<dyn Player> { Box::new(Opponent::new(Level::from_halves(4), seed)) };
         for seed in 0..10 {
             assert_eq!(mirrored(seed, Default::default(), 3, &same, &same), 0);
+        }
+    }
+
+    #[test]
+    fn a_paired_gain_is_the_difference_of_two_mirrored_pairs_and_zero_against_itself() {
+        let (a, base, b) = (at(4), at(2), at(2));
+        for seed in 0..6 {
+            let want = mirrored(seed, Default::default(), 3, &a, &b)
+                - mirrored(seed, Default::default(), 3, &base, &b);
+            assert_eq!(paired_gain(seed, Default::default(), 3, &a, &base, &b), want);
+            assert_eq!(paired_gain(seed, Default::default(), 3, &a, &a, &b), 0);
         }
     }
 

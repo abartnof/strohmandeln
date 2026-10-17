@@ -49,21 +49,32 @@ test("the menu holds none of the five sitting rows (3.5.2, 7.1)", () => {
 test("the sitting is read from the record's sitting_start and the engine's level", () => {
   assert.equal(sittingFrom([], 3), null);
   const events = [{ type: "sitting_start", first_dealer: 0, touren: 6, settings: { both_pass: "throw_in", ultimo: 2, values: "1/2/3" } }];
-  assert.deepEqual(sittingFrom(events, 2.5), { touren: 6, both_pass: "throw_in", values: "1/2/3", ultimo: 2, skill: 2.5 });
-  assert.deepEqual(sittingFrom({ touren: 6, settings: { both_pass: "throw_in", ultimo: 2, values: "1/2/3" } }, 2.5), sittingFrom(events, 2.5), "from an export's record too");
-  assert.deepEqual(sittingFrom([{ type: "sitting_start", touren: 3 }], 1), { touren: 3, both_pass: "play", values: "2/3/4", ultimo: 1, skill: 1 });
+  assert.deepEqual(sittingFrom(events, 3.5), { touren: 6, both_pass: "throw_in", values: "1/2/3", ultimo: 2, skill: 3.5, style: "normal" });
+  assert.deepEqual(sittingFrom({ touren: 6, settings: { both_pass: "throw_in", ultimo: 2, values: "1/2/3" } }, 3.5), sittingFrom(events, 3.5), "from an export's record too");
+  assert.deepEqual(sittingFrom([{ type: "sitting_start", touren: 3 }], 1), { touren: 3, both_pass: "play", values: "2/3/4", ultimo: 1, skill: 1, style: "normal" });
+  assert.equal(sittingFrom([{ type: "sitting_start", touren: 3 }], 3, "bold").style, "bold");
+  assert.equal(sittingFrom([{ type: "sitting_start", touren: 3 }], 3, "random").drawn, null);
+  assert.equal(sittingFrom([{ type: "sitting_start", touren: 3 }], 3, "random", "ulmann").drawn, "ulmann");
 });
 
 test("the This-sitting line: hidden with no sitting; read from the sitting, in both languages", () => {
   const { s, root, menu } = made();
   const line = () => root.findAll((e) => e.getAttribute("data-row") === "this-sitting")[0];
   assert.equal(line(), undefined);
-  menu.setSitting({ touren: 3, both_pass: "play", values: "2/3/4", ultimo: 1, skill: 3 });
-  assert.match(line().textContent, /This sitting: 3 Touren, 2\/3\/4, ultimo 1, simple game, opponent level 3/);
-  menu.setSitting({ touren: 6, both_pass: "throw_in", values: "1/2/4", ultimo: 2, skill: 1.5 });
-  assert.match(line().textContent, /This sitting: 6 Touren, 1\/2\/4, ultimo 2, throw-in, opponent level 1½/);
+  menu.setSitting({ touren: 3, both_pass: "play", values: "2/3/4", ultimo: 1, skill: 3, style: "normal" });
+  assert.match(line().textContent, /This sitting: 3 Touren, 2\/3\/4, ultimo 1, simple game, opponent level 3, style Normal/);
+  menu.setSitting({ touren: 6, both_pass: "throw_in", values: "1/2/4", ultimo: 2, skill: 2, style: "bermann" });
+  assert.match(line().textContent, /This sitting: 6 Touren, 1\/2\/4, ultimo 2, throw-in, opponent level 2, style After Bermann/);
   s.setLang("de");
-  assert.match(line().textContent, /Dieser Abend: 6 Touren, 1\/2\/4, Ultimo 2, Einwerfen, Gegner Stufe 1½/);
+  assert.match(line().textContent, /Dieser Abend: 6 Touren, 1\/2\/4, Ultimo 2, Einwerfen, Gegner Stufe 2, Stil Nach Bermann/);
+  // Random is named only at the end (STYLES 2.3).
+  s.setLang("en");
+  menu.setSitting({ touren: 3, both_pass: "play", values: "2/3/4", ultimo: 1, skill: 3, style: "random", drawn: null });
+  assert.match(line().textContent, /style Random \(shown at the end\)/);
+  assert.doesNotMatch(line().textContent, /Bermann|Ulmann|Bold|Cautious|hunter|Sedlaczek/);
+  s.setLang("en");
+  menu.setSitting({ touren: 3, both_pass: "play", values: "2/3/4", ultimo: 1, skill: 3, style: "random", drawn: "ulmann" });
+  assert.match(line().textContent, /style Random: After Ulmann/);
   menu.setSitting(null);
   assert.equal(line(), undefined);
 });
