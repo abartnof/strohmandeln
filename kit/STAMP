@@ -47,12 +47,12 @@ test/director.test.js    -                              new
 test/modules.test.js     -                              new
 test/test_build.py       -                              new
 js/scoring.js            web3d/src/hud.js               model half, generic: defineGame, ledger, segments, popupsOf, countEvents, listHeight (categories, target, scale, line reader are the game's); CHANGED: `lit` (segments a score lights) and segmentState's fifth argument
-js/hud.js                web3d/src/hud.js               widget half, generic: createHud(root, game, options); words, names, goal, format, reduced motion are options; CHANGED: segments lit by game.lit
+js/hud.js                web3d/src/hud.js               widget half, generic: createHud(root, game, options); words, names, goal, format, reduced motion are options; CHANGED: segments lit by game.lit; new: `mark(side, spec)`, a role mark after a name with a data-tip tooltip
 js/count.js              web3d/src/choreography.js      Plan.count's timing (countSchedule), director.js animate's pace (scalePace), main.js's quiet window (quietWindow, muted); new: paceOf, HUD_TIMING
-css/hud.css              web3d/src/style.css            the score HUD section, verbatim except for `.info` (the page's slot for it) and a header
+css/hud.css              web3d/src/style.css            the score HUD section, except for `.info` (the page's slot for it), a header, and the `.hud-mark` block (new, with `hud.mark`)
 test/scoring.test.js     web3d/test/hud.test.js         model tests ported onto a stand-in game; new: defineGame, thirds, segment scale, handHeight
 test/framing.test.js     -                              new: a game passes its own eyes
-test/hud.test.js         web3d/test/hud.test.js         widget tests ported onto a stand-in game; new: names, goal, thirds, reduced motion, words
+test/hud.test.js         web3d/test/hud.test.js         widget tests ported onto a stand-in game; new: names, goal, thirds, reduced motion, words, mark
 test/count.test.js       -                              new (the pace and the quiet window were untested in cassino's node tests)
 test/counting.test.js    -                              new: a Strohmandeln-like game (threes, thirds, 36 of 70) through the whole path
 test/fixtures/games.js   -                              new: the stand-in game definitions

@@ -174,10 +174,10 @@ Numbers below are at normal speed, starting values, tuned in play.
 |---|---|
 | `sitting_start` | The table is empty; a pack of 54 backs lies at the centre. The greeting is said (5). The sitting-length choice (3.5) is made before this, on the new-sitting screen |
 | first dealer (`sitting_start`) | **The cut.** A card is peeled from the pack for each player and laid face up beside it, yours nearer you, both seen a moment (the two faces are decorative: cards of the human's own hand, drawn from nothing the opponent holds); the dealer is drawn by lot (R 2.1), so no high or low rule is claimed. The cards go back on the pack face down; the dealer marker is set and `cut` is said. With reduced motion: the marker appears and nothing is cut |
-| `deal_start` | Every card is collected to the pack at the new dealer's right, a face-up card turning over on its way; a **dealer marker** (a small disc, "D" or "Geber" by language) sits by the dealer. A doubled deal (`multiplier` 2) shows the **doubling marker** (a "×2" disc, chalk-white, by the HUD) |
+| `deal_start` | Every card is collected to the pack at the new dealer's right, a face-up card turning over on its way; a **dealer marker** (a chip with the word "Dealer" / "Geber", no letter: a "D" read as the declarer's) sits by the dealer; its tooltip says who deals and who speaks first (17 Oct 2026, the maintainer). A doubled deal (`multiplier` 2) shows the **doubling marker** (a "×2" disc, chalk-white, by the HUD) |
 | `dealt` | **The deal, 3 × 5.** From the top of the pack, five cards at a time to forehand, five to the dealer, round three times: each card from the pack's top straight to its place, the human's turning to face as they rise. Then **six packets of four**: four cards each, face down, to forehand's first packet, the dealer's first, forehand's second ... (R 2.4); each packet lands as a squared stack in its place, the cards offset a hair so the thickness reads. The deal is quick and rhythmic: the pack's top card is flicked (`toss`) at 70 ms intervals within a hand, 160 ms between packets |
 | `void_deal` | Each player's hand cards are turned up and fanned a moment: the player without a tarock shows it (only that player's cards are named in the line; for the human's own cards, that is the fan; for the opponent's, the backs turn up, a legitimate reveal since the deal is annulled and nothing is played). A "no tarock" tag rises over the hand; the cards sweep back to the pack; the same dealer deals again (`deal_start` follows) |
-| `bid` | Speech and a badge. The bidder's line is said (5); a **bid badge** ("Ich nehme auf" / "I take it up") rises over the bidder's hand zone and stays there the whole deal as a small chip by the dealer marker, so the declarer is always visible; the HUD marks the declarer. The human's bid is made by a button (3.4) and badges the same |
+| `bid` | Speech and a badge. The bidder's line is said (5); a **bid badge** ("Ich nehme auf" / "I take it up") rises over the bidder's hand zone and stays there the whole deal as a small chip by the dealer marker, so the declarer is always visible; the HUD marks the declarer (2.5.8). The human's bid is made by a button (3.4) and badges the same |
 | `pass` | Speech; a "Weiter" / "Pass" chip rises over the passer for 1.2 s and fades |
 | `both_pass` (`play`) | A "Stille Partie" / "Simple game" chip, kept until the reveal ends. (`both_pass` is followed by `reveal_start`) |
 | `both_pass` + `thrown_in` | The 54 cards are collected into the pack, the dealer marker moves to the other player, a "Eingeworfen" / "Thrown in" chip is shown; the Tour counter on the HUD advances (R 15.3). Nothing is scored |
@@ -316,6 +316,15 @@ credited player's HUD row, never as a card.
 
 2.5.7 At Instant speed no popup waits; the cards are laid in one step. With reduced
 motion, the groups fade in place.
+
+2.5.8 **The declarer on the HUD** (17 Oct 2026, the maintainer's request: "Put the D
+(declarer) on the scoring HUD ... a mouseover tooltip explains the D"). The name column
+marks the declarer's row from the bid until the deal ends: "You (D)" / "Opponent (D)" (the HUD's short names),
+in German "Sie (A)" / "Gegner (A)" (Aufnehmer). A simple game (both passed) has no
+declarer and no mark. The mark has a tooltip (a bubble from `data-tip`, and its accessible name) "Declarer:
+took it up; needs 36 card points of 70 to win." / "Aufnehmer: hat aufgenommen; braucht
+36 Augen von 70 zum Gewinn.", shown on hover and on focus or tap (the mark takes Tab). The dealer chip's tooltip is the same bubble, reachable the same ways.
+The dealer's chip (the `deal_start` row) is a word so that "D" means one thing.
 
 ### 2.6 The game scored, the draw, the void deal, the throw-in
 
@@ -613,8 +622,8 @@ once.
 
 4.3.1 Two columns, "Sie" / "You" and "Ihr Gegner" / "Your opponent"; the player
 who deals the first deal is marked "Geber 1" in the left margin.
-**A row per deal**: its number ("1"), the dealer's mark (a small "G" at
-the row's margin), and for each player the **credits** of that deal (R 15.9):
+**A row per deal**: its number ("1"), the dealer's mark (a small "G", in
+English "Dlr", at the row's margin), and for each player the **credits** of that deal (R 15.9):
 cause and Points, in chalk shorthand, the cause named in words by language:
 
 | Cause | de | en |
@@ -1507,6 +1516,10 @@ motion are saved to `web3d/test/out/`.
   languages, with "35⅔" a side, a wide ledger value and the bonus label's popup, every
   HUD text lies inside the HUD box and the window, and each of the line's 36 segments is
   at least 2 px wide.
+- `declarer_mark`: before the bid the HUD has no mark and the dealer's chip reads the word
+  ("Dealer" / "Geber") with a tooltip; after the human's take-up "(D)" / "(A)" follows "You" /
+  "Sie" with its tooltip, reachable by Tab and showing on focus; a simple game has no mark
+  (2.5.8). `hud_not_clipped` also holds with the mark on both rows.
 - `tracker_clear`: with Hints on, the cards-out panel is open at rest, of the trick at
   rest, with two to four lines and the 54-cell grid, and its rectangle meets none of
   the hand, the move bar, the prompt, the HUD or the Kibitzer's tabs at the window

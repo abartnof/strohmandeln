@@ -29,6 +29,7 @@ import { bonusLines, countGame, countLines, edgeOf, liveTally, runningTally } fr
 import { loadEngine } from "./engine.js";
 import { createMirror } from "./mirror.js";
 import { createNewSitting } from "./newsitting.js";
+import { dealerTag, declarerMark } from "./declarer.js";
 import { momentsOf } from "./moments.js";
 import { check, emptyModel, fromState, reduce } from "./model.js";
 import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
@@ -546,6 +547,16 @@ async function main() {
     return out;
   }
 
+  // The declarer's "(D)" on the score HUD, set when it changes (the model, the language).
+  let declarerShown = null;
+  function markDeclarer(mark) {
+    const key = mark ? `${mark.side}:${mark.title}` : "";
+    if (key === declarerShown) return;
+    declarerShown = key;
+    hud.mark("you", mark?.side === "you" ? mark : null);
+    hud.mark("opp", mark?.side === "opp" ? mark : null);
+  }
+
   // ---- tags that follow cards -----------------------------------------------------
   function placeTags() {
     if (!S || !restModel) return ui.tags([]);
@@ -568,13 +579,15 @@ async function main() {
       }
     }
     // The dealer's marker and the declarer's badge, by their hands.
-    for (const [key, seat, text] of [["dealer", m.dealer, t("hud.dealer.short")], ["declarer", m.declarer, t("ui.take")]]) {
+    const dealer = dealerTag(m, t);
+    for (const [key, seat, text, title] of [["dealer", m.dealer, dealer?.text, dealer?.title], ["declarer", m.declarer, t("ui.take")]]) {
       if (seat === null || seat === undefined || (key === "declarer" && !wasm?.deal?.playing && m.declarer === null)) continue;
       const who = seat === m.human ? "you" : "them";
       const edge = director.handEdge(who);
       const dx = key === "dealer" ? -1 : 1;
-      list.push({ id: key, text, x: edge.x + dx * (key === "dealer" ? 150 : 100), y: edge.y + (who === "you" ? -14 : 14), kind: key });
+      list.push({ id: key, text, x: edge.x + dx * (key === "dealer" ? 150 : 100), y: edge.y + (who === "you" ? -14 : 14), kind: key, tip: title });
     }
+    markDeclarer(declarerMark(m, t));
     // The public mark on a hand card the other player has seen.
     // A hint (TABLE3D 1.5.7): drawn only while hints are on.
     for (const slot of publicSlots(placement, prefs)) {
@@ -1638,6 +1651,7 @@ async function main() {
     openReview,
     live: () => ui.lived(),
     hud: () => ({ totals: hud.totals(), shown: hud.shown(), idle: hud.idle() }),
+    hudMark: (side, spec) => hud.mark(side, spec), // the checks put a mark on a side to measure the name column
     zoneRects,
     cardRects: cardRectsOf,
     placement: () => director.placement().map((m) => ({ zone: m.zone, key: m.key, code: m.code, index: m.index, packet: m.packet })),

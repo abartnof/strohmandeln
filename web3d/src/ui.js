@@ -22,7 +22,7 @@ export function createUi(root, { t, onAct }) {
   root.replaceChildren();
   const q = (s) => root.querySelector(s);
   root.append(
-    el("div", { class: "tags", "aria-hidden": "true" }),
+    el("div", { class: "tags" }), // each tag is hidden from a reader but one with a tip
     el("div", { class: "floats", "aria-hidden": "true" }),
     el("div", { class: "info" }, el("div", { class: "hud-slot" }), el("p", { class: "tour-line" })),
     el("div", { class: "slate-root" }),
@@ -208,7 +208,7 @@ export function createUi(root, { t, onAct }) {
         keep.add(tag.id);
         let node = have.get(tag.id);
         if (!node) {
-          node = el("div", { class: `tag ${tag.kind}`, "data-id": tag.id });
+          node = el("div", { class: `tag ${tag.kind}`, "data-id": tag.id, ...(tag.tip ? { tabindex: "0", role: "note" } : { "aria-hidden": "true" }) });
           tagLayer.append(node);
         }
         if (node.textContent !== (tag.text ?? "")) node.textContent = tag.text ?? "";
@@ -219,6 +219,10 @@ export function createUi(root, { t, onAct }) {
           node.style.height = `${(tag.height ?? 3).toFixed(1)}px`;
         }
         if (tag.title) node.title = tag.title;
+        if (tag.tip) {
+          node.dataset.tip = tag.tip; // the styled bubble (style.css), on hover and focus
+          node.setAttribute("aria-label", `${tag.text}: ${tag.tip}`);
+        }
       }
       for (const [id, node] of have) if (!keep.has(id)) node.remove();
     },
