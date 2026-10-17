@@ -550,3 +550,60 @@ Normal; Bold reads at 0.916. The narrower band did not raise skill-4 AUC (it
 fell, for example Bermann 0.795 to 0.762, Werner 0.678 to 0.642): the gain
 the wide band's shared noise gave was not a tell, and the skill-4 style rests on
 its bid.
+
+### Stage 2 and 2b at skill 3, 17 Oct 2026
+
+Plan, fixed before the first batch (STYLES 4, 4.3): batches of 100 mirrored
+pairs of 3-Tour sittings, at most 6 looks, boundaries z_k = 2.05*sqrt(6/k)
+(5.03, 3.56, 2.90, 2.51, 2.25, 2.05; the tool's, two-sided, claims read
+one-sided: a crossing the other way is a failure), the tool's futility stop
+`--negligible 1.0` (whole 95% interval inside +-1.0, from look 2), first seed
+4 000 000. Counters are `Config::counter` (test
+`a_counter_is_normal_with_the_advised_parameters_moved_and_nothing_else`):
+Bold, bid `sure_thirds` 45 to 55 (2.2); Cautious and MS, 45 to 35 (2.1, 2.2: "lighter",
+size E, the mirror of Bold's); Bermann, `keep_tarocks` x2 and `keep_packet`
+x1.5 (2.1: no small tarocks into its Mond reserve, no blank over a kept
+figure; sizes E). D = Points(C_S v S) - Points(Normal v S) per pair, same
+deals, same seat seeds (`paired_gain`, test `a_paired_gain_is_the_difference_...`).
+
+    tournament 3@counter=ID 3@style=ID --baseline 3 --batch 100 --looks 6 --negligible 1.0 --seed 4000000
+    tournament 3@style=ID 3 --batch 100 --looks 6 --negligible 1.0 --seed 4000000
+    tournament 3@style=ID 2 --batch 100 --looks 6 --negligible 1.0 --seed 4000000
+
+Stage 2, exploit D > 0 (mean +- se, 95% interval at the stop):
+
+| Style | Stop | Pairs | D | 95% interval | Verdict |
+|---|---|---|---|---|---|
+| bermann | negligible, look 2 | 200 | -0.010 +- 0.139 | -0.282 to +0.262 | fails; no advice ships |
+| ms | negligible, look 2 | 200 | -0.275 +- 0.297 | -0.857 to +0.307 | fails |
+| bold | negligible, look 2 | 200 | -0.290 +- 0.202 | -0.686 to +0.106 | fails |
+| cautious | negligible, look 2 | 200 | -0.215 +- 0.286 | -0.776 to +0.346 | fails |
+
+No counter passed, so none was re-run on 4 500 000. The counters are weights
+and constants of Normal's own play; against these styles they gain nothing
+measurable at skill 3 (Bermann's changes act so rarely that D has se 0.14).
+The tells of 2.1 and 2.2 stay as facts for the brief (5), without the counter
+as a rule.
+
+Stage 2b. Cost: style at 3 against Normal at 3, must not beat it by more than
+one dial step (3 v 2, +1.53 +- 0.40, `docs/OPPONENT.md`): pass if the upper end
+is below 1.53.
+
+| Style | Stop | Pairs | S - Normal | 95% interval | Verdict |
+|---|---|---|---|---|---|
+| bermann | negligible, look 3 | 300 | +0.223 +- 0.297 | -0.358 to +0.804 | pass |
+| ms | negligible, look 2 | 200 | +0.210 +- 0.366 | -0.508 to +0.928 | pass |
+| bold | negligible, look 4 | 400 | +0.102 +- 0.340 | -0.563 to +0.768 | pass |
+| cautious | negligible, look 2 | 200 | +0.210 +- 0.370 | -0.516 to +0.936 | pass |
+
+Dial: style at 3 against Normal at 2, must beat it (lower end above 0):
+
+| Style | Stop | Pairs | S3 - N2 | 95% interval | Verdict |
+|---|---|---|---|---|---|
+| bermann | clear, look 3 | 300 | +1.490 +- 0.399 | +0.708 to +2.272 | pass |
+| ms | clear, look 3 | 300 | +1.210 +- 0.371 | +0.484 to +1.936 | pass |
+| bold | clear, look 4 | 400 | +0.870 +- 0.345 | +0.195 to +1.545 | pass (weakest: below the plain step's +1.53) |
+| cautious | clear, look 3 | 300 | +1.707 +- 0.402 | +0.919 to +2.495 | pass |
+
+Each style at skill 3 plays as Normal at 3 within about +-0.8 Points a pair,
+and clears Normal at 2 by 0.9 to 1.7.
