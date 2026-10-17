@@ -251,15 +251,12 @@ export function createSlate(root, { t, tn, onLang = sharedOnLang, later = (ms, f
   }
 
   // A tap on the sheet while it is folding itself keeps it open; a tap on the
-  // backdrop folds it. Escape folds it.
+  // backdrop folds it. (Escape is the page's: overlays.js.)
   root.addEventListener("click", (ev) => {
     if (timer !== null) {
       cancel(timer);
       timer = null;
     } else if (ev.target === root) close();
-  });
-  root.addEventListener("keydown", (ev) => {
-    if (ev.key === "Escape") close();
   });
   onLang(render);
   render();

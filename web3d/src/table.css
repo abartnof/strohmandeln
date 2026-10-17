@@ -1,7 +1,7 @@
 /* The slate and the settings menu (docs/TABLE3D.md 4, 7). Only classes
    prefixed .slate and .settings are here; the rest of the table's styling is
-   the table's own. The chalk face is a web font the build embeds; until it is
-   there, a system cursive that stays legible at 14 px. */
+   the table's own. They use the page's font (style.css), as the maintainer
+   asked on 17 Oct 2026. */
 
 .slate,
 .settings {
@@ -12,7 +12,7 @@
   --board: var(--md-sys-color-surface-container-high);
   --board-edge: var(--md-sys-color-outline-variant);
   --target: 44px;
-  font-family: "Chalk", "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive, sans-serif;
+  font-family: inherit;
   font-size: 15px;
   color: var(--chalk);
 }
@@ -183,7 +183,21 @@
 .settings-action:focus-visible,
 .settings-close:focus-visible,
 .slate-close:focus-visible { outline: 3px solid var(--md-sys-color-primary); outline-offset: 2px; }
-.settings-locked .settings-option { cursor: default; } /* locked: full-contrast text; the row's "from the next sitting" note says why */
-.settings-note,
-.settings-when { font-size: 13px; color: var(--chalk-dim); }
+.settings-select {
+  box-sizing: border-box;
+  min-height: var(--target);
+  max-width: 100%;
+  padding: 6px 12px;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 16px; /* never smaller: a phone zooms the page into a smaller select */
+  cursor: pointer;
+}
+.settings-select:focus-visible { outline: 3px solid var(--md-sys-color-primary); outline-offset: 2px; }
+.settings-this { margin-top: 10px; }
+.settings-this p { margin: 0 0 4px; }
+.settings-note { font-size: 13px; color: var(--chalk-dim); }
 .settings-action { margin: 4px 6px 0 0; }

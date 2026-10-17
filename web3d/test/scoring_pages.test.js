@@ -161,7 +161,7 @@ test("the worked deal: 28 cards worth 55 count 36⅓, the other 26 worth 51 coun
 
 for (const lang of LANGS) {
   test(`${lang}: the game's value on the pages is what the engine pays, for each values setting (RULES 9.1, 9.2)`, async () => {
-    const WINS = { en: /wins gets (\d+) Points?(?:, however many card points he took)?; one who loses pays (\d+)/, de: /gewinnt, erhält (\d+) Points?; wer verliert, zahlt (\d+)/ }[lang];
+    const WINS = { en: /wins gets (\d+) Points?(?:, however many card points they took)?; one who loses pays (\d+)/, de: /gewinnt, erhält (\d+) Points?; wer verliert, zahlt (\d+)/ }[lang];
     const PLAIN = { en: /pays its winner (\d+)/, de: /seinem Sieger (\d+)/ }[lang];
     for (const [values, [wins, loses, simple]] of Object.entries(VALUES)) {
       // what the engine paid for the game, in sittings played by a declarer and by two passers

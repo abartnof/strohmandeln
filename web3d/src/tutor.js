@@ -184,3 +184,24 @@ export function createTutor({ prefs, patch, open = () => {}, speak = () => {} })
   };
   return api;
 }
+
+// ---- the public mark, a hint (TABLE3D 1.5.7, 6.3.4) -----------------------------------
+// Hints are on when the setting is on and the Kibitzer is not muted (the mute is
+// the tutor's, so with the tutor off it does not apply): the hint's and the
+// tracker's condition, without the tracker's own setting.
+export const hintsOn = (prefs) => Boolean(prefs.hints && !(prefs.tutor && prefs.muted));
+
+// The hand cards that carry the gold dot: none with hints off.
+export const publicSlots = (placement, prefs) => (hintsOn(prefs) ? placement.filter((x) => (x.zone === "your-hand" || x.zone === "their-hand") && x.public) : []);
+
+// The Kibitzer's note on the dot is shown once, the first time hints are on; its
+// key is kept in the seen list (not a page: never in Help).
+export const PUBLIC_NOTE = "public-mark";
+// `dots`: a public hand card is on the table, so the note explains a dot that is there.
+export const publicNoteDue = (prefs, dots = true) => dots && hintsOn(prefs) && !(prefs.seen ?? []).includes(PUBLIC_NOTE);
+// True, and kept as seen, when the note is due now.
+export function takePublicNote(prefs, patch, dots = true) {
+  if (!publicNoteDue(prefs(), dots)) return false;
+  patch({ seen: [...(prefs().seen ?? []), PUBLIC_NOTE] });
+  return true;
+}
