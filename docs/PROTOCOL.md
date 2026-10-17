@@ -39,7 +39,7 @@ Text goes in and out through linear memory, as in Cassino. `kit/js/engine.js`
 | `strohmandeln_legal()` | | | `{protocol, legal}` |
 | `strohmandeln_export()` | | | the saved sitting |
 | `strohmandeln_import(len)` | saved JSON in the buffer | 1 restored, 0 not (old sitting stays) | opening reply, or an error |
-| `strohmandeln_hint()` | | | `{protocol, hint, reason, params, rule, odds}`: the tutor's move (one of `legal`, same shape) and why; on the opponent's turn or after the end `hint` is `null` and `reason` `"not-your-turn"`. Does not move the game. See below |
+| `strohmandeln_hint()` | | | `{protocol, deal_action, hint, reason, params, rule, odds, question, keep, so, ans, why}`: the tutor's move (one of `legal`, same shape) and why; on the opponent's turn or after the end `hint` is `null` and `reason` `"not-your-turn"`. Does not move the game. See below |
 | `strohmandeln_review()` | | | `{protocol, review}`: the review of the last scored deal, or `review: null` before one is scored. Does not move the game. See "The review" |
 | `strohmandeln_review_sitting()` | | | the same shape, over every deal scored so far |
 | `strohmandeln_explain()` | | | `{protocol, explain}`: what the last trick showed, one bullet, or `explain: null` before a trick is won. See "The review" |
@@ -346,7 +346,11 @@ asking twice gives the same answer, and asking changes nothing.
  "reason": "win-cheapest",
  "params": {"card": "T19", "led": "T15", "alt": "T21", "trick_thirds": 2},
  "rule": null,
- "odds": {"alt": "T21", "better": 35, "worlds": 50, "gain_thirds": 4}}
+ "odds": {"alt": "T21", "better": 35, "worlds": 50, "gain_thirds": 4},
+ "question": "ask.cheap", "keep": null, "so": null,
+ "ans": {"key": "ans.cheap", "params": {"card": "T19", "alt": "T21"}},
+ "why": {"alt": "T21", "answers": [], "contrast": {"key": "vs.follow", "params": {"card": "T19", "alt": "T21", "w": 50, "b": 35, "a": 4}},
+         "trumped": null, "facts": [], "rule": null, "odds": {"alt": "T21", "better": 35, "worlds": 50, "gain_thirds": 4}}}
 ```
 
 `deal_action` is the number of the action the hint is for (`state.deal_actions`):
@@ -361,7 +365,23 @@ deals, or `null` (not asked at a level below the top, a forced card, or the
 sample does not agree with the choice). The opponent's `step` and the hint
 share their rules: a hint is what the level-4 opponent would play; the
 explanation never changes the move. Without a move to make, `deal_action`,
-`hint`, `rule` and `odds` are `null` and `reason` is `not-your-turn`.
+`hint`, `rule`, `odds`, `question`, `keep`, `so`, `ans` and `why` are `null` and
+`reason` is `not-your-turn`.
+
+The table shows the default hint (`docs/HINTS.md` 3.1): the headline, the
+question and one sentence. `question` is a key of the question table in
+`docs/MESSAGES.md` (`ask.*`) or `null` (a forced card, a bid, or no decisive
+question); `keep` is the card `ask.keep` is about, else `null`. `so` is a rule
+that passed M5, `ans` the fact; each is `{key, params}` with a key of the sentence
+table there (`ans.*`, `so.*`, or `reason.<key>` where the plain reason stands),
+`params` as for `reason`, a `suit` as its letter. The sentence is `so`, else
+`ans`; `ans` is `null` only for a bid, whose sentence is `reason`. `why` is for
+the "Why?" (`HINTS.md` 3.1): `alt` the natural alternative A; `answers` the
+answers to the other questions (empty for now); `contrast` and `trumped` the
+sampled deals of the hinted card against A (`vs.*`), or `null`; `facts` at most
+two `{key, params, anchor}` (`fact.*`; `anchor` is `line1` to `line4` or
+`row:<kind>`, a cell of the Cards-out tab); `rule` the measure of a shown `so`
+(`null` until M5r); `odds` as above. `params.card` is always the hinted card.
 
 ## The review
 
