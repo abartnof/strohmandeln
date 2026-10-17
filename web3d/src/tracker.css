@@ -19,8 +19,8 @@
   --md-sys-color-on-primary: #121417;
   --md-sys-color-tertiary: #646d77;
   --md-sys-color-error: #ffb4ab;
-  --tracker-opp: #7a3a37; /* a card he played: a dull red (the slate's teal is his colour elsewhere) */
-  --tracker-on-opp: #ffdad6;
+  --tracker-opp: #a8322d; /* a card he played: a clear red (the slate's teal is his colour elsewhere) */
+  --tracker-on-opp: #ffffff;
   position: absolute;
   left: 8px;
   top: var(--tracker-top, 160px);

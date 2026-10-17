@@ -104,6 +104,7 @@ const hue = (hex) => {
 };
 test("the opponent's played cell is red, apart from the grey one", () => {
   assert.ok(hue(tracker["tracker-opp"]), tracker["tracker-opp"]);
+  assert.equal(tracker["tracker-on-opp"], "#ffffff", "one hue on the cell: white text and bar on the red");
   for (const set of [light, dark]) assert.notEqual(tracker["tracker-opp"], set["cassino-them"]);
   assert.ok(ratio(tracker["tracker-opp"], tracker[M + "surface-container-highest"]) < 2, "a red tint, not a text-weight contrast");
 });
