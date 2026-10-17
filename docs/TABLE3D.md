@@ -1423,6 +1423,10 @@ motion are saved to `web3d/test/out/`.
   unmute restores them.
 - `hint_and_explain`: the hint chip lights a card and shows a rendered key; explanations
   off leaves the line empty.
+- `hud_not_clipped`: at 1280 × 720, 1440 × 900, 1920 × 1080 and 1024 × 768, in both
+  languages, with "35⅔" a side, a wide ledger value and the bonus label's popup, every
+  HUD text lies inside the HUD box and the window, and each of the line's 36 segments is
+  at least 2 px wide.
 - `tracker_clear`: with Hints on, the cards-out panel is open at rest, of the trick at
   rest, with two to four lines and the 54-cell grid, and its rectangle meets none of
   the hand, the move bar, the prompt, the HUD or the Kibitzer's tabs at the window

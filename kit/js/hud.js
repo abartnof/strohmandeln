@@ -72,7 +72,7 @@ export function createHud(root, game, { later = (ms, fn) => setTimeout(fn, ms), 
     const row = el("div", { class: `hud-line ${side}` });
     for (let n = 1; n <= N; n++) {
       const seg = el("div", { class: "seg unreached" });
-      if (n > 1) seg.style.marginLeft = (n - 1) % 5 === 0 ? "8px" : "3px";
+      if (n > 1 && (n - 1) % 5 === 0) seg.classList.add("grp"); // gaps: --seg-gap, --seg-gap-group (hud.css)
       if (n === N) seg.style.flexGrow = "1.8";
       lines[side].push(seg);
       row.append(seg);
