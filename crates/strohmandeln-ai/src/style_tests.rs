@@ -47,6 +47,14 @@ fn random_is_drawn_from_the_pool_by_a_hash_of_the_seed() {
         seen.insert(d);
     }
     assert_eq!(seen.len(), Style::POOL.len(), "every member comes up");
+    // Offered after the gates of docs/STYLES.md 9; the others stay in the code.
+    assert_eq!(
+        Style::POOL,
+        [Style::Bermann, Style::Ms, Style::Bold, Style::Cautious]
+    );
+    for s in Style::CANDIDATES {
+        assert!(Style::CANDIDATES.contains(&s));
+    }
     assert!(!Style::POOL.contains(&Style::Normal));
     assert!(!Style::POOL.contains(&Style::Random));
 }
@@ -62,7 +70,7 @@ fn normal_is_the_default_config_exactly() {
 
 #[test]
 fn every_other_style_differs_from_normal_somewhere() {
-    for s in Style::POOL {
+    for s in Style::CANDIDATES {
         let c = cfg(s);
         assert_eq!(c.style, s);
         assert!(c != Config::default(), "{s:?}");
@@ -279,7 +287,7 @@ fn a_styled_opponent_is_a_function_of_the_view_and_decides_legally() {
     use crate::testutil::walk;
     use strohmandeln_core::types::Action;
     use strohmandeln_core::view::view;
-    for s in Style::POOL {
+    for s in Style::CANDIDATES {
         let o = Opponent::new(Level::from_halves(4), 3).with_config(cfg(s));
         for seed in 0..3 {
             walk(seed, |st, seat| {
@@ -301,7 +309,7 @@ fn a_styled_opponent_is_a_function_of_the_view_and_decides_legally() {
 #[test]
 fn a_style_carries_its_calibrated_rung_four_margin() {
     assert_eq!(Style::Normal.rung4_margin(), 0.0);
-    for s in Style::POOL {
+    for s in Style::CANDIDATES {
         assert_eq!(cfg(s).bid_margin, Some(s.rung4_margin()), "{s:?}");
     }
     assert_eq!(cfg(Style::Normal).bid_margin, Some(0.0));
@@ -324,8 +332,8 @@ fn the_margins_are_stage_0_figures_relative_to_normals_and_ordered_by_the_rules_
     }
     // A rule that takes up on fewer hands has the higher margin.
     let cal = crate::probe::Calibration::sample(0..300, 1);
-    for a in Style::POOL {
-        for b in Style::POOL {
+    for a in Style::CANDIDATES {
+        for b in Style::CANDIDATES {
             let (sa, sb) = (cal.share(cfg(a).bid), cal.share(cfg(b).bid));
             if sa + 0.02 < sb {
                 assert!(a.rung4_margin() >= b.rung4_margin(), "{a:?} {b:?}");

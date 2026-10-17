@@ -62,9 +62,9 @@ impl Style {
         Style::Hunter,
     ];
 
-    /// What Random draws from: the candidates, until the gates of
-    /// `docs/STYLES.md` 3 and 4.1 drop some. Never `Normal`.
-    pub const POOL: [Style; 7] = [
+    /// Every style the code plays: what a record's `drawn` may name, and what
+    /// the measurements run. Never `Normal` or `Random`.
+    pub const CANDIDATES: [Style; 7] = [
         Style::Bermann,
         Style::Ulmann,
         Style::Ms,
@@ -73,6 +73,11 @@ impl Style {
         Style::Cautious,
         Style::Hunter,
     ];
+
+    /// What Random draws from, and the dialog offers: the candidates that
+    /// passed the gates of `docs/STYLES.md` 9 (Ulmann, Werner and Hunter did
+    /// not).
+    pub const POOL: [Style; 4] = [Style::Bermann, Style::Ms, Style::Bold, Style::Cautious];
 
     /// The id on the wire and in the record.
     pub fn id(self) -> &'static str {
