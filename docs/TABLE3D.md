@@ -140,7 +140,15 @@ by at least a card's half-height.
 1.5.7 **Pulled cards enter the hand in place**: the hand reflows (fan or row) to
 make room; public cards (pulled, [R 13.4]) carry a small mark in the hand: a
 ringed gold dot at the card's lower left, so the human can tell the cards the opponent
-has seen (3.7 explains it).
+has seen (3.7 explains it). The dot is a memory aid, so it is a hint: shown only
+while hints are on (6.3.4: Hints set, the Kibitzer not muted), on neither hand
+otherwise, and it comes and goes at once when Hints is toggled. The first time
+hints are on and a dot is on the table (Hints is off by default, so: once the player
+switches it on and a card is pulled or an honour announced), a short note in a table
+dialog (title "The gold dot", Close; not the Kibitzer's tab, shown with the tutor off
+too) explains it, once (key `public-mark` in the `seen` list; never again after a
+reload). It waits while cards move, a dialog or the menu is open; a language switch
+draws it again. Decision of 17 Oct 2026, the maintainer's.
 
 1.5.8 **Opponent's hand count** (`opponent_hand_size`) shown as cards, never as a
 number alone; at least one back is visible until it is empty.
@@ -489,7 +497,8 @@ prompt; the chip says "Your opponent has had enough." (key `ext-opp-no`).
 
 Public hand cards (pulled; and cards of an announced honour, R 13.5) carry the
 mark of 1.5.7 on both hands. The legend is in the tutor's page on packets and
-in the card's tooltip ("The other player has seen this card.").
+in the card's tooltip ("Seen by both players" / "Von beiden gesehen"), in the note
+of 1.5.7 and in one line of the packets page (6.2.2). With hints off there is no mark.
 
 ### 3.8 Left-handed mode
 
@@ -562,10 +571,9 @@ itself" (7.1) turns the first two off.
 ### 4.2 The look
 
 A dark green-black board with a wooden frame (a CSS border), chalk white and
-two chalk colors (yellow and pale blue for the two players), set in a
-hand-drawn chalk face (a web font embedded in the page; Cassino's single-file
-rule keeps it small), with a fallback of a system cursive that remains
-legible at 14 px. Rows are ruled with a chalk line. Low-contrast chalk
+two chalk colors (yellow and pale blue for the two players). The slate uses
+the page's font (the maintainer, 17 Oct 2026). Rows are ruled with a chalk
+line. Low-contrast chalk
 (pale on dark) is held to a 4.5:1 ratio; a high-contrast setting renders pure
 white and a flat board. No glow effect. Reduced motion draws each entry at
 once.
@@ -832,7 +840,7 @@ such page.
 
 | Page key | Opens at | Says |
 |---|---|---|
-| `the-cards` | the first `dealt`, first of the pages due at that rest (the cards are the first thing a newcomer sees) | what the cards are: the tarocks are trumps I to XXI and the Sküs, made for play (Italy, by 1442; fortune-telling is French and later, 1781), nothing here tells a fortune; Austrians still play Tarock and Piatnik still sells Tarock packs; German keeps Tarock (the game) and Tarot (the divining deck) apart, English has one word; the C is the Cavall, a knight worth 3 points, kept by the Tarock pack and dropped by the 52-card pack; the faces show big letters and corner numbers where a real pack has pictures and no suit-card index. Wording and sources: `research/15-the-pack-today.md` ("For the tutor") |
+| `the-cards` | the first `dealt`, first of the pages due at that rest (the cards are the first thing a newcomer sees) | which card beats which (RULES 1.4, 1.5): the Sküs highest, XXI down to II, the Pagat (I) lowest; rank is not value (the Pagat is lowest yet worth 5); each suit K, Q, C, J (the Cavall, a knight worth 3 points, between queen and jack; the 52-card pack dropped him), then the pips, 10 9 8 7 in clubs and spades, 1 2 3 4 in hearts and diamonds with the 1 highest; tarocks were made for play (Italy, by 1442; fortune-telling is French and later, 1781), nothing here tells a fortune; Austrians still play Tarock and Piatnik still sells Tarock packs; the faces show big letters where a real pack has pictures. The Tarock/Tarot word note and the corner-numbers line are not on the page (17 Oct 2026: the rank order took the space). Wording and sources: `research/15-the-pack-today.md` ("For the tutor") |
 | `packets` | the first `dealt`, after `the-cards` | what the three packets are, the face-up card on top, the count of hidden cards beneath, that you and your opponent each have three, that a cover is yours to play |
 | `bidding` | the first `bid` turn (the human's, or the first `bid` event seen) | who speaks first; "Ich nehme auf" or "Weiter"; the declarer; the card values (RULES 1.7, with the court letters the faces show: K Q C J, German K D C B), that the 54 cards count 70 in threes and 36 are needed, and a link to `thirds`; what is won and lost by the `values` setting; both pass plays a simple game (and what it pays) or throws in, by the setting |
 | `the-pull` | the first `reveal_start` (no decision is asked: the cards turn themselves) | the cards are turned in turn; a tarock or a king goes to the hand; the turning continues; a low card stays; the last card of a packet always goes |
@@ -908,6 +916,16 @@ line; off, the line is empty. The game's result is said whatever.
 6.3.4 Hints and explanations are asked only with the cards at rest (the director's
 `rested`), once per position, never in an animation. If the muted tutor is
 asked for a hint, the chip says "Tips are off (§ 13)" / "Tipps sind aus (§ 13)", unmuting only by the human's tap.
+
+6.3.5 Hints' contents: the hint chip and its sentence, the Cards-out tracker (6.6)
+and the public mark on hand cards (1.5.7), all under one condition: Hints set and
+the Kibitzer not muted (the chip keeps Hints and the mute apart to say "Tips are
+off"). The mark has a first-time note (1.5.7): "A gold dot marks a card both of you
+have seen: pulled from a packet, or shown when an honour was announced. At a real
+table you would have to remember it; with hints on, I mark it." / "Ein goldener
+Punkt bezeichnet eine Karte, die Sie beide gesehen haben: aus einem Paket gezogen
+oder beim Ansagen einer Ehre gezeigt. An einem echten Tisch müssten Sie sie sich
+merken; bei eingeschalteten Hinweisen merke ich sie für Sie."
 
 ### 6.4 The end-of-deal brief
 
@@ -1012,9 +1030,11 @@ the tracker is never called a slate.)
 6.6.2 **When it shows.** Hints on (7.1), the setting "Cards out" on (default on), the
 tutor not muted (as the hint, 6.3.4), and a deal under way. A tab "Cards out" /
 "Ausgespielt" in the top row, left of the slate's, folds and unfolds it
-(`aria-expanded`); so does the panel's own "Fold" button. The fold is kept
-(`trackerFolded` in the preferences, 7.7): unset, the panel starts open when the
-window is at least 900 × 600 px and folded on a smaller one. On a phone it is not
+(`aria-expanded`); so does the panel's own "Fold" button. The panel is folded
+on load and at the start of every deal, at any window size, as the score HUD's
+by-deal list is, and opens only when the person opens it; nothing is kept
+(17 Oct 2026, the maintainer's play-through notes; an old saved `trackerFolded`
+is ignored). On a phone it is not
 shown at all, and the engine is not asked for it (6.6.6, `trackerFits`).
 
 6.6.3 **When it changes.** With the cards at rest (the director's `rested`, as 6.3.4):
@@ -1101,7 +1121,7 @@ numbered (7.7).
 | Table talk | All / Calls only / None | All | now |
 | Tutor | On / Off (off: no pages, no tips, no review chip) | On | now |
 | Tips from the Kibitzer | On / Off (off: no advice in the Kibitzer's tab and no "Next" in the review; it shows the count and what went well, 6.4.6) | On | now |
-| Hints | On / Off (the hint chip) | Off | now |
+| Hints | On / Off (the hint chip, the Cards-out tracker, the public mark on hand cards; 6.3.5) | Off | now |
 | Cards out | On / Off (the tracker, 6.6; shown only with Hints on) | On | now |
 | Explanations | On / Off | Off | now |
 | Announce automatically | Off / On (an honour is announced before it is played, with no prompt) | Off | now |
@@ -1258,7 +1278,7 @@ sentence and changes nothing; over 1 MB refused).
 
 9.5 **Offline single file.** `web3d/strohmandeln.html`, built by `kit/build.py` from
 `web3d/game.toml`: the bundle, the wasm, the faces, `words.json`,
-`strings.json`, the tutorial pages, the chalk font and the HUD's CSS inlined; no
+`strings.json`, the tutorial pages and the HUD's CSS inlined; no
 network request (the browser test blocks them all). Target size under 10 MB, the
 guideline in `game.toml`; the weigh-in names the kit's, three.js's and the
 game's bytes. `kit/build.py --check` fails if the committed page differs.
@@ -1382,11 +1402,15 @@ motion are saved to `web3d/test/out/`.
   rest, with two to four lines and the 54-cell grid, and its rectangle meets none of
   the hand, the move bar, the prompt, the HUD or the Kibitzer's tabs at the window
   sizes of 6.6.6, with the whole legend inside it (no scrolling).
-- `tracker_fold_and_settings`: the tab and Fold fold and open it and the fold is
-  kept; it follows the cards at rest; Hints off, its own setting off, or the
-  Kibitzer muted takes it away, and back on returns it.
+- `tracker_fold_and_settings`: a fresh page starts folded at 1280 × 720; the tab
+  and Fold open and fold it; it follows the cards at rest; Hints off, its own
+  setting off, or the Kibitzer muted takes it away, and back on returns it; the
+  next deal starts folded again.
 - `tracker_languages`: the tab, the lines and the court labels are German in
   German, and the German legend is whole inside the panel; held upright it is not shown.
+- `public_mark`: with hints off no gold dot and no note; switched on (the menu open defers the
+  note to its closing) the dots appear with a tooltip, the note once and kept as seen; off, or
+  the Kibitzer muted, takes the dots away at once, and back on returns them (1.5.7).
 - `deal_brief`: after a scored deal the chip opens "How the deal went": the count as
   the header, at most three bullets with a bold lead each, the method folded; none
   after a void deal or a throw-in; in German in German; muted it shows nothing; with the

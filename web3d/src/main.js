@@ -46,7 +46,7 @@ import { trackerPanel } from "./trackerview.js";
 import { createBriefing } from "./briefing.js";
 import { explainText, briefBlocks, nudgeText } from "./review.js";
 import { MAX_IMPORT, clearTutor, exportText, importText, loadDeals, refreshOne } from "./tutorstore.js";
-import { createTutor, extendPromptDue, PAGE_KEYS, tutorialPages } from "./tutor.js";
+import { createTutor, extendPromptDue, hintsOn, PAGE_KEYS, publicSlots, takePublicNote, tutorialPages } from "./tutor.js";
 import { helpBody, pageBody, reviewBody } from "./tutorview.js";
 import TUTORIAL_DE from "../tutorial.md";
 import TUTORIAL_EN from "../tutorial.en.md";
@@ -121,6 +121,7 @@ async function main() {
   let hintCard = null;
   let trackerData = null; // the engine's tracker at the last rest (6.6)
   let trackerSig = "";
+  let trackerUnfolded = false; // folded at every deal and on load (6.6.2)
   let pending = 0; // scheduled moments not yet come
   let restModel = null; // the model at the last rest, for the tags
   let sittingOver = false;
@@ -192,6 +193,7 @@ async function main() {
     onChange: (key, value) => changed(key, value),
     onAction: (name) => settingsAction(name),
   });
+  new MutationObserver(() => publicNote()).observe(ui.settingsRoot, { attributes: true, attributeFilter: ["hidden"] });
   // The slate's self-folding timer must be cancellable (director.at returns no id): a fold set at a
   // Tour's end would otherwise close the settlement opened at the sitting's end.
   const slateTimers = new Set();
@@ -258,6 +260,8 @@ async function main() {
   const showTutor = () => {
     ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip, working: owed.length > 0 || settling });
     showTracker(); // the Kibitzer's mute is the slate's too (6.6.2)
+    if (S) director.redecorate(); // the mute and the tutor setting take the gold dots too (1.5.7)
+    publicNote();
   };
   const tutorWords = () => ({ t, lang: getLang(), cardName: romanName, thirds, signed, suitName: (c) => (getLang() === "en" ? suitName(c).toLowerCase() : suitName(c)) });
   showTutor();
@@ -271,7 +275,7 @@ async function main() {
   }
   function showTracker() {
     const on = Boolean(wasm?.deal) && trackerShown();
-    const open = on && trackerOpen(prefs, { width: window.innerWidth, height: window.innerHeight });
+    const open = on && trackerOpen({ unfolded: trackerUnfolded });
     if (on && !trackerData && !director.busy() && pending === 0) trackerData = engine.tracker()?.tracker ?? null;
     const sig = JSON.stringify([on, open, trackerData, getLang()]);
     if (sig === trackerSig) return placeTracker();
@@ -300,10 +304,9 @@ async function main() {
     root.style.setProperty("--tracker-top", `${Math.round(top)}px`);
     root.style.setProperty("--tracker-max", `${Math.max(120, Math.round(limit - top - 6))}px`);
   }
-  // The fold is the person's, and kept.
+  // The person's fold, for this deal only.
   function toggleTracker() {
-    const open = trackerOpen(prefs, { width: window.innerWidth, height: window.innerHeight });
-    save({ trackerFolded: open });
+    trackerUnfolded = !trackerUnfolded;
     showTracker();
   }
 
@@ -456,6 +459,14 @@ async function main() {
     const events = tutorBuf;
     tutorBuf = [];
     if (tutorAuto && wasm) tutor.rest(wasm, events, { human, blocked: ui.dialogOpen() });
+    publicNote();
+  }
+  // The Kibitzer's note on the gold dot, once, the first time hints are on (TABLE3D 1.5.7).
+  function publicNote() {
+    if (!wasm || director.busy() || pending > 0 || ui.dialogOpen() || !ui.settingsRoot.hidden) return; // after the menu closes
+    const dots = Boolean(S) && [...S.model.hand, ...S.model.opp].some((c) => c.public);
+    if (!takePublicNote(() => prefs, save, dots)) return;
+    ui.dialog({ id: "note", title: t("ui.public.note.title"), body: t("ui.public.note"), buttons: [{ label: t("ui.close"), act: "close", primary: true, focus: true }] });
   }
 
   // A line in a box by the opponent's hand, clear of the cards and the controls.
@@ -535,7 +546,8 @@ async function main() {
       list.push({ id: key, text, x: edge.x + dx * (key === "dealer" ? 150 : 100), y: edge.y + (who === "you" ? -14 : 14), kind: key });
     }
     // The public mark on a hand card the other player has seen.
-    for (const slot of placement.filter((x) => (x.zone === "your-hand" || x.zone === "their-hand") && x.public)) {
+    // A hint (TABLE3D 1.5.7): drawn only while hints are on.
+    for (const slot of publicSlots(placement, prefs)) {
       const corner = new Vector3(-CARD.width / 2 + 0.2, -CARD.height / 2 + 0.2, CARD.thickness / 2);
       const at = director.toScreen(corner.applyQuaternion(slot.pose.quaternion).add(slot.pose.position));
       list.push({ id: `pub:${slot.zone}:${slot.index}`, text: "", x: at.x + 8, y: at.y - 6, kind: "public", width: 10, height: 10, title: t("ui.public.tip") });
@@ -663,6 +675,7 @@ async function main() {
         hud.dealt(1);
         showTour();
         ui.hideBanner();
+        trackerUnfolded = false; // every deal starts folded (6.6.2)
         showTutor();
         break;
       case "trick_won":
@@ -853,6 +866,7 @@ async function main() {
         });
       }
     }
+    // The chip is a hint (hintsOn); it keeps Hints and the mute apart to say "Tips are off" (6.3.4).
     if (mine && !busy && prefs.hints && wasm.phase !== "extend") groups.push({ kind: "hint", buttons: [{ act: "hint", label: t("ui.hint"), enabled: true }] });
     ui.setBar(groups, { left: prefs.leftHanded });
     // The extension prompt.
@@ -1112,6 +1126,7 @@ async function main() {
     log = [];
     restModel = null;
     trackerData = null;
+    trackerUnfolded = false;
     showTracker();
   }
 
@@ -1275,6 +1290,10 @@ async function main() {
       case "tips":
         settleFocus();
         break;
+      case "hints":
+        director.redecorate(); // the gold dots come and go at once
+        publicNote();
+        break;
       case "surface":
         stage.setSurface(chooseSurface({ chosen: value === "random" ? null : value, saved: null }));
         break;
@@ -1325,6 +1344,10 @@ async function main() {
     // An open page is drawn again in the new language; the lists are closed.
     ui.closeDialog("help");
     ui.closeDialog("review");
+    if (ui.dialogOpen("note")) {
+      ui.closeDialog("note");
+      ui.dialog({ id: "note", title: t("ui.public.note.title"), body: t("ui.public.note"), buttons: [{ label: t("ui.close"), act: "close", primary: true, focus: true }] });
+    }
     if (tutor.current() && ui.dialogOpen("page")) openPage(tutor.current(), { help: pageHelp });
     stage.render();
   });
