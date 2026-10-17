@@ -74,3 +74,15 @@ match the other German pages.
 The first commit fails the caps tests; the next two fix them. Squash all three into one (the second and
 third are only layout and wording of the first), then add finding 1 to the same commit or a following
 one, and the rebuilt page as its own commit.
+
+## Fixes
+
+| Finding | Fixed in |
+|---|---|
+| 1 how to count | Kibitzer pages commit (reviewer's wording; last line "To win you need 36: that is 35⅔ or more" for the plain game too) |
+| 2 dropped lines | Kibitzer pages commit: 52-card clause and "In Österreich" restored; the Tarock/Tarot note and corner numbers stay off (decision 17 Oct 2026, recorded in TABLE3D 6.2.2 and research/15) |
+| 3 stale html | Rebuild commit (`kit/build.py --check` passes) |
+| 4 TABLE3D row | Docs commit |
+| 5 tests | Kibitzer pages commit: 70 anchored to the "always count 70" line, 106 derived from the value rows, indents fixed |
+| 6 Tarocke/Tarocks | Kibitzer pages commit: "Tarocks" throughout |
+| 7 worth 5 | Kibitzer pages commit: "worth 5 points, the most a card is worth" |
