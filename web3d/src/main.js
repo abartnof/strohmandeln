@@ -229,7 +229,7 @@ async function main() {
     words: WORDS,
     getLang,
     rng: Math.random,
-    say: ({ key, text, call, who }) => (who === "kibitz" ? kibitzNote(text) : speaker.offer({ key, text, call })),
+    say: ({ key, text, call, who }) => (who === "kibitz" ? kibitzNote(text, key) : speaker.offer({ key, text, call })),
   });
   talk.setMode(prefs.talk);
 
@@ -319,9 +319,16 @@ async function main() {
   }
 
   // The Kibitzer's note, in his tab and not in the opponent's box (6.5).
-  function kibitzNote(text) {
+  // The line is kept by key while it is up, so a language switch re-letters it.
+  let kibitzKey = null;
+  function kibitzNote(text, key) {
     ui.kibitzNote(text);
-    director.at(Math.max(4000, 250 + 70 * text.length), () => ui.kibitzNote(null), "linger");
+    kibitzKey = key ?? null;
+    director.at(Math.max(4000, 250 + 70 * text.length), () => {
+      if (kibitzKey !== (key ?? null)) return; // a later note is up
+      kibitzKey = null;
+      ui.kibitzNote(null);
+    }, "linger");
   }
 
   // The pages, for the sitting's rules: both-pass, game values and ultimo (6.2.2).
@@ -1131,6 +1138,7 @@ async function main() {
     ui.closeDialog("over");
     for (const id of ["page", "help", "review"]) ui.closeDialog(id);
     ui.kibitzNote(null);
+    kibitzKey = null;
     tutor.reset();
     tutorBuf = [];
     reviewChip = null;
@@ -1353,6 +1361,7 @@ async function main() {
     document.title = t("ui.title");
     canvas.setAttribute("aria-label", t("ui.stage"));
     ui.relabel();
+    if (kibitzKey && WORDS.texts[kibitzKey]?.[lang]) ui.kibitzNote(WORDS.texts[kibitzKey][lang]);
     boxes.forEach((box, line) => {
       box.dataset.text = lineText(line);
       box.textContent = box.dataset.text;
