@@ -147,7 +147,8 @@ when both pass have one block for each value of `values`, `ultimo` and
 
 - Count your won cards in threes: add the three values, take off 2.
 - Example: a king, a jack and a seven are 5 + 2 + 1 = 8, less 2 = 6.
-- Card by card, each counts its value less two-thirds: three cards, the sum less 2. One or two left over lose two-thirds each.
+- Card by card, each counts its value less two-thirds: three cards, the sum less 2.
+- One or two left over lose two-thirds each.
 - So the two takes make 70 in all.
 - The target is 36, written **35⅔** (36 rounded; the count keeps thirds). **35⅓** falls short.
 - The score at the top runs as you take tricks.
