@@ -954,7 +954,7 @@ def check_tracker_languages(browser, failures):
 BRIEF_KEPT = "(() => { const b = window.strohmandeln3d.briefing(); return b.kept.length >= 1 && b.kept.every((d) => d.summary) && b.owed === 0; })()"
 
 
-def brief_page(browser, prefs, query="seed=7&speed=instant&human=1"):
+def brief_page(browser, prefs, query="seed=1&speed=instant&human=1"):
     page = with_prefs(browser, {"hints": True, "seen": ["public-mark"], "slateAuto": False, **prefs}, query)
     return page
 
@@ -1046,7 +1046,7 @@ def check_deal_brief(browser, failures):
     # that decision then counts as assisted
     page.keyboard.press("m")
     focus = js(page, "briefing()")["focus"]
-    fail_if(focus is None, failures, "deal_brief: the first deal named no focus (the seed is chosen for one)")
+    fail_if(focus is None, failures, "deal_brief: the first deal named no focus (the seed is chosen for one; level 1 is deterministic since the styles engine, so re-scan after an opponent change)")
     if focus:
         before = len(js(page, "briefing()")["kept"])
         drive(page, lambda st, log: bool(js(page, "briefing()")["assisted"]) or sum(e["type"] == "game_scored" for e in log) > before or st["prompt"] == "over")
