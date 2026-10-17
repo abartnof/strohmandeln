@@ -163,6 +163,63 @@ def check_slate_rows(browser, failures):
         fail_if(page.locator(".slate-thrown_in .slate-note").count() < 1 or page.locator(".slate-thrown_in .slate-note").first.inner_text() != t("slate.thrown-in", "de"), failures, "slate_rows: the thrown-in row does not say eingeworfen")
 
 
+def check_slate_tips(browser, failures):
+    # Every figure has a tooltip, one reads from the record, and the keyboard has one tab stop.
+    page = open_page(browser, "seed=2&speed=instant&human=1")
+    ok = drive(page, has("game_scored"), policy="weiter")
+    fail_if(not ok, failures, "slate_tips: no deal scored")
+    if ok:
+        rest(page)
+        page.locator(".slate-tab").click()
+        tips = page.locator(".slate .slate-tip")
+        n = tips.count()
+        fail_if(n < 10, failures, f"slate_tips: only {n} tips on the slate")
+        bad = page.evaluate("[...document.querySelectorAll('.slate .slate-tip')].filter((e) => !e.title.trim() || e.title !== e.getAttribute('aria-description') || /[{}]/.test(e.title)).map((e) => e.className)")
+        fail_if(bad, failures, f"slate_tips: tips with no text, no description or an unfilled slot: {bad[:3]}")
+        figures = page.evaluate("[...document.querySelectorAll('.slate .slate-credit, .slate .slate-total, .slate .slate-conto, .slate .slate-balance, .slate .slate-direction, .slate .slate-no, .slate .slate-dealer, .slate .slate-double, .slate .slate-col')].filter((e) => !e.classList.contains('slate-tip')).length")
+        fail_if(figures, failures, f"slate_tips: {figures} figures without a tip")
+        # One tip read against the record: the first credit of the first scored deal.
+        e = next(e for e in js(page, "log()") if e["type"] == "game_scored")
+        human = state(page)["human"]
+        c = e["credits"][0]
+        who = "you" if c["seat"] == human else "opp"
+        kind = f"game.{e['result'] if e['result'] in ('declarer_win', 'declarer_loss') else 'simple_win'}.{who}" if c["cause"] == "game" else f"{c['cause']}.{who}"
+        base = c["points"] // e["multiplier"]
+        pts = t("slate.tip.pt.one" if base == 1 else "slate.tip.pt.other").format(n=base)
+        x2 = t("slate.tip.doubled").format(n=c["points"]) if e["multiplier"] == 2 else ""
+        want = t(f"slate.tip.{kind}").format(pts=pts, x2=x2)
+        got = page.locator(".slate [data-deal]").first.locator(".slate-credit").first.get_attribute("title")
+        fail_if(got != want, failures, f"slate_tips: the first credit says {got!r}, the record gives {want!r}")
+        # One tab stop; the arrows move; the caption follows.
+        stops = page.evaluate("document.querySelectorAll('.slate .slate-tip[tabindex=\"0\"]').length")
+        fail_if(stops != 1, failures, f"slate_tips: {stops} tab stops among the figures")
+        page.evaluate("document.querySelector('.slate .slate-tip[tabindex=\"0\"]').focus()")
+        page.keyboard.press("ArrowRight")
+        page.keyboard.press("ArrowDown")
+        at = page.evaluate("({ tip: document.activeElement.dataset.tip || null, title: document.activeElement.title, caption: document.querySelector('.slate-tip-caption').textContent })")
+        fail_if(not at["tip"] or at["caption"] != at["title"], failures, f"slate_tips: the arrows left focus at {at}")
+        page.keyboard.press("Escape")
+        fail_if(slate_open(page), failures, "slate_tips: Esc did not fold the slate from a figure")
+    close_all(browser)
+    # In German, the tips are German.
+    page = open_page(browser, "seed=2&speed=instant&human=1&lang=de")
+    ok = drive(page, has("game_scored"), policy="weiter")
+    if ok:
+        rest(page)
+        got = page.locator(".slate .slate-credit").first.get_attribute("title") or ""
+        e = next(e for e in js(page, "log()") if e["type"] == "game_scored")
+        c = e["credits"][0]
+        human = state(page)["human"]
+        who = "you" if c["seat"] == human else "opp"
+        kind = f"game.{e['result'] if e['result'] in ('declarer_win', 'declarer_loss') else 'simple_win'}.{who}" if c["cause"] == "game" else f"{c['cause']}.{who}"
+        base = c["points"] // e["multiplier"]
+        pts = t("slate.tip.pt.one" if base == 1 else "slate.tip.pt.other", "de").format(n=base)
+        x2 = t("slate.tip.doubled", "de").format(n=c["points"]) if e["multiplier"] == 2 else ""
+        want = t(f"slate.tip.{kind}", "de").format(pts=pts, x2=x2)
+        fail_if(got != want, failures, f"slate_tips: the German tip is {got!r}, the record gives {want!r}")
+    close_all(browser)
+
+
 def check_slate_points_and_settlement_note(browser, failures):
     page = open_page(browser, "seed=7&speed=instant&human=1")
     ok = drive(page, has("game_scored"))
@@ -1369,7 +1426,7 @@ def check_escape_dialogs(browser, failures):
 
 
 CHECKS_104 = [
-    check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
+    check_slate_open_close, check_slate_rows, check_slate_tips, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_settings_no_rules, check_new_sitting_from_table, check_skill_speed, check_new_sitting_style, check_random_style_hidden,
     check_language_switch, check_language_switch_at_count, check_hud_not_clipped, check_prefs_storage, check_save_restore, check_export_import_file,
     check_tutor_pages, check_red_pips_note, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief,
