@@ -1092,10 +1092,13 @@ switch redraws it. A restored sitting shows it at the first rest.
 red suits and 10 9 8 7 in black, as printed); then the 22 tarocks from the Sküs down
 to I in rows of 8, 8 and 6. Labels follow the faces (`tarockfaces.js`): K Q C J in
 English, K D C B in German; Roman numerals with IIII; "Sküs". A cell's state is
-carried by more than colour: **yours** (hand or cover) is filled; **played** is
-dimmed on a grey field, and under `prefers-contrast: more` struck through; **still
-out** (unseen, or face up in his hand or on his cover) is outlined. A legend names
-the three; its "Still out" says it holds your own face-down packet cards ("Still
+carried by more than colour: **yours** (hand or cover) is filled; **played by
+you** is dimmed on a grey field; **played by your opponent** is a dull red field
+(`--tracker-opp`, 8.6:1 light, 6.5:1 dark for its label; not the slate's teal) with a
+bar under the label; under `prefers-contrast: more` both are struck through, his
+dashed (17 Oct 2026, the maintainer: the cards he played should differ from the
+grey of "not seen yet"); **still out** (unseen, or face up in his hand or on his
+cover) is outlined. A legend names the four; its "Still out" says it holds your own face-down packet cards ("Still
 out, with your face-down packet cards"), which a beginner would otherwise take for
 his. Who played a card, and in which trick, is in the cell's title (the faces'
 numerals: "tarock V: played by your opponent, trick 3") and in the screen reader's
@@ -1128,12 +1131,15 @@ mit" (6.5).
 
 6.6.6 **Where it lies.** It must not cover the hand, the move bar, the prompt, the
 HUD or the Kibitzer's tabs, and it lies under the dialogs and the slate (z-order). A
-card of 300 px at the left, under the HUD, scrolling inside if it is taller;
+card of 300 px at the left, under the HUD, scrolling inside if it is taller. Its top
+follows the HUD's actual bottom (the tour line and the "not 36" chips included) and
+slides down when the by-deal list opens and back when it folds (17 Oct 2026, the
+maintainer: the two should be on screen together, not colliding);
 mirrored at the right in left-handed mode. Held upright, or in a window under
 700 px wide, it is not shown at all: **the phone layout is deferred** until the
 maintainer has played the game on a phone and decided what the table should carry
 there. Nothing in the tracker is phone-specific. Browser checks hold the rectangles
-apart at 1280 × 720 and 1024 × 768 (`tracker_clear`, 10.4).
+apart at 1280 × 720, 1024 × 768, 1440 × 900 and 1920 × 1080, in English and German, the HUD's list closed and open (`tracker_clear`, 10.4).
 
 6.6.7 **Accessibility.** The panel is a labelled region; the lines are a list; the grid
 is hidden from the screen reader and replaced by one visually hidden sentence per
