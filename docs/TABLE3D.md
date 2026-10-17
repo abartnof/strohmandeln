@@ -1409,6 +1409,9 @@ motion are saved to `web3d/test/out/`.
   next deal starts folded again.
 - `tracker_languages`: the tab, the lines and the court labels are German in
   German, and the German legend is whole inside the panel; held upright it is not shown.
+- `public_mark`: with hints off no gold dot and no note; switched on (the menu open defers the
+  note to its closing) the dots appear with a tooltip, the note once and kept as seen; off, or
+  the Kibitzer muted, takes the dots away at once, and back on returns them (1.5.7).
 - `deal_brief`: after a scored deal the chip opens "How the deal went": the count as
   the header, at most three bullets with a bold lead each, the method folded; none
   after a void deal or a throw-in; in German in German; muted it shows nothing; with the

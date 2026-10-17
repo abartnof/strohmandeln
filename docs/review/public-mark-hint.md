@@ -104,3 +104,15 @@ ok. No test, unit or browser, drives the dot or the note in the page (finding 7)
   Sie" fine).
 - Merge with main: no conflicts; `web3d/strohmandeln.html` is the built bundle and
   rebuilds clean.
+
+## Fixes
+
+1. Fixed: `showTutor` redraws the dots and offers the note (mute, unmute, tutor setting).
+2. Fixed: `hintsOn` (tutor.js) is the one condition; `trackerVisible = hintsOn && tracker`;
+   the chip keeps `prefs.hints` and the mute apart (commented). Test in `publicmark.test.js`.
+3. Fixed: the note is taken only with a public hand card on the table (`takePublicNote(.., dots)`); tested.
+4. Fixed: tooltip "Seen by both players" / "Von beiden gesehen"; the note names packets and announced honours (RULES 13.4, 13.5), en and de.
+5. Fixed: TABLE3D 1.5.7, 3.7, 6.3.5 (German in full, "dialog" not the Kibitzer's voice, date once); one line on the dot added to the packets page, en and de.
+6. Open, accepted: the note waits for a rest or a menu close after a dialog closes.
+7. Fixed: browser check `public_mark` (hints off none, switched on shows dots and the note once and stored as seen, off and mute remove them); `tracker_page` and `brief_page` seed `seen`. A reload cannot be driven (the harness rewrites prefs on load); the reload is held by the unit test on the stored prefs.
+8. Fixed: a language switch draws an open note again.
