@@ -1185,22 +1185,22 @@ or 2.5 snaps to 1 or 2 as the engine does), on the new-sitting screen (3.5) and 
 in the Settings menu; passed as `level` in `new` [P].
 
 **The style** (17 Oct 2026, the maintainer's request; `docs/STYLES.md` 2, 5): a
-native select under the dial, 16 px or more, labelled "Opponent's style" / "Stil
-des Gegners": Normal (default), Random, then the offered styles. The offered
-list is one constant (`OFFERED_STYLES`, `web3d/src/prefs.js`) and follows
-`docs/STYLES.md` 9: today Bermann, Mayr and Sedlaczek, Bold, Cautious, Pagat hunter
-(Werner and Ulmann fell out; Hunter is provisional). A writer is a school, "After
-Bermann" / "Nach Bermann", never the opponent's name; a temperament is the table's
-own character: Bold / Verwegen, Cautious / Vorsichtig, Pagat hunter / Pagatjäger.
-A line under the select says in a sentence what the choice plays like
-(`style.<id>.line`); at skills 3½ and 4, for any style but Normal, a note adds "At
-this skill the style shows mostly in the bidding." (`style.note.bidding`).
-Passed as `style` in `new`; the last choice is kept. Under **Random** the menu's
-line says "Random (shown at the end)" and, once the sitting is over, "Random:
-After Bermann"; the end-of-sitting dialog and brief name the drawn style
-(`style.reveal`), the engine withholding it until the brief's `reveal` flag. Open:
-the after-deal brief's "Their style" bullet (`docs/STYLES.md` 5) waits on the
-engine; a Random sitting left by a new sitting reveals nothing yet.
+native select under the dial, 16 px or more: Normal (default), Random, then the
+offered styles. The list is the engine's (`strohmandeln_styles()`; until the export
+exists, the fallback `OFFERED_STYLES` in `web3d/src/prefs.js`, to be deleted) and
+follows `docs/STYLES.md` 9. Werner and Ulmann are not offered and Random does not
+draw them (the engine's pool is the offered list), but an imported record can name
+them, so their strings stay. A writer is a school ("After Bermann"), never the
+opponent's name; a temperament is the table's own character. Labels and lines are
+`style.<id>.name` and `.line` in `strings.json`; at skills 3½ and 4, for any style
+but Normal, a note says the style shows mostly in the bidding
+(`style.note.bidding`). Passed as `style` in `new`; the last choice is kept. Under
+**Random** the menu's line says "Random (shown at the end)" and, once the sitting is
+over, "Random: After Bermann"; the end-of-sitting dialog and brief name the drawn
+style in quotes (`style.reveal`), the engine withholding it until the brief's
+`reveal` flag. Open: the after-deal brief's "Their style" bullet (`docs/STYLES.md`
+5) waits on the engine; a Random sitting left by a new sitting reveals nothing yet;
+the end dialog's reveal does not follow a language switch made at the end.
 
 ### 7.4 Speed
 

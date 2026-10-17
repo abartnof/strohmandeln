@@ -151,3 +151,25 @@ the branch state it open. Needs a PLAN entry; not a defect of this branch.
    dropdown, not of Random) and the length of the 7.3 paragraph (about 25 lines;
    the line on the browser checks in section 10 is right). Trim 7.3's list of
    labels, which `strings.json` already holds.
+
+## Fixes
+
+17 Oct 2026, on branch `worktree-agent-a5a5f98eae6c311bb`.
+
+- **H1**: the table reads the offered styles from the engine's `styles()` when the
+  module exports `strohmandeln_styles` (`engine.js`, `offeredStyles` in
+  `prefs.js`), else `OFFERED_STYLES`; the fallback is one constant to delete once
+  the export is on main. A kept style that is not offered reads as Normal on the
+  screen. `style.werner.*` added, `style.ulmann.*` kept. A strings test covers
+  every id the engine can name. `random_style_hidden` draws under Random with
+  seeds 7, 2 and 10 and asserts an offered style (it fails on seeds 2 and 10 until
+  the engine's pool is the offered list), and for seed 7 adds a language switch and
+  a restore before the end. The engine side (`Style::POOL`, the export) is another
+  agent's.
+- **M1, M2**: the five lines use the review's wording; German says "Tarock" as the
+  plural and "aufnehmen", "umkämpfte Farben", "offene Dame oder Cavall".
+- **L1**: the reveal quotes the name; `style.random.hidden` de "Zufall (wird am Ende
+  gezeigt)". The This-sitting line stays as shipped (recorded).
+- **L2, L4**: open (TABLE3D 7.3); for PLAN.
+- **L3**: covered by H1's strings.
+- TABLE3D 7.3 trimmed of the label list and corrected for Werner, Ulmann and Random.
