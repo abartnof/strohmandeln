@@ -21,11 +21,11 @@ import { facesFor, largeTextHere } from "../../kit/js/faces.js";
 import { decodeBase64 } from "../../kit/js/engine.js";
 import { CARD } from "../../kit/js/units.js";
 import { sentence, where } from "./a11y.js";
-import { choreograph, initialPlacement, LAST_TRICK, opening } from "./choreography.js";
+import { choreograph, initialPlacement, LAST_TRICK, opening, TIMING } from "./choreography.js";
 import { dragKind, sameSpot, shake } from "./gesture.js";
 import { handRange } from "./layout.js";
 import { TRULL, KINGS } from "./cardinfo.js";
-import { bonusLines, countGame, countLines, edgeOf, liveTally, runningTally } from "./counting.js";
+import { bonusLines, countBadges, countGame, countLines, edgeOf, liveTally, runningTally } from "./counting.js";
 import { loadEngine } from "./engine.js";
 import { createMirror } from "./mirror.js";
 import { createNewSitting } from "./newsitting.js";
@@ -37,7 +37,7 @@ import { createSettings } from "./settings.js";
 import { createSpeaker } from "./speaker.js";
 import { createSlate } from "./slate.js";
 import { hintLines, hintSpoken } from "./hinttext.js";
-import { cardName, count, getLang, onLang, romanName, setLang, signed, suitName, t, tn, thirds } from "./strings.js";
+import { badgeName, cardName, count, getLang, onLang, romanName, setLang, signed, suitName, t, tn, thirds } from "./strings.js";
 import { createTalk } from "./talk.js";
 import { ALL_CODES, backTexture, COURT_CODES, faceTextures } from "./tarockfaces.js";
 import { createUi } from "./ui.js";
@@ -505,8 +505,29 @@ async function main() {
     return out;
   }
 
+  // ---- the count's badges (2.5.2) --------------------------------------------------
+  // One over each group of three, once its cards are down (at once when motion is reduced), kept
+  // while the count's cards are on the table. `countShown`: { lines, shown } of the count under way.
+  let countShown = null;
+  function placeCountBadges() {
+    if (!countShown) return ui.countBadges([]);
+    const placement = director.placement().filter((m) => m.zone === "count");
+    const list = [];
+    for (const b of countBadges(countShown.lines, { t, name: badgeName })) {
+      if (!countShown.shown.has(b.line)) continue;
+      const cards = placement.filter((m) => b.codes.includes(m.code));
+      if (!cards.length) continue;
+      const rects = cards.map((m) => rectOf(cardCorners(m.pose).map((c) => director.toScreen(c))));
+      const rect = rectOf(rects.flatMap((r) => [{ x: r.left, y: r.top }, { x: r.right, y: r.bottom }]));
+      const card = Math.min(rects[0].right - rects[0].left, rects[0].bottom - rects[0].top);
+      list.push({ id: `count:${b.line}`, label: b.label, text: b.text, side: b.side, thirds: b.thirds, x: (rect.left + rect.right) / 2, y: rect.top, size: Math.max(12, Math.min(22, card * 0.42)) });
+    }
+    ui.countBadges(list);
+  }
+
   // ---- tags that follow cards -----------------------------------------------------
   function placeTags() {
+    placeCountBadges();
     if (!S || !restModel) return ui.tags([]);
     const m = restModel;
     const list = [];
@@ -614,7 +635,15 @@ async function main() {
   function schedulePopups(count, lines, at, scored) {
     if (!count) return;
     const events = countEvents(game, lines, { at, hand: 1 });
+    const badged = { lines, shown: new Set() };
+    countShown = badged;
     if (count.lines.length) later(Math.max(0, count.lines[0] - 1), () => hud.reset({ hands: [], live: countLedger(game, []) })); // the count begins from nothing
+    // A badge over each group once its cards are down; at once, at its line, when motion is reduced.
+    lines.forEach((l, i) => {
+      if (l.bonus || !l.codes.length) return;
+      const down = calm() ? 0 : (TIMING.countCard + TIMING.countStagger * (l.codes.length - 1)) / dirSpeed();
+      later((count.lines[i] ?? count.end) + down, () => badged.shown.add(i));
+    });
     for (const ev of events) {
       later(ev.end ? count.end : (count.lines[ev.line] ?? count.end), () => (ev.end ? hud.endHand(1) : hud.score(ev)));
     }
@@ -656,6 +685,7 @@ async function main() {
     };
     switch (e.type) {
       case "deal_start":
+        countShown = null;
         dealNo = e.deal_number;
         trickShown = 0;
         hud.reset({ hands: [], live: null });
