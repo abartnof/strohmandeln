@@ -614,7 +614,7 @@
   "tutor.name.bid": {"en": "taking up or passing", "de": "Aufnehmen oder passen"},
   "tutor.name.announce": {"en": "announcing honours", "de": "Honneurs ansagen"},
   "tutor.rule.worth.rich": {"en": "A trick with many card points in it is worth winning; take it.", "de": "Ein Stich mit vielen Augen lohnt sich; holen Sie ihn."},
-  "tutor.rule.worth.poor": {"en": "Do not win a trick of few card points with a king; give a small card.", "de": "Einen Stich mit wenigen Augen nicht mit dem König holen; eine kleine Karte zugeben."},
+  "tutor.rule.worth.poor": {"en": "Never win a trick of few card points with a king; give a small card.", "de": "Einen Stich mit wenigen Augen nicht mit dem König holen; eine kleine Karte zugeben."},
   "tutor.rule.cheap": {"en": "Win with the lowest card that wins; otherwise give the lowest.", "de": "Den Stich mit der kleinsten Karte holen, die ihn gewinnt; sonst die kleinste zugeben."},
   "tutor.rule.off.pip": {"en": "Play your covers off; beneath them may lie tarocks or kings.", "de": "Spielen Sie Ihre Decken ab; darunter liegen vielleicht Tarock oder Könige."},
   "tutor.rule.off.figure": {"en": "A queen or cavall lying as a cover should be played at once.", "de": "Eine Dame oder ein Cavall als Decke sollte gleich gespielt werden."},

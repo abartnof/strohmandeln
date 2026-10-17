@@ -775,6 +775,10 @@ fn every_key_of_the_brief_is_documented() {
             .map(|k| k.to_string()),
     );
     for k in documented {
+        // rule notes are said by the table (web3d/src/main.js), not the brief
+        if k.starts_with("tutor.note.") {
+            continue;
+        }
         assert!(
             said.iter().any(|s| s == k),
             "{k} is documented but never said"

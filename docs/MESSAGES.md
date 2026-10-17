@@ -236,7 +236,7 @@ in the Kibitzer's tab at the first clear chance at the focus
 | Key | Parameters | English | Deutsch | Basis |
 |---|---|---|---|---|
 | `tutor.rule.worth.rich` | none | A trick with many card points in it is worth winning; take it. | Ein Stich mit vielen Augen lohnt sich; holen Sie ihn. | Be 147; MS "Das Nach-hinten-Spielen" |
-| `tutor.rule.worth.poor` | none | Do not win a trick of few card points with a king; give a small card. | Einen Stich mit wenigen Augen nicht mit dem König holen; eine kleine Karte zugeben. | Be 147; MS "Das Nach-hinten-Spielen" |
+| `tutor.rule.worth.poor` | none | Never win a trick of few card points with a king; give a small card. | Einen Stich mit wenigen Augen nicht mit dem König holen; eine kleine Karte zugeben. | Be 147; MS "Das Nach-hinten-Spielen" |
 | `tutor.rule.cheap` | none | Win with the lowest card that wins; otherwise give the lowest. | Den Stich mit der kleinsten Karte holen, die ihn gewinnt; sonst die kleinste zugeben. | MS "Das Nach-hinten-Spielen"; U 75 |
 | `tutor.rule.off.pip` | none | Play your covers off; beneath them may lie tarocks or kings. | Spielen Sie Ihre Decken ab; darunter liegen vielleicht Tarock oder Könige. | W 134; U 71-75; Be 145, 148; MS |
 | `tutor.rule.off.figure` | none | A queen or cavall lying as a cover should be played at once. | Eine Dame oder ein Cavall als Decke sollte gleich gespielt werden. | W 134; U 71-75; Be 145, 148; MS |

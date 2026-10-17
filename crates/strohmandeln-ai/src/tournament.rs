@@ -86,7 +86,10 @@ mod tests {
         for seed in 0..6 {
             let want = mirrored(seed, Default::default(), 3, &a, &b)
                 - mirrored(seed, Default::default(), 3, &base, &b);
-            assert_eq!(paired_gain(seed, Default::default(), 3, &a, &base, &b), want);
+            assert_eq!(
+                paired_gain(seed, Default::default(), 3, &a, &base, &b),
+                want
+            );
             assert_eq!(paired_gain(seed, Default::default(), 3, &a, &a, &b), 0);
         }
     }

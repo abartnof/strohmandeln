@@ -833,7 +833,9 @@ mod tests {
         assert_eq!(style_line(&hidden), style_line(&bold));
         assert_eq!(style_line(&shown), style_line(&bold));
         let line = style_line(&hidden).unwrap().to_string();
-        for id in ["bermann", "ulmann", "werner", "bold", "cautious", "hunter", "random"] {
+        for id in [
+            "bermann", "ulmann", "werner", "bold", "cautious", "hunter", "random",
+        ] {
             assert!(!line.contains(id), "{line}");
         }
         assert!(!hidden.to_string().contains("\"ms\""), "{hidden}");

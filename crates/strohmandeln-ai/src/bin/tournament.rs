@@ -152,9 +152,7 @@ fn main() {
             "{spec_a} against {spec_b}: Points per mirrored pair of sittings of {touren} Touren"
         ),
     }
-    let fc = baseline
-        .as_ref()
-        .map(|(_, l, c)| factory(*l, *c, 0xA));
+    let fc = baseline.as_ref().map(|(_, l, c)| factory(*l, *c, 0xA));
     println!(
         "plan: batches of {}, at most {} looks, boundaries {:?}, negligible +-{}, first seed {first_seed}",
         plan.batch,
@@ -171,9 +169,7 @@ fn main() {
         |i| {
             let seed = first_seed + i as u64;
             let v = match &fc {
-                Some(fc) => {
-                    paired_gain(seed, Default::default(), touren, &fa, fc, &fb)
-                }
+                Some(fc) => paired_gain(seed, Default::default(), touren, &fa, fc, &fb),
                 None => mirrored(seed, Default::default(), touren, &fa, &fb),
             };
             if let Some(f) = out.as_mut() {

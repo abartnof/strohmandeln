@@ -349,7 +349,10 @@ fn at_rung_four_a_style_keeps_normals_band() {
     use strohmandeln_core::view::view;
     // Werner changes no play weight, so at rung 4 he plays Normal's card in
     // every play decision (docs/STYLES.md 9); only his bids may differ.
-    assert_eq!(cfg(Style::Werner).weights.band, cfg(Style::Normal).weights.band);
+    assert_eq!(
+        cfg(Style::Werner).weights.band,
+        cfg(Style::Normal).weights.band
+    );
     let level = Level::from_halves(8);
     let normal = Opponent::new(level, 3);
     let werner = Opponent::new(level, 3).with_config(cfg(Style::Werner));
@@ -372,12 +375,24 @@ fn a_counter_is_normal_with_the_advised_parameters_moved_and_nothing_else() {
     // Bold: the bid threshold up 10 thirds (STYLES 2.2).
     let bold = Config::counter(Style::Bold);
     assert_eq!(bold.bid.sure_thirds, 55);
-    assert_eq!(Config { bid: normal.bid, ..bold }, normal);
+    assert_eq!(
+        Config {
+            bid: normal.bid,
+            ..bold
+        },
+        normal
+    );
     // Cautious and MS: take up lighter after its pass (E: 10 below Normal's 45).
     for s in [Style::Cautious, Style::Ms] {
         let c = Config::counter(s);
         assert_eq!(c.bid.sure_thirds, 35);
-        assert_eq!(Config { bid: normal.bid, ..c }, normal);
+        assert_eq!(
+            Config {
+                bid: normal.bid,
+                ..c
+            },
+            normal
+        );
     }
     let be = Config::counter(Style::Bermann);
     assert!(be.weights.keep_tarocks > normal.weights.keep_tarocks);
