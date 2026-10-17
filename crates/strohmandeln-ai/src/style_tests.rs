@@ -365,3 +365,25 @@ fn at_rung_four_a_style_keeps_normals_band() {
     }
     assert!(plays > 20);
 }
+
+#[test]
+fn a_counter_is_normal_with_the_advised_parameters_moved_and_nothing_else() {
+    let normal = Config::default();
+    // Bold: the bid threshold up 10 thirds (STYLES 2.2).
+    let bold = Config::counter(Style::Bold);
+    assert_eq!(bold.bid.sure_thirds, 55);
+    assert_eq!(Config { bid: normal.bid, ..bold }, normal);
+    // Cautious and MS: take up lighter after its pass (E: 10 below Normal's 45).
+    for s in [Style::Cautious, Style::Ms] {
+        let c = Config::counter(s);
+        assert_eq!(c.bid.sure_thirds, 35);
+        assert_eq!(Config { bid: normal.bid, ..c }, normal);
+    }
+    let be = Config::counter(Style::Bermann);
+    assert!(be.weights.keep_tarocks > normal.weights.keep_tarocks);
+    assert!(be.weights.keep_packet > normal.weights.keep_packet);
+    assert_eq!(be.bid, normal.bid);
+    // Normal and a style with no counter give Normal.
+    assert_eq!(Config::counter(Style::Normal), normal);
+    assert_eq!(Config::counter(Style::Ulmann), normal);
+}
