@@ -832,7 +832,7 @@ such page.
 
 | Page key | Opens at | Says |
 |---|---|---|
-| `the-cards` | the first `dealt`, first of the pages due at that rest (the cards are the first thing a newcomer sees) | what the cards are: the tarocks are trumps I to XXI and the Sküs, made for play (Italy, by 1442; fortune-telling is French and later, 1781), nothing here tells a fortune; Austrians still play Tarock and Piatnik still sells Tarock packs; German keeps Tarock (the game) and Tarot (the divining deck) apart, English has one word; the C is the Cavall, a knight worth 3 points, kept by the Tarock pack and dropped by the 52-card pack; the faces show big letters and corner numbers where a real pack has pictures and no suit-card index. Wording and sources: `research/15-the-pack-today.md` ("For the tutor") |
+| `the-cards` | the first `dealt`, first of the pages due at that rest (the cards are the first thing a newcomer sees) | what the cards are: the tarocks are trumps I to XXI and the Sküs, made for play (Italy, by 1442; fortune-telling is French and later, 1781), nothing here tells a fortune; Austrians still play Tarock and Piatnik still sells Tarock packs; German keeps Tarock (the game) and Tarot (the divining deck) apart, English has one word; in hearts and diamonds the pips run backwards, the 1 highest and the 4 lowest (RULES 1.5; the maintainer, 2026-10-17); the C is the Cavall, a knight worth 3 points, kept by the Tarock pack and dropped by the 52-card pack; the faces show big letters and corner numbers where a real pack has pictures and no suit-card index. Wording and sources: `research/15-the-pack-today.md` ("For the tutor") |
 | `packets` | the first `dealt`, after `the-cards` | what the three packets are, the face-up card on top, the count of hidden cards beneath, that you and your opponent each have three, that a cover is yours to play |
 | `bidding` | the first `bid` turn (the human's, or the first `bid` event seen) | who speaks first; "Ich nehme auf" or "Weiter"; the declarer; the card values (RULES 1.7, with the court letters the faces show: K Q C J, German K D C B), that the 54 cards count 70 in threes and 36 are needed, and a link to `thirds`; what is won and lost by the `values` setting; both pass plays a simple game (and what it pays) or throws in, by the setting |
 | `the-pull` | the first `reveal_start` (no decision is asked: the cards turn themselves) | the cards are turned in turn; a tarock or a king goes to the hand; the turning continues; a low card stays; the last card of a packet always goes |
@@ -869,8 +869,8 @@ if there is one. Pressed on a Help page, it opens the linked page in its place
 leisure. It is exempt from the pop-ups' limits, by name, in
 `web3d/test/tutorial.test.js` (at most 1500 words a page, 45 a line); the
 exemption is checked as used. It takes, in order, with worked examples: what
-every card is worth (RULES 1.7; the 54 cards add up to 106) and the letters the
-faces show; counting in threes and why it comes to thirds (8.1; 106 less 18
+every card is worth (RULES 1.7; the 54 cards add up to 106), the letters the
+faces show and the red pips' reversed order (1.5); counting in threes and why it comes to thirds (8.1; 106 less 18
 groups of 2 is 70); 36 of 70 and the 35⅔ boundary (8.2 to 8.4); what the score
 at the top shows, during play and at the count (2.5); what the game is worth,
 by `values` and `both_pass` (9.1, 9.2; the Valat, 10); the honours (11); the

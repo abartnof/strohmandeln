@@ -13,12 +13,12 @@ Tarot im Deutschen), 15-S9 und 15-S10 (die österreichischen Spiele; die Trümpf
 15-S11 (Piatnik verkauft Tarockblätter, geprüft am 15. Okt. 2026; die Seite nennt weder Wien noch das Muster), 15-S12 und 15-S14 (der Cavall, 3 Augen
 wert), 08-S9 und 08-S10 (ein echtes Blatt hat keine Indizes auf den Farbkarten),
 alle in research/15-the-pack-today.md.
-Klauseln (docs/RULES.md): the-cards 1.2 1.7; packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
+Klauseln (docs/RULES.md): the-cards 1.2 1.5 1.7; packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
 8.2 8.4 9.1 (Kartenwerte 1.7); the-pull 4.3 4.5 4.6 4.7; playing 5.1-5.3 5.5;
 following 5.2 5.4; from-a-packet 6.1 6.2; honours 11.1-11.5; thirds 1.7 8.1 8.2;
 pagat-ultimo 1.4 12.1-12.4; scoring 9.1-9.3 11 12.3 15.5 15.8; draw 8.4 9.2 11.7
 14.1-14.4; touren-slate 15.2 15.3 15.5 (Rekonstruktion: 15 Einleitung, TABLE3D
-4.6); extension 15.6; scoring-full 1.3 1.7 8.1-8.5 9.1-9.3 10.1 10.2 11.1-11.7
+4.6); extension 15.6; scoring-full 1.3 1.5 1.7 8.1-8.5 9.1-9.3 10.1 10.2 11.1-11.7
 12.1-12.4 14.1-14.5 15.2 15.3 15.5 15.6 15.8 15.9 (das durchgerechnete Beispiel
 halten Kerntests, web3d/test/scoring_pages.test.js). Ausdrücke der Zeit: 03-S12
 (Werner), 03-S14 (Ulmann), 05c headline 1 (Kiebitz). Stimme: TABLE3D 6.5. Text
@@ -37,6 +37,10 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - Tarockkarten wurden zum Spielen gemacht, in Italien, spätestens 1442. Vom Wahrsagen mit ihnen ist erst ab 1781 die Rede, in Frankreich.
 - Hier wird kein Schicksal gedeutet. In Österreich spielt man noch immer Tarock, und Piatnik verkauft heute noch Tarockblätter.
 - Im Deutschen heißt das Spiel Tarock und das Blatt zum Wahrsagen Tarot. Das Englische hat für beides ein Wort, daher die Verwechslung.
+
+## Die Farben
+
+- In Herz und Karo laufen die Zahlen rückwärts: die 1 ist die höchste, die 4 die niedrigste.
 
 ## Das C
 
@@ -240,6 +244,8 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - **1** je Karte: jede andere Karte, also die Tarocks II bis XX und die Zahlkarten der Farben.
 
 - Die Karten zeigen die Buchstaben K, D, C und B, die Tarocks in römischen Ziffern. Der Sküs ist das höchste Tarock, der Mond ist XXI, der Pagat ist I.
+- In Herz und Karo laufen die Zahlen rückwärts: die 1 ist die höchste, die 4 die niedrigste.
+- In Kreuz und Pik ist die 10 die höchste, die 7 die niedrigste.
 - Alle 54 Karten mit diesen Werten zusammen ergeben 106. Die Zählung in Dreiergruppen macht daraus 70.
 
 ## Zählen in Dreiergruppen

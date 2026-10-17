@@ -180,7 +180,7 @@ test("the cards page is a few lines under the ordinary pop-up limits, with no ex
   for (const lang of ["en", "de"]) {
     const p = page(lang, "the-cards");
     const ls = lines(p);
-    assert.ok(ls.length >= 6 && ls.length <= 9, `${lang}: ${ls.length} lines`);
+    assert.ok(ls.length >= 6 && ls.length <= 10, `${lang}: ${ls.length} lines`);
     assert.ok(words(p.title) + ls.reduce((n, l) => n + words(l), 0) <= PAGE_WORDS);
     assert.ok(!("the-cards" in OVER_WORDS) && !("the-cards" in OVER_LINE));
   }
@@ -190,5 +190,15 @@ test("the cards page's sources are in the header of both tutorial files", () => 
   for (const f of ["../tutorial.en.md", "../tutorial.md"]) {
     const head = read(f).split("-->")[0];
     for (const id of ["15-S1", "15-S6", "15-S7", "15-S10", "15-S11", "15-S12", "15-S14"]) assert.ok(head.includes(id), `${f}: ${id}`);
+  }
+});
+
+// The maintainer, 2026-10-17: the backwards red pips are said outright (RULES 1.5).
+test("the cards page and the long scoring page say the red pips run backwards, in both languages", () => {
+  const en = /In hearts and diamonds the pips run backwards: the 1 is highest, the 4 lowest/;
+  const de = /In Herz und Karo laufen die Zahlen rückwärts: die 1 ist die höchste, die 4 die niedrigste/;
+  for (const key of ["the-cards", "scoring-full"]) {
+    assert.match(text("en", key), en, `en ${key}`);
+    assert.match(text("de", key), de, `de ${key}`);
   }
 });

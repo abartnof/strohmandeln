@@ -11,12 +11,12 @@ Sources: the-cards 15-S1 (Dummett, ch. 4 and p. 100: made for play, 1442; no car
 and 15-S10 (the Austrian games; the trumps), 15-S11 (Piatnik sells Tarock packs, checked 15 Oct 2026; the page names neither Vienna nor the pattern), 15-S12
 and 15-S14 (the Cavall, worth 3), 08-S9 and 08-S10 (a real pack has no indices on suit
 cards), all in research/15-the-pack-today.md.
-Clauses (docs/RULES.md): the-cards 1.2 1.7; packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
+Clauses (docs/RULES.md): the-cards 1.2 1.5 1.7; packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
 8.2 8.4 9.1 (card values 1.7); the-pull 4.3 4.5 4.6 4.7; playing 5.1-5.3 5.5;
 following 5.2 5.4; from-a-packet 6.1 6.2; honours 11.1-11.5; thirds 1.7 8.1 8.2;
 pagat-ultimo 1.4 12.1-12.4; scoring 9.1-9.3 11 12.3 15.5 15.8; draw 8.4 9.2 11.7
 14.1-14.4; touren-slate 15.2 15.3 15.5 (reconstruction: 15 intro, TABLE3D 4.6);
-extension 15.6; scoring-full 1.3 1.7 8.1-8.5 9.1-9.3 10.1 10.2 11.1-11.7
+extension 15.6; scoring-full 1.3 1.5 1.7 8.1-8.5 9.1-9.3 10.1 10.2 11.1-11.7
 12.1-12.4 14.1-14.5 15.2 15.3 15.5 15.6 15.8 15.9 (the worked deal and evening
 are held by core tests, web3d/test/scoring_pages.test.js). Period terms: 03-S12
 (Werner), 03-S14 (Ulmann), 05c headline 1 (Kiebitz). The voice is TABLE3D 6.5.
@@ -35,6 +35,10 @@ when both pass have one block for each value of `values`, `ultimo` and
 - Tarot cards were made to play with, in Italy, by 1442. Fortune-telling is first heard of in 1781, in France.
 - Nothing here tells your fortune. Austrians still play Tarock, and Piatnik still sells Tarock packs.
 - German keeps two words: Tarock for the game, Tarot for the fortune-telling deck. English uses one for both, hence the mix-ups.
+
+## The suits
+
+- In hearts and diamonds the pips run backwards: the 1 is highest, the 4 lowest.
 
 ## The C
 
@@ -238,6 +242,8 @@ when both pass have one block for each value of `values`, `ultimo` and
 - **1** each: every other card, that is the tarocks II to XX and the numbered suit cards.
 
 - The faces show the letters K, Q, C and J, and the tarocks in Roman numerals. The Sküs is the highest tarock, the Mond is XXI, the Pagat is I.
+- In hearts and diamonds the pips run backwards: the 1 is highest, the 4 lowest.
+- In clubs and spades the 10 is highest, the 7 lowest.
 - Add all 54 cards at these values and you get 106. The count in threes brings that down to 70.
 
 ## Counting in threes
