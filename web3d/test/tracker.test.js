@@ -186,9 +186,9 @@ test("shown voids: suits and tarocks, joined", () => {
   assert.ok(!lines(payload()).some((l) => /opponent has shown/.test(l)));
 });
 
-test("the points still out are told in thirds, of the 70 (a point is what the count says, not what is paid)", () => {
-  assert.ok(lines(payload({ out_thirds: 94 })).includes("Still out: 31⅓ of 70 points"));
-  assert.ok(lines(payload({ out_thirds: 210 })).includes("Still out: 70 of 70 points"));
+test("the points still out are told in thirds, of the 70 (a card point is what the count says, a Point is what is paid)", () => {
+  assert.ok(lines(payload({ out_thirds: 94 })).includes("Still out: 31⅓ of 70 card points"));
+  assert.ok(lines(payload({ out_thirds: 210 })).includes("Still out: 70 of 70 card points"));
   assert.ok(lines(payload({ out_thirds: 94 }), "de").includes("Noch draußen: 31⅓ von 70 Augen"));
 });
 
