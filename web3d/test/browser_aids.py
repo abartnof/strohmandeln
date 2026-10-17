@@ -690,7 +690,7 @@ BOXES = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); re
 
 def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0", unfold=True):
     # The panel starts folded (6.6.2); unfold it by its tab, where the window shows one.
-    page = with_prefs(browser, {"hints": True, "slateAuto": False, **(prefs or {})}, query, viewport=size)
+    page = with_prefs(browser, {"hints": True, "seen": ["public-mark"], "slateAuto": False, **(prefs or {})}, query, viewport=size)
     take_if_bidding(page)
     drive(page, lambda s, log: sum(e["type"] == "trick_won" for e in log) >= 3 or s["prompt"] == "over")
     rest(page)
@@ -802,7 +802,7 @@ BRIEF_KEPT = "(() => { const b = window.strohmandeln3d.briefing(); return b.kept
 
 
 def brief_page(browser, prefs, query="seed=7&speed=instant&human=1"):
-    page = with_prefs(browser, {"hints": True, "slateAuto": False, **prefs}, query)
+    page = with_prefs(browser, {"hints": True, "seen": ["public-mark"], "slateAuto": False, **prefs}, query)
     return page
 
 
@@ -812,6 +812,49 @@ def scored_deal(page):
     rest(page)
     page.wait_for_function(BRIEF_KEPT, timeout=60_000)
     return ok
+
+
+PAGES_SEEN = ["the-cards", "packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension", "scoring-full"]  # no page opens
+
+
+def check_public_mark(browser, failures):
+    """The gold dot is a hint (TABLE3D 1.5.7): absent with hints off, shown at once when they are
+    switched on, with the note once; it goes with them and with the Kibitzer's mute."""
+    where = "public_mark: "
+    page = with_prefs(browser, {"hints": False, "seen": PAGES_SEEN, "slateAuto": False}, "seed=7&speed=instant&human=1")
+    take_if_bidding(page)
+    if not drive(page, has("card_pulled")):
+        return failures.append(f"{where}no card was pulled")
+    rest(page)
+    dots = lambda: page.locator(".tag.public").count()
+    fail_if(dots(), failures, f"{where}a dot with hints off")
+    fail_if(page.locator("[data-dialog=note]").count(), failures, f"{where}the note with hints off")
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.wait_for_selector(".settings-root:not([hidden])", timeout=10_000)
+    page.locator("[data-row=hints] [data-value=toggle]").click()
+    fail_if(page.locator("[data-dialog=note]").count(), failures, f"{where}the note over the open menu")
+    page.locator(".settings-close").click()
+    page.wait_for_selector("[data-dialog=note]", timeout=10_000)
+    fail_if(not dots(), failures, f"{where}no dot after hints were switched on")
+    fail_if(not page.locator(".tag.public").first.get_attribute("title"), failures, f"{where}the dot has no tooltip")
+    fail_if("public-mark" not in js(page, "prefs()")["seen"], failures, f"{where}the note was not kept as seen")
+    stored = page.evaluate("localStorage.getItem('strohmandeln.prefs')")
+    fail_if("public-mark" not in stored, failures, f"{where}seen was not stored")
+    page.locator("[data-dialog=note] [data-dialog-act=close]").click()
+    page.locator("[data-act=settings]").dispatch_event("click")
+    page.wait_for_selector(".settings-root:not([hidden])", timeout=10_000)
+    page.locator("[data-row=hints] [data-value=toggle]").click()
+    fail_if(dots(), failures, f"{where}a dot after hints were switched off")
+    page.locator("[data-row=hints] [data-value=toggle]").click()
+    page.locator(".settings-close").click()
+    fail_if(page.locator("[data-dialog=note]").count(), failures, f"{where}the note again")
+    fail_if(not dots(), failures, f"{where}no dot after hints were switched on again")
+    page.evaluate("document.activeElement.blur()")  # the keys are not read inside the menu
+    page.keyboard.press("m")
+    fail_if(dots(), failures, f"{where}a dot with the Kibitzer muted")
+    page.keyboard.press("m")
+    fail_if(not dots(), failures, f"{where}no dot after unmuting")
+    check_offline(page, failures, where)
 
 
 def check_deal_brief(browser, failures):
@@ -898,5 +941,5 @@ CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_skill_speed,
     check_language_switch, check_language_switch_at_count, check_prefs_storage, check_save_restore, check_export_import_file,
-    check_tutor_pages, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_deal_brief,
+    check_tutor_pages, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief,
 ]

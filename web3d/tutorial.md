@@ -54,6 +54,7 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - Eine Decke dürfen Sie ausspielen wie eine Karte aus der Hand.
 - Die kleine Zahl am Paket zählt die Karten, die darunter noch verdeckt liegen.
 - Wenn ich mir erlauben darf: Sehen Sie auch die Decken Ihres Gegners an. Sie sind kein Geheimnis.
+- Bei eingeschalteten Hinweisen markiert ein goldener Punkt eine Handkarte, die Sie beide gesehen haben: eine aus einem Paket gezogene.
 
 # Das Aufnehmen
 

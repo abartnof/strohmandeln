@@ -52,6 +52,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 - A cover is yours to play, like a card in your hand.
 - The small number on a packet counts the cards still hidden beneath.
 - If I may: look at your opponent's covers too. They are no secret.
+- With hints on, a gold dot marks a hand card you both have seen: one pulled from a packet.
 
 # Bidding
 

@@ -3,6 +3,7 @@
 // grid of cells, a legend, the learner's lines and the screen reader's
 // sentences, in the current language. The engine decides the masters, the
 // voids and the points; this holds no rule of play, only words and layout.
+import { hintsOn } from "./tutor.js";
 import { GLYPH, courtLabels, parseCode, tarockNumeral } from "./tarockfaces.js";
 
 const SUITS = ["h", "d", "c", "s"];
@@ -19,7 +20,7 @@ const STATES = ["mine", "played", "out"];
 
 // Shown while Hints is on, the setting is on, and the Kibitzer is not muted
 // (the mute is the tutor's, so with the tutor off it does not apply).
-export const trackerVisible = (prefs) => Boolean(prefs.hints && prefs.tracker && !(prefs.tutor && prefs.muted));
+export const trackerVisible = (prefs) => Boolean(hintsOn(prefs) && prefs.tracker);
 
 // The panel is for a wide window held sideways: upright or 700 px and under it
 // is not shown, and the engine is not asked (6.6.6; tracker.css hides the same).
