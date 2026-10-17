@@ -113,8 +113,9 @@ def check_slate_open_close(browser, failures):
 
 
 def check_slate_rows(browser, failures):
-    # A draw doubles the next deal.
-    page = open_page(browser, "seed=2&speed=instant&human=1")
+    # A draw doubles the next deal. Seeds depend on the opponent at ?level=1, which is deterministic:
+    # rescan with web3d/test/seed_scan.mjs after an opponent change.
+    page = open_page(browser, "seed=5&speed=instant&human=1")
     ok = drive(page, has("doubling_applied"), policy="weiter")
     fail_if(not ok, failures, "slate_rows: no doubled deal in the seeded sitting")
     if ok:
