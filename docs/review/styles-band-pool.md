@@ -15,3 +15,12 @@ by the orchestrator, which did not write it.
   the export.
 - STYLES 9: commands, tables and verdicts match the run outputs in the
   scratch directory. OK.
+
+## Stage 2 code (`worktree-agent-ab8efecb14d311104`, 8b37181)
+
+Read by the orchestrator. `paired_gain` is the difference of two mirrored
+pairs on the same seed, tested (and zero against itself). `Config::counter`
+changes Normal's constants only; the sizes for MS, Cautious and Bermann are
+the author's (E), stated in STYLES 9. The tournament spec `counter=ID` and
+`--baseline` reuse the existing loop. OK. Open: larger or conditioned
+counters were not tried.
