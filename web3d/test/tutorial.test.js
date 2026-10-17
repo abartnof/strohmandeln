@@ -94,8 +94,10 @@ test("the spec and the pages state the count as RULES 8.1 does: value less two-t
   assert.match(row, /less two-thirds/);
   assert.doesNotMatch(row, /one-third/);
   const text = (lang) => pages(lang).find((p) => p.key === "thirds").blocks.flatMap((b) => (b.spans ? [b.spans] : b.items)).map((s) => s.map((x) => x.text).join("")).join("\n");
-  assert.match(text("en"), /two-thirds[^\n]*sum less 2/);
-  assert.match(text("de"), /zwei Drittel[^\n]*Summe weniger 2/);
+  assert.match(text("en"), /in threes[^\n]*take off 2/);
+  assert.match(text("en"), /two-thirds off each/);
+  assert.match(text("de"), /Dreiern[^\n]*2 ab/);
+  assert.match(text("de"), /zwei Drittel ab von jeder/);
 });
 
 test("the pages hold to RULES 5.4, 6.1, 7.1 and 12.1: trump beats suit, the last card goes to hand, the Pagat is simply paid", () => {
@@ -146,17 +148,18 @@ test("a block may name several settings, and is kept only when all of them hold"
 // The cards page (research/15 "For the tutor"): the tarocks, the Cavall, what the faces leave out.
 test("the cards page says what the tarocks and the C are, with the dates, in both languages", () => {
   const en = text("en", "the-cards");
-    assert.match(en, /Tarot cards were made to play with, in Italy, by 1442/);
+  assert.match(en, /Tarot cards were made to play with, in Italy, by 1442/);
   assert.match(en, /Fortune-telling is first heard of in 1781, in France/);
   assert.match(en, /1442/);
   assert.match(en, /1781/);
   assert.match(en, /Nothing here tells your fortune/);
   assert.match(en, /Austrians still play Tarock, and Piatnik still sells Tarock packs/);
   assert.doesNotMatch(en, /Vienna|this pack|If I may/, "what research/15-S11 shows and no more");
-    assert.match(en, /C is the Cavall, a knight[^\n]*worth 3 points/);
+  assert.match(en, /C is the Cavall, a knight[^\n]*worth 3 points/);
+  assert.match(en, /52-card pack dropped him/);
   assert.match(en, /big letters are for a quick look/);
   const de = text("de", "the-cards");
-    assert.match(de, /1442/);
+  assert.match(de, /1442/);
   assert.match(de, /1781/);
   assert.match(de, /kein Schicksal/);
   assert.match(de, /Piatnik verkauft heute noch Tarockblätter/);
@@ -164,6 +167,8 @@ test("the cards page says what the tarocks and the C are, with the dates, in bot
   assert.match(de, /Tarockkarten wurden zum Spielen gemacht, in Italien, spätestens 1442/);
   assert.match(de, /ab 1781 die Rede, in Frankreich/);
   assert.match(de, /C ist der Cavall[^\n]*Reiter[^\n]*3 Augen wert/);
+  assert.match(de, /Blatt zu 52 Karten hat ihn nicht/);
+  assert.match(de, /In Österreich spielt man noch Tarock/);
   assert.match(de, /Buchstaben sind für den raschen Blick/);
   assert.doesNotMatch(de, /Points/, "a card's value is in Augen; a Point is a payment");
   assert.doesNotMatch(en, /\bPoints?\b/);
@@ -184,16 +189,28 @@ test("the cards page ranks the cards: Sküs highest, I (the Pagat) lowest, K Q C
   assert.match(de, /1 2 3 4[^\n]*Herz und Karo[^\n]*1 (ist )?(die )?höchste/);
 });
 
-test("the thirds page leads with the groups of three and the example, then the leftovers, then why: 70 in all, 35⅔ is 36 rounded, 35⅓ falls short", () => {
+test("the values the pages list add up to 106 and the groups of three take 36 off, leaving 70", () => {
+  for (const lang of ["en", "de"]) {
+    const rows = page(lang, "scoring-full").blocks.find((b) => b.items && b.items[0][0]?.bold && /^\d+$/.test(b.items[0][0].text)).items.map((r) => Number(r[0].text));
+    assert.deepEqual(rows, [5, 4, 3, 2, 1]);
+    const count = { 5: 7, 4: 4, 3: 4, 2: 4, 1: 54 - 19 };
+    const sum = rows.reduce((n, v) => n + v * count[v], 0);
+    assert.equal(sum, 106);
+    assert.equal(sum - 2 * (54 / 3), 70);
+  }
+});
+
+test("the thirds page leads with the groups of three and the example, then the leftovers, then why thirds, the 70, and the target: 36 is 35⅔ or more, 35⅓ falls short", () => {
   for (const lang of ["en", "de"]) {
     const ls = text(lang, "thirds").split("\n");
     const at = (re) => ls.findIndex((l) => re.test(l));
     const group = lang === "en" ? /in threes[^\n]*take (off|away) 2/ : /Dreiern[^\n]*2 ab/;
     const ex = /5 \+ 2 \+ 1 = 8/;
     const left = lang === "en" ? /left over/ : /übrig/;
-    const total = /70/;
-    const rounded = lang === "en" ? /35⅔[^\n]*36[^\n]*35⅓[^\n]*short/ : /35⅔[^\n]*36[^\n]*35⅓[^\n]*(nicht|knapp)/;
-    const idx = [group, ex, left, total, rounded].map(at);
+    const total = lang === "en" ? /always count 70/ : /machen immer 70/;
+    const rounded = lang === "en" ? /36[^\n]*35⅔[^\n]*35⅓[^\n]*short/ : /36[^\n]*35⅔[^\n]*35⅓[^\n]*nicht/;
+    const why = lang === "en" ? /two-thirds off each/ : /zwei Drittel ab von jeder/;
+    const idx = [group, ex, left, why, total, rounded].map(at);
     assert.ok(idx.every((i) => i >= 0), `${lang}: ${idx}`);
     assert.deepEqual([...idx].sort((a, b) => a - b), idx, `${lang}: order ${idx}`);
   }

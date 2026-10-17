@@ -31,18 +31,18 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 
 # Die Karten
 
-## Die Tarocke
+## Die Tarocks
 
-- Die Tarocke sind Trümpfe. Der Sküs ist der höchste, dann XXI, XX und so hinunter bis II; I, der Pagat, ist der niedrigste.
-- Rang ist nicht Wert: Der Pagat ist der niedrigste, zählt aber 5, wie Sküs und XXI.
+- Die Tarocks sind Trümpfe: der Sküs der höchste, dann XXI, XX bis II; I, der Pagat, der niedrigste.
+- Rang ist nicht Wert: Der Pagat ist der niedrigste, zählt aber 5 Augen, so viel wie Sküs und XXI.
 - Tarockkarten wurden zum Spielen gemacht, in Italien, spätestens 1442. Vom Wahrsagen mit ihnen ist erst ab 1781 die Rede, in Frankreich.
-- Hier wird kein Schicksal gedeutet. Man spielt noch Tarock, und Piatnik verkauft heute noch Tarockblätter.
+- Hier wird kein Schicksal gedeutet. In Österreich spielt man noch Tarock, und Piatnik verkauft heute noch Tarockblätter.
 
 ## Die Farben
 
 - Jede Farbe läuft K, D, C, B. Das C ist der Cavall, ein Reiter, zwischen Dame und Bube, 3 Augen wert.
-- Danach die Zahlkarten: 10 9 8 7 in Kreuz und Pik; 1 2 3 4 in Herz und Karo, dort ist die 1 die höchste.
-- Auf einem echten Blatt tragen die Hofkarten Bilder statt Buchstaben. Unsere großen Buchstaben sind für den raschen Blick.
+- Das Blatt zu 52 Karten hat ihn nicht. Echte Hofkarten tragen Bilder statt Buchstaben. Unsere großen Buchstaben sind für den raschen Blick.
+- Zahlkarten: 10 9 8 7 in Kreuz und Pik; 1 2 3 4 in Herz und Karo, dort die 1 die höchste.
 
 # Die Pakete
 
@@ -147,12 +147,12 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 
 ## So wird gezählt
 
-- Zählen Sie gewonnene Karten in Dreiern: drei Werte zusammen, 2 ab.
+- Zählen Sie gewonnene Karten in Dreiern: die drei Werte zusammen, 2 ab.
 - Beispiel: ein König, ein Bube und eine Sieben sind 5 + 2 + 1 = 8, weniger 2 = 6.
-- Karte für Karte zählt jede ihren Wert weniger zwei Drittel: bei dreien die Summe weniger 2.
-- Bleiben eine oder zwei übrig, verliert jede zwei Drittel.
-- Beide Spieler zusammen machen 70 Augen.
-- Das Ziel ist 36, geschrieben **35⅔**, weil Drittel gezählt werden (gerundet 36). **35⅓** reicht nicht.
+- Bleiben eine oder zwei Karten übrig, verliert jede zwei Drittel.
+- 2 ab von dreien sind zwei Drittel ab von jeder: darum zählt man in Dritteln.
+- Beide Spieler zusammen machen immer 70 Augen.
+- Zum Gewinnen braucht man 36 Augen: das sind **35⅔** oder mehr. **35⅓** reicht nicht.
 - Der Stand oben läuft mit, während Sie Stiche machen.
 - [Mehr zur Abrechnung](#scoring-full)
 
@@ -242,7 +242,7 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - **2** je Karte: die vier Buben (B).
 - **1** je Karte: jede andere Karte, also die Tarocks II bis XX und die Zahlkarten der Farben.
 
-- Der Rang ist etwas anderes. Die Tarocke laufen vom Sküs (höchste) über XXI, XX bis II, zuletzt I, der Pagat, das niedrigste Tarock.
+- Der Rang ist etwas anderes. Die Tarocks laufen vom Sküs (höchste) über XXI, XX bis II, zuletzt I, der Pagat, das niedrigste Tarock.
 - Jede Farbe läuft K, D, C, B, der Cavall zwischen Dame und Bube, dann die Zahlkarten: 10 9 8 7 in Kreuz und Pik, 1 2 3 4 in Herz und Karo, die 1 die höchste.
 - Die Karten zeigen die Buchstaben K, D, C und B, die Tarocks in römischen Ziffern.
 - Alle 54 Karten mit diesen Werten zusammen ergeben 106. Die Zählung in Dreiergruppen macht daraus 70.
