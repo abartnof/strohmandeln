@@ -33,3 +33,15 @@ export const thirdsOf = (code) => 3 * valueOf(code) - 2;
 // The honours the human may be asked about (RULES 11): the Trull's cards, the kings.
 export const TRULL = Object.freeze(["SK", "T21", "T1"]);
 export const KINGS = Object.freeze(["Kh", "Kd", "Kc", "Ks"]);
+
+// RULES 1.5: in hearts and diamonds the pips run backwards, the 1 high and the
+// 4 low. Did a trick of two show a red pip take a higher-numbered pip of its
+// suit (the 1 over the 4, the 2 over the 3)? Then `{ win, lose }`, else null.
+export function redPipBeat(cards) {
+  const [a, b] = cards ?? [];
+  const pip = /^([1-4])([hd])$/;
+  const pa = pip.exec(a ?? "");
+  const pb = pip.exec(b ?? "");
+  if (!pa || !pb || pa[2] !== pb[2] || pa[1] === pb[1]) return null;
+  return +pa[1] < +pb[1] ? { win: a, lose: b } : { win: b, lose: a };
+}

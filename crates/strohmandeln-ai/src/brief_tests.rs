@@ -768,7 +768,12 @@ fn every_key_of_the_brief_is_documented() {
         .flat_map(|b| [b.lead, b.key])
         .collect();
     said.extend(lessons::keys().iter().map(|k| k.to_string()));
-    said.extend(KEYS.iter().chain(PAGE_KEYS).map(|k| k.to_string()));
+    said.extend(
+        KEYS.iter()
+            .chain(PAGE_KEYS)
+            .chain(crate::tell::KEYS)
+            .map(|k| k.to_string()),
+    );
     for k in documented {
         assert!(
             said.iter().any(|s| s == k),

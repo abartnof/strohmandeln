@@ -28,6 +28,7 @@ pub mod solver;
 pub mod stats;
 pub mod students;
 pub mod style;
+pub mod tell;
 #[cfg(test)]
 mod testutil;
 pub mod tournament;
