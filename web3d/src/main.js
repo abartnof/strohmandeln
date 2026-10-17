@@ -993,7 +993,7 @@ async function main() {
     }
     hintCard = r.hint.action === "play" ? r.hint.card : null;
     const lines = hintLines(r, { t, cardName: romanName, thirds, count });
-    ui.setAid([lines.lead, lines.question, lines.text].filter(Boolean).join(" "));
+    ui.setAid([lines.lead, lines.question, lines.text].filter(Boolean).join(" "), [], lines.why?.lines.length ? { label: t("hint.why.label"), lines: lines.why.lines } : null);
     ui.live(hintSpoken(hintLines(r, { t, cardName, thirds, count })));
     director.redecorate();
   }
@@ -1010,6 +1010,8 @@ async function main() {
         if (!r.ok) return showRefusal(r.refusal);
         return advance(r);
       }
+      case "why":
+        return ui.toggleWhy();
       case "tracker":
       case "tracker-fold":
         return toggleTracker();
@@ -1459,7 +1461,8 @@ async function main() {
       if (id === "page") dismissPage(true);
       else if (id === "welcome") onDialog(["welcome", "continue"]); // its default; nothing is lost
       else ui.closeDialog(id); // help, review, keys, announce (the card stays chosen), clear (No), error, new (Cancel)
-    } else if (kind === "settings") settings.close();
+    } else if (kind === "why") ui.toggleWhy(false);
+    else if (kind === "settings") settings.close();
     else if (kind === "slate") {
       toggleSlate();
       ui.root.querySelector("[data-act=slate]")?.focus();
@@ -1486,6 +1489,7 @@ async function main() {
       // One press closes the topmost layer (overlays.js, TABLE3D 3.10.5).
       const target = escapeTarget({
         dialogs: ui.dialogIds(),
+        why: ui.whyOpen(),
         settings: !ui.settingsRoot.hidden,
         slate: !ui.slateRoot.hidden,
         hud: hud.isOpen(),

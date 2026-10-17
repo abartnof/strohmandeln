@@ -35,7 +35,7 @@ const keepName = (code, { t, cardName }) => (["T1", "T21", "SK"].includes(code) 
 //  - `reason` and `more` are the older shape: the reason's sentence and the rule
 //    and odds clauses after it.
 // The words come from `t`.
-export function hintLines(r, { t, cardName, thirds, count }) {
+export function hintLines(r, { t, cardName, thirds, count, whyWords = WHY_WORDS }) {
   const words = { t, cardName, thirds, count };
   const say = (l) => (l ? cap(t(`hint.${l.key}`, hintParams(l.params, words))) : "");
   const play = r.hint?.action === "play" ? r.hint.card : null;
@@ -46,17 +46,57 @@ export function hintLines(r, { t, cardName, thirds, count }) {
   const more = [];
   if (r.rule) more.push(t(`hint.rule.${r.rule}`));
   if (r.odds) more.push(cap(t("hint.odds", hintParams(r.odds, words))));
+  const facts = (r.why?.facts ?? []).map((f) => ({ text: say(f), anchor: f.anchor }));
+  const oddsText = r.why?.odds ? cap(t("hint.odds", hintParams(r.why.odds, words))) : null;
   const why = r.why
     ? {
         alt: r.why.alt ?? null,
         contrast: say(r.why.contrast) || null,
         trumped: say(r.why.trumped) || null,
-        facts: (r.why.facts ?? []).map((f) => ({ text: say(f), anchor: f.anchor })),
+        facts,
         rule: r.why.rule ?? null,
-        odds: r.why.odds ? cap(t("hint.odds", hintParams(r.why.odds, words))) : null,
+        odds: oddsText,
+        lines: whyLines(
+          [
+            deals(r, words),
+            say(r.why.contrast),
+            say(r.why.trumped),
+            ...facts.map((f) => f.text && f),
+            r.rule ? t(`hint.rule.${r.rule}`) : "",
+            oddsText,
+          ],
+          whyWords,
+        ),
       }
     : null;
   return { lead, question, text, why, reason, more };
+}
+
+// The Why? is at most 90 words (docs/HINTS.md 3.1): its lines in order of weight,
+// the last ones left out when the budget is spent. A line is { text, anchor? }.
+export const WHY_WORDS = 90;
+export const wordCount = (s) => s.trim().split(/\s+/).filter(Boolean).length;
+
+function whyLines(parts, limit) {
+  const lines = [];
+  let total = 0;
+  for (const part of parts) {
+    const line = typeof part === "string" ? { text: part } : part;
+    if (!line?.text) continue;
+    const n = wordCount(line.text);
+    if (total + n > limit) break;
+    total += n;
+    lines.push(line.anchor ? line : { text: line.text });
+  }
+  return lines;
+}
+
+// "I deal his hidden cards at random {w} times and play each out." when there is
+// a sample to speak of: the deals of the contrast, else of the odds.
+function deals(r, { t, count }) {
+  const p = r.why?.contrast?.params;
+  const w = p ? (p.worlds ?? p.w) : r.why?.odds?.worlds;
+  return w ? cap(t("hint.why.intro", { w: count ? count(w) : w })) : "";
 }
 
 // The default hint as one string, for the screen reader: the card, the question,

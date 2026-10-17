@@ -9,17 +9,17 @@
 
 const NEEDS_ANSWER = new Set(["extend", "over"]);
 
-// state: { dialogs: ids, bottom to top; settings, slate, hud, tracker, chosen: booleans;
+// state: { dialogs: ids, bottom to top; why (the hint's open "Why?"), settings, slate, hud, tracker, chosen: booleans;
 // canCancelNew: the new-sitting screen has a Cancel }.
 // Returns { kind: "dialog", id } | { kind: "focus", id } (a dialog that needs an answer)
-// | { kind: "settings" | "slate" | "hud" | "tracker" | "selection" } | null.
+// | { kind: "why" | "settings" | "slate" | "hud" | "tracker" | "selection" } | null.
 export function escapeTarget(state) {
   const top = state.dialogs[state.dialogs.length - 1];
   if (top !== undefined) {
     if (NEEDS_ANSWER.has(top) || (top === "new" && !state.canCancelNew)) return { kind: "focus", id: top };
     return { kind: "dialog", id: top };
   }
-  for (const kind of ["settings", "slate", "hud", "tracker"]) if (state[kind]) return { kind };
+  for (const kind of ["why", "settings", "slate", "hud", "tracker"]) if (state[kind]) return { kind };
   return state.chosen ? { kind: "selection" } : null;
 }
 

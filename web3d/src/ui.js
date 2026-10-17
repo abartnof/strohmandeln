@@ -34,7 +34,7 @@ export function createUi(root, { t, onAct }) {
       { class: "controls" },
       el("p", { class: "prompt", "data-prompt": "" }),
       el("p", { class: "refusal", role: "status" }),
-      el("p", { class: "aid-line", hidden: "" }),
+      el("div", { class: "aid-line", hidden: "" }),
       el("div", { class: "move-bar", role: "group", "data-i18n-label": "ui.movebar", hidden: "" }),
     ),
     // Tab order (3.10.1): the move bar, the cards, then the slate tab and the settings.
@@ -157,9 +157,29 @@ export function createUi(root, { t, onAct }) {
     },
     // One line of help under the prompt; `more` adds lines under it (the hint's
     // rule and odds), each its own block so a long hint wraps tidily.
-    setAid(text, more = []) {
+    // `why` ({ label, lines: [{ text, anchor? }] }) adds the hint's "Why?": a button
+    // that opens the lines under it, closed with each new aid line.
+    setAid(text, more = [], why = null) {
       aid.hidden = !text;
-      aid.replaceChildren(text ?? "", ...more.map((m) => el("span", { class: "aid-more" }, m)));
+      const parts = [el("span", { class: "aid-text" }, text ?? ""), ...more.map((m) => el("span", { class: "aid-more" }, m))];
+      if (text && why?.lines?.length) {
+        parts.push(
+          el("button", { class: "aid-why-btn", type: "button", "data-act": "why", "aria-expanded": "false", "aria-controls": "aid-why" }, why.label),
+          el("div", { class: "aid-why", id: "aid-why", role: "region", "aria-label": why.label, hidden: "" }, ...why.lines.map((l) => el("p", { class: "aid-why-line", "data-anchor": l.anchor ?? null }, l.text))),
+        );
+      }
+      aid.replaceChildren(...parts);
+    },
+    whyOpen: () => Boolean(aid.querySelector(".aid-why:not([hidden])")),
+    // Opens or closes the Why?; closing returns the focus to its button.
+    toggleWhy(open) {
+      const body = aid.querySelector(".aid-why");
+      const button = aid.querySelector(".aid-why-btn");
+      if (!body || !button) return;
+      const now = open ?? body.hidden;
+      body.hidden = !now;
+      button.setAttribute("aria-expanded", String(now));
+      if (!now) button.focus();
     },
 
     // The move bar. `groups`: [{ kind, buttons: [{ act, label, enabled, data, key, focus }] }].
