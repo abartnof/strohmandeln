@@ -258,7 +258,7 @@ const game = defineGame({
 });
 ```
 
-(`thirds(n)` is whole points, a space-less vulgar fraction ⅓ or ⅔, nothing for a
+(`thirds(n)` is whole card points, a space-less vulgar fraction ⅓ or ⅔, nothing for a
 whole number; `format` is rebuilt on a language switch, 7.5.)
 
 2.5.2 **Won cards are turned up in threes.** Each take (the human's first, then
@@ -842,7 +842,7 @@ such page.
 | `honours` | the first time the human may announce, or the first `announcement` | announce the Trull (Sküs, Mond, Pagat) or four kings before the first card of it is played; 1 Point; paid even if lost; staying silent is allowed, unpaid; the prompt (3.3) |
 | `thirds` | the first `trick_won` (the tally begins to run), or the first `count` | titled "Card values and the count" / "Kartenwerte und Zählung"; **the table of what every card is worth** (RULES 1.7: 5, 4, 3, 2, 1 with the court letters of the faces), then the count: groups of three, the sum less 2, with one worked example (K, J, 7: 5 + 2 + 1 = 8, less 2 = 6); each card its value less two-thirds [RULES 8.1]; the leftover one or two cards; the two takes make 70; 35⅔ is enough for 36, 35⅓ loses; the score at the top runs as you take tricks (2.5.3); a link to `scoring-full` |
 | `pagat-ultimo` | the first time the human holds `T1` at the last 5 tricks, or the first `pagat_ultimo` | the Pagat in the last trick wins or loses a Point; it is quiet, never announced; the Pagat is the lowest tarock |
-| `scoring` | trick 21, or the first `count` / `game_scored` | what the deal pays: a Point is what is paid, not a point of the count; the game by the `values` setting (and a plain game by it when both pass plays), with one example (a win with the Trull announced), the honours, the Pagat by the `ultimo` setting, all paid between the two players [RULES 9.2, 9.3]; credited to the slate; the evening settled at 2 kreuzer a Point [RULES 15.5, 15.8]; a link to `scoring-full` |
+| `scoring` | trick 21, or the first `count` / `game_scored` | what the deal pays: the count (36 card points of 70) only decides who wins; the winner is then paid in Points, on the slate, whatever the count was; the game by the `values` setting (and a plain game by it when both pass plays), with one example (a win with the Trull announced), the honours, the Pagat by the `ultimo` setting, all paid between the two players [RULES 9.2, 9.3]; credited to the slate; the evening settled at 2 kreuzer a Point [RULES 15.5, 15.8]; a link to `scoring-full` |
 | `draw` | the first `draw` | a simple game that ends 35 : 35 is undecided; the next deal counts double |
 | `touren-slate` | the first `tour_end`, or the first slate opening | the Touren, two deals each; the slate; the note that this is a reconstruction (4.6), said once |
 | `extension` | the first `extension_offered`, or the human's extend prompt | one more Tour needs both players' consent |
@@ -1004,9 +1004,9 @@ the counts a player who keeps count would keep. It is the engine's
 view alone: for each card, in your hand, your cover, his cover, shown in his hand,
 played (by whom, in which trick) or unseen; per suit and for the tarocks, the cards
 out, his shown void, your best card and whether it is a master; the cards out in
-thirds. The page draws it and adds no rule: the masters, the voids and the points
+thirds. The page draws it and adds no rule: the masters, the voids and the card points
 come from the engine, and an unseen card is only ever "still out". ("Point" with a
-capital is what is paid; the count is points, Augen. The Slate is the score slate, 4:
+capital is what is paid, Points; the count is "card points", Augen. The Slate is the score slate, 4:
 the tracker is never called a slate.)
 
 6.6.2 **When it shows.** Hints on (7.1), the setting "Cards out" on (default on), the
@@ -1051,7 +1051,7 @@ order, each only when it has something to say:
 3. Shown voids: "Your opponent has shown no hearts" ("... no hearts or clubs"; "no
    tarocks"). He has failed to follow the kind, and no card of it has since been
    shown in his hand or on his covers; a packet card pulled later lifts it.
-4. The points still out: "Still out: 31⅓ of 70 points" (the cards out, in the count's thirds, so
+4. The card points still out: "Still out: 31⅓ of 70 card points" (the cards out, in the count's thirds, so
    it includes your face-down packet cards). Each side's take so far is the HUD's
    (2.5), not repeated here.
 

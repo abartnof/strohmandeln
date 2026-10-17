@@ -172,7 +172,7 @@ colon the English text begins in lower case (the table does it); a lead, a
 skill's name and a rule never stack a second colon. The words are the
 Kibitzer's: dry, brief, kind (`docs/TABLE3D.md` 6.5). A skill is named by the act
 (`tutor.name.*`), short, as the lead "Next: ..." and the praise "... – all N
-chances met." need it. Terminology: "Point" is a payment, "points" (Augen) the
+chances met." need it. Terminology: "Point" is a payment, "card points" (Augen) the
 count; the card on a packet is a "cover" (Decke).
 
 The brief is at most three bullets and about 45 words of body (the leads and the
@@ -230,8 +230,8 @@ in the Kibitzer's tab at the first clear chance at the focus
 
 | Key | Parameters | English | Deutsch | Basis |
 |---|---|---|---|---|
-| `tutor.rule.worth.rich` | none | A trick with many points in it is worth winning; take it. | Ein Stich mit vielen Augen lohnt sich; holen Sie ihn. | Be 147; MS "Das Nach-hinten-Spielen" |
-| `tutor.rule.worth.poor` | none | Do not win a trick of few points with a king; give a small card. | Einen Stich mit wenigen Augen nicht mit dem König holen; eine kleine Karte zugeben. | Be 147; MS "Das Nach-hinten-Spielen" |
+| `tutor.rule.worth.rich` | none | A trick with many card points in it is worth winning; take it. | Ein Stich mit vielen Augen lohnt sich; holen Sie ihn. | Be 147; MS "Das Nach-hinten-Spielen" |
+| `tutor.rule.worth.poor` | none | Do not win a trick of few card points with a king; give a small card. | Einen Stich mit wenigen Augen nicht mit dem König holen; eine kleine Karte zugeben. | Be 147; MS "Das Nach-hinten-Spielen" |
 | `tutor.rule.cheap` | none | Win with the lowest card that wins; otherwise give the lowest. | Den Stich mit der kleinsten Karte holen, die ihn gewinnt; sonst die kleinste zugeben. | MS "Das Nach-hinten-Spielen"; U 75 |
 | `tutor.rule.off.pip` | none | Play your covers off; beneath them may lie tarocks or kings. | Spielen Sie Ihre Decken ab; darunter liegen vielleicht Tarock oder Könige. | W 134; U 71-75; Be 145, 148; MS |
 | `tutor.rule.off.figure` | none | A queen or cavall lying as a cover should be played at once. | Eine Dame oder ein Cavall als Decke sollte gleich gespielt werden. | W 134; U 71-75; Be 145, 148; MS |
@@ -240,20 +240,20 @@ in the Kibitzer's tab at the first clear chance at the focus
 | `tutor.rule.pagat.keep` | none | With 12+ tarocks and a long suit, the Pagat may wait for the last trick. | Mit 12+ Tarock und langer Farbe kann der Pagat auf den letzten Stich warten. | U 74; MS; W 133 |
 | `tutor.rule.void` | none | Think twice before leading a suit your opponent could not follow. | Überlegen Sie, ehe Sie eine Farbe anspielen, die Ihr Gegner nicht bedienen konnte. | MS; Be 150; U 75-76 |
 | `tutor.rule.endgame` | none | Late in the deal, count what you still need to reach 35⅔. | Gegen Ende zählen und prüfen, was noch auf 35⅔ fehlt. | U 77; Be 147, 150 |
-| `tutor.rule.bid` | none | Take up with about 25 points of sure winners and at least six tarocks. | Aufnehmen mit etwa 25 Augen sicherer Stecher und mindestens sechs Tarock. | W 131; U 77-78; Be 145-146; MS |
+| `tutor.rule.bid` | none | Take up with about 25 card points of sure winners and at least six tarocks. | Aufnehmen mit etwa 25 Augen sicherer Stecher und mindestens sechs Tarock. | W 131; U 77-78; Be 145-146; MS |
 | `tutor.rule.announce` | none | Announce the Trull or the four kings before you play their first card. | Die Troule oder die vier Könige ansagen, ehe deren erste Karte gespielt wird. | W 133, 135; U 71; Be 146; MS |
 
 ### Facts
 
 | Key | Parameters | English | Deutsch | Basis |
 |---|---|---|---|---|
-| `tutor.fact.worth` | none | A trick is worth the points of its two cards. | Ein Stich ist so viel wert wie die Augen seiner beiden Karten. | RULES 8.1 |
-| `tutor.fact.cheap` | none | Two cards can win the same trick; the dearer one costs you points. | Zwei Karten können denselben Stich gewinnen; die teurere kostet Sie Augen. | RULES 8.1 |
+| `tutor.fact.worth` | none | A trick is worth the card points of its two cards. | Ein Stich ist so viel wert wie die Augen seiner beiden Karten. | RULES 8.1 |
+| `tutor.fact.cheap` | none | Two cards can win the same trick; the dearer one costs you card points. | Zwei Karten können denselben Stich gewinnen; die teurere kostet Sie Augen. | RULES 8.1 |
 | `tutor.fact.off` | none | Hidden cards lie under a cover until it is played. | Verdeckte Karten liegen unter der Decke, bis sie gespielt wird. | RULES 5.2, 6.1 |
 | `tutor.fact.run` | none | Tarocks in an unbroken run win tricks one after another. | Tarock in geschlossener Reihe machen Stich um Stich. | U 73-74 |
 | `tutor.fact.pagat` | none | The Pagat is the lowest tarock; played last, it wins or loses a Point. | Der Pagat ist das niedrigste Tarock; im letzten Stich gewinnt oder verliert er einen Point. | RULES 1.4, 5.3, 12.2 |
 | `tutor.fact.void` | none | Out of the suit led, a player must play a tarock if able. | Fehlt die ausgespielte Farbe, muss ein Tarock gespielt werden, wenn eines da ist. | RULES 5.4 |
-| `tutor.fact.behind` | none | Opening a suit where your opponent holds more points tends to cost you. | Eine Farbe zu eröffnen, in der der Gegner mehr Augen hält, kostet meist etwas. | W 134-135, MS (a suit the hands contest); M8: the cost of opening falls as your share of its points rises; against: Be 150-151 |
+| `tutor.fact.behind` | none | Opening a suit where your opponent holds more card points tends to cost you. | Eine Farbe zu eröffnen, in der der Gegner mehr Augen hält, kostet meist etwas. | W 134-135, MS (a suit the hands contest); M8: the cost of opening falls as your share of its points rises; against: Be 150-151 |
 | `tutor.fact.endgame` | none | When every packet is turned, your opponent's cards can be worked out. | Sind alle Pakete aufgedeckt, lassen sich die Karten Ihres Gegners ausrechnen. | RULES 13.6 |
 | `tutor.fact.bid` | none | The sure winners are the Sküs, the Mond, kings and guarded queens. | Sichere Stecher sind Sküs, Mond, Könige und besetzte Damen. | W 131; MS |
 | `tutor.fact.announce` | none | An honour you hold but never announce is not paid. | Ein Honneur, den Sie halten, aber nicht ansagen, wird nicht bezahlt. | RULES 11.1, 11.5 |
@@ -302,8 +302,8 @@ in the Kibitzer's tab at the first clear chance at the focus
 
 | Key | Parameters | English | Deutsch | Basis |
 |---|---|---|---|---|
-| `tutor.miss.worth.poor` | `trick`, `played`, `better` (cards), `thirds` | In trick {trick}, your {played} won only {thirds} points; the {better} would have kept it for later. | Im {trick}. Stich holte {played} nur {thirds} Augen; mit {better} wäre die Karte für einen größeren Stich geblieben. | TUTOR 2 (`worth`, greedy) |
-| `tutor.miss.worth.rich` | `trick`, `led`, `better` (cards), `thirds` | In trick {trick}, your opponent led the {led}; the {better} would have taken its {thirds} points. | Im {trick}. Stich spielte Ihr Gegner {led} an; mit {better} hätten Sie die {thirds} Augen geholt. | TUTOR 2 (`worth`, timid) |
+| `tutor.miss.worth.poor` | `trick`, `played`, `better` (cards), `thirds` | In trick {trick}, your {played} won only {thirds} card points; the {better} would have kept it for later. | Im {trick}. Stich holte {played} nur {thirds} Augen; mit {better} wäre die Karte für einen größeren Stich geblieben. | TUTOR 2 (`worth`, greedy) |
+| `tutor.miss.worth.rich` | `trick`, `led`, `better` (cards), `thirds` | In trick {trick}, your opponent led the {led}; the {better} would have taken its {thirds} card points. | Im {trick}. Stich spielte Ihr Gegner {led} an; mit {better} hätten Sie die {thirds} Augen geholt. | TUTOR 2 (`worth`, timid) |
 | `tutor.miss.cheap` | `trick`, `played`, `better` (cards) | In trick {trick}, the {better} would have done what the {played} did and left you better off. | Im {trick}. Stich hätte {better} dasselbe geleistet wie {played} und Sie besser gestellt. | TUTOR 2 (`cheap`) |
 | `tutor.miss.off.pip` | `trick`, `better` (card) | In trick {trick}, playing the {better} from its packet would have shown you what lies beneath. | Im {trick}. Stich hätte {better} vom Paket gezeigt, was darunter liegt. | TUTOR 2 (`off`, pip) |
 | `tutor.miss.off.figure` | `card`, `king` (cards), `late` (trick) | Your {card} fell under your opponent's {king} in trick {late}; play it at once next time. | Im {late}. Stich nahm Ihr Gegner {card} mit {king}; spielen Sie die Figur das nächste Mal gleich. | TUTOR 2 (`off`, figure); only where the log shows the figure lost to a higher card of its suit |
@@ -312,10 +312,10 @@ in the Kibitzer's tab at the first clear chance at the focus
 | `tutor.miss.pagat.cash` | `trick`, `n` (tarocks held) | In trick {trick}, with {n} tarocks the Pagat should have been played at once. | Im {trick}. Stich hätte der Pagat mit {n} Tarock gleich gespielt werden sollen. | TUTOR 2 (`pagat`, cash) |
 | `tutor.miss.pagat.keep` | `trick`, `n` (tarocks held) | In trick {trick}, with {n} tarocks the Pagat was worth keeping. | Im {trick}. Stich lohnte es mit {n} Tarock, den Pagat zu behalten. | TUTOR 2 (`pagat`, keep) |
 | `tutor.miss.void` | `trick`, `played` (card), `suit` | In trick {trick}, you led the {played}, though your opponent had already failed to follow {suit}. | Im {trick}. Stich spielten Sie {played} an, obwohl Ihr Gegner {suit} schon nicht bedient hatte. | TUTOR 2 (`void`) |
-| `tutor.miss.behind` | `trick`, `suit`, `better` (card) | In trick {trick}, you opened {suit}, in which your opponent held many points; the {better} led better. | Im {trick}. Stich eröffneten Sie {suit}, wo Ihr Gegner viele Augen hielt; {better} wäre die bessere Eröffnung gewesen. | TUTOR 2 (`behind`); M8 |
+| `tutor.miss.behind` | `trick`, `suit`, `better` (card) | In trick {trick}, you opened {suit}, in which your opponent held many card points; the {better} led better. | Im {trick}. Stich eröffneten Sie {suit}, wo Ihr Gegner viele Augen hielt; {better} wäre die bessere Eröffnung gewesen. | TUTOR 2 (`behind`); M8 |
 | `tutor.miss.endgame` | `trick`, `played`, `better` (cards) | In trick {trick}, with the position known, the {better} was the card, not the {played}. | Im {trick}. Stich war bei bekannter Lage {better} die Karte, nicht {played}. | TUTOR 2 (`endgame`) |
-| `tutor.miss.bid.pass` | `sure` (thirds), `n` (tarocks held) | You passed with {sure} points of sure winners and {n} tarocks; on average, taking up paid. | Sie passten mit {sure} Augen sicherer Stecher und {n} Tarock; im Schnitt lohnte sich das Aufnehmen. | TUTOR 2 (`bid`, passed) |
-| `tutor.miss.bid.take` | `sure` (thirds), `n` (tarocks held) | You took up with {sure} points of sure winners and {n} tarocks; on average, passing paid. | Sie nahmen auf mit {sure} Augen sicherer Stecher und {n} Tarock; im Schnitt lohnte sich das Passen. | TUTOR 2 (`bid`, took) |
+| `tutor.miss.bid.pass` | `sure` (thirds), `n` (tarocks held) | You passed with {sure} card points of sure winners and {n} tarocks; on average, taking up paid. | Sie passten mit {sure} Augen sicherer Stecher und {n} Tarock; im Schnitt lohnte sich das Aufnehmen. | TUTOR 2 (`bid`, passed) |
+| `tutor.miss.bid.take` | `sure` (thirds), `n` (tarocks held) | You took up with {sure} card points of sure winners and {n} tarocks; on average, passing paid. | Sie nahmen auf mit {sure} Augen sicherer Stecher und {n} Tarock; im Schnitt lohnte sich das Passen. | TUTOR 2 (`bid`, took) |
 | `tutor.miss.announce` | `card`, `honour` | You played the {card} without announcing {honour}, and lost a Point. | Sie spielten {card}, ohne {honour} anzusagen, und verloren einen Point. | RULES 11.5 |
 
 ### Keys of the page
