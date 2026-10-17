@@ -290,3 +290,12 @@ fn a_styled_opponent_is_a_function_of_the_view_and_decides_legally() {
         }
     }
 }
+
+#[test]
+fn a_style_carries_its_calibrated_rung_four_margin() {
+    assert_eq!(Style::Normal.rung4_margin(), 0.0);
+    for s in Style::POOL {
+        assert_eq!(cfg(s).bid_margin, Some(s.rung4_margin()), "{s:?}");
+    }
+    assert_eq!(cfg(Style::Normal).bid_margin, Some(0.0));
+}

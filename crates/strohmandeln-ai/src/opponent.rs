@@ -203,11 +203,17 @@ impl Opponent {
         }
     }
 
-    /// The decision, a pure function of the seed and the view.
-    pub fn decide(&self, view: &View) -> Action {
+    /// The stream a decision in `view` draws from (the tie-breaks and the
+    /// sampled worlds).
+    pub fn decision_rng(&self, view: &View) -> Rng {
         let mut draws = self.draws(view);
         draws.next_u64(); // spare: the draw the retired half-step slip took
-        let mut rng = Rng::seeded(draws.next_u64());
+        Rng::seeded(draws.next_u64())
+    }
+
+    /// The decision, a pure function of the seed and the view.
+    pub fn decide(&self, view: &View) -> Action {
+        let mut rng = self.decision_rng(view);
         let config = if self.level.is_one() {
             self.config.at_level_one()
         } else {

@@ -37,6 +37,21 @@ pub enum Style {
 /// cost in the measurement of 4.3.
 const BAND: f64 = 2.0;
 
+/// Rung 4's bid margin for each style, in Points: the advantage at which
+/// Normal's rung-4 sample bids the share of hands the style's rule bids
+/// (`probe::Calibration`, `stage0`). Rung 4 bids by the sampled advantage, not
+/// by `BidRule`. 0.0 is Normal's, and stands for "not yet calibrated" until
+/// stage 0 has run.
+const MARGINS: [(Style, f64); 7] = [
+    (Style::Bermann, 0.0),
+    (Style::Ulmann, 0.0),
+    (Style::Ms, 0.0),
+    (Style::Werner, 0.0),
+    (Style::Bold, 0.0),
+    (Style::Cautious, 0.0),
+    (Style::Hunter, 0.0),
+];
+
 impl Style {
     /// Every style, in the dropdown's order.
     pub const ALL: [Style; 9] = [
@@ -105,6 +120,14 @@ impl Style {
         }
     }
 
+    /// This style's rung-4 bid margin (`MARGINS`); Normal's is 0.
+    pub fn rung4_margin(self) -> f64 {
+        MARGINS
+            .iter()
+            .find(|(s, _)| *s == self)
+            .map_or(0.0, |&(_, m)| m)
+    }
+
     /// Moves `config` to this style's parameters. `Random` is not a parameter
     /// set and changes nothing: resolve it first.
     pub fn apply(self, c: &mut Config) {
@@ -112,6 +135,7 @@ impl Style {
         if matches!(self, Style::Normal | Style::Random) {
             return;
         }
+        c.bid_margin = Some(self.rung4_margin());
         let w: &mut Weights = &mut c.weights;
         w.band = BAND;
         match self {

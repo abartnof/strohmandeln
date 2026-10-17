@@ -127,13 +127,24 @@ pub fn best_card(k: &Knowledge, rng: &mut Rng, budget: Budget, wt: &Weights) -> 
         return k.legal[0];
     }
     let (scores, _) = move_scores(k, rng, budget, wt);
+    choose(k, rng, &scores, wt)
+}
+
+/// The cards within `band` thirds of the best average margin of `scores`
+/// (best first).
+pub fn near(scores: &[(Card, f64)], band: f64) -> Vec<Card> {
     let top = scores[0].1;
-    // Within a hair of the best (a third of a third), the maxims decide.
-    let near: Vec<Card> = scores
+    scores
         .iter()
-        .filter(|(_, v)| top - v < wt.band)
+        .filter(|(_, v)| top - v < band)
         .map(|(c, _)| *c)
-        .collect();
+        .collect()
+}
+
+/// The card from `scores`: within a hair of the best (a third of a third:
+/// `wt.band`) the maxims decide.
+pub fn choose(k: &Knowledge, rng: &mut Rng, scores: &[(Card, f64)], wt: &Weights) -> Card {
+    let near = near(scores, wt.band);
     if near.len() == 1 {
         return near[0];
     }
