@@ -550,31 +550,61 @@ def check_new_sitting_style(browser, failures):
     check_offline(page, failures, "new_sitting_style: ")
 
 
+OFFERED = ("bermann", "ms", "bold", "cautious", "hunter")
+
+
 def check_random_style_hidden(browser, failures):
-    page = open_page(browser, "seed=7&speed=instant&human=1&hook=1", FAST)
+    # Seeds 2 and 10 drew Werner and Ulmann before Random's pool was the offered list (STYLES 2.3); 7 draws Bold.
+    for seed in (7, 2, 10):
+        random_sitting(browser, failures, seed)
+
+
+def random_sitting(browser, failures, seed):
+    where = f"random_style_hidden (seed {seed}): "
+    page = open_page(browser, f"seed={seed}&speed=instant&human=1&hook=1&keep=1", FAST)
     js(page, "askNew()")
     page.wait_for_selector("[data-dialog=new]", timeout=10_000)
-    fail_if(page.locator("[data-dialog=new] [data-role=style-line]").inner_text() != t("style.normal.line"), failures, "random_style_hidden: the Normal line is not shown first")
+    fail_if(page.locator("[data-dialog=new] [data-role=style-line]").inner_text() != t("style.normal.line"), failures, where + "the Normal line is not shown first")
     choose_style(page, "random")
-    fail_if(page.locator("[data-dialog=new] [data-role=style-line]").inner_text() != t("style.random.line"), failures, "random_style_hidden: the Random line is not shown")
+    fail_if(page.locator("[data-dialog=new] [data-role=style-line]").inner_text() != t("style.random.line"), failures, where + "the Random line is not shown")
     deal_new_sitting(page)
     s = state(page)
-    fail_if(s["style"] != "random" or s["drawn"] is not None, failures, f"random_style_hidden: the state says {s['style']!r}, {s['drawn']!r}")
+    fail_if(s["style"] != "random" or s["drawn"] is not None, failures, f"{where}the state says {s['style']!r}, {s['drawn']!r}")
     line = sitting_line(page)
-    fail_if("style Random (shown at the end)" not in line, failures, f"random_style_hidden: the line is {line!r}")
+    fail_if(t("style.random.hidden") not in line, failures, f"{where}the line is {line!r}")
+    if seed == 7:
+        # a language switch before the end keeps it hidden, in German too
+        open_settings(page)
+        page.locator("[data-row=lang] [data-value=de]").click()
+        line = page.locator("[data-row=this-sitting] p").first.inner_text()
+        fail_if(t("style.random.hidden", "de") not in line, failures, f"{where}the German line is {line!r}")
+        page.locator("[data-row=lang] [data-value=en]").click()
+        page.locator(".settings-close").dispatch_event("click")
+        # a restored sitting does not know it either: the saved record carries it, the page does not show it
+        drive(page, has("trick_won"))
+        rest(page)
+        goto(page, "human=1&hook=1&speed=instant")
+        page.wait_for_selector("[data-dialog=welcome]", timeout=120_000)
+        page.locator("[data-dialog-act=continue]").click()
+        rest(page)
+        s = state(page)
+        fail_if(s["style"] != "random" or s["drawn"] is not None, failures, f"{where}after a restore the state says {s['style']!r}, {s['drawn']!r}")
+        line = sitting_line(page)
+        fail_if(t("style.random.hidden") not in line, failures, f"{where}after a restore the line is {line!r}")
     drive(page, until_over())
     page.wait_for_selector("[data-dialog=over]", timeout=30_000)
     drawn = js(page, "state()")["drawn"]
-    fail_if(drawn not in ("bermann", "ms", "bold", "cautious", "hunter"), failures, f"random_style_hidden: the sitting's end gave drawn {drawn!r}")
+    fail_if(drawn not in OFFERED, failures, f"{where}the sitting's end gave drawn {drawn!r}, which is not offered")
     name = t(f"style.{drawn}.name") if drawn else "?"
-    fail_if(name not in page.locator("[data-dialog=over]").inner_text(), failures, f"random_style_hidden: the end dialog does not name {name!r}")
+    fail_if(name not in page.locator("[data-dialog=over]").inner_text(), failures, f"{where}the end dialog does not name {name!r}")
     line = sitting_line(page)
-    fail_if(f"style Random: {name}" not in line, failures, f"random_style_hidden: the line after the end is {line!r}")
+    fail_if(f"style Random: {name}" not in line, failures, f"{where}the line after the end is {line!r}")
     js(page, "openReview()")
     page.wait_for_selector("[data-dialog=review]", timeout=10_000)
     reveal = page.locator("[data-dialog=review] .tutor-reveal").inner_text() if page.locator("[data-dialog=review] .tutor-reveal").count() else ""
-    fail_if(name not in reveal, failures, f"random_style_hidden: the sitting's brief reveals {reveal!r}, not {name!r}")
-    check_offline(page, failures, "random_style_hidden: ")
+    fail_if(name not in reveal, failures, f"{where}the sitting's brief reveals {reveal!r}, not {name!r}")
+    check_offline(page, failures, where)
+    page.context.close()
 
 
 # ---- language -------------------------------------------------------------------------------------------
