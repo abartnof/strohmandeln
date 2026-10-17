@@ -246,6 +246,33 @@ impl Config {
     }
 }
 
+impl Config {
+    /// Normal's tuning moved as `docs/STYLES.md` 2.1 and 2.2 advise against
+    /// `style` (the player's counter, not the opponent's own play); Normal's
+    /// own for a style with no counter. A counter changes weights and
+    /// constants only.
+    pub fn counter(style: Style) -> Config {
+        let mut c = Config::default();
+        match style {
+            // 2.2: "bid threshold up 10 thirds against it".
+            Style::Bold => c.bid.sure_thirds += 10,
+            // 2.1 MS, 2.2 Cautious: "take up lighter after its pass"; the
+            // size is E, 10 thirds, the mirror of Bold's.
+            Style::Cautious | Style::Ms => c.bid.sure_thirds -= 10,
+            // 2.1 Bermann: do not lead small tarocks into the Mond it
+            // reserves for (`keep_tarocks` up), do not leave a blank on top of
+            // a packet over a figure you mean to keep (`keep_packet` up); the
+            // sizes are E (x2 and x1.5).
+            Style::Bermann => {
+                c.weights.keep_tarocks *= 2.0;
+                c.weights.keep_packet *= 1.5;
+            }
+            _ => {}
+        }
+        c
+    }
+}
+
 #[cfg(test)]
 #[path = "style_tests.rs"]
 mod tests;

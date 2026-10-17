@@ -4,8 +4,13 @@
 //!
 //! ```text
 //! tournament A B [--touren 3|6] [--batch N] [--looks K] [--negligible X]
-//!                [--seed S] [--out FILE.tsv]
+//!                [--seed S] [--out FILE.tsv] [--baseline C]
 //! ```
+//!
+//! With `--baseline C` the unit is the exploit's D (`docs/STYLES.md` 4.3):
+//! the Points A takes from B over a mirrored pair, less the Points C takes
+//! from B on the same deals. `counter=ID` in a spec sets Normal's counter to
+//! the style `ID` (`Config::counter`), the rest then override it.
 //!
 //! A and B are specs: a level on the dial (`1`, `2`, `3`, `3.5`, `4`; a half
 //! snaps to the nearest, ties down), optionally
@@ -25,7 +30,7 @@ use strohmandeln_ai::opponent::{Config, Level, Opponent};
 use strohmandeln_ai::rung2::BidRule;
 use strohmandeln_ai::stats::{run_sequential, Plan, Verdict};
 use strohmandeln_ai::style::Style;
-use strohmandeln_ai::tournament::mirrored;
+use strohmandeln_ai::tournament::{mirrored, paired_gain};
 use strohmandeln_core::agents::Player;
 use strohmandeln_core::types::Seat;
 
@@ -42,7 +47,14 @@ fn parse_spec(spec: &str) -> (Level, Config) {
                 .unwrap_or_else(|| panic!("a style (not random) in {spec}"))
         })
         .unwrap_or_default();
-    let mut config = Config::for_style(style, 0);
+    let counter = settings
+        .split(',')
+        .find_map(|kv| kv.strip_prefix("counter="))
+        .map(|id| Style::parse(id).unwrap_or_else(|| panic!("a style in {spec}")));
+    let mut config = match counter {
+        Some(c) => Config::counter(c),
+        None => Config::for_style(style, 0),
+    };
     for kv in settings.split(',').filter(|s| !s.is_empty()) {
         let (k, v) = kv
             .split_once('=')
@@ -56,7 +68,7 @@ fn parse_spec(spec: &str) -> (Level, Config) {
                     ..config.bid
                 };
             }
-            "style" => {}
+            "style" | "counter" => {}
             "worlds" => config.budget.worlds = v.parse().expect("worlds"),
             "nodes" => config.budget.nodes = v.parse().expect("nodes"),
             "bidworlds" => config.budget.bid_worlds = v.parse().expect("bidworlds"),
@@ -89,7 +101,7 @@ fn parse_spec(spec: &str) -> (Level, Config) {
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let usage = "tournament A B [--touren 3|6] [--batch N] [--looks K] [--negligible X] [--seed S] [--out FILE]";
+    let usage = "tournament A B [--touren 3|6] [--batch N] [--looks K] [--negligible X] [--seed S] [--out FILE] [--baseline C]";
     if args.len() < 2 {
         panic!("{usage}");
     }
@@ -104,6 +116,7 @@ fn main() {
     };
     let mut first_seed = 1_000_000u64;
     let mut out: Option<File> = None;
+    let mut baseline: Option<(String, Level, Config)> = None;
     let mut i = 2;
     while i < args.len() {
         let value = args.get(i + 1).cloned().unwrap_or_default();
@@ -113,6 +126,10 @@ fn main() {
             "--looks" => plan.looks = value.parse().expect("--looks K"),
             "--negligible" => plan.negligible = value.parse().expect("--negligible X"),
             "--seed" => first_seed = value.parse().expect("--seed S"),
+            "--baseline" => {
+                let (l, c) = parse_spec(&value);
+                baseline = Some((value.clone(), l, c));
+            }
             "--out" => out = Some(File::create(&value).expect("--out FILE")),
             other => panic!("unknown {other}; {usage}"),
         }
@@ -127,7 +144,17 @@ fn main() {
         }
     };
     let (fa, fb) = (factory(la, ca, 0xA), factory(lb, cb, 0xB));
-    println!("{spec_a} against {spec_b}: Points per mirrored pair of sittings of {touren} Touren");
+    match &baseline {
+        Some((spec_c, ..)) => println!(
+            "D = Points {spec_a} takes from {spec_b} less Points {spec_c} takes from {spec_b}, per mirrored pair of sittings of {touren} Touren"
+        ),
+        None => println!(
+            "{spec_a} against {spec_b}: Points per mirrored pair of sittings of {touren} Touren"
+        ),
+    }
+    let fc = baseline
+        .as_ref()
+        .map(|(_, l, c)| factory(*l, *c, 0xA));
     println!(
         "plan: batches of {}, at most {} looks, boundaries {:?}, negligible +-{}, first seed {first_seed}",
         plan.batch,
@@ -143,7 +170,12 @@ fn main() {
         plan,
         |i| {
             let seed = first_seed + i as u64;
-            let v = mirrored(seed, Default::default(), touren, &fa, &fb);
+            let v = match &fc {
+                Some(fc) => {
+                    paired_gain(seed, Default::default(), touren, &fa, fc, &fb)
+                }
+                None => mirrored(seed, Default::default(), touren, &fa, &fb),
+            };
             if let Some(f) = out.as_mut() {
                 writeln!(f, "{seed}\t{v}").expect("write");
             }
