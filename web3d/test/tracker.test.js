@@ -102,7 +102,7 @@ test("a cell's state is yours, played or still out; who played it and when are i
   assert.equal(cell("Kh").state, "mine");
   assert.equal(cell("T21").state, "mine");
   assert.equal(cell("Qh").state, "played");
-  assert.equal(cell("T5").state, "played");
+  assert.equal(cell("T5").state, "theirs", "played by your opponent");
   assert.equal(cell("Ks").state, "out");
   assert.equal(cell("T9").state, "out");
   assert.equal(cell("Jd").state, "out", "an unseen card");
@@ -112,11 +112,11 @@ test("a cell's state is yours, played or still out; who played it and when are i
   assert.match(trackerModel(p, words("de")).rows[0].cells[1].title, /Herz-Dame: von Ihnen gespielt, Stich 2/);
 });
 
-test("the legend names the three states, and says still out holds your face-down packet cards", () => {
+test("the legend names the four states, and says still out holds your face-down packet cards", () => {
   const m = trackerModel(payload(), words("en"));
-  assert.deepEqual(m.legend.map((l) => l.state), ["mine", "played", "out"]);
-  assert.deepEqual(m.legend.map((l) => l.text), ["Yours", "Played", "Still out, with your face-down packet cards"]);
-  assert.deepEqual(trackerModel(payload(), words("de")).legend.map((l) => l.text), ["Ihre", "Gespielt", "Noch draußen, auch Ihre verdeckten Paketkarten"]);
+  assert.deepEqual(m.legend.map((l) => l.state), ["mine", "played", "theirs", "out"]);
+  assert.deepEqual(m.legend.map((l) => l.text), ["Yours", "Played by you", "Played by your opponent", "Still out, with your face-down packet cards"]);
+  assert.deepEqual(trackerModel(payload(), words("de")).legend.map((l) => l.text), ["Ihre", "Von Ihnen gespielt", "Von Ihrem Gegner gespielt", "Noch draußen, auch Ihre verdeckten Paketkarten"]);
 });
 
 test("tarocks out: the count and the highest four, then an ellipsis", () => {
@@ -229,7 +229,7 @@ test("the panel: a labelled region, the lines a list, the grid hidden from the s
   assert.equal(fold.textContent, "Fold");
   const mark = node.byClass("tracker-cell").find((c) => c.getAttribute("data-code") === "Kh");
   assert.equal(mark.getAttribute("data-state"), "out");
-  assert.equal(node.byClass("tracker-legend")[0].children.length, 3);
+  assert.equal(node.byClass("tracker-legend")[0].children.length, 4);
 });
 
 test("over a real sitting every payload makes a panel of two to four lines in both languages, nothing unspoken", async () => {
@@ -254,7 +254,8 @@ test("over a real sitting every payload makes a panel of two to four lines in bo
           const states = (s) => cells.filter((c) => c.state === s).length;
           const places = Object.values(p.cards);
           assert.equal(states("mine"), places.filter((x) => x.place === "hand" || x.place === "cover").length);
-          assert.equal(states("played"), places.filter((x) => x.place === "played").length);
+          assert.equal(states("played"), places.filter((x) => x.place === "played" && x.by === p.human).length);
+          assert.equal(states("theirs"), places.filter((x) => x.place === "played" && x.by !== p.human).length);
           assert.equal(states("out"), p.out_count);
         }
         looked++;

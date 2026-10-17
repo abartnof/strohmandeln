@@ -36,6 +36,7 @@ const PAIRS = [
   [M + "on-error-container", M + "error-container"], // refusal
   ["cassino-on-you", "cassino-you"], // edge chip
   [M + "on-surface-variant", M + "surface-container-highest"], // muted tutor button
+  ["tracker-on-opp", "tracker-opp"], // cards out: a card your opponent played
 ];
 
 for (const [name, set] of [["light", light], ["dark", dark]]) {
@@ -58,4 +59,24 @@ test("the light tokens are cassino's", () => {
   assert.equal(light[M + "surface-container-high"], "#e8e7ee");
   assert.equal(light["cassino-you"], "#924c00");
   assert.equal(light["cassino-them"], "#00696e");
+});
+
+// The cards-out cell he played is a dull red, not the grey of the cards played by you or the teal the slate gives him.
+const hue = (hex) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  return r > g * 1.3 && r > b * 1.3;
+};
+for (const [name, set] of [["light", light], ["dark", dark]]) {
+  test(`${name}: the opponent's played cell is red, apart from the grey one`, () => {
+    assert.ok(hue(set["tracker-opp"]), set["tracker-opp"]);
+    assert.notEqual(set["tracker-opp"], set["cassino-them"]);
+    assert.ok(ratio(set["tracker-opp"], set[M + "surface-container-highest"]) < 2, "a red tint, not a text-weight contrast");
+  });
+}
+
+test("the opponent's played cell keeps a second cue and the high-contrast rule", () => {
+  const tcss = readFileSync(new URL("../src/tracker.css", import.meta.url), "utf8");
+  assert.match(tcss, /\[data-state="theirs"\][^{]*\{[^}]*(box-shadow|border-bottom)/, "a mark beyond colour");
+  const more = tcss.slice(tcss.indexOf("prefers-contrast: more"));
+  assert.match(more, /data-state="theirs"/);
 });

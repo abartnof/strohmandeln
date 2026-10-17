@@ -775,7 +775,7 @@ def check_tracker_languages(browser, failures):
     fail_if(labels != ["K", "D", "C", "B"], failures, f"{where}the German court labels are {labels}")
     scroll = page.evaluate("(() => { const p = document.querySelector('.tracker'); return p.scrollHeight - p.clientHeight; })()")
     fail_if(scroll > 1, failures, f"{where}the German panel scrolls by {scroll} px: the legend is cut off at 1280x720")
-    fail_if(page.locator(".tracker-legend li").count() != 3, failures, f"{where}the legend has not three entries")
+    fail_if(page.locator(".tracker-legend li").count() != 4, failures, f"{where}the legend has not four entries")
     close_all(browser)
     # Upright, the tracker is not there at all (deferred, 6.6.6): it cannot break the page.
     upright = tracker_page(browser, {"width": 390, "height": 844})

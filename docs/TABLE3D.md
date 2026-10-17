@@ -1026,10 +1026,13 @@ switch redraws it. A restored sitting shows it at the first rest.
 red suits and 10 9 8 7 in black, as printed); then the 22 tarocks from the Sküs down
 to I in rows of 8, 8 and 6. Labels follow the faces (`tarockfaces.js`): K Q C J in
 English, K D C B in German; Roman numerals with IIII; "Sküs". A cell's state is
-carried by more than colour: **yours** (hand or cover) is filled; **played** is
-dimmed on a grey field, and under `prefers-contrast: more` struck through; **still
-out** (unseen, or face up in his hand or on his cover) is outlined. A legend names
-the three; its "Still out" says it holds your own face-down packet cards ("Still
+carried by more than colour: **yours** (hand or cover) is filled; **played by
+you** is dimmed on a grey field; **played by your opponent** is a dull red field
+(`--tracker-opp`, 8.6:1 light, 6.5:1 dark for its label; not the slate's teal) with a
+bar under the label; under `prefers-contrast: more` both are struck through, his
+dashed (17 Oct 2026, the maintainer: the cards he played should differ from the
+grey of "not seen yet"); **still out** (unseen, or face up in his hand or on his
+cover) is outlined. A legend names the four; its "Still out" says it holds your own face-down packet cards ("Still
 out, with your face-down packet cards"), which a beginner would otherwise take for
 his. Who played a card, and in which trick, is in the cell's title (the faces'
 numerals: "tarock V: played by your opponent, trick 3") and in the screen reader's
