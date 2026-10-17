@@ -178,20 +178,24 @@ export function createSettings(rootEl, { t, prefs, onChange = () => {}, onAction
             (s.actions ?? []).map((a) => h(doc, "button", { class: "settings-action", type: "button", "data-action": a.name, onclick: () => onAction(a.name) }, t(a.labelKey)))))));
   }
 
+  let opener = null;
   function open() {
+    opener = doc.activeElement ?? null;
     rootEl.hidden = false;
     rootEl.setAttribute("aria-hidden", "false");
     const first = rootEl.findAll ? rootEl.findAll((e) => e.getAttribute("role") === "radio" && e.getAttribute("aria-checked") === "true")[0] : rootEl.querySelector?.('[role="radio"][aria-checked="true"]');
     first?.focus?.();
   }
+  // Escape is the page's (overlays.js); focus goes back to what opened the menu.
   function close() {
     rootEl.hidden = true;
     rootEl.setAttribute("aria-hidden", "true");
+    // Back to the opener; if it is gone, hidden or body (a click does not focus a button in Safari), to the cog.
+    const usable = (n) => n && n !== doc.body && n.isConnected && !n.closest?.("[hidden]") && !rootEl.contains?.(n);
+    const to = [opener, doc.querySelector?.("[data-act=settings]")].find(usable);
+    to?.focus?.();
+    opener = null;
   }
-
-  rootEl.addEventListener("keydown", (ev) => {
-    if (ev.key === "Escape") close();
-  });
   onLang(render);
   render();
 

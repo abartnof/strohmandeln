@@ -140,14 +140,13 @@ test("a switch of language redraws the menu", () => {
   assert.match(root.textContent, /Einstellungen/);
 });
 
-test("open and close, with Escape", () => {
+test("open and close (Escape is the page's, overlays.js)", () => {
   const { root, menu } = made();
   assert.equal(root.hidden, true);
   menu.open();
   assert.equal(root.hidden, false);
   root.dispatch("keydown", { key: "Escape" });
-  assert.equal(root.hidden, true);
-  menu.open();
+  assert.equal(root.hidden, false);
   menu.close();
   assert.equal(root.hidden, true);
 });
