@@ -7,7 +7,7 @@ import re
 import tempfile
 from pathlib import Path
 
-from browser import NO_DRAW, PAGE, ROOT, WORDS, STRINGS, check_offline, close_all, fail_if, intersects, js, rest, state, still
+from browser import LANDSCAPE, NO_DRAW, PAGE, ROOT, WORDS, STRINGS, check_offline, close_all, fail_if, intersects, js, rest, state, still
 from browser_scenarios import (
     FAST,
     choose,
@@ -335,6 +335,15 @@ def check_settings_rows(browser, failures):
     fail_if(js(page, "prefs()")["surface"] != "dot-grid", failures, f"settings_rows: the table top gave {js(page, 'prefs()')['surface']!r}")
     fail_if(surface.evaluate("(e) => parseFloat(getComputedStyle(e).fontSize)") < 16, failures, "settings_rows: the select's font is under 16px")
     fail_if(surface.bounding_box()["height"] < 40, failures, "settings_rows: the select is not touch-sized")
+    # Escape on the select: an open list closes alone; a closed, focused select passes it on and the menu closes (TABLE3D 7.1).
+    surface.focus()
+    page.keyboard.press("Escape")
+    fail_if(page.locator(".settings-root").get_attribute("hidden") is None, failures, "settings_rows: Escape on the closed select did not close the menu")
+    open_settings(page)
+    surface.focus()
+    page.keyboard.press("Alt+ArrowDown")
+    page.keyboard.press("Escape")
+    fail_if(page.locator(".settings-root").get_attribute("hidden") is not None, failures, "settings_rows: Escape on the open select closed the menu")
     check_offline(page, failures, "settings_rows: ")
 
 
@@ -369,7 +378,7 @@ def check_settings_no_rules(browser, failures):
     page.on("pageerror", lambda e: page.errors.append(str(e)))
     want = "This sitting: 6 Touren, 1/2/3, ultimo 2, throw-in, opponent level 1"
 
-    def check_menu(label):
+    def check_menu(label, want=want):
         open_settings(page)
         for key in ("both_pass", "values", "ultimo", "touren", "skill"):
             fail_if(page.locator(f"[data-row={key}]").count() != 0, failures, f"settings_no_rules: {key} is in the menu {label}")
@@ -383,13 +392,44 @@ def check_settings_no_rules(browser, failures):
     goto(page, "seed=7&speed=instant&human=1&keep=1")
     rest(page)
     check_menu("at the deal")
-    # After Continue the line still reads the record, not the prefs (reset here to the defaults).
+    # After Continue the line, the live point value and the Kibitzer's pages read the record, not the prefs (reset here to the defaults).
     page.evaluate("localStorage.setItem('strohmandeln.prefs', JSON.stringify({v: 1}))")
     goto(page, "human=1&hook=1")
     page.wait_for_selector("[data-dialog=welcome]", timeout=60_000)
     page.locator("[data-dialog-act=continue]").click()
     rest(page)
     check_menu("after Continue")
+    fail_if(js(page, "pointsNow()")["ultimo"] != 2 * js(page, "pointsNow()")["honour"], failures, f"settings_no_rules: the live ultimo is {js(page, 'pointsNow()')} after Continue, the record's is 2")
+    fail_if("thrown in" not in json.dumps(js(page, "pagesNow()")), failures, "settings_no_rules: the Kibitzer's pages do not follow the record's both-pass rule after Continue")
+    kept = page.evaluate("localStorage.getItem('strohmandeln.sitting')")
+    # A language switch redraws the line from the same record.
+    open_settings(page)
+    page.locator("[data-row=lang] [data-value=de]").dispatch_event("click")
+    page.locator(".settings-close").dispatch_event("click")
+    check_menu("in German", want="Dieser Abend: 6 Touren, 1/2/3, Ultimo 2, Einwerfen, Gegner Stufe 1")
+    open_settings(page)
+    page.locator("[data-row=lang] [data-value=en]").dispatch_event("click")
+    page.locator(".settings-close").dispatch_event("click")
+    # Deal from the dialog mid-sitting: it starts from the sitting; the line follows the new one.
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    page.locator("[data-dialog=new] [data-row=touren] [data-value=\"3\"]").click()
+    page.locator("[data-dialog=new] [data-row=both_pass] [data-value=play]").click()
+    page.locator("[data-dialog-act=deal]").click()
+    rest(page)
+    check_menu("after a new sitting", want="This sitting: 3 Touren, 1/2/3, ultimo 2, simple game, opponent level 1")
+    # A loaded file brings its own rules back, whatever the prefs now are (a fresh page: its own sitting is the defaults').
+    files = Path(tempfile.mkdtemp(prefix="sitting-"))
+    (files / "kept.json").write_text(json.dumps({**json.loads(kept), "protocol": 1}))  # the saved file is the kept sitting plus its protocol
+    page = open_page(browser, "seed=7&speed=instant&human=1")
+    open_settings(page)
+    fail_if("3 Touren, 2/3/4, ultimo 1" not in page.locator("[data-row=this-sitting]").inner_text(), failures, "settings_no_rules: a fresh page's line is not the defaults'")
+    with page.expect_file_chooser() as chooser:
+        page.locator("[data-action=load]").click()
+    chooser.value.set_files(str(files / "kept.json"))
+    page.wait_for_function("window.strohmandeln3d.state().touren_total === 6", timeout=30_000)
+    rest(page)
+    check_menu("after a loaded file")
     fail_if(page.errors, failures, f"settings_no_rules: errors {page.errors[:3]}")
 
 

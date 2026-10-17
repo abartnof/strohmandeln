@@ -115,6 +115,7 @@ async function main() {
   // ---- state ------------------------------------------------------------------
   let wasm = null; // the module's last state
   let log = []; // every event of the sitting
+  let sittingOnTable = null; // sittingFrom's: the sitting's length, rules and level (settings.js)
   let S = null; // the director's state: { model, events }
   let human = 0;
   let sel = { chosen: null, scroll: -1e9 }; // a row of cards starts at its left end
@@ -319,9 +320,7 @@ async function main() {
 
   // The pages, for the sitting's rules: both-pass, game values and ultimo (6.2.2).
   function pagesNow() {
-    const begun = log.find((e) => e.type === "sitting_start");
-    const settings = begun?.settings ?? {};
-    const rule = (k) => settings[k] ?? prefs[k];
+    const rule = (k) => sittingOnTable?.[k] ?? prefs[k];
     return tutorialPages(getLang() === "de" ? TUTORIAL_DE : TUTORIAL_EN, PAGE_KEYS, { both_pass: rule("both_pass"), values: rule("values"), ultimo: rule("ultimo") });
   }
   function openPage(key, { help }) {
@@ -760,9 +759,8 @@ async function main() {
 
   // What a Point is worth on the deal now: the ultimo setting times the doubling.
   function pointsNow() {
-    const begun = log.find((e) => e.type === "sitting_start");
     const d = [...log].reverse().find((e) => e.type === "deal_start");
-    return { ultimo: (begun?.settings?.ultimo ?? 1) * (d?.multiplier ?? 1), honour: d?.multiplier ?? 1 };
+    return { ultimo: (sittingOnTable?.ultimo ?? 1) * (d?.multiplier ?? 1), honour: d?.multiplier ?? 1 };
   }
 
   function showResult(e) {
@@ -1094,6 +1092,7 @@ async function main() {
 
   // ---- a sitting ----------------------------------------------------------------------------
   function resetTable() {
+    onTable(null);
     director.cancelTimed();
     stepping = false;
     idleTimers.forEach(clearTimeout);
@@ -1149,7 +1148,6 @@ async function main() {
   }
 
   // The sitting on the table (settings.js sittingFrom): the menu's line, and the new-sitting screen's start.
-  let sittingOnTable = null;
   function onTable(info) {
     sittingOnTable = info;
     settings.setSitting(info);
@@ -1611,6 +1609,8 @@ async function main() {
     meshInfo: () => director.meshes.map((m) => ({ x: m.position.x, y: m.position.y, z: m.position.z, code: m.userData.code })),
     newSitting,
     askNew,
+    pagesNow,
+    pointsNow,
     act: (action) => send(action),
     speed: (name) => changed("speed", name),
     step,

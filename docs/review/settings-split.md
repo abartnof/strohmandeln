@@ -39,3 +39,14 @@ Resolve: keep both, i.e. `import { createSettings, sittingFrom } from "./setting
 ## Open after this review
 
 - Findings 1 to 3 to fix in this package (1 recommended); 5 and 10 are doc edits.
+
+## Fixes
+
+Merged `review-settings-split` and main (Escape layers); `main.js` imports keep both `sittingFrom` and `escapeTarget, selectGuard`; `strohmandeln.html` rebuilt, not hand-merged.
+
+1. Fixed. `pagesNow` reads `sittingOnTable?.[k] ?? prefs[k]`; `pointsNow` reads `sittingOnTable?.ultimo ?? 1`. `let sittingOnTable` moved beside `log`. Hooks `pagesNow` and `pointsNow` added to `strohmandeln3d`. `settings_no_rules`, after Continue with prefs at the defaults: the live ultimo is 2 and the pages carry the record's both-pass rule (red before the fix: ultimo 1, pages from the prefs).
+2. Fixed. `settings_no_rules` now also covers a language switch (German line), a Deal from the dialog mid-sitting (line follows the new sitting; the dialog starts from the sitting) and a loaded file in a fresh page (line returns to the record's), each with prefs differing from the sitting.
+3. Fixed. `resetTable()` calls `onTable(null)`.
+4. Fixed. TABLE3D 7.1 states: Escape on the open list closes only the list; on the closed, focused select it closes the menu (3.10.5). `settings_rows` presses Escape on both cases (the open case is driven with Alt+ArrowDown; headless Chromium draws no popup, so it exercises the guard, not the popup).
+5. Fixed. "as Cassino shows its own" dropped from 3.5.1; `ui.new.applies` removed.
+Open: finding 5 of the review (`?hook` in 7.7.4) stays with its open item.
