@@ -117,6 +117,23 @@ test("the legend names the four states, and says still out holds your face-down 
   assert.deepEqual(trackerModel(payload(), words("de")).legend.map((l) => l.text), ["Ihre", "Von Ihnen gespielt", "Rot: von Ihrem Gegner gespielt", "Noch draußen, auch Ihre verdeckten Paketkarten"]);
 });
 
+test("each row counts its cards: yours (held or played by you), played by your opponent, and the two seen together", () => {
+  const p = payload({
+    human: 1,
+    places: { Kh: "hand", Jh: "cover", Qh: [1, 2], Ch: [0, 3], "4h": [0, 4], Ks: "opp_cover", T21: [0, 1], SK: "hand", T9: "opp_hand" },
+  });
+  const m = trackerModel(p, words("en"));
+  const counts = Object.fromEntries(m.rows.map((r) => [r.id, r.counts]));
+  assert.deepEqual(counts.h, { you: 3, opp: 2, seen: 5 });
+  assert.deepEqual(counts.d, { you: 0, opp: 0, seen: 0 });
+  assert.deepEqual(counts.s, { you: 0, opp: 0, seen: 0 }, "a card face up with your opponent is still out, as its cell says");
+  assert.deepEqual(counts.t1, { you: 1, opp: 1, seen: 2 });
+  assert.deepEqual(counts.t2, { you: 0, opp: 0, seen: 0 });
+  assert.deepEqual(m.countHeads.map((c) => c.text), ["You", "Opp.", "Seen"]);
+  assert.ok(m.countHeads.every((c) => c.title.length > 10), "each head says what it counts");
+  assert.deepEqual(trackerModel(p, words("de")).countHeads.map((c) => c.text), ["Sie", "Geg.", "Ges."]);
+});
+
 test("tarocks out: the count and the highest four, then an ellipsis", () => {
   const out = ["SK", "T21", "T19", "T18", "T10", "T7", "T3"];
   const p = payload({ groups: { trump: { out, unseen: 7, top_out: "SK" } } });
@@ -221,6 +238,8 @@ test("the panel: a labelled region, the lines a list, the grid hidden from the s
   assert.equal(node.byClass("tracker-lines")[0].children.length, m.lines.length);
   assert.equal(node.byClass("tracker-grid")[0].getAttribute("aria-hidden"), "true");
   assert.equal(node.byClass("tracker-grid")[0].byClass("tracker-cell").length, 54);
+  assert.equal(node.byClass("tracker-grid")[0].byClass("tracker-count").length, 7 * 3, "three counts a row");
+  assert.deepEqual(node.byClass("tracker-count-head").map((c) => c.textContent), ["You", "Opp.", "Seen"]);
   assert.equal(node.byClass("tracker-sr")[0].children.length, 5);
   const fold = node.byAttr("data-act", "tracker-fold")[0];
   assert.equal(fold.getAttribute("title"), "Fold the count away");

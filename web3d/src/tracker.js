@@ -17,6 +17,13 @@ const TAROCKS_HIGH_TO_LOW = ["SK", ...Array.from({ length: 21 }, (_, i) => `T${2
 // How many of the tarocks out the first line names.
 const NAMED = 4;
 const STATES = ["mine", "played", "theirs", "out"];
+// A row's three counts after its cells: yours (held or played by you), played
+// by your opponent, and the two together (the row's cells not still out).
+const COUNTS = ["you", "opp", "seen"];
+const counts = (cells) => {
+  const n = (...states) => cells.filter((c) => states.includes(c.state)).length;
+  return { you: n("mine", "played"), opp: n("theirs"), seen: n("mine", "played", "theirs") };
+};
 
 // Shown while Hints is on, the setting is on, and the Kibitzer is not muted
 // (the mute is the tutor's, so with the tutor off it does not apply).
@@ -110,9 +117,10 @@ export function trackerModel(p, words) {
     title: t("tracker.title"),
     byline: t("tracker.byline"),
     lines,
-    rows,
+    rows: rows.map((r) => ({ ...r, counts: counts(r.cells) })),
     legend: STATES.map((state) => ({ state, text: t(`tracker.legend.${state}`) })),
     sr: KINDS.map(group).map((g) => t("tracker.sr.group", { kind: t(`card.suit.${g.kind}`), mine: names(g.mine), out: names(g.out) })),
+    countHeads: COUNTS.map((id) => ({ id, text: t(`tracker.count.${id}`), title: t(`tracker.count.${id}.title`) })),
     trick: p.trick,
   };
 }

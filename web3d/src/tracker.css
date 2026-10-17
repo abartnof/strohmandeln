@@ -24,7 +24,7 @@
   position: absolute;
   left: 8px;
   top: var(--tracker-top, 160px);
-  width: min(330px, calc(100vw - 16px));
+  width: min(400px, calc(100vw - 16px));
   z-index: 12;
   pointer-events: none;
 }
@@ -61,8 +61,12 @@
 .tracker-lines { margin: 0 0 6px; padding: 0; list-style: none; }
 .tracker-lines li { margin: 2px 0; }
 
-/* The grid: a mark, then eight cells a row. A state is never colour alone. */
-.tracker-row { display: grid; grid-template-columns: 16px repeat(8, 1fr); gap: 2px; margin-bottom: 2px; align-items: center; }
+/* The grid: a mark, eight cells, then the row's three counts. A state is never colour alone. */
+.tracker-row { display: grid; grid-template-columns: 16px repeat(8, 1fr) repeat(3, 26px); gap: 2px; margin-bottom: 2px; align-items: center; }
+.tracker-heads .tracker-count-head:first-child { grid-column: 10; }
+.tracker-count-head { font-size: 10px; line-height: 1.1; text-align: center; color: var(--md-sys-color-on-surface-variant); white-space: nowrap; overflow: hidden; }
+.tracker-count { text-align: center; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--md-sys-color-on-surface-variant); }
+.tracker-count[data-count="seen"] { color: var(--md-sys-color-on-surface); font-weight: 600; }
 .tracker-mark { text-align: center; font-size: 14px; }
 .tracker-mark-h, .tracker-mark-d { color: var(--md-sys-color-error); }
 .tracker-cell {
