@@ -689,7 +689,7 @@ BOXES = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); re
 
 
 def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0"):
-    page = with_prefs(browser, {"hints": True, "slateAuto": False, "trackerFolded": False, **(prefs or {})}, query, viewport=size)
+    page = with_prefs(browser, {"hints": True, "seen": ["public-mark"], "slateAuto": False, "trackerFolded": False, **(prefs or {})}, query, viewport=size)
     take_if_bidding(page)
     drive(page, lambda s, log: sum(e["type"] == "trick_won" for e in log) >= 3 or s["prompt"] == "over")
     rest(page)
@@ -790,7 +790,7 @@ BRIEF_KEPT = "(() => { const b = window.strohmandeln3d.briefing(); return b.kept
 
 
 def brief_page(browser, prefs, query="seed=7&speed=instant&human=1"):
-    page = with_prefs(browser, {"hints": True, "slateAuto": False, **prefs}, query)
+    page = with_prefs(browser, {"hints": True, "seen": ["public-mark"], "slateAuto": False, **prefs}, query)
     return page
 
 
