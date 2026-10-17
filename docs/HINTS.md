@@ -329,7 +329,7 @@ glosses it in the same hint.
 | "sampled deals" | the "Why?" first line: "I deal his hidden cards at random {w} times and play each out." |
 | "Mondfang" | glossed in "Why?" only: "answer his lead with the Mond, so the Sküs cannot catch it" |
 
-Not used: "cheap", "cheapest", "dear", "dearer", "costs" and "billig", "teuer", "kostet" (a newcomer has not met them: say "worth least", "worth more", "the lowest-value card that wins", "you lose {n}"; a test fails them in any hint string unless this table lists them), "key card", "draw his", "solid run" (a tarock "next in rank to another of
+Not used: "cheap", "cheapest", "dear", "dearer", "costs" and "billig", "teuer", "kostet" (a newcomer has not met them: say "worth least", "worth more", "the lowest-value card that wins", "you lose {n}"; a test fails them in any hint string unless this table lists them, and in every other player-facing string, the tutor's included, with no exceptions), "key card", "draw his", "solid run" (a tarock "next in rank to another of
 yours" instead), "open a suit" ("lead"), "ultimo" except after `pagat-ultimo`.
 
 ## 8. The quality bar

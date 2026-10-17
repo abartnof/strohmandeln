@@ -37,7 +37,7 @@ test("a brief is a title, the count, up to three bullets with a lead each, and t
   const r = briefBlocks(brief, review, fmt("en"));
   assert.equal(r.title, "How the deal went");
   assert.equal(r.header, "You counted 40 to your opponent's 30; 35⅔ was the line.");
-  assert.deepEqual(r.bullets.map((b) => b.lead), ["Went well:", "Next: paying with the cheapest card.", "This deal:"]);
+  assert.deepEqual(r.bullets.map((b) => b.lead), ["Went well:", "Next: paying with the lowest-value card.", "This deal:"]);
   // no second colon, no capital after one
   assert.deepEqual(r.bullets.map((b) => b.text), [
     "playing your covers off – all 3 chances met.",
@@ -51,7 +51,7 @@ test("a brief is a title, the count, up to three bullets with a lead each, and t
 test("the same brief in German: cards by their names, the rule after its prefix", () => {
   const r = briefBlocks(brief, review, fmt("de"), { whole: false });
   assert.equal(r.title, "Wie die Partie verlief");
-  assert.deepEqual(r.bullets.map((b) => b.lead), ["Gut gelaufen:", "Als Nächstes: Mit der billigsten Karte zahlen.", "In dieser Partie:"]);
+  assert.deepEqual(r.bullets.map((b) => b.lead), ["Gut gelaufen:", "Als Nächstes: Mit der punkteärmsten Karte zahlen.", "In dieser Partie:"]);
   assert.equal(r.bullets[0].text, "Die eigenen Decken abspielen – alle 3 Gelegenheiten genutzt.");
   assert.equal(r.bullets[1].text, "Wenn ich mir erlauben darf: Den Stich mit der kleinsten Karte holen, die ihn gewinnt; sonst die kleinste zugeben.");
   assert.match(r.bullets[2].text, /^Im 9\. Stich holte Herz-Dame nur 7⅓ Augen; /);
@@ -70,7 +70,7 @@ test("a card, a suit, an honour and two skills are named in the language", () =>
   assert.equal(tutorWords(honour, d).text, "Sie spielten Mond, ohne die Troule anzusagen, und verloren einen Point.");
   assert.equal(tutorWords(honour, e).lead, "");
   const two = { lead: "tutor.lead.well", key: "tutor.well.mastered-two", params: { skill: "worth", skill2: "cheap" } };
-  assert.equal(tutorWords(two, e).text, "judging a trick's worth and paying with the cheapest card – mastered.");
+  assert.equal(tutorWords(two, e).text, "judging a trick's worth and paying with the lowest-value card – mastered.");
   const fell = { lead: "tutor.lead.deal", key: "tutor.miss.off.figure", params: { card: "Qh", king: "Kh", late: 14 } };
   assert.equal(tutorWords(fell, e).text, "your queen of hearts fell under your opponent's king of hearts in trick 14; play it at once next time.");
   assert.equal(tutorWords(fell, d).text, "Im 14. Stich nahm Ihr Gegner Herz-Dame mit Herz-König; spielen Sie die Figur das nächste Mal gleich.");
