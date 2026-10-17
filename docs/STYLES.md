@@ -401,3 +401,76 @@ bermann +0.462, ulmann +0.025, ms +0.550, werner +0.288, bold -0.475, cautious
 golden), so `style::MARGINS` holds each figure less Normal's 0.100 (STYLES 3
 defines no other anchor): bermann +0.362, ulmann -0.075, ms +0.450, werner
 +0.188, bold -0.575, cautious +0.450, hunter 0.000.
+
+### Stage 1: the tells gate, 17 Oct 2026
+
+`python3 -I research/sim/styles_stage1.py run-b.csv --null run-null.csv --reps 5`
+on the post-fix stage 0 output (`stage0 --deals 1000 --seed 5200000 --skills 3,4
+--calib-hands 1000 --out run-b.csv`; 167 sittings, a style in both seats, so 334
+samples per style and skill). Test: `python3 -I research/sim/test_styles_stage1.py`.
+
+Sample: one sitting (3 Touren, 6 deals) and one seat; features are the sums of
+every CSV column except identifiers and `meta_*` (`tarock_lead_ge5`,
+`tarock_lead_early`, `bid_decisions`, `bid_taken`, `bid_taken_le5`,
+`pagat_early_78`, `pagat_early_10`, `figure_blank`, `figure_two_low`,
+`split_open`, `mond_early`, `cash_mond`, `guard_mond_kept`, `spare_lead`) plus
+two rates (taken/decisions, taken at most 5 tarocks/taken). Ridge logistic
+regression, 5-fold CV grouped by sitting, 5 repetitions, pooled out-of-fold AUC.
+Rerun with 20 repetitions and another fold seed: unchanged to 0.002.
+
+AUC, skill 3 (* below 0.8):
+
+| | bermann | ulmann | ms | werner | bold | cautious | hunter |
+|---|---|---|---|---|---|---|---|
+| normal | 0.936 | 0.667* | 0.941 | 0.728* | 0.874 | 0.879 | 0.800 |
+| bermann | | 0.940 | 0.890 | 0.921 | 0.989 | 0.926 | 0.964 |
+| ulmann | | | 0.951 | 0.783* | 0.868 | 0.898 | 0.854 |
+| ms | | | | 0.875 | 0.994 | 0.853 | 0.957 |
+| werner | | | | | 0.965 | 0.746* | 0.835 |
+| bold | | | | | | 0.991 | 0.959 |
+| cautious | | | | | | | 0.932 |
+
+AUC, skill 4:
+
+| | bermann | ulmann | ms | werner | bold | cautious | hunter |
+|---|---|---|---|---|---|---|---|
+| normal | 0.795* | 0.640* | 0.806 | 0.678* | 0.908 | 0.812 | 0.561* |
+| bermann | | 0.855 | 0.609* | 0.658* | 0.983 | 0.604* | 0.787* |
+| ulmann | | | 0.882 | 0.768* | 0.860 | 0.882 | 0.629* |
+| ms | | | | 0.682* | 0.986 | 0.581* | 0.807 |
+| werner | | | | | 0.959 | 0.675* | 0.661* |
+| bold | | | | | | 0.988 | 0.903 |
+| cautious | | | | | | | 0.809 |
+
+Null control (Normal v Normal, disjoint sittings): 0.482 (skill 3), 0.491
+(skill 4), 0.481 (skill 3, Normal of `run-null.csv`, seed 5100000, pre-fix
+binary, 11 common columns). The classifier does not overfit.
+
+Decisions (skill 3, where the styles are measured):
+
+- **Ulmann fails** (0.667 against Normal, 0.783 against Werner): dropped. Its
+  differences from Normal (the 8-tarock Pagat, `draw_from`) are too rare to
+  read in a sitting. Not offered; stays in the code.
+- **Werner** is below 0.8 against Normal (0.728), Ulmann and Cautious; already
+  dropped at stage 0 (0.36% divergence). Not offered.
+- **Hunter** is at 0.800 against Normal (standard error about 0.02): marginal,
+  kept; a fresh-seed run decides it.
+- **No merge**: MS v Cautious reads at 0.853 although both bid 3%, so MS and
+  Cautious both ship (the rule of 2.2, keep Cautious on a merge, is not needed).
+  Ship at skill 3: Bermann, MS, Bold, Cautious, Hunter (marginal), with Normal
+  and Random.
+- **Skill 4**: the gate fails for Bermann v Normal (0.795), Hunter v Normal
+  (0.561), MS v Cautious (0.581), Bermann v MS and v Cautious (0.61, 0.60).
+  The sitting-level tells are weaker at 4 than at 3 for every pair, Werner v
+  Normal included (0.678 against 0.728).
+
+Does skill 4's play divergence inflate AUC? No. Every style, Werner too,
+diverges 11-12% at skill 4 because the style band (2.0 against 0.34) lets the
+weights decide; that divergence is shared noise, not a tell, and Werner v
+Normal falls from 0.728 to 0.678 (it rests on the bid, 12.3% against 20.0%),
+as does nearly every pair. It dilutes the tells. Implication: a style at skill 4
+is readable chiefly through its bid; the non-bid maxims (Bermann's figure rule,
+the Pagat hunter's tarock leads) do not survive the search's own variance. A
+style's tells at skill 4 need either a narrower style band or the stage-0
+margins applied to the play as well; until then Random and the styles whose bid
+differs (Bold, MS, Cautious) are the ones whose skill-4 tells are claimed.
