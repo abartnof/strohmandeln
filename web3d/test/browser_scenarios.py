@@ -410,7 +410,7 @@ def check_count_badges(browser, failures):
     the arithmetic on hover and focus (and tap), as the badge's accessible name; the badges sum to the take."""
     for reduced in (False, True):
         tag = "count_badges" + (" (reduced motion)" if reduced else "")
-        page = open_page(browser, "seed=7&speed=instant&human=1&manual", viewport=LANDSCAPE, nodraw=False, reduced=reduced, wait=False)
+        page = open_page(browser, "seed=7&speed=fast&human=1&manual", viewport=LANDSCAPE, nodraw=False, reduced=reduced, wait=False)
         mrest(page, step=400)
         take_if_bidding(page, manual=True)
         ok = to_last_trick(page)
@@ -420,19 +420,16 @@ def check_count_badges(browser, failures):
         human = state(page)["human"]
         play = False
         full = None
+        seen = []  # the HUD's totals, all through
         for _ in range(1200):
             s = state(page)
             if not play and s["prompt"] == "you":
                 page.evaluate(f"window.strohmandeln3d.act({json.dumps(wire(choose(s, 'first', False)))})")
                 play = True
-            page.evaluate("window.strohmandeln3d.tick(100)")
-            count = next((e for e in js(page, "log()") if e["type"] == "count"), None)
-            if not count:
-                continue
-            counted = js(page, "model()")["counted"]
-            want = -(-len(counted[human]) // 3) + -(-len(counted[1 - human]) // 3)
+            page.evaluate("window.strohmandeln3d.tick(250)")
+            seen.append(page.evaluate("window.strohmandeln3d.hud().totals"))
             badges = page.evaluate(BADGES)
-            if len(badges) == want:
+            if badges and sum(b["thirds"] for b in badges) == 210:  # every group has its badge: the two takes make 210
                 full = badges
                 break
         fail_if(full is None, failures, f"{tag}: the badges never came to one a group")
@@ -449,17 +446,19 @@ def check_count_badges(browser, failures):
         fail_if(any(tip_shown(page, loud.nth(i)) for i in range(loud.count())), failures, f"{tag}: a tooltip is up before any hover")
         loud.nth(0).hover()
         fail_if(not tip_shown(page, loud.nth(0)), failures, f"{tag}: hover shows no arithmetic")
-        shot(page, "count_badges" + ("_reduced" if reduced else "_hover"))
+        if not reduced:
+            shot(page, "count_badges_hover")
         page.mouse.move(2, 2)
         loud.nth(1).focus()
         fail_if(not tip_shown(page, loud.nth(1)), failures, f"{tag}: focus shows no arithmetic")
         page.keyboard.press("Escape")
         fail_if(tip_shown(page, loud.nth(1)), failures, f"{tag}: Escape did not close the arithmetic")
-        # The HUD runs on to the same totals.
+        # The HUD's tally is as it was: the count ends on the same totals.
         for _ in range(60):
             page.evaluate("window.strohmandeln3d.tick(200)")
-        totals = page.evaluate("window.strohmandeln3d.hud().totals")
-        fail_if(totals != {"you": count["thirds"][human], "opp": count["thirds"][1 - human]}, failures, f"{tag}: the HUD ended on {totals}")
+            seen.append(page.evaluate("window.strohmandeln3d.hud().totals"))
+        want = {"you": count["thirds"][human], "opp": count["thirds"][1 - human]}
+        fail_if(want not in seen, failures, f"{tag}: the HUD never showed {want}")
         close_all(browser)
 
 

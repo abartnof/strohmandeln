@@ -520,18 +520,33 @@ async function main() {
   // One over each group of three, once its cards are down (at once when motion is reduced), kept
   // while the count's cards are on the table. `countShown`: { lines, shown } of the count under way.
   let countShown = null;
+  // The group's cards are where they came to rest (the director's placement is where the whole
+  // reply ends, the count row long gone): a badge takes the spot of its cards once they are still,
+  // and goes for good when they move on.
   function placeCountBadges() {
     if (!countShown) return ui.countBadges([]);
-    const placement = director.placement().filter((m) => m.zone === "count");
     const list = [];
+    const byCode = new Map(director.meshes.filter((m) => m.userData.code).map((m) => [m.userData.code, m]));
     for (const b of countBadges(countShown.lines, { t, name: badgeName })) {
-      if (!countShown.shown.has(b.line)) continue;
-      const cards = placement.filter((m) => b.codes.includes(m.code));
-      if (!cards.length) continue;
-      const rects = cards.map((m) => rectOf(cardCorners(m.pose).map((c) => director.toScreen(c))));
+      if (!countShown.shown.has(b.line) || countShown.gone.has(b.line)) continue;
+      const meshes = b.codes.map((c) => byCode.get(c));
+      if (meshes.some((m) => !m)) continue;
+      const here = meshes.map((m) => m.position.clone());
+      let was = countShown.rest.get(b.line);
+      if (!was) {
+        const still = countShown.last.get(b.line);
+        countShown.last.set(b.line, here);
+        if (!still || !still.every((p, i) => p.distanceToSquared(here[i]) < 1e-6)) continue;
+        countShown.rest.set(b.line, (was = here));
+      }
+      if (was.some((p, i) => p.distanceToSquared(here[i]) > 1e-4)) {
+        countShown.gone.add(b.line);
+        continue;
+      }
+      const rects = meshes.map((m) => rectOf(cardCorners({ position: m.position, quaternion: m.quaternion }).map((c) => director.toScreen(c))));
       const rect = rectOf(rects.flatMap((r) => [{ x: r.left, y: r.top }, { x: r.right, y: r.bottom }]));
       const card = Math.min(rects[0].right - rects[0].left, rects[0].bottom - rects[0].top);
-      list.push({ id: `count:${b.line}`, label: b.label, text: b.text, side: b.side, thirds: b.thirds, x: (rect.left + rect.right) / 2, y: rect.top, size: Math.max(12, Math.min(22, card * 0.42)) });
+      list.push({ id: `count:${b.line}`, label: b.label, text: b.text, side: b.side, thirds: b.thirds, x: (rect.left + rect.right) / 2, y: rect.top, size: Math.max(10, Math.min(15, card * 0.26)) });
     }
     ui.countBadges(list);
   }
@@ -647,14 +662,18 @@ async function main() {
   function schedulePopups(count, lines, at, scored) {
     if (!count) return;
     const events = countEvents(game, lines, { at, hand: 1 });
-    const badged = { lines, shown: new Set() };
+    const badged = { lines, shown: new Set(), gone: new Set(), rest: new Map(), last: new Map() };
     countShown = badged;
     if (count.lines.length) later(Math.max(0, count.lines[0] - 1), () => hud.reset({ hands: [], live: countLedger(game, []) })); // the count begins from nothing
     // A badge over each group once its cards are down; at once, at its line, when motion is reduced.
     lines.forEach((l, i) => {
       if (l.bonus || !l.codes.length) return;
       const down = calm() ? 0 : (TIMING.countCard + TIMING.countStagger * (l.codes.length - 1)) / dirSpeed();
-      later((count.lines[i] ?? count.end) + down, () => badged.shown.add(i));
+      later((count.lines[i] ?? count.end) + down, () => {
+        badged.shown.add(i);
+        stage.render(); // twice, a frame apart: the badge waits for its cards to be still
+        requestAnimationFrame(() => stage.render());
+      });
     });
     for (const ev of events) {
       later(ev.end ? count.end : (count.lines[ev.line] ?? count.end), () => (ev.end ? hud.endHand(1) : hud.score(ev)));
