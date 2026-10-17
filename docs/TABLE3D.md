@@ -1385,8 +1385,9 @@ motion are saved to `web3d/test/out/`.
   the hand, the move bar, the prompt, the HUD or the Kibitzer's tabs at the window
   sizes of 6.6.6, with the whole legend inside it (no scrolling).
 - `tracker_fold_and_settings`: a fresh page starts folded at 1280 × 720; the tab
-  and Fold open and fold it; it follows the cards at rest; Hints off, its own setting off, or the
-  Kibitzer muted takes it away, and back on returns it.
+  and Fold open and fold it; it follows the cards at rest; Hints off, its own
+  setting off, or the Kibitzer muted takes it away, and back on returns it; the
+  next deal starts folded again.
 - `tracker_languages`: the tab, the lines and the court labels are German in
   German, and the German legend is whole inside the panel; held upright it is not shown.
 - `deal_brief`: after a scored deal the chip opens "How the deal went": the count as

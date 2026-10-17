@@ -48,13 +48,11 @@ test("it is shown with Hints on, its own setting on, and the Kibitzer not muted"
   assert.equal(trackerVisible({ ...on, tutor: false, muted: true }), true, "the mute is the tutor's: with the tutor off it does not apply");
 });
 
-test("the panel starts folded at any window size; only the person's unfold opens it; a stale saved fold is ignored", () => {
-  for (const size of [{ width: 1280, height: 720 }, { width: 1024, height: 768 }, { width: 390, height: 844 }]) {
-    assert.equal(trackerOpen({}, size), false);
-    assert.equal(trackerOpen({ trackerFolded: false }, size), false, "an old saved preference does not open it");
-    assert.equal(trackerOpen({ trackerFolded: true }, size), false);
-    assert.equal(trackerOpen({ unfolded: true }, size), true);
-  }
+test("the panel is folded unless the person unfolded it; a stale saved fold is ignored", () => {
+  assert.equal(trackerOpen({}), false);
+  assert.equal(trackerOpen({ trackerFolded: false }), false, "an old saved preference does not open it");
+  assert.equal(trackerOpen({ trackerFolded: true }), false);
+  assert.equal(trackerOpen({ unfolded: true }), true);
 });
 
 test("the panel is for a window that is wide and not upright; otherwise it is not asked for", () => {

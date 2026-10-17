@@ -768,6 +768,11 @@ def check_tracker_fold_and_settings(browser, failures):
     fail_if(page.locator(".tracker").count(), failures, f"{where}the muted Kibitzer kept the panel")
     page.keyboard.press("m")
     fail_if(page.locator(".tracker").count() != 1, failures, f"{where}unmuting did not bring the panel back")
+    # The next deal of the sitting starts folded again, though the person had it open.
+    drive(page, lambda s, log: sum(e["type"] == "deal_start" for e in log) >= 2)
+    rest(page)
+    fail_if(page.locator(".tracker").count(), failures, f"{where}the next deal kept the panel open")
+    fail_if(page.locator("[data-act=tracker]").get_attribute("aria-expanded") != "false", failures, f"{where}the next deal's tab says open")
     check_offline(page, failures, where)
 
 

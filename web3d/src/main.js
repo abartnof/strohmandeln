@@ -663,6 +663,7 @@ async function main() {
         hud.dealt(1);
         showTour();
         ui.hideBanner();
+        trackerUnfolded = false; // every deal starts folded (6.6.2)
         showTutor();
         break;
       case "trick_won":
