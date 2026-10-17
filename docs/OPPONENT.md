@@ -58,6 +58,8 @@ O'Brien-Fleming boundaries fixed before the first batch, futility stop off.
 | 3 vs 2 | 50 x 4 | look 3 (z 2.35 > 2.34) | 150 | +1.39 +- 0.59 | +0.23 to +2.56 |
 | 3 vs 2, rerun (15 Oct 2026, first seed 2 000 000, `--negligible 0.5`) | 100 x 6 | look 3 (z 3.88 > 2.90) | 300 | +1.53 +- 0.40 | +0.76 to +2.31 |
 | 4 vs 3 | 20 x 5 | look 2 (z 5.81 > 3.23) | 40 | +6.73 +- 1.16 | +4.46 to +8.99 |
+| 3.5 vs 3 (17 Oct 2026, first seed 6 000 000, `--negligible 1.0`) | 50 x 4 | look 1 (z 5.87 > 4.05) | 50 | +5.30 +- 0.90 | +3.53 to +7.07 |
+| 4 vs 3.5 (17 Oct 2026, first seed 6 100 000, `--negligible 1.0`) | 50 x 4 | look 2 (z 3.30 > 2.86) | 100 | +2.12 +- 0.64 | +0.86 to +3.38 |
 
 The rows above predate the dial: "1" in them is rung 1, random play, now only a
 test baseline. Level 1 against random and level 2 against level 1 are the tests
