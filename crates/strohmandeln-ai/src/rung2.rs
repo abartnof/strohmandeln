@@ -43,6 +43,29 @@ pub struct Weights {
     pub keep_tarocks: f64,
     pub high_trump_lead: f64,
     pub coverless_suit: f64,
+    /// The constants a style may move (`docs/STYLES.md` 2, `style.rs`);
+    /// Normal's values are the consts below.
+    pub strong_tarocks: usize,
+    pub weak_tarocks: usize,
+    pub threat_tarocks: usize,
+    /// The tarock count from which a lead draws trumps (`draw_trumps`);
+    /// `None` is Normal's: `strong_tarocks - 1` in rung 2, `- 2` in rung 3.
+    pub draw_from: Option<usize>,
+    /// Play a lying Dame or Cavall unless the opponent shows two low cards of
+    /// the suit (U 74, MS); Bermann has no such exception (Be 148).
+    pub low_shown_exception: bool,
+    /// `guard-mond`: with the Mond and without the Sküs, the cost of leaving
+    /// fewer than `guard_keep` small tarocks (0: off).
+    pub guard_mond: f64,
+    pub guard_keep: usize,
+    /// `cash-mond`: the reward of playing an unescorted Mond to win a rich
+    /// trick (0: off).
+    pub cash_mond: f64,
+    /// `spare-lead`: the reward of opening, with spare low cards, a suit
+    /// split between a fork each (0: off).
+    pub spare_lead: f64,
+    /// Rung 4: the margin (thirds) within which the maxims decide.
+    pub band: f64,
 }
 
 impl Default for Weights {
@@ -60,6 +83,16 @@ impl Default for Weights {
             keep_tarocks: 4.0,
             high_trump_lead: 5.0,
             coverless_suit: 2.0,
+            strong_tarocks: STRONG_TAROCKS,
+            weak_tarocks: WEAK_TAROCKS,
+            threat_tarocks: THREAT_TAROCKS,
+            draw_from: None,
+            low_shown_exception: true,
+            guard_mond: 0.0,
+            guard_keep: 1,
+            cash_mond: 0.0,
+            spare_lead: 0.0,
+            band: 0.34,
         }
     }
 }
@@ -125,7 +158,11 @@ pub(crate) fn my_value_in(k: &Knowledge, suit: Suit) -> u32 {
 /// The packet to keep unplayed when a Pagat ultimo threatens: the one with
 /// the most face-down cards.
 pub(crate) fn reserved_packet(k: &Knowledge) -> Option<usize> {
-    let threat = k.opp_known.iter().filter(|c| c.is_tarock()).count() >= THREAT_TAROCKS;
+    reserved_packet_with(k, THREAT_TAROCKS)
+}
+
+pub(crate) fn reserved_packet_with(k: &Knowledge, threat_tarocks: usize) -> Option<usize> {
+    let threat = k.opp_known.iter().filter(|c| c.is_tarock()).count() >= threat_tarocks;
     if !threat {
         return None;
     }
@@ -206,7 +243,7 @@ fn lead(k: &Knowledge, c: Card, wt: &Weights) -> Tally {
     match c.suit() {
         None => {
             t.add(-spend(c), "keep-tarocks");
-            if tarocks >= STRONG_TAROCKS - 1 {
+            if tarocks >= wt.draw_from.unwrap_or(wt.strong_tarocks - 1) {
                 t.add(wt.draw_trumps, "draw-trumps");
                 let neighbour = |d: i32| {
                     let s = i32::from(c.strength()) + d;
@@ -219,7 +256,7 @@ fn lead(k: &Knowledge, c: Card, wt: &Weights) -> Tally {
                     t.add(wt.solid_run, "lead-solid-run");
                 }
                 t.add(-0.05 * f64::from(c.strength()), "lead-solid-run");
-            } else if tarocks <= WEAK_TAROCKS {
+            } else if tarocks <= wt.weak_tarocks {
                 t.add(-wt.keep_tarocks, "keep-tarocks");
             }
             if c.thirds() > 1 && k.legal.len() > 1 {
@@ -236,6 +273,7 @@ fn lead(k: &Knowledge, c: Card, wt: &Weights) -> Tally {
             if visible.iter().any(|v| v.strength() > c.strength()) {
                 t.add(-f64::from(c.thirds()) - 2.0, "finesse");
             }
+            spare_lead(k, c, &mut t, wt);
             if c.is_king() {
                 t.add(wt.cash_king, "cash-king");
             } else {
@@ -243,7 +281,9 @@ fn lead(k: &Knowledge, c: Card, wt: &Weights) -> Tally {
             }
             if cover_index(k, c).is_some() {
                 let low_shown = visible.iter().filter(|v| v.thirds() == 1).count();
-                if (c.strength() == 6 || c.strength() == 5) && low_shown < 2 {
+                if (c.strength() == 6 || c.strength() == 5)
+                    && (low_shown < 2 || !wt.low_shown_exception)
+                {
                     t.add(wt.exposed_figure, "play-exposed-figure");
                 }
                 if visible.is_empty() {
@@ -260,12 +300,76 @@ fn lead(k: &Knowledge, c: Card, wt: &Weights) -> Tally {
 pub(crate) fn common(k: &Knowledge, c: Card, t: &mut Tally, choice: bool, wt: &Weights) {
     if let Some(i) = cover_index(k, c) {
         t.add(wt.cover, "play-packet-off");
-        if reserved_packet(k) == Some(i) {
+        if reserved_packet_with(k, wt.threat_tarocks) == Some(i) {
             t.add(-wt.keep_packet, "keep-packet");
         }
     }
-    if c == Card::PAGAT && choice && k.my_tarocks() >= STRONG_TAROCKS {
+    if c == Card::PAGAT && choice && k.my_tarocks() >= wt.strong_tarocks {
         t.add(-wt.hold_pagat, "hold-pagat");
+    }
+    if choice {
+        mond(k, c, t, wt);
+    }
+}
+
+/// Tarocks 2 to 10: the small ones a Mond reserve keeps (I: no text numbers
+/// them; Be 151-152 "eine oder mehrere Tarok", MS "Mondfang" one or two).
+fn small_tarock(c: Card) -> bool {
+    c.is_tarock() && (1..=9).contains(&c.strength())
+}
+
+/// The Mond maxims, for a hand holding the Mond without the Sküs.
+fn mond(k: &Knowledge, c: Card, t: &mut Tally, wt: &Weights) {
+    let mine = k.playable();
+    if !mine.contains(Card::MOND) || mine.contains(Card::SKUS) {
+        return;
+    }
+    // guard-mond [Be 151-152 T, MS "Mondfang" T]: keep small tarocks, to force
+    // the opponent to trump and to come into the rear hand late in the deal.
+    if wt.guard_mond > 0.0 && small_tarock(c) {
+        let small = mine.iter().filter(|&x| small_tarock(x)).count();
+        if small - 1 < wt.guard_keep {
+            t.add(-wt.guard_mond, "guard-mond");
+        }
+    }
+    // cash-mond [Be 152 T, U 74 T]: "stets bei passender Gelegenheit
+    // einstechen" (I: a fitting chance is a rich suit trick it takes).
+    if wt.cash_mond > 0.0 && c == Card::MOND {
+        if let Some(led) = k.lead {
+            if !led.is_tarock() && led.thirds() >= 7 {
+                t.add(wt.cash_mond, "cash-mond");
+            }
+        }
+    }
+}
+
+/// spare-lead [Be 150-151 T, this position only]: a suit wholly split, a fork
+/// each (my king and cavall against his queen and jack), and spare low cards:
+/// open with the highest of the spare low cards (Be: "Zwei", not "Vier"; in
+/// the order of RULES 1.5 the two is the higher), so that he must take with the queen (or give up the
+/// jack) and my figures come in.
+pub(crate) fn spare_lead(k: &Knowledge, c: Card, t: &mut Tally, wt: &Weights) {
+    let Some(suit) = c.suit() else { return };
+    if wt.spare_lead <= 0.0 {
+        return;
+    }
+    let mine = k.playable();
+    let theirs = k.opp_possible();
+    let of = |s: u8| Card::suit_card(suit, s);
+    let fork = mine.contains(of(7))
+        && mine.contains(of(5))
+        && theirs.contains(of(6))
+        && theirs.contains(of(4));
+    let low: Vec<Card> = mine
+        .iter()
+        .filter(|x| x.suit() == Some(suit) && x.strength() <= 3)
+        .collect();
+    if fork
+        && low.len() >= 2
+        && low.contains(&c)
+        && low.iter().all(|x| x.strength() <= c.strength())
+    {
+        t.add(wt.spare_lead, "spare-lead");
     }
 }
 
@@ -279,32 +383,71 @@ pub(crate) fn common(k: &Knowledge, c: Card, t: &mut Tally, choice: bool, wt: &W
 pub struct BidRule {
     pub sure_thirds: u32,
     pub min_tarocks: usize,
+    /// Tarocks from which the Pagat counts as a sure winner (Normal 6; MS
+    /// always counts it: 0).
+    pub pagat_guard: usize,
+    /// Whether a queen counts as a sure winner only with its king or from
+    /// three cards of its suit (Normal), or always (Bermann: "Figuren").
+    pub queens: Queens,
+    /// A writer's condition beside the thresholds (`docs/STYLES.md` 2.1).
+    pub extra: BidExtra,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Queens {
+    Guarded,
+    Always,
+}
+
+/// What a writer's bid adds to, or replaces in, the thresholds.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BidExtra {
+    None,
+    /// U 77-78: four or more honours (the Troule cards and the kings) take up
+    /// at once, any tarocks; three honours and no queen do not, as dealer.
+    Ulmann,
+    /// W 131: three honours, six tarocks and a guarded queen take up, and
+    /// nothing else does.
+    Werner,
 }
 
 pub const BID_RULE: BidRule = BidRule {
     sure_thirds: 45,
     min_tarocks: 5,
+    pagat_guard: 6,
+    queens: Queens::Guarded,
+    extra: BidExtra::None,
 };
 
-/// Sure trick winners in `hand`, in thirds: the Sku\u{0308}s, Mond and kings
+/// Sure trick winners in `hand`, in thirds: the Sküs, Mond and kings
 /// (13 each), the Pagat when well guarded by tarocks (Werner counts a weakly
 /// held Pagat for nothing [07 1.1]), queens with their king or from three
 /// cards (10 each). Also the tarock count.
 pub fn sure_thirds(hand: CardSet) -> (u32, usize) {
+    sure_thirds_with(hand, BID_RULE)
+}
+
+/// [`sure_thirds`] counted as `rule` counts (its Pagat guard and queen rule).
+pub fn sure_thirds_with(hand: CardSet, rule: BidRule) -> (u32, usize) {
     let tarocks = hand.iter().filter(|c| c.is_tarock()).count();
     let mut sum = 0;
     for c in hand.iter() {
         if c == Card::SKUS || c == Card::MOND {
             sum += 13;
         } else if c == Card::PAGAT {
-            if tarocks >= 6 {
+            if tarocks >= rule.pagat_guard {
                 sum += 13;
             }
         } else if let Some(suit) = c.suit() {
             let len = hand.iter().filter(|x| x.suit() == Some(suit)).count();
             match c.strength() {
                 7 => sum += 13,
-                6 if hand.contains(Card::suit_card(suit, 7)) || len >= 3 => sum += 10,
+                6 if rule.queens == Queens::Always
+                    || hand.contains(Card::suit_card(suit, 7))
+                    || len >= 3 =>
+                {
+                    sum += 10
+                }
                 _ => {}
             }
         }
@@ -312,20 +455,59 @@ pub fn sure_thirds(hand: CardSet) -> (u32, usize) {
     (sum, tarocks)
 }
 
-/// Whether to take up, and why (a message key).
+/// The honours in `hand`: the Troule cards and the kings.
+fn honours(hand: CardSet) -> usize {
+    hand.iter().filter(|c| c.is_trull() || c.is_king()).count()
+}
+
+/// Whether to take up, and why (a message key), not as dealer.
 pub fn bid_with(hand: CardSet, rule: BidRule) -> (bool, &'static str) {
-    let (sure, tarocks) = sure_thirds(hand);
+    bid_as(hand, rule, false)
+}
+
+/// Whether to take up, and why; `dealer` is the Rückhand, who declares second
+/// (RULES 3.2).
+pub fn bid_as(hand: CardSet, rule: BidRule, dealer: bool) -> (bool, &'static str) {
+    let (sure, tarocks) = sure_thirds_with(hand, rule);
+    let strong = (true, "bid-strong-hand");
+    match rule.extra {
+        BidExtra::Werner => {
+            let guarded_queen = Suit::ALL.iter().any(|&s| {
+                let q = Card::suit_card(s, 6);
+                let len = hand.iter().filter(|x| x.suit() == Some(s)).count();
+                hand.contains(q) && (hand.contains(Card::suit_card(s, 7)) || len >= 3)
+            });
+            return if honours(hand) >= 3 && tarocks >= 6 && guarded_queen {
+                strong
+            } else {
+                (false, "bid-weak-hand")
+            };
+        }
+        BidExtra::Ulmann => {
+            let n = honours(hand);
+            if n >= 4 {
+                return strong;
+            }
+            let queen = Suit::ALL
+                .iter()
+                .any(|&s| hand.contains(Card::suit_card(s, 6)));
+            if dealer && n == 3 && !queen {
+                return (false, "bid-weak-hand");
+            }
+        }
+        BidExtra::None => {}
+    }
     if tarocks < rule.min_tarocks {
         (false, "bid-few-tarocks")
     } else if sure >= rule.sure_thirds {
-        (true, "bid-strong-hand")
+        strong
     } else {
         (false, "bid-weak-hand")
     }
 }
 
 pub fn bid(k: &Knowledge, rule: BidRule) -> (bool, &'static str) {
-    bid_with(k.hand, rule)
+    bid_as(k.hand, rule, k.me != k.forehand)
 }
 
 /// The play for a card: announcing the honours it belongs to, which is free
@@ -485,6 +667,7 @@ mod tests {
         let book = BidRule {
             sure_thirds: 60,
             min_tarocks: 6,
+            ..BID_RULE
         };
         let (mut book_bids, mut ours, mut n) = (0, 0, 0);
         for seed in 0..400u64 {

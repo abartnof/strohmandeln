@@ -131,7 +131,7 @@ pub fn best_card(k: &Knowledge, rng: &mut Rng, budget: Budget, wt: &Weights) -> 
     // Within a hair of the best (a third of a third), the maxims decide.
     let near: Vec<Card> = scores
         .iter()
-        .filter(|(_, v)| top - v < 0.34)
+        .filter(|(_, v)| top - v < wt.band)
         .map(|(c, _)| *c)
         .collect();
     if near.len() == 1 {

@@ -69,6 +69,8 @@ pub struct Config {
     /// Rung 4 takes up when the sampled advantage exceeds this (Points);
     /// `None` bids by rung 2's rule.
     pub bid_margin: Option<f64>,
+    /// The style the other fields were set for (resolved: never `Random`).
+    pub style: crate::style::Style,
 }
 
 impl Default for Config {
@@ -78,6 +80,7 @@ impl Default for Config {
             weights: Weights::default(),
             budget: rung4::Budget::default(),
             bid_margin: Some(0.0),
+            style: crate::style::Style::Normal,
         }
     }
 }
