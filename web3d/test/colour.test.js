@@ -97,7 +97,7 @@ test("the cards-out panel's text reaches AA on its ground", () => {
   for (const [fg, bg] of T) assert.ok(ratio(tracker[fg], tracker[bg]) >= 4.5, `${fg} on ${bg}: ${ratio(tracker[fg], tracker[bg]).toFixed(2)}`);
 });
 
-// The cards-out cell he played is a dull red, not the grey of the cards played by you or the teal the slate gives him.
+// The cards-out cell he played is one clear red: not a grey of the panel's other cells, nor the teal the slate gives him.
 const hue = (hex) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
   return r > g * 1.3 && r > b * 1.3;
@@ -106,7 +106,7 @@ test("the opponent's played cell is red, apart from the grey one", () => {
   assert.ok(hue(tracker["tracker-opp"]), tracker["tracker-opp"]);
   assert.equal(tracker["tracker-on-opp"], "#ffffff", "one hue on the cell: white text and bar on the red");
   for (const set of [light, dark]) assert.notEqual(tracker["tracker-opp"], set["cassino-them"]);
-  assert.ok(ratio(tracker["tracker-opp"], tracker[M + "surface-container-highest"]) < 2, "a red tint, not a text-weight contrast");
+  for (const fill of [M + "surface-container-highest", M + "surface-container-lowest", M + "primary"]) assert.ok(!hue(tracker[fill]), `${fill} is not red`);
 });
 
 test("the opponent's played cell is a single red, and keeps its high-contrast rule", () => {
