@@ -7,6 +7,11 @@ import re
 import tempfile
 from pathlib import Path
 
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+from phrases import german_in  # noqa: E402
+
 from browser import NO_DRAW, PAGE, ROOT, WORDS, STRINGS, check_offline, close_all, fail_if, intersects, js, rest, state, still
 from browser_scenarios import (
     FAST,
@@ -218,6 +223,37 @@ def check_talk_events(browser, failures):
         if any(e["type"] == event for e in log):
             fail_if(not seen_groups & set(groups), failures, f"talk_events: {event} occurred but none of {groups} was said (heard {sorted(seen_groups)[:12]}; last lines {[(l['deals'], l['text'][:20]) for l in lines[-4:]]})")
     fail_if(not (seen_groups - CALLS), failures, "talk_events: a whole sitting at All said no chatter")
+
+
+def check_talk_english(browser, failures):
+    """No bubble in English holds German outside the game's own terms (tools/phrases.py ENGLISH_ALLOW):
+    a whole sitting in English, then one begun in German and switched to English mid-sitting."""
+    page = talk_page(browser, "&lang=en")
+    ok = drive(page, until_over(), manual=True, step=400)
+    fail_if(not ok, failures, "talk_english: the sitting did not end")
+    run_ticks(page, 10_000)
+    lines = heard(page)
+    fail_if(len(lines) < 10, failures, f"talk_english: only {len(lines)} lines heard")
+    for line in lines:
+        fail_if(not groups_of(line["text"], "en"), failures, f"talk_english: {line['text']!r} is no English line of the bank")
+        fail_if(german_in(line["text"]), failures, f"talk_english: German {german_in(line['text'])} in {line['text']!r}")
+    close_all(browser)
+    page = talk_page(browser, "&lang=de")
+    ok = drive(page, has("game_scored"), manual=True, step=400)
+    fail_if(not ok, failures, "talk_english: no deal scored in German")
+    run_ticks(page, 6_000)
+    german = heard(page)
+    fail_if(not german or any(groups_of(l["text"], "de") == [] for l in german), failures, "talk_english: the German lines are not all the bank's")
+    set_lang(page, "en")
+    run_ticks(page, 500)
+    seen = len(heard(page))
+    drive(page, until_over(), manual=True, step=400)
+    run_ticks(page, 10_000)
+    after = heard(page)[seen:]
+    fail_if(len(after) < 3, failures, f"talk_english: only {len(after)} lines after the switch")
+    for line in after:
+        fail_if(not groups_of(line["text"], "en"), failures, f"talk_english: after the switch to English, {line['text']!r} is no English line")
+        fail_if(german_in(line["text"]), failures, f"talk_english: after the switch, German in {line['text']!r}")
 
 
 def said_in(page, goal, **kw):
@@ -883,7 +919,7 @@ def check_deal_brief(browser, failures):
 
 
 CHECKS_104 = [
-    check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
+    check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_english, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_skill_speed,
     check_language_switch, check_language_switch_at_count, check_prefs_storage, check_save_restore, check_export_import_file,
     check_tutor_pages, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_deal_brief,
