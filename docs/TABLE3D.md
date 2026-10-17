@@ -143,9 +143,12 @@ ringed gold dot at the card's lower left, so the human can tell the cards the op
 has seen (3.7 explains it). The dot is a memory aid, so it is a hint: shown only
 while hints are on (6.3.4: Hints set, the Kibitzer not muted), on neither hand
 otherwise, and it comes and goes at once when Hints is toggled. The first time
-hints are on (by default, or switched on) the Kibitzer shows a short note
-once on the dot (key `public-mark` in the `seen` list; never again after a reload).
-(17 Oct 2026, the maintainer's decision.)
+hints are on and a dot is on the table (Hints is off by default, so: once the player
+switches it on and a card is pulled or an honour announced), a short note in a table
+dialog (title "The gold dot", Close; not the Kibitzer's tab, shown with the tutor off
+too) explains it, once (key `public-mark` in the `seen` list; never again after a
+reload). It waits while cards move, a dialog or the menu is open; a language switch
+draws it again. Decision of 17 Oct 2026, the maintainer's.
 
 1.5.8 **Opponent's hand count** (`opponent_hand_size`) shown as cards, never as a
 number alone; at least one back is visible until it is empty.
@@ -494,8 +497,8 @@ prompt; the chip says "Your opponent has had enough." (key `ext-opp-no`).
 
 Public hand cards (pulled; and cards of an announced honour, R 13.5) carry the
 mark of 1.5.7 on both hands. The legend is in the tutor's page on packets and
-in the card's tooltip ("Seen by both: pulled from a packet") and, the first time hints
-are on, in the Kibitzer's note (1.5.7). With hints off there is no mark.
+in the card's tooltip ("Seen by both players" / "Von beiden gesehen"), in the note
+of 1.5.7 and in one line of the packets page (6.2.2). With hints off there is no mark.
 
 ### 3.8 Left-handed mode
 
@@ -917,11 +920,13 @@ asked for a hint, the chip says "Tips are off (§ 13)" / "Tipps sind aus (§ 13)
 
 6.3.5 Hints' contents: the hint chip and its sentence, the Cards-out tracker (6.6)
 and the public mark on hand cards (1.5.7), all under one condition: Hints set and
-the Kibitzer not muted. The first time hints are on, a short note in the
-Kibitzer's voice explains the mark: "A gold dot marks a card both of you have seen:
-one pulled from a packet. At a real table you would have to remember it; with
-hints on, I mark it." / "Ein goldener Punkt bezeichnet eine Karte, die Sie beide
-gesehen haben: ..." (once, `seen`). (17 Oct 2026, the maintainer's decision.)
+the Kibitzer not muted (the chip keeps Hints and the mute apart to say "Tips are
+off"). The mark has a first-time note (1.5.7): "A gold dot marks a card both of you
+have seen: pulled from a packet, or shown when an honour was announced. At a real
+table you would have to remember it; with hints on, I mark it." / "Ein goldener
+Punkt bezeichnet eine Karte, die Sie beide gesehen haben: aus einem Paket gezogen
+oder beim Ansagen einer Ehre gezeigt. An einem echten Tisch müssten Sie sie sich
+merken; bei eingeschalteten Hinweisen merke ich sie für Sie."
 
 ### 6.4 The end-of-deal brief
 
