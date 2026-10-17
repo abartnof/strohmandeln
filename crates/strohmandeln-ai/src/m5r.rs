@@ -108,36 +108,212 @@ macro_rules! atom {
 /// are thirds / 3. "Still out" is the Cards-out tab's count
 /// ([`Knowledge::out_tarocks`]).
 pub const ATOMS: &[Atom] = &[
-    atom!("tu0", "tu", "no tarock still out", "keinem Tarock mehr draußen", |k, _| k.out_tarocks() == 0),
-    atom!("tu2", "tu", "2 or fewer tarocks still out", "höchstens 2 Tarock noch draußen", |k, _| k.out_tarocks() <= 2),
-    atom!("tu4", "tu", "4 or fewer tarocks still out", "höchstens 4 Tarock noch draußen", |k, _| k.out_tarocks() <= 4),
-    atom!("tu6", "tu", "6 or fewer tarocks still out", "höchstens 6 Tarock noch draußen", |k, _| k.out_tarocks() <= 6),
-    atom!("tu8", "tu", "8 or fewer tarocks still out", "höchstens 8 Tarock noch draußen", |k, _| k.out_tarocks() <= 8),
-    atom!("mt6", "mt", "6 or more tarocks of yours", "mindestens 6 eigenen Tarock", |k, _| k.my_tarocks() >= 6),
-    atom!("mt8", "mt", "8 or more tarocks of yours", "mindestens 8 eigenen Tarock", |k, _| k.my_tarocks() >= 8),
-    atom!("mt10", "mt", "10 or more tarocks of yours", "mindestens 10 eigenen Tarock", |k, _| k.my_tarocks() >= 10),
-    atom!("mt12", "mt", "12 or more tarocks of yours", "mindestens 12 eigenen Tarock", |k, _| k.my_tarocks() >= 12),
-    atom!("ml5", "ml", "5 or fewer tarocks of yours", "höchstens 5 eigenen Tarock", |k, _| k.my_tarocks() <= 5),
-    atom!("ml7", "ml", "7 or fewer tarocks of yours", "höchstens 7 eigenen Tarock", |k, _| k.my_tarocks() <= 7),
-    atom!("void", "void", "your opponent out of the suit", "Ihrem Gegner ohne die Farbe", |k, f| f.is_some_and(|s| shown_void(k, s))),
-    atom!("notarock", "notarock", "your opponent out of tarocks", "Ihrem Gegner ohne Tarock", |k, _| shown_no_tarock(k)),
-    atom!("skus", "skus", "the Sküs still out", "dem Sküs noch draußen", |k, _| skus_out(k)),
-    atom!("mond", "mond", "the Mond in your hand", "dem Mond in Ihrer Hand", |k, _| k.playable().contains(Card::MOND)),
-    atom!("left13", "left", "4⅓ points or fewer of the suit left", "höchstens 4⅓ Punkten der Farbe übrig", |k, f| f.is_some_and(|s| left_thirds(k, s) <= 13)),
-    atom!("left26", "left", "8⅔ points or fewer of the suit left", "höchstens 8⅔ Punkten der Farbe übrig", |k, f| f.is_some_and(|s| left_thirds(k, s) <= 26)),
-    atom!("ph1", "ph", "trick 1 to 9 under way", "dem 1. bis 9. Stich", |k, _| k.trick_number <= 9),
-    atom!("ph2", "ph", "trick 10 to 18 under way", "dem 10. bis 18. Stich", |k, _| (10..=18).contains(&k.trick_number)),
-    atom!("ph3", "ph", "trick 19 to 27 under way", "dem 19. bis 27. Stich", |k, _| k.trick_number >= 19),
-    atom!("cov1", "cov", "a cover of yours", "einem eigenen Paketblatt", |k, _| my_covers(k) >= 1),
-    atom!("cov2", "cov", "two covers of yours", "zwei eigenen Paketblättern", |k, _| my_covers(k) >= 2),
-    atom!("hc1", "hc", "your opponent showing a cover of the suit", "Ihrem Gegner mit einem Paketblatt der Farbe", |k, f| f.is_some_and(|s| his_covers(k, s) >= 1)),
-    atom!("hc2", "hc", "your opponent showing two covers of the suit", "Ihrem Gegner mit zwei Paketblättern der Farbe", |k, f| f.is_some_and(|s| his_covers(k, s) >= 2)),
-    atom!("led1", "led", "a card led", "einem Anspiel", |k, _| led_at_least(k, 1)),
-    atom!("led4", "led", "a card worth 1⅓ points or more led", "einem Anspiel von mindestens 1⅓ Punkten", |k, _| led_at_least(k, 4)),
-    atom!("led7", "led", "a card worth 2⅓ points or more led", "einem Anspiel von mindestens 2⅓ Punkten", |k, _| led_at_least(k, 7)),
-    atom!("led10", "led", "a card worth 3⅓ points or more led", "einem Anspiel von mindestens 3⅓ Punkten", |k, _| led_at_least(k, 10)),
-    atom!("led13", "led", "a card worth 4⅓ points led", "einem Anspiel von 4⅓ Punkten", |k, _| led_at_least(k, 13)),
-    atom!("master", "master", "the suit's top card in your hand", "der höchsten Karte der Farbe in Ihrer Hand", |k, f| f.is_some_and(|s| holds_master(k, s))),
+    atom!(
+        "tu0",
+        "tu",
+        "no tarock still out",
+        "keinem Tarock mehr draußen",
+        |k, _| k.out_tarocks() == 0
+    ),
+    atom!(
+        "tu2",
+        "tu",
+        "2 or fewer tarocks still out",
+        "höchstens 2 Tarock noch draußen",
+        |k, _| k.out_tarocks() <= 2
+    ),
+    atom!(
+        "tu4",
+        "tu",
+        "4 or fewer tarocks still out",
+        "höchstens 4 Tarock noch draußen",
+        |k, _| k.out_tarocks() <= 4
+    ),
+    atom!(
+        "tu6",
+        "tu",
+        "6 or fewer tarocks still out",
+        "höchstens 6 Tarock noch draußen",
+        |k, _| k.out_tarocks() <= 6
+    ),
+    atom!(
+        "tu8",
+        "tu",
+        "8 or fewer tarocks still out",
+        "höchstens 8 Tarock noch draußen",
+        |k, _| k.out_tarocks() <= 8
+    ),
+    atom!(
+        "mt6",
+        "mt",
+        "6 or more tarocks of yours",
+        "mindestens 6 eigenen Tarock",
+        |k, _| k.my_tarocks() >= 6
+    ),
+    atom!(
+        "mt8",
+        "mt",
+        "8 or more tarocks of yours",
+        "mindestens 8 eigenen Tarock",
+        |k, _| k.my_tarocks() >= 8
+    ),
+    atom!(
+        "mt10",
+        "mt",
+        "10 or more tarocks of yours",
+        "mindestens 10 eigenen Tarock",
+        |k, _| k.my_tarocks() >= 10
+    ),
+    atom!(
+        "mt12",
+        "mt",
+        "12 or more tarocks of yours",
+        "mindestens 12 eigenen Tarock",
+        |k, _| k.my_tarocks() >= 12
+    ),
+    atom!(
+        "ml5",
+        "ml",
+        "5 or fewer tarocks of yours",
+        "höchstens 5 eigenen Tarock",
+        |k, _| k.my_tarocks() <= 5
+    ),
+    atom!(
+        "ml7",
+        "ml",
+        "7 or fewer tarocks of yours",
+        "höchstens 7 eigenen Tarock",
+        |k, _| k.my_tarocks() <= 7
+    ),
+    atom!(
+        "void",
+        "void",
+        "your opponent out of the suit",
+        "Ihrem Gegner ohne die Farbe",
+        |k, f| f.is_some_and(|s| shown_void(k, s))
+    ),
+    atom!(
+        "notarock",
+        "notarock",
+        "your opponent out of tarocks",
+        "Ihrem Gegner ohne Tarock",
+        |k, _| shown_no_tarock(k)
+    ),
+    atom!(
+        "skus",
+        "skus",
+        "the Sküs still out",
+        "dem Sküs noch draußen",
+        |k, _| skus_out(k)
+    ),
+    atom!(
+        "mond",
+        "mond",
+        "the Mond in your hand",
+        "dem Mond in Ihrer Hand",
+        |k, _| k.playable().contains(Card::MOND)
+    ),
+    atom!(
+        "left13",
+        "left",
+        "4⅓ points or fewer of the suit left",
+        "höchstens 4⅓ Punkten der Farbe übrig",
+        |k, f| f.is_some_and(|s| left_thirds(k, s) <= 13)
+    ),
+    atom!(
+        "left26",
+        "left",
+        "8⅔ points or fewer of the suit left",
+        "höchstens 8⅔ Punkten der Farbe übrig",
+        |k, f| f.is_some_and(|s| left_thirds(k, s) <= 26)
+    ),
+    atom!(
+        "ph1",
+        "ph",
+        "trick 1 to 9 under way",
+        "dem 1. bis 9. Stich",
+        |k, _| k.trick_number <= 9
+    ),
+    atom!(
+        "ph2",
+        "ph",
+        "trick 10 to 18 under way",
+        "dem 10. bis 18. Stich",
+        |k, _| (10..=18).contains(&k.trick_number)
+    ),
+    atom!(
+        "ph3",
+        "ph",
+        "trick 19 to 27 under way",
+        "dem 19. bis 27. Stich",
+        |k, _| k.trick_number >= 19
+    ),
+    atom!(
+        "cov1",
+        "cov",
+        "a cover of yours",
+        "einem eigenen Paketblatt",
+        |k, _| my_covers(k) >= 1
+    ),
+    atom!(
+        "cov2",
+        "cov",
+        "two covers of yours",
+        "zwei eigenen Paketblättern",
+        |k, _| my_covers(k) >= 2
+    ),
+    atom!(
+        "hc1",
+        "hc",
+        "your opponent showing a cover of the suit",
+        "Ihrem Gegner mit einem Paketblatt der Farbe",
+        |k, f| f.is_some_and(|s| his_covers(k, s) >= 1)
+    ),
+    atom!(
+        "hc2",
+        "hc",
+        "your opponent showing two covers of the suit",
+        "Ihrem Gegner mit zwei Paketblättern der Farbe",
+        |k, f| f.is_some_and(|s| his_covers(k, s) >= 2)
+    ),
+    atom!("led1", "led", "a card led", "einem Anspiel", |k, _| {
+        led_at_least(k, 1)
+    }),
+    atom!(
+        "led4",
+        "led",
+        "a card worth 1⅓ points or more led",
+        "einem Anspiel von mindestens 1⅓ Punkten",
+        |k, _| led_at_least(k, 4)
+    ),
+    atom!(
+        "led7",
+        "led",
+        "a card worth 2⅓ points or more led",
+        "einem Anspiel von mindestens 2⅓ Punkten",
+        |k, _| led_at_least(k, 7)
+    ),
+    atom!(
+        "led10",
+        "led",
+        "a card worth 3⅓ points or more led",
+        "einem Anspiel von mindestens 3⅓ Punkten",
+        |k, _| led_at_least(k, 10)
+    ),
+    atom!(
+        "led13",
+        "led",
+        "a card worth 4⅓ points led",
+        "einem Anspiel von 4⅓ Punkten",
+        |k, _| led_at_least(k, 13)
+    ),
+    atom!(
+        "master",
+        "master",
+        "the suit's top card in your hand",
+        "der höchsten Karte der Farbe in Ihrer Hand",
+        |k, f| f.is_some_and(|s| holds_master(k, s))
+    ),
 ];
 
 pub fn atom_index(id: &str) -> usize {
@@ -179,14 +355,30 @@ pub struct Class {
     pub check: fn(&Knowledge, &Action) -> Option<bool>,
 }
 
-const A_POOR: &[&str] = &["tu4", "tu8", "mt8", "ml7", "ph1", "ph3", "left13", "left26", "hc1", "master", "skus", "led4"];
-const A_CHEAP: &[&str] = &["tu4", "tu8", "mt8", "ml7", "ph2", "ph3", "left13", "left26", "master", "led4", "led7", "cov1"];
-const A_OFF: &[&str] = &["cov1", "cov2", "hc1", "hc2", "tu4", "tu8", "ph1", "ph3", "left13", "left26", "master", "mt8"];
-const A_RUN: &[&str] = &["tu2", "tu4", "tu6", "tu8", "mt6", "mt8", "mt10", "mt12", "notarock", "skus", "mond", "ph3"];
-const A_PAGAT: &[&str] = &["tu0", "tu2", "tu4", "mt8", "mt10", "mt12", "ml5", "ml7", "skus", "mond", "ph3", "led7"];
-const A_VOID: &[&str] = &["tu4", "tu8", "mt8", "ml7", "notarock", "skus", "ph1", "ph2", "ph3", "left13", "left26", "cov1"];
-const A_MOND: &[&str] = &["tu0", "tu2", "tu4", "tu8", "mt8", "mt10", "skus", "ph2", "ph3", "led4", "led7", "notarock"];
-const A_TRUMPS: &[&str] = &["tu2", "tu4", "tu6", "tu8", "mt6", "mt8", "mt10", "ml7", "notarock", "skus", "mond", "ph3"];
+const A_POOR: &[&str] = &[
+    "tu4", "tu8", "mt8", "ml7", "ph1", "ph3", "left13", "left26", "hc1", "master", "skus", "led4",
+];
+const A_CHEAP: &[&str] = &[
+    "tu4", "tu8", "mt8", "ml7", "ph2", "ph3", "left13", "left26", "master", "led4", "led7", "cov1",
+];
+const A_OFF: &[&str] = &[
+    "cov1", "cov2", "hc1", "hc2", "tu4", "tu8", "ph1", "ph3", "left13", "left26", "master", "mt8",
+];
+const A_RUN: &[&str] = &[
+    "tu2", "tu4", "tu6", "tu8", "mt6", "mt8", "mt10", "mt12", "notarock", "skus", "mond", "ph3",
+];
+const A_PAGAT: &[&str] = &[
+    "tu0", "tu2", "tu4", "mt8", "mt10", "mt12", "ml5", "ml7", "skus", "mond", "ph3", "led7",
+];
+const A_VOID: &[&str] = &[
+    "tu4", "tu8", "mt8", "ml7", "notarock", "skus", "ph1", "ph2", "ph3", "left13", "left26", "cov1",
+];
+const A_MOND: &[&str] = &[
+    "tu0", "tu2", "tu4", "tu8", "mt8", "mt10", "skus", "ph2", "ph3", "led4", "led7", "notarock",
+];
+const A_TRUMPS: &[&str] = &[
+    "tu2", "tu4", "tu6", "tu8", "mt6", "mt8", "mt10", "ml7", "notarock", "skus", "mond", "ph3",
+];
 
 fn played(a: &Action) -> Option<Card> {
     match a {
@@ -263,21 +455,156 @@ const FOLLOWING: (&str, &str) = ("Following with", "Beim Bedienen mit");
 /// (`rules::CANDIDATES`) without their numbers: the atoms say the numbers.
 /// Texts avoid the words the tutor's voice does not use (`m5r_tests`).
 pub const CLASSES: &[Class] = &[
-    class!("worth.poor/no-king", "worth.poor", A_POOR, WITH, "if a king of yours would win, play another card", "würde ein König von Ihnen stechen, eine andere Karte spielen", focus_led, |k, a| rules::poor_king(k, a, 4)),
-    class!("cheap/outcome", "cheap", A_CHEAP, FOLLOWING, "win or lose with the fewest-points card", "stechen oder nicht, mit der punkteärmsten Karte", focus_led, |k, a| rules::cheapest(k, a, false)),
-    class!("cheap/winner", "cheap", A_CHEAP, FOLLOWING, "take the trick with the fewest-points card that wins", "den Stich mit der punkteärmsten stechenden Karte holen", focus_led, |k, a| rules::cheapest(k, a, true)),
-    class!("off/follow-cover", "off", A_OFF, FOLLOWING, "play a cover", "ein Paketblatt spielen", focus_led, |k, a| rules::off_any(k, a, false)),
-    class!("off/lead-cover", "off", A_OFF, WITH, "lead a cover", "ein Paketblatt anspielen", focus_lead_cover, |k, a| rules::off_any(k, a, true)),
-    class!("off/figure-cover", "off", A_OFF, WITH, "play a Dame or Cavall cover", "ein Paketblatt Dame oder Cavall spielen", focus_figure, rules::figure_any),
-    class!("off/figure-higher", "off", A_OFF, WITH, "play the higher Dame or Cavall cover", "das höhere Paketblatt Dame oder Cavall spielen", focus_figure, |k, a| rules::figure_played(k, a, false)),
-    class!("run/top", "run", A_RUN, WITH, "lead the top of your tarocks next in rank, else your lowest", "das höchste Ihrer im Rang aufeinanderfolgenden Tarock anspielen, sonst das niedrigste", focus_none, rules::run_top),
-    class!("run/any", "run", A_RUN, WITH, "lead a tarock next in rank to another of yours, else your lowest", "ein Tarock anspielen, das im Rang neben einem Ihrer Tarock steht, sonst das niedrigste", focus_none, rules::run_any),
-    class!("pagat/keep", "pagat", A_PAGAT, FOLLOWING, "keep the Pagat", "den Pagat behalten", focus_led, |k, a| rules::pagat_keep(k, a, 0)),
-    class!("pagat/cash", "pagat", A_PAGAT, FOLLOWING, "play the Pagat", "den Pagat spielen", focus_led, |k, a| rules::pagat_cash(k, a, 99)),
-    class!("void/avoid", "void", A_VOID, WITH, "do not lead the suit your opponent lacks", "die Farbe, die Ihrem Gegner fehlt, nicht anspielen", focus_void, rules::void_lead),
-    class!("mond/mond", "mond", A_MOND, FOLLOWING, "answer your opponent's lead with the Mond", "das Anspiel Ihres Gegners mit dem Mond beantworten", focus_led, mond_check),
-    class!("trumps/tarock", "trumps", A_TRUMPS, WITH, "when leading, choose a tarock over a suit card", "beim Anspielen ein Tarock einer Farbkarte vorziehen", focus_none, |k, a| lead_split(k, a, true)),
-    class!("trumps/suit", "trumps", A_TRUMPS, WITH, "when leading, choose a suit card over a tarock", "beim Anspielen eine Farbkarte einem Tarock vorziehen", focus_none, |k, a| lead_split(k, a, false)),
+    class!(
+        "worth.poor/no-king",
+        "worth.poor",
+        A_POOR,
+        WITH,
+        "if a king of yours would win, play another card",
+        "würde ein König von Ihnen stechen, eine andere Karte spielen",
+        focus_led,
+        |k, a| rules::poor_king(k, a, 4)
+    ),
+    class!(
+        "cheap/outcome",
+        "cheap",
+        A_CHEAP,
+        FOLLOWING,
+        "win or lose with the fewest-points card",
+        "stechen oder nicht, mit der punkteärmsten Karte",
+        focus_led,
+        |k, a| rules::cheapest(k, a, false)
+    ),
+    class!(
+        "cheap/winner",
+        "cheap",
+        A_CHEAP,
+        FOLLOWING,
+        "take the trick with the fewest-points card that wins",
+        "den Stich mit der punkteärmsten stechenden Karte holen",
+        focus_led,
+        |k, a| rules::cheapest(k, a, true)
+    ),
+    class!(
+        "off/follow-cover",
+        "off",
+        A_OFF,
+        FOLLOWING,
+        "play a cover",
+        "ein Paketblatt spielen",
+        focus_led,
+        |k, a| rules::off_any(k, a, false)
+    ),
+    class!(
+        "off/lead-cover",
+        "off",
+        A_OFF,
+        WITH,
+        "lead a cover",
+        "ein Paketblatt anspielen",
+        focus_lead_cover,
+        |k, a| rules::off_any(k, a, true)
+    ),
+    class!(
+        "off/figure-cover",
+        "off",
+        A_OFF,
+        WITH,
+        "play a Dame or Cavall cover",
+        "ein Paketblatt Dame oder Cavall spielen",
+        focus_figure,
+        rules::figure_any
+    ),
+    class!(
+        "off/figure-higher",
+        "off",
+        A_OFF,
+        WITH,
+        "play the higher Dame or Cavall cover",
+        "das höhere Paketblatt Dame oder Cavall spielen",
+        focus_figure,
+        |k, a| rules::figure_played(k, a, false)
+    ),
+    class!(
+        "run/top",
+        "run",
+        A_RUN,
+        WITH,
+        "lead the top of your tarocks next in rank, else your lowest",
+        "das höchste Ihrer im Rang aufeinanderfolgenden Tarock anspielen, sonst das niedrigste",
+        focus_none,
+        rules::run_top
+    ),
+    class!(
+        "run/any",
+        "run",
+        A_RUN,
+        WITH,
+        "lead a tarock next in rank to another of yours, else your lowest",
+        "ein Tarock anspielen, das im Rang neben einem Ihrer Tarock steht, sonst das niedrigste",
+        focus_none,
+        rules::run_any
+    ),
+    class!(
+        "pagat/keep",
+        "pagat",
+        A_PAGAT,
+        FOLLOWING,
+        "keep the Pagat",
+        "den Pagat behalten",
+        focus_led,
+        |k, a| rules::pagat_keep(k, a, 0)
+    ),
+    class!(
+        "pagat/cash",
+        "pagat",
+        A_PAGAT,
+        FOLLOWING,
+        "play the Pagat",
+        "den Pagat spielen",
+        focus_led,
+        |k, a| rules::pagat_cash(k, a, 99)
+    ),
+    class!(
+        "void/avoid",
+        "void",
+        A_VOID,
+        WITH,
+        "do not lead the suit your opponent lacks",
+        "die Farbe, die Ihrem Gegner fehlt, nicht anspielen",
+        focus_void,
+        rules::void_lead
+    ),
+    class!(
+        "mond/mond",
+        "mond",
+        A_MOND,
+        FOLLOWING,
+        "answer your opponent's lead with the Mond",
+        "das Anspiel Ihres Gegners mit dem Mond beantworten",
+        focus_led,
+        mond_check
+    ),
+    class!(
+        "trumps/tarock",
+        "trumps",
+        A_TRUMPS,
+        WITH,
+        "when leading, choose a tarock over a suit card",
+        "beim Anspielen ein Tarock einer Farbkarte vorziehen",
+        focus_none,
+        |k, a| lead_split(k, a, true)
+    ),
+    class!(
+        "trumps/suit",
+        "trumps",
+        A_TRUMPS,
+        WITH,
+        "when leading, choose a suit card over a tarock",
+        "beim Anspielen eine Farbkarte einem Tarock vorziehen",
+        focus_none,
+        |k, a| lead_split(k, a, false)
+    ),
 ];
 
 pub fn class_index(id: &str) -> usize {
@@ -351,7 +678,13 @@ impl Log {
         let mut out = format!("ndeals\t{}\n", self.ndeals);
         for (cl, entries) in CLASSES.iter().zip(&self.by_class) {
             for e in entries {
-                out.push_str(&format!("{}\t{}\t{:x}\t{}\n", cl.id, e.deal, e.mask, u8::from(e.ok)));
+                out.push_str(&format!(
+                    "{}\t{}\t{:x}\t{}\n",
+                    cl.id,
+                    e.deal,
+                    e.mask,
+                    u8::from(e.ok)
+                ));
             }
         }
         out
@@ -522,9 +855,7 @@ pub struct Selected {
 pub fn select(log: &Log) -> Vec<Selected> {
     (0..CLASSES.len())
         .map(|class| {
-            let always = log.by_class[class]
-                .iter()
-                .fold(u32::MAX, |m, e| m & e.mask);
+            let always = log.by_class[class].iter().fold(u32::MAX, |m, e| m & e.mask);
             let base = evaluate(log, class, &[]).prec;
             let mut ncand = 0;
             let mut eligible = 0;
@@ -535,14 +866,25 @@ pub fn select(log: &Log) -> Vec<Selected> {
                         continue;
                     }
                     ncand += 1;
-                    let Eval { prec, reach, late10, late19 } = evaluate(log, class, &atoms);
+                    let Eval {
+                        prec,
+                        reach,
+                        late10,
+                        late19,
+                    } = evaluate(log, class, &atoms);
                     if prec.n_eff >= MIN_N && prec.lower >= GATE {
                         eligible += 1;
                         let wider = best.as_ref().is_none_or(|b| {
                             (prec.fired, prec.lower) > (b.prec.fired, b.prec.lower)
                         });
                         if wider {
-                            best = Some(Cand { atoms, prec, reach, late10, late19 });
+                            best = Some(Cand {
+                                atoms,
+                                prec,
+                                reach,
+                                late10,
+                                late19,
+                            });
                         }
                     }
                 }

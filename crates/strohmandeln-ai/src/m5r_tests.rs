@@ -97,7 +97,10 @@ fn out_tarocks_equal_the_trackers_count_on_sample_views() {
 #[test]
 fn suit_atoms_need_a_focus_suit() {
     let k = know(&["Kh", "4h", "9c"], NO, ["Qh", "2h", ""], &[], Some("3h"));
-    assert!(holds("master", &k, Some(Suit::Hearts)), "Kh is the top heart");
+    assert!(
+        holds("master", &k, Some(Suit::Hearts)),
+        "Kh is the top heart"
+    );
     assert!(!holds("master", &k, None));
     assert!(holds("hc1", &k, Some(Suit::Hearts)));
     assert!(holds("hc2", &k, Some(Suit::Hearts)));
@@ -259,7 +262,9 @@ fn selection_takes_the_widest_eligible_candidate() {
 #[test]
 fn selection_needs_an_effective_sample_of_60() {
     let a = 1u32 << atom_index("mt8");
-    let log = synthetic("trumps/tarock", 200, |d| (if d < 40 { a } else { 0 }, d < 40));
+    let log = synthetic("trumps/tarock", 200, |d| {
+        (if d < 40 { a } else { 0 }, d < 40)
+    });
     let sel = select(&log);
     let s = sel
         .iter()
@@ -283,7 +288,9 @@ fn an_atom_true_at_every_firing_is_not_a_candidate() {
 #[test]
 fn reach_is_the_share_of_deals_with_a_firing() {
     let a = 1u32 << atom_index("mt8");
-    let log = synthetic("trumps/tarock", 100, |d| (if d % 4 == 0 { a } else { 0 }, true));
+    let log = synthetic("trumps/tarock", 100, |d| {
+        (if d % 4 == 0 { a } else { 0 }, true)
+    });
     let e = evaluate(&log, class_index("trumps/tarock"), &[atom_index("mt8")]);
     assert_eq!(e.prec.fired, 25);
     assert!((e.reach - 0.25).abs() < 1e-9);
@@ -297,14 +304,32 @@ fn late_shares_count_firings_after_trick_9_and_19() {
         1u32 << atom_index("ph3"),
     );
     let log = synthetic("trumps/tarock", 100, |d| {
-        (if d < 20 { ph1 } else if d < 50 { ph2 } else { ph3 }, true)
+        (
+            if d < 20 {
+                ph1
+            } else if d < 50 {
+                ph2
+            } else {
+                ph3
+            },
+            true,
+        )
     });
     let e = evaluate(&log, class_index("trumps/tarock"), &[atom_index("ph1")]);
     assert_eq!(e.prec.fired, 20);
     assert_eq!(e.late10, 0.0);
     let all = {
         let mut l = synthetic("trumps/tarock", 100, |d| {
-            ((if d < 20 { ph1 } else if d < 50 { ph2 } else { ph3 }) | 1, true)
+            (
+                (if d < 20 {
+                    ph1
+                } else if d < 50 {
+                    ph2
+                } else {
+                    ph3
+                }) | 1,
+                true,
+            )
         });
         l.ndeals = 100;
         l
@@ -347,18 +372,42 @@ fn prec(p: f64, n: f64) -> Precision {
 #[test]
 fn a_look_passes_at_its_boundary_and_the_minimum_sample() {
     // z = (p - .8) / sqrt(.16 / n) = 0.5 * (p - .8) * sqrt(n) / .2 ...
-    assert_eq!(step(1, &prec(1.0, 400.0), &BOUNDARIES), Step::Pass, "z = 10");
-    assert_eq!(step(1, &prec(0.95, 100.0), &BOUNDARIES), Step::Continue, "z = 3.75 < 4.05");
-    assert_eq!(step(2, &prec(0.95, 100.0), &BOUNDARIES), Step::Pass, "3.75 > 2.86");
-    assert_eq!(step(2, &prec(1.0, 50.0), &BOUNDARIES), Step::Continue, "n below 60");
+    assert_eq!(
+        step(1, &prec(1.0, 400.0), &BOUNDARIES),
+        Step::Pass,
+        "z = 10"
+    );
+    assert_eq!(
+        step(1, &prec(0.95, 100.0), &BOUNDARIES),
+        Step::Continue,
+        "z = 3.75 < 4.05"
+    );
+    assert_eq!(
+        step(2, &prec(0.95, 100.0), &BOUNDARIES),
+        Step::Pass,
+        "3.75 > 2.86"
+    );
+    assert_eq!(
+        step(2, &prec(1.0, 50.0), &BOUNDARIES),
+        Step::Continue,
+        "n below 60"
+    );
 }
 
 #[test]
 fn futility_from_the_second_look_and_the_last_look_without_a_pass() {
-    assert_eq!(step(1, &prec(0.5, 200.0), &BOUNDARIES), Step::Continue, "no futility at look 1");
+    assert_eq!(
+        step(1, &prec(0.5, 200.0), &BOUNDARIES),
+        Step::Continue,
+        "no futility at look 1"
+    );
     assert_eq!(step(2, &prec(0.5, 200.0), &BOUNDARIES), Step::Fail);
     assert_eq!(step(2, &prec(0.80, 200.0), &BOUNDARIES), Step::Continue);
-    assert_eq!(step(4, &prec(0.80, 200.0), &BOUNDARIES), Step::Fail, "no pass by the last look");
+    assert_eq!(
+        step(4, &prec(0.80, 200.0), &BOUNDARIES),
+        Step::Fail,
+        "no pass by the last look"
+    );
     let none = Precision {
         fired: 0,
         satisfied: 0,
@@ -374,7 +423,10 @@ fn a_sentence_is_the_atoms_joined_to_the_action() {
     let en = sentence(&["tu0"], "pagat/keep", false);
     assert_eq!(en, "Following with no tarock still out, keep the Pagat.");
     let de = sentence(&["tu0", "mt8"], "pagat/keep", true);
-    assert!(de.starts_with("Beim Bedienen mit keinem Tarock mehr draußen und "), "{de}");
+    assert!(
+        de.starts_with("Beim Bedienen mit keinem Tarock mehr draußen und "),
+        "{de}"
+    );
     assert!(de.ends_with(": den Pagat behalten."), "{de}");
     let (cw, aw) = word_counts(&["tu0", "mt8"], "pagat/keep");
     assert_eq!((cw, aw), (4 + 6, 3 + 1));
@@ -397,9 +449,26 @@ fn every_template_is_short() {
 #[test]
 fn no_template_uses_a_banned_word() {
     const EN: [&str; 9] = [
-        "cheap", "cheapest", "he", "his", "him", "neighbouring", "neighboring", "third", "thirds",
+        "cheap",
+        "cheapest",
+        "he",
+        "his",
+        "him",
+        "neighbouring",
+        "neighboring",
+        "third",
+        "thirds",
     ];
-    const DE: [&str; 8] = ["er", "ihm", "ihn", "sein", "seine", "seinen", "benachbarten", "drittel"];
+    const DE: [&str; 8] = [
+        "er",
+        "ihm",
+        "ihn",
+        "sein",
+        "seine",
+        "seinen",
+        "benachbarten",
+        "drittel",
+    ];
     let words = |s: &str| -> Vec<String> {
         s.split(|c: char| !c.is_alphanumeric() && c != '\u{fc}')
             .filter(|w| !w.is_empty())
@@ -409,7 +478,10 @@ fn no_template_uses_a_banned_word() {
     let mut check = |what: &str, text: &str, banned: &[&str], prefix: &[&str]| {
         for w in words(text) {
             assert!(!banned.contains(&w.as_str()), "{what}: '{w}' in '{text}'");
-            assert!(!prefix.iter().any(|p| w.starts_with(p)), "{what}: '{w}' in '{text}'");
+            assert!(
+                !prefix.iter().any(|p| w.starts_with(p)),
+                "{what}: '{w}' in '{text}'"
+            );
         }
     };
     for a in ATOMS {
@@ -435,12 +507,22 @@ fn the_passed_rules_are_consistent_with_their_classes_and_atoms() {
             atom_index(a);
         }
         let (cw, aw) = word_counts(r.atoms, r.class);
-        assert_eq!(r.fits_budget, cw <= 8 && aw <= 10, "{}: {cw} + {aw} words", r.id);
+        assert_eq!(
+            r.fits_budget,
+            cw <= 8 && aw <= 10,
+            "{}: {cw} + {aw} words",
+            r.id
+        );
         assert_eq!(r.too_rare, r.reach < 1.0 / 40.0, "{}", r.id);
         assert!((0.0..=1.0).contains(&r.reach));
         assert_eq!(r.late, r.late10 >= 0.80, "{}", r.id);
         assert!(r.late19 <= r.late10);
-        assert_eq!(r.ships, r.fits_budget && !NOT_SHIPPED.contains(&r.class), "{}", r.id);
+        assert_eq!(
+            r.ships,
+            r.fits_budget && !NOT_SHIPPED.contains(&r.class),
+            "{}",
+            r.id
+        );
     }
 }
 
@@ -474,7 +556,10 @@ fn a_matching_rule_needs_its_atoms_and_the_action_in_its_class() {
     };
     let k = know(&["T1", "T9", "Kh"], NO, HID, &[], Some("3d"));
     assert!(rule_matches(&r, &k, &Action::play(c("T9"))));
-    assert!(!rule_matches(&r, &k, &Action::play(c("T1"))), "not in the class");
+    assert!(
+        !rule_matches(&r, &k, &Action::play(c("T1"))),
+        "not in the class"
+    );
     let many = know(
         &["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"],
         NO,
@@ -482,12 +567,20 @@ fn a_matching_rule_needs_its_atoms_and_the_action_in_its_class() {
         &[],
         Some("T15"),
     );
-    assert!(!rule_matches(&r, &many, &Action::play(c("T2"))), "ml5 fails");
+    assert!(
+        !rule_matches(&r, &many, &Action::play(c("T2"))),
+        "ml5 fails"
+    );
 }
 
 #[test]
 fn collecting_a_sitting_logs_decisions() {
-    let log = collect(95_000_000, 1, 0, strohmandeln_core::types::Settings::default());
+    let log = collect(
+        95_000_000,
+        1,
+        0,
+        strohmandeln_core::types::Settings::default(),
+    );
     assert!(log.ndeals >= 6, "{}", log.ndeals);
     assert!(log.by_class.iter().any(|v| !v.is_empty()));
 }

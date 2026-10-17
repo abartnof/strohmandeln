@@ -30,11 +30,18 @@ fn num(rest: &[String], name: &str, default: u64) -> u64 {
 }
 
 fn names(atoms: &[usize]) -> String {
-    atoms.iter().map(|&a| ATOMS[a].id).collect::<Vec<_>>().join(",")
+    atoms
+        .iter()
+        .map(|&a| ATOMS[a].id)
+        .collect::<Vec<_>>()
+        .join(",")
 }
 
 fn atoms_of(text: &str) -> Vec<usize> {
-    text.split(',').filter(|s| !s.is_empty()).map(atom_index).collect()
+    text.split(',')
+        .filter(|s| !s.is_empty())
+        .map(atom_index)
+        .collect()
 }
 
 /// The settings of the settings run, with their seed blocks.
@@ -239,8 +246,14 @@ fn settings_cmd(rest: &[String]) {
         let log = collect(seed, sittings, 0, setting_named(name));
         for (i, (class, atoms)) in rules.iter().enumerate() {
             let p = evaluate(&log, class_index(class), &atoms_of(atoms)).prec;
-            let cell = format!("{name}:{}:{:.4}:{:.1}:{:.4}", p.fired, p.p, p.n_eff, p.lower);
-            println!("{class} [{atoms}] {cell}  ({:.0}s wall)", started.elapsed().as_secs_f64());
+            let cell = format!(
+                "{name}:{}:{:.4}:{:.1}:{:.4}",
+                p.fired, p.p, p.n_eff, p.lower
+            );
+            println!(
+                "{class} [{atoms}] {cell}  ({:.0}s wall)",
+                started.elapsed().as_secs_f64()
+            );
             cells[i].push(cell);
         }
     }
@@ -253,8 +266,9 @@ fn settings_cmd(rest: &[String]) {
 }
 
 fn emit_cmd(rest: &[String]) {
-    let confirmed = std::fs::read_to_string(arg(rest, "--confirmed", "confirmed.tsv"))
-        .expect("confirmed.tsv");
-    let settings = std::fs::read_to_string(arg(rest, "--settings", "settings.tsv")).unwrap_or_default();
+    let confirmed =
+        std::fs::read_to_string(arg(rest, "--confirmed", "confirmed.tsv")).expect("confirmed.tsv");
+    let settings =
+        std::fs::read_to_string(arg(rest, "--settings", "settings.tsv")).unwrap_or_default();
     print!("{}", emit_source(&confirmed, &settings));
 }
