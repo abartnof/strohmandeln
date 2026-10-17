@@ -1186,10 +1186,9 @@ in the Settings menu; passed as `level` in `new` [P].
 
 **The style** (17 Oct 2026, the maintainer's request; `docs/STYLES.md` 2, 5): a
 native select under the dial, 16 px or more: Normal (default), Random, then the
-offered styles. The list is the engine's (`strohmandeln_styles()`; until the export
-exists, the fallback `OFFERED_STYLES` in `web3d/src/prefs.js`, to be deleted) and
-follows `docs/STYLES.md` 9. Werner and Ulmann are not offered and Random does not
-draw them (the engine's pool is the offered list), but an imported record can name
+offered styles. The list is the engine's alone (`strohmandeln_styles()`, `docs/PROTOCOL.md`;
+`docs/STYLES.md` 9): Bermann, Mayr and Sedlaczek, Bold, Cautious today. Werner, Ulmann and
+Hunter are not offered and Random does not draw them, but an imported record can name
 them, so their strings stay. A writer is a school ("After Bermann"), never the
 opponent's name; a temperament is the table's own character. Labels and lines are
 `style.<id>.name` and `.line` in `strings.json`; at skills 3½ and 4, for any style
