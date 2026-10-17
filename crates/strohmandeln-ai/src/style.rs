@@ -32,11 +32,6 @@ pub enum Style {
     Hunter,
 }
 
-/// The rung-4 maxim band of every style but Normal, in thirds: Normal's is
-/// 0.34 (`rung4::best_card`). E (`docs/STYLES.md` 3); set against the style's
-/// cost in the measurement of 4.3.
-const BAND: f64 = 2.0;
-
 /// Rung 4's bid margin for each style, in Points: the advantage at which
 /// Normal's rung-4 sample bids the share of hands the style's rule bids
 /// (`probe::Calibration`, `stage0`). Rung 4 bids by the sampled advantage, not
@@ -138,7 +133,6 @@ impl Style {
         }
         c.bid_margin = Some(self.rung4_margin());
         let w: &mut Weights = &mut c.weights;
-        w.band = BAND;
         match self {
             Style::Normal | Style::Random => {}
             Style::Bermann => {

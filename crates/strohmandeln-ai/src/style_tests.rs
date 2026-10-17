@@ -333,3 +333,27 @@ fn the_margins_are_stage_0_figures_relative_to_normals_and_ordered_by_the_rules_
         }
     }
 }
+
+#[test]
+fn at_rung_four_a_style_keeps_normals_band() {
+    use crate::testutil::walk;
+    use strohmandeln_core::types::Action;
+    use strohmandeln_core::view::view;
+    // Werner changes no play weight, so at rung 4 he plays Normal's card in
+    // every play decision (docs/STYLES.md 9); only his bids may differ.
+    assert_eq!(cfg(Style::Werner).weights.band, cfg(Style::Normal).weights.band);
+    let level = Level::from_halves(8);
+    let normal = Opponent::new(level, 3);
+    let werner = Opponent::new(level, 3).with_config(cfg(Style::Werner));
+    let mut plays = 0;
+    for seed in 0..2 {
+        walk(seed, |st, seat| {
+            let v = view(st, seat);
+            if let Action::Play { .. } = normal.decide(&v) {
+                plays += 1;
+                assert_eq!(normal.decide(&v), werner.decide(&v));
+            }
+        });
+    }
+    assert!(plays > 20);
+}
