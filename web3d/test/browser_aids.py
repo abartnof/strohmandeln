@@ -680,7 +680,7 @@ def check_tutor_pages(browser, failures):
 
 # ---- 10.4 the cards-out tracker (6.6) ----------------------------------------------------------------
 
-TRACKER_SIZES = [("1280x720", {"width": 1280, "height": 720}), ("1024x768", {"width": 1024, "height": 768})]  # a phone layout is deferred (6.6.6)
+TRACKER_SIZES = [("1280x720", {"width": 1280, "height": 720}), ("1024x768", {"width": 1024, "height": 768}), ("1440x900", {"width": 1440, "height": 900}), ("1920x1080", {"width": 1920, "height": 1080})]  # a phone layout is deferred (6.6.6)
 BOXES = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; };
   const shown = (sel) => [...document.querySelectorAll(sel)].filter((e) => !e.hidden && e.getBoundingClientRect().width > 0).map(box);
   const panel = document.querySelector('.tracker');
@@ -694,6 +694,24 @@ def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0"
     drive(page, lambda s, log: sum(e["type"] == "trick_won" for e in log) >= 3 or s["prompt"] == "over")
     rest(page)
     return page
+
+
+HUD_AND_PANEL = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; };
+  const hud = document.querySelector('.info .hud'), panel = document.querySelector('.tracker'), tour = document.querySelector('.info .tour-line');
+  return { tour: tour && tour.textContent ? box(tour) : null, hud: hud ? box(hud) : null, panel: panel ? box(panel) : null }; })()"""
+
+
+def check_hud_clear(page, failures, where):
+    # The score HUD's rectangle and the panel's never meet, the by-deal list closed and open (6.6.6).
+    for step in ("closed", "open"):
+        if step == "open":
+            page.locator(".hud-chev").click()
+            page.wait_for_timeout(1500)
+        boxes = page.evaluate(HUD_AND_PANEL)
+        fail_if(not boxes["hud"] or not boxes["panel"], failures, f"{where}list {step}: no HUD or no panel")
+        if boxes["hud"] and boxes["panel"]:
+            fail_if(intersects(boxes["hud"], boxes["panel"]), failures, f"{where}list {step}: the HUD {boxes['hud']} meets the panel {boxes['panel']}")
+            fail_if(boxes["tour"] and intersects(boxes["tour"], boxes["panel"]), failures, f"{where}list {step}: the tour line {boxes['tour']} meets the panel {boxes['panel']}")
 
 
 def check_tracker_clear(browser, failures):
@@ -723,6 +741,10 @@ def check_tracker_clear(browser, failures):
             fail_if(scroll > 1, failures, f"{where}the panel scrolls by {scroll} px: the legend is cut off")
         check_offline(page, failures, where)
         close_all(browser)
+        for lang in ("en", "de"):
+            page = tracker_page(browser, size, {"lang": lang})
+            check_hud_clear(page, failures, f"tracker_clear {name} {lang}: ")
+            close_all(browser)
 
 
 def check_tracker_fold_and_settings(browser, failures):
