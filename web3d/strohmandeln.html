@@ -787,7 +787,7 @@
   cursor: pointer;
 }
 .tracker-fold:focus-visible { outline: 3px solid var(--md-sys-color-primary); outline-offset: 2px; }
-.tracker-lines { margin: 0 0 6px; padding: 0; list-style: none; }
+.tracker-lines { margin: 0 0 4px; padding: 0; list-style: none; }
 .tracker-lines li { margin: 2px 0; }
 
 /* The grid: a mark, eight cells, then the row's three counts. A state is never colour alone. */
@@ -796,7 +796,8 @@
 :is(.tracker-count, .tracker-count-head)[data-count="you"] { grid-column: 10; }
 :is(.tracker-count, .tracker-count-head)[data-count="opp"] { grid-column: 11; }
 :is(.tracker-count, .tracker-count-head)[data-count="seen"] { grid-column: 12; }
-.tracker-count-head { font-size: 10px; line-height: 1.1; text-align: center; color: var(--md-sys-color-on-surface-variant); white-space: nowrap; overflow: hidden; }
+.tracker-heads { margin-bottom: 0; }
+.tracker-count-head { font-size: 10px; line-height: 1; text-align: center; color: var(--md-sys-color-on-surface-variant); white-space: nowrap; overflow: hidden; }
 .tracker-count { text-align: center; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--md-sys-color-on-surface-variant); }
 .tracker-count[data-count="seen"] { color: var(--md-sys-color-on-surface); font-weight: 600; }
 .tracker-mark { text-align: center; font-size: 14px; }
