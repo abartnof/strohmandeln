@@ -11,7 +11,7 @@ Sources: the-cards 15-S1 (Dummett, ch. 4 and p. 100: made for play, 1442; no car
 and 15-S10 (the Austrian games; the trumps), 15-S11 (Piatnik sells Tarock packs, checked 15 Oct 2026; the page names neither Vienna nor the pattern), 15-S12
 and 15-S14 (the Cavall, worth 3), 08-S9 and 08-S10 (a real pack has no indices on suit
 cards), all in research/15-the-pack-today.md.
-Clauses (docs/RULES.md): the-cards 1.2 1.7; packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
+Clauses (docs/RULES.md): the-cards 1.2 1.4 1.5 1.7; packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
 8.2 8.4 9.1 (card values 1.7); the-pull 4.3 4.5 4.6 4.7; playing 5.1-5.3 5.5;
 following 5.2 5.4; from-a-packet 6.1 6.2; honours 11.1-11.5; thirds 1.7 8.1 8.2;
 pagat-ultimo 1.4 12.1-12.4; scoring 9.1-9.3 11 12.3 15.5 15.8; draw 8.4 9.2 11.7
@@ -31,15 +31,16 @@ when both pass have one block for each value of `values`, `ultimo` and
 
 ## The tarocks
 
-- The tarocks are trumps: I to XXI, and the Sküs above them all.
+- The tarocks are trumps: the Sküs is the highest, then XXI, XX down to II; I, the Pagat, is the lowest.
+- Rank is not value: the Pagat is lowest, yet worth 5 points, the most a card is worth, like the Sküs and XXI.
 - Tarot cards were made to play with, in Italy, by 1442. Fortune-telling is first heard of in 1781, in France.
 - Nothing here tells your fortune. Austrians still play Tarock, and Piatnik still sells Tarock packs.
-- German keeps two words: Tarock for the game, Tarot for the fortune-telling deck. English uses one for both, hence the mix-ups.
 
-## The C
+## The suits
 
-- The C is the Cavall, a knight on horseback, worth 3 points. Tarock packs kept him; the 52-card pack dropped him.
-- On a real pack the courts carry pictures, not letters. These big letters and corner numbers are for a quick look.
+- Each suit runs K, Q, C, J. The C is the Cavall, a knight, between queen and jack, worth 3 points.
+- The 52-card pack dropped him. Pips: 10 9 8 7 in clubs and spades; 1 2 3 4 in hearts and diamonds, the 1 highest.
+- Real courts carry pictures, not letters. These big letters are for a quick look.
 
 # The packets
 
@@ -144,10 +145,12 @@ when both pass have one block for each value of `values`, `ultimo` and
 
 ## How to count
 
-- Each card counts its value less two-thirds. In a group of three cards, count the sum less 2: the same rule, for three at once.
+- Count your won cards in threes: add the three values, take off 2.
 - Example: a king, a jack and a seven are 5 + 2 + 1 = 8, less 2 = 6.
 - One or two cards left over lose two-thirds each.
-- Your take is the cards you have won. The two takes make 70 points. A declarer needs 36: **35⅔** is enough, **35⅓** is not.
+- Taking 2 off three cards is two-thirds off each, so the count runs in thirds.
+- Together, the two players' cards always count 70.
+- To win you need 36: that is **35⅔** or more. **35⅓** falls short.
 - The score at the top runs as you take tricks.
 - [More on scoring](#scoring-full)
 
@@ -237,15 +240,17 @@ when both pass have one block for each value of `values`, `ultimo` and
 - **2** each: the four jacks (J).
 - **1** each: every other card, that is the tarocks II to XX and the numbered suit cards.
 
-- The faces show the letters K, Q, C and J, and the tarocks in Roman numerals. The Sküs is the highest tarock, the Mond is XXI, the Pagat is I.
+- Rank is another matter. Tarocks run Sküs (highest), XXI, XX down to II, then I, the Pagat, the lowest tarock.
+- Each suit runs K, Q, C, J, the Cavall between queen and jack, then the pips: 10 9 8 7 in clubs and spades, 1 2 3 4 in hearts and diamonds, the 1 highest.
+- The faces show the letters K, Q, C and J, and the tarocks in Roman numerals.
 - Add all 54 cards at these values and you get 106. The count in threes brings that down to 70.
 
 ## Counting in threes
 
-- A take, the cards a player has won, is counted in groups of three. Add the three values and take away 2.
+- Count your take, the cards you have won, in threes: add the three values and take away 2.
 - A king, a jack and a seven are 5 + 2 + 1 = 8, less 2 = 6. Three low cards are 1 + 1 + 1 = 3, less 2 = 1.
 - One or two cards left over lose two-thirds each. A last king and jack are 5 + 2 = 7, less 1⅓ = 5⅔.
-- Taking 2 off a group of three is taking two-thirds off each card. So every card counts its value less two-thirds: a king 4⅓, a queen 3⅓, a cavall 2⅓, a jack 1⅓, any other card ⅓. That is why the page speaks of thirds.
+- Why thirds: taking 2 off a group of three is taking two-thirds off each card. So every card counts its value less two-thirds: a king 4⅓, a queen 3⅓, a cavall 2⅓, a jack 1⅓, any other card ⅓.
 - This is the traditional count in threes, kept exact: nothing is rounded.
 - The pack is 54 cards, 18 groups of three. The values add up to 106, and the 18 groups lose 2 each: 106 − 36 = 70.
 
