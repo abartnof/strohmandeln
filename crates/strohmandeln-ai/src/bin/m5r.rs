@@ -260,6 +260,9 @@ fn emit_cmd(rest: &[String]) {
         println!("        reach: {reach},");
         println!("        too_rare: {},", reach < 1.0 / 40.0);
         println!("        settings_ok: {ok},");
+        let atom_ids: Vec<&str> = atoms_of(atoms).iter().map(|&a| ATOMS[a].id).collect();
+        let (cw, aw) = word_counts(&atom_ids, class);
+        println!("        fits_budget: {},", cw <= 8 && aw <= 10);
         println!("    }},");
     }
     println!("];");

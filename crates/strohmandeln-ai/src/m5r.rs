@@ -576,6 +576,10 @@ pub struct PassedRule {
     pub too_rare: bool,
     /// The lower bound is at least 0.80 under every other setting.
     pub settings_ok: bool,
+    /// The sentence is within the budget: condition at most 8 words, action
+    /// at most 10 ([`word_counts`]). A rule that does not fit is true but
+    /// not told in these words.
+    pub fits_budget: bool,
 }
 
 /// The "so" sentence of a rule: the atoms' clauses joined with "and", then

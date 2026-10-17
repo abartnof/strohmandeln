@@ -835,6 +835,121 @@ and "and"), action at most 10; tested for passed rules.
 confirm | settings | emit` (flags in the binary's header). Looks are logged
 to `confirm.log` in the output directory.
 
+### M5r result (2026-10-17)
+
+Constants in force: none (the atoms and classes read no tutor constant). Printed output: `docs/measurements/
+m5r-select.txt`, `m5r-confirm.txt`, `m5r-settings.txt`. The lists written to
+disk by the run (`selection.tsv`, `confirmed.tsv`, `settings.tsv`) are
+reproduced in the tables below; `m5r emit` turns the confirmed and settings
+lists into `crates/strohmandeln-ai/src/m5r_rules.rs`.
+
+**Commands** (output directory `$D`, any):
+`m5r select --out $D` (seed 60,000,000, 400 sittings);
+`m5r confirm --out $D` (seed 65,000,000, batches of 100);
+`m5r settings --out $D` (seeds 66 to 69 million, 200 sittings each);
+`m5r emit --out $D > crates/strohmandeln-ai/src/m5r_rules.rs`.
+CPU (user time, the machine was shared, wall time is 2 to 5 times that):
+confirmation 2 min 20 s, settings 4 min 04 s, selection about 2 min 20 s (400
+sittings, as the confirmation's 400; wall time 608 s): about 8.7 minutes, under
+the 10 minute cap.
+
+**Selection** (2,400 deals). `base` is the class with no atom; `cand` the
+candidates tried (an atom true at every firing is not), `elig` those with
+n_eff at least 60 and lower bound at least 0.80; the widest eligible is taken
+forward.
+
+| Class | Fired | Base p | Base lower | Cand | Elig | Taken forward: atoms, fired, p, n_eff, lower, reach |
+|---|---|---|---|---|---|---|
+| worth.poor/no-king | 2,073 | 0.814 | 0.796 | 63 | 17 | tu8, 1,372, 0.851, 1,359, 0.831, 0.375 |
+| cheap/outcome | 20,596 | 0.731 | 0.725 | 74 | 31 | tu4, 9,568, 0.837, 7,961, 0.829, 0.991 |
+| cheap/winner | 14,641 | 0.714 | 0.707 | 74 | 31 | tu4, 6,162, 0.843, 5,846, 0.833, 0.900 |
+| off/follow-cover | 4,703 | 0.526 | 0.511 | 62 | 0 | none |
+| off/lead-cover | 24,885 | 0.273 | 0.268 | 62 | 0 | none |
+| off/figure-cover | 11,799 | 0.325 | 0.316 | 62 | 0 | none |
+| off/figure-higher | 11,799 | 0.203 | 0.196 | 62 | 0 | none |
+| run/top | 9,526 | 0.042 | 0.039 | 66 | 0 | none |
+| run/any | 9,526 | 0.772 | 0.763 | 66 | 40 | tu6, 7,430, 0.822, 7,156, 0.813, 0.790 |
+| pagat/keep | 3,659 | 0.815 | 0.802 | 71 | 13 | ml5, 1,291, 0.864, 1,291, 0.844, 0.229 |
+| pagat/cash | 3,659 | 0.185 | 0.173 | 71 | 0 | none |
+| void/avoid | 13,205 | 0.618 | 0.610 | 73 | 1 | left13+ph1, 1,077, 0.836, 1,016, 0.812, 0.228 |
+| mond/mond | 2,457 | 0.245 | 0.228 | 69 | 0 | none |
+| trumps/tarock | 29,967 | 0.257 | 0.251 | 69 | 1 | mt8+ph3, 61, 0.902, 61, 0.802, 0.025 |
+| trumps/suit | 29,967 | 0.743 | 0.736 | 69 | 1 | ml7+skus, 10,158, 0.820, 6,342, 0.811, 0.572 |
+
+**Confirmation** (seeds from 65,000,000, looks at 100 / 200 / 300 / 400
+sittings; boundaries 4.05 / 2.86 / 2.34 / 2.02). Fired, p, n_eff and Wilson
+lower bound at the look the rule stopped at (the interval of the last look);
+reach is the share of deals with a firing.
+
+| Class | Atoms | Verdict | Look | Fired | p | n_eff | Lower | z at look | Reach |
+|---|---|---|---|---|---|---|---|---|---|
+| trumps/suit | ml7+skus | pass | 1 | 2,523 | 0.847 | 1,807 | 0.830 | 5.00 | 0.540 |
+| cheap/outcome | tu4 | pass | 2 | 4,768 | 0.843 | 3,883 | 0.831 | 6.65 | 0.993 |
+| cheap/winner | tu4 | pass | 2 | 3,012 | 0.846 | 2,939 | 0.833 | 6.27 | 0.882 |
+| pagat/keep | ml5 | pass | 2 | 693 | 0.863 | 693 | 0.835 | 4.14 | 0.246 |
+| run/any | tu6 | pass | 3 | 5,515 | 0.817 | 5,068 | 0.806 | 2.94 | 0.781 |
+| void/avoid | left13+ph1 | pass | 3 | 790 | 0.837 | 749 | 0.809 | 2.51 | 0.234 |
+| worth.poor/no-king | tu8 | pass | 4 | 1,355 | 0.830 | 1,350 | 0.809 | 2.71 | 0.370 |
+| trumps/tarock | mt8+ph3 | fail | 4 | 61 | 0.820 | 61 | 0.705 | 0.38 | 0.025 |
+
+No rule stopped for futility; `trumps/tarock` failed at the last look without a
+pass (its reach, 1 deal in 40, is also at the limit). All seven passed rules
+fire in more than 1 deal in 40.
+
+**Under each other setting** (200 sittings each; lower bound, `*` below 0.80):
+
+| Rule | Values 1/2/3 | Values 1/2/4 | Both pass: throw in | Ultimo 2 | Told under |
+|---|---|---|---|---|---|
+| trumps/suit ml7+skus | 0.837 | 0.807 | 0.788 `*` | 0.814 | not throw in |
+| cheap/outcome tu4 | 0.806 | 0.810 | 0.829 | 0.808 | every setting |
+| cheap/winner tu4 | 0.813 | 0.804 | 0.833 | 0.818 | every setting |
+| pagat/keep ml5 | 0.820 | 0.827 | 0.829 | 0.791 `*` | not ultimo 2 |
+| run/any tu6 | 0.795 `*` | 0.802 | 0.802 | 0.815 | not values 1/2/3 |
+| void/avoid left13+ph1 | 0.798 `*` | 0.775 `*` | 0.736 `*` | 0.780 `*` | default only |
+| worth.poor/no-king tu8 | 0.807 | 0.816 | 0.797 `*` | 0.814 | not throw in |
+
+**Verdicts by idea.** Rules (a rule is told where its row says; elsewhere its
+fact):
+
+| Idea | Verdict | Rule |
+|---|---|---|
+| cheap | passed, both classes, every setting | `cheap/outcome:tu4`, `cheap/winner:tu4` |
+| worth.poor | passed (look 4), not under throw in | `worth.poor/no-king:tu8` |
+| run | `run/any` passed, not under values 1/2/3; `run/top` failed (no eligible candidate) | `run/any:tu6` |
+| pagat | `keep` passed, not under ultimo 2; `cash` failed | `pagat/keep:ml5` |
+| void | passed, default setting only; over the word budget | `void/avoid:left13+ph1` |
+| trumps | `suit` passed, not under throw in; over the word budget; `tarock` failed | `trumps/suit:ml7+skus` |
+| off | failed, all four classes (no eligible candidate; the best base is 0.53) | none |
+| mond | failed (no eligible candidate; base 0.245: rung 4 plays the Mond in a quarter of the cases where it wins) | none |
+
+**Wording drafts** (`m5r::sentence`, the atoms' templates joined to the
+class's action; budgets of HINTS 5.2: condition at most 8 words, action at most
+10, counted as in `m5r::word_counts`). Here "words" are condition + action.
+
+| Rule | en | de | words |
+|---|---|---|---|
+| cheap/outcome:tu4 | When 4 or fewer tarocks are out, play the cheapest card that gives the same result. | Wenn höchstens 4 Tarock draußen sind: die billigste Karte mit gleichem Ergebnis spielen. | 5 + 9 |
+| cheap/winner:tu4 | When 4 or fewer tarocks are out, win with the cheapest card that wins. | Wenn höchstens 4 Tarock draußen sind: mit der billigsten stechenden Karte stechen. | 5 + 7 |
+| worth.poor/no-king:tu8 | When 8 or fewer tarocks are out, on a low lead, do not win with a king. | Wenn höchstens 8 Tarock draußen sind: bei niedrigem Anspiel nicht mit einem König stechen. | 5 + 9 |
+| run/any:tu6 | When 6 or fewer tarocks are out, lead one of your neighbouring tarocks, else the lowest. | Wenn höchstens 6 Tarock draußen sind: eines Ihrer benachbarten Tarock anspielen, sonst das niedrigste. | 5 + 9 |
+| pagat/keep:ml5 | When you hold 5 or fewer tarocks, keep the Pagat. | Wenn Sie höchstens 5 Tarock halten: den Pagat behalten. | 6 + 3 |
+| trumps/suit:ml7+skus | When you hold 7 or fewer tarocks and the Sküs is out and not yours, lead a suit card. | Wenn Sie höchstens 7 Tarock halten und der Sküs draußen und nicht Ihrer ist: eine Farbkarte anspielen. | 13 + 4, over |
+| void/avoid:left13+ph1 | When the suit has 13 thirds or fewer left and it is trick 1 to 9, do not lead the suit he lacks. | Wenn von der Farbe höchstens 13 Drittel übrig sind und es der 1. bis 9. Stich ist: die Farbe, die ihm fehlt, nicht anspielen. | 13 + 7, over |
+
+The two that exceed the budget are true but not told in these words;
+shortened drafts that fit if the maintainer accepts a noun-phrase condition
+("With ..."): "With 7 tarocks or fewer and the Sküs still out, lead a suit
+card." / "Mit höchstens 7 Tarock und dem Sküs noch draußen: eine Farbkarte
+anspielen."; the void rule has no short form (a suit-points condition and a
+phase). `m5r_rules.rs` carries `fits_budget` for each.
+
+**Reading.** Five of the seven conditions are one quantity: how many tarocks
+are out or held (`tu4`, `tu6`, `tu8`, `ml5`, `ml7`). For `off`, the Mond and
+`run/top` no condition of the family reaches 0.80. `pagat/keep:ml5` states what
+rung 4 does (keeps the Pagat 86% of the time with 5 or fewer tarocks), not a
+book's advice; M5's candidate `pagat.cash` (the Pagat with few tarocks) has
+0.185 here too.
+
 ## M6 Diagnosis
 
 ### Plan (2026-10-15, before the run)

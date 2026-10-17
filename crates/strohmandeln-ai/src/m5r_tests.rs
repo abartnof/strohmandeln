@@ -343,8 +343,8 @@ fn the_passed_rules_are_consistent_with_their_classes_and_atoms() {
             atom_index(a);
         }
         let (cw, aw) = word_counts(r.atoms, r.class);
-        assert!(cw <= 8, "{}: condition {cw} words", r.id);
-        assert!(aw <= 10, "{}: action {aw} words", r.id);
+        assert_eq!(r.fits_budget, cw <= 8 && aw <= 10, "{}: {cw} + {aw} words", r.id);
+        assert_eq!(r.too_rare, r.reach < 1.0 / 40.0, "{}", r.id);
         assert!((0.0..=1.0).contains(&r.reach));
     }
 }
@@ -362,6 +362,7 @@ fn a_matching_rule_needs_its_atoms_and_the_action_in_its_class() {
         reach: 0.1,
         too_rare: false,
         settings_ok: true,
+        fits_budget: true,
     };
     let k = know(&["T1", "T9", "Kh"], NO, HID, &[], Some("3d"));
     assert!(rule_matches(&r, &k, &Action::play(c("T9"))));
