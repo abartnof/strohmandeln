@@ -15,6 +15,7 @@
 //! The keys and parameters are tabled in `docs/MESSAGES.md`, "Hint reasons";
 //! [`KEYS`] and [`RULES`] list them and a test holds the table to them.
 
+use crate::ask::{alternative, compose_in, Evidence, Fact, Line, RuleMeta, PASSED};
 use crate::explain::{explain_play, Maxim, Param, Reason, Sampled};
 use crate::know::Knowledge;
 use crate::opponent::{Config, Level, Opponent};
@@ -24,7 +25,7 @@ use crate::rung4;
 use crate::seed::view_seed;
 use strohmandeln_core::cards::Card;
 use strohmandeln_core::rng::Rng;
-use strohmandeln_core::types::Action;
+use strohmandeln_core::types::{Action, Settings};
 use strohmandeln_core::view::View;
 
 /// How the search ranks the hinted card against the best other legal card,
@@ -48,6 +49,30 @@ pub struct Hint {
     /// A key from [`RULES`]: the rule the move follows.
     pub rule: Option<&'static str>,
     pub odds: Option<Odds>,
+    /// The decisive question of `docs/HINTS.md` 2 and the card it is about
+    /// (`ask.keep`); `None` for a forced card, a bid, or when no question
+    /// is decisive.
+    pub question: Option<&'static str>,
+    pub keep: Option<Card>,
+    /// The sentence after the question: a passed rule (`so`), else a fact
+    /// (`ans`). Both `None` for a bid: the table then gives `key`'s reason.
+    pub so: Option<Line>,
+    pub ans: Option<Line>,
+    pub why: Why,
+}
+
+/// What the "Why?" shows (`docs/HINTS.md` 3.1, 4, 5.5).
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Why {
+    /// The natural alternative A.
+    pub alt: Option<Card>,
+    /// X against A over the sampled deals (`vs.lead`, `vs.follow`), and for a
+    /// lead how often he trumps each (`vs.lead-trumped`).
+    pub contrast: Option<Line>,
+    pub trumped: Option<Line>,
+    pub facts: Vec<Fact>,
+    /// The M5r rule the `so` states and how it measured.
+    pub rule: Option<RuleMeta>,
 }
 
 impl Hint {
@@ -58,7 +83,53 @@ impl Hint {
             params: Vec::new(),
             rule: None,
             odds: None,
+            question: None,
+            keep: None,
+            so: None,
+            ans: None,
+            why: Why::default(),
         }
+    }
+}
+
+/// Every sentence key of the default hint and the "Why?" (`docs/MESSAGES.md`,
+/// "Hint sentences"), besides the `reason.*` keys of [`KEYS`].
+pub const SENTENCES: &[&str] = &[
+    "ans.keep-mond-play",
+    "ans.keep-mond-hold",
+    "ans.keep-pagat-hold",
+    "ans.keep-packet",
+    "ans.beneath",
+    "ans.worth-poor",
+    "ans.worth-rich",
+    "ans.cheap",
+    "ans.cheap-lose",
+    "ans.ask-differ",
+    "ans.ask-none",
+    "ans.ask-none-even",
+    "ans.out-void",
+    "ans.out-master",
+    "ans.out-master-tarock",
+    "ans.suit",
+    "ans.trumps-no",
+    "ans.trumps-yes",
+    "so.worth-rich",
+    "fact.tarocks-out",
+    "fact.skus-out",
+    "fact.his-void",
+    "fact.master",
+    "fact.split",
+    "fact.beneath",
+    "vs.lead",
+    "vs.lead-trumped",
+    "vs.follow",
+];
+
+fn sentence(key: &str, params: &[(&'static str, Param)]) -> Line {
+    Line {
+        key: key.to_string(),
+        params: params.to_vec(),
+        text: None,
     }
 }
 
@@ -126,6 +197,12 @@ pub fn odds_config(config: Config, worlds: usize) -> Config {
 
 /// The best move for the seat to move in `view`, at `level`, with a reason.
 pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
+    hint_in(view, seed, level, config, &Settings::default())
+}
+
+/// [`hint`] in a sitting with these settings: a rule that did not pass under
+/// them is not told.
+pub fn hint_in(view: &View, seed: u64, level: Level, config: Config, settings: &Settings) -> Hint {
     let opponent = Opponent::new(level, seed).with_config(config);
     let action = opponent.decide(view);
     if matches!(action, Action::Extend { .. }) {
@@ -144,14 +221,12 @@ pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
         };
         let (sure, tarocks) = rung2::sure_thirds(k.hand);
         return Hint {
-            action,
-            key,
             params: vec![
                 ("sure_thirds", Param::Int(i64::from(sure))),
                 ("tarocks", Param::Int(tarocks as i64)),
             ],
             rule: Some("bid"),
-            odds: None,
+            ..Hint::plain(action, key)
         };
     }
     let Action::Play { card, .. } = &action else {
@@ -190,17 +265,82 @@ pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
             wins: &wins,
         },
     );
-    let odds = if rung >= 4 && k.legal.len() > 1 {
+    let alt = alternative(&k, card).filter(|_| k.legal.len() > 1);
+    let (odds, follow) = if rung >= 4 && k.legal.len() > 1 {
         let mut orng = Rng::stream(seed, view_seed(view) ^ 0x4812);
-        odds_with(
+        odds_and_contrast(
             &k,
             card,
+            alt,
             &mut orng,
             odds_config(config, ODDS_WORLDS),
             ODDS_WORLDS,
         )
     } else {
-        None
+        (None, None)
+    };
+    let evidence = Evidence {
+        differ: follow.map(|f| (f.better, f.alt_better, f.worlds)),
+        none: odds.as_ref().map(|o| (o.better, o.worlds, o.gain_thirds)),
+        // Solved, and the search sees less than a third of a point between them.
+        even: follow.is_some() && odds.is_none(),
+    };
+    let comp = compose_in(&k, card, &evidence, PASSED, settings);
+    // A hint always has a "because": the plain local reason stands where the
+    // question has no sentence of its own.
+    let ans = comp.ans.or_else(|| {
+        Some(Line {
+            key: format!("reason.{key}"),
+            params: params.clone(),
+            text: None,
+        })
+    });
+    let (contrast, trumped) = match (alt, k.lead) {
+        (Some(a), Some(_)) => (
+            follow.map(|f| {
+                sentence(
+                    "vs.follow",
+                    &[
+                        ("card", Param::Card(card)),
+                        ("alt", Param::Card(a)),
+                        ("w", Param::Int(i64::from(f.worlds))),
+                        ("b", Param::Int(i64::from(f.better))),
+                        ("a", Param::Int(i64::from(f.alt_better))),
+                    ],
+                )
+            }),
+            None,
+        ),
+        (Some(a), None) if !sims.is_empty() => {
+            let n = |v: usize| Param::Int(v as i64);
+            let worlds = n(sims.len());
+            let contrast = sentence(
+                "vs.lead",
+                &[
+                    ("card", Param::Card(card)),
+                    ("alt", Param::Card(a)),
+                    ("worlds", worlds),
+                    ("wins", n(wins(card))),
+                    ("alt_wins", n(wins(a))),
+                    ("cost_thirds", Param::Int(i64::from(card.thirds()))),
+                    ("alt_cost_thirds", Param::Int(i64::from(a.thirds()))),
+                ],
+            );
+            let trumped = (!card.is_tarock() || !a.is_tarock()).then(|| {
+                sentence(
+                    "vs.lead-trumped",
+                    &[
+                        ("card", Param::Card(card)),
+                        ("alt", Param::Card(a)),
+                        ("worlds", worlds),
+                        ("trumped", n(rung3::lead_trumped(&sims, card))),
+                        ("alt_trumped", n(rung3::lead_trumped(&sims, a))),
+                    ],
+                )
+            });
+            (Some(contrast), trumped)
+        }
+        _ => (None, None),
     };
     Hint {
         action,
@@ -208,7 +348,28 @@ pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
         params,
         rule,
         odds,
+        question: comp.question,
+        keep: comp.keep,
+        so: comp.so,
+        ans,
+        why: Why {
+            alt,
+            contrast,
+            trumped,
+            facts: comp.facts,
+            rule: comp.rule,
+        },
     }
+}
+
+/// How the sample sees the hinted card against the alternative A, deal by
+/// deal: better in `better`, A better in `alt_better`, of `worlds` (the rest
+/// equal).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FollowContrast {
+    pub better: u32,
+    pub alt_better: u32,
+    pub worlds: u32,
 }
 
 /// The search's evidence for `card` against the best other legal card, over
@@ -221,12 +382,44 @@ pub fn odds_with(
     config: Config,
     worlds: usize,
 ) -> Option<Odds> {
+    odds_and_contrast(k, card, None, rng, config, worlds).0
+}
+
+/// [`odds_with`] and, from the same table of solved worlds, `card` against
+/// `alt` (`docs/HINTS.md` 4: one `move_table` call).
+pub fn odds_and_contrast(
+    k: &Knowledge,
+    card: Card,
+    alt: Option<Card>,
+    rng: &mut Rng,
+    config: Config,
+    worlds: usize,
+) -> (Option<Odds>, Option<FollowContrast>) {
     let mut budget = config.budget;
     budget.worlds = worlds;
     let table = rung4::move_table(k, rng, budget, &config.weights);
     if table.per_world.is_empty() {
-        return None;
+        return (None, None);
     }
+    let value = |row: &[(Card, i32)], c: Card| row.iter().find(|(x, _)| *x == c).map(|(_, v)| *v);
+    let contrast = alt.map(|a| {
+        let count = |first: Card, second: Card| {
+            table
+                .per_world
+                .iter()
+                .filter(|row| matches!((value(row, first), value(row, second)), (Some(x), Some(y)) if x > y))
+                .count() as u32
+        };
+        FollowContrast {
+            better: count(card, a),
+            alt_better: count(a, card),
+            worlds: table.per_world.len() as u32,
+        }
+    });
+    (best_other(&table, card), contrast)
+}
+
+fn best_other(table: &rung4::MoveTable, card: Card) -> Option<Odds> {
     let mine = table.scores.iter().find(|(x, _)| *x == card)?.1;
     let (alt, theirs) = table.scores.iter().find(|(x, _)| *x != card).copied()?;
     let gain = (mine - theirs).round();
@@ -420,12 +613,70 @@ mod tests {
             twins += crate::testutil::blind_check_values(
                 &|v| {
                     let h = hint(v, 9, level, config);
-                    (h.action, h.key, h.params, h.rule, h.odds)
+                    (
+                        h.action, h.key, h.params, h.rule, h.odds, h.question, h.keep, h.so, h.ans,
+                        h.why,
+                    )
                 },
                 6,
             );
         }
         assert!(twins > 150, "{twins}");
+    }
+
+    #[test]
+    fn every_play_hint_has_a_because_and_known_sentence_keys() {
+        let level = Level::from_halves(8);
+        let (mut asked, mut contrasts, mut none) = (0, 0, 0);
+        for seed in 0..3 {
+            walk(seed, |s, seat| {
+                let v = view(s, seat);
+                let h = hint(&v, 9, level, small());
+                let Action::Play { .. } = &h.action else {
+                    assert!(h.ans.is_none() && h.question.is_none(), "{h:?}");
+                    return;
+                };
+                let ans = h.ans.as_ref().expect("a because");
+                let mut lines: Vec<&Line> = vec![ans];
+                lines.extend(h.so.iter());
+                lines.extend(h.why.contrast.iter().chain(h.why.trumped.iter()));
+                lines.extend(h.why.facts.iter().map(|f| &f.line));
+                for l in lines {
+                    let known = match l.key.split_once('.') {
+                        Some(("reason", r)) => KEYS.contains(&r),
+                        _ => {
+                            SENTENCES.contains(&l.key.as_str())
+                                || (l.key == "so.m5r" && l.text.is_some())
+                        }
+                    };
+                    assert!(known, "{}", l.key);
+                }
+                if let Some(q) = h.question {
+                    assert!(crate::ask::QUESTIONS.contains(&q) && q != "ask.beat");
+                    assert_eq!(q == "ask.keep", h.keep.is_some(), "{h:?}");
+                    asked += 1;
+                } else {
+                    none += 1;
+                }
+                // A hint with a rule has a question.
+                assert!(h.so.is_none() || h.question.is_some());
+                contrasts += usize::from(h.why.contrast.is_some());
+                // A is another legal card whenever one exists.
+                let k = Knowledge::from_view(&v).unwrap();
+                assert_eq!(h.why.alt.is_some(), k.legal.len() > 1, "{h:?}");
+                assert_ne!(
+                    h.why.alt,
+                    h.params
+                        .iter()
+                        .find(|(n, _)| *n == "card")
+                        .and_then(|(_, p)| match p {
+                            Param::Card(c) => Some(*c),
+                            _ => None,
+                        })
+                );
+            });
+        }
+        assert!(asked > 10 && contrasts > 10, "{asked} {contrasts} {none}");
     }
 
     /// The rows of a `docs/MESSAGES.md` table between two headings.
@@ -451,9 +702,22 @@ mod tests {
     }
 
     #[test]
+    fn docs_messages_md_gives_every_question_and_sentence_in_english_and_german() {
+        let doc = include_str!("../../../docs/MESSAGES.md");
+        let rows = rows(doc, "\n### Hint questions, sentences", "\n## Review keys");
+        let documented: Vec<&str> = rows.iter().map(|r| r[1].trim_matches('`')).collect();
+        let mut want: Vec<&str> = crate::ask::QUESTIONS.to_vec();
+        want.extend(SENTENCES);
+        assert_eq!(documented, want, "same keys, same order");
+        for r in &rows {
+            assert!(!r[3].is_empty() && !r[4].is_empty(), "{}", r[1]);
+        }
+    }
+
+    #[test]
     fn docs_messages_md_gives_every_rule_with_its_basis() {
         let doc = include_str!("../../../docs/MESSAGES.md");
-        let rows = rows(doc, "\n### Hint rules", "\n## Review keys");
+        let rows = rows(doc, "\n### Hint rules", "\n### Hint odds");
         let documented: Vec<&str> = rows.iter().map(|r| r[1].trim_matches('`')).collect();
         assert_eq!(documented, RULES, "same rules, same order");
         for r in &rows {

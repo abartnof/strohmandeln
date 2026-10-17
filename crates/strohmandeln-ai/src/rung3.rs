@@ -51,6 +51,21 @@ pub fn lead_wins(sims: &[crate::sim::Sim], c: Card) -> usize {
         .count()
 }
 
+/// In how many of `sims` the opponent answers the suit lead `c` with a
+/// tarock (it is 0 for a tarock lead), as the rollout policy does.
+pub fn lead_trumped(sims: &[crate::sim::Sim], c: Card) -> usize {
+    if c.is_tarock() {
+        return 0;
+    }
+    sims.iter()
+        .filter(|sim| {
+            let mut s = (*sim).clone();
+            s.play(c);
+            s.policy().is_tarock()
+        })
+        .count()
+}
+
 /// Scores every legal card, best first.
 pub fn score_cards(k: &Knowledge, rng: &mut Rng, worlds: usize, wt: &Weights) -> Vec<Choice> {
     let sims = lead_sims(k, rng, worlds);

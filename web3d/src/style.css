@@ -107,6 +107,10 @@ button { font: inherit; }
 /* Above the Kibitzer's chips (z 15): a hint of two or three lines grows upward over them on a phone, and the text is what is being read. */
 .aid-line { position: relative; z-index: 16; max-width: min(100%, 44em); text-align: center; }
 .aid-more { display: block; margin-top: 2px; font-size: 13px; opacity: 0.85; }
+.aid-why-btn { margin-left: 8px; padding: 0 8px; border: 1px solid currentColor; border-radius: 10px; background: none; color: inherit; font: inherit; font-size: 13px; cursor: pointer; }
+.aid-why { margin-top: 4px; text-align: left; font-size: 13px; }
+.aid-why[hidden] { display: none; }
+.aid-why-line { margin: 2px 0; }
 .prompt:empty, .refusal[hidden], .refusal:empty { display: none; }
 .refusal { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); border: 1px solid var(--md-sys-color-error); }
 .move-bar { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }

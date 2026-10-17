@@ -1558,9 +1558,46 @@ def check_escape_dialogs(browser, failures):
     close_all(browser)
 
 
+def check_hint_why(browser, failures):
+    """The hint's Why? (HINTS 3.1): closed under each new hint, opened by its button with the sample's
+    lines, closed by Escape with the focus back on the button, and the hint says the card once."""
+    where = "hint_why: "
+    page = brief_page(browser, {})
+    ok = drive(page, lambda st, log: st["phase"] == "play" and st["prompt"] == "you")
+    rest(page)
+    fail_if(not ok, failures, f"{where}no play decision reached")
+    page.locator("[data-act=hint]").click()
+    page.wait_for_selector(".aid-line:not([hidden])", timeout=30_000)
+    text = page.locator(".aid-text").inner_text()
+    fail_if(text.count("Play ") != 1, failures, f"{where}the headline is not said once: {text!r}")
+    button = page.locator(".aid-why-btn")
+    fail_if(button.count() != 1, failures, f"{where}no Why? button in {text!r}")
+    if button.count() != 1:
+        return
+    fail_if(button.get_attribute("aria-expanded") != "false" or page.locator(".aid-why:not([hidden])").count(), failures, f"{where}the Why? is not closed to begin with")
+    page.keyboard.press("Tab")  # the button is reachable by keyboard: focus it, press Enter
+    button.focus()
+    page.keyboard.press("Enter")
+    fail_if(button.get_attribute("aria-expanded") != "true", failures, f"{where}Enter did not open the Why?")
+    lines = page.locator(".aid-why .aid-why-line")
+    fail_if(lines.count() < 1, failures, f"{where}the Why? has no lines")
+    body = page.locator(".aid-why").inner_text()
+    fail_if(len(body.split()) > 90, failures, f"{where}the Why? is {len(body.split())} words")
+    fail_if("sampled" not in body and "I deal" not in body and "Instead of" not in body and "tarocks" not in body, failures, f"{where}the Why? says nothing of the sample or the facts: {body!r}")
+    page.keyboard.press("Escape")
+    fail_if(page.locator(".aid-why:not([hidden])").count(), failures, f"{where}Escape did not close the Why?")
+    fail_if(button.get_attribute("aria-expanded") != "false", failures, f"{where}the button still says open")
+    fail_if(page.evaluate("document.activeElement.classList.contains('aid-why-btn')") is not True, failures, f"{where}the focus did not return to the button")
+    # a new hint is closed again
+    button.click()
+    page.locator("[data-act=hint]").click()
+    fail_if(page.locator(".aid-why:not([hidden])").count(), failures, f"{where}a new hint opened with the Why? open")
+    close_all(browser)
+
+
 CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_tips, check_slate_points_and_settlement_note, check_talk_events, check_talk_english, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_settings_no_rules, check_new_sitting_from_table, check_skill_speed, check_new_sitting_style, check_random_style_hidden,
     check_language_switch, check_language_switch_at_count, check_hud_not_clipped, check_declarer_mark, check_prefs_storage, check_save_restore, check_export_import_file,
-    check_tutor_pages, check_red_pips_note, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief,
+    check_tutor_pages, check_red_pips_note, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief, check_hint_why,
 ]

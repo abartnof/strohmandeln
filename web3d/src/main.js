@@ -1026,8 +1026,9 @@ async function main() {
     return send({ action: "play", card: code });
   }
 
-  // The tutor's hint: the engine's own answer for this position, shown by the
-  // card it names and one sentence from its reason's key. It never plays.
+  // The tutor's hint: the engine's own answer for this position, shown as the card
+  // it names, the decisive question and one sentence (docs/HINTS.md 3.1). It never
+  // plays.
   function askHint() {
     if (!wasm || wasm.prompt !== "you" || director.busy() || pending > 0 || !prefs.hints) return;
     if (prefs.tutor && prefs.muted) return ui.setAid(t("hint.muted")); // "§ 13": only his tap un-mutes (6.3.4)
@@ -1039,9 +1040,9 @@ async function main() {
       persist({ state: wasm }); // a reload must not take the mark back
     }
     hintCard = r.hint.action === "play" ? r.hint.card : null;
-    const lines = hintLines(r, { t, cardName: romanName, thirds, count });
-    ui.setAid([lines.lead, lines.reason].filter(Boolean).join(" "), lines.more);
-    ui.live(hintSpoken(hintLines(r, { t, cardName, thirds, count })));
+    const lines = hintLines(r, { t, cardName: romanName, thirds, count, lang: getLang() });
+    ui.setAid([lines.lead, lines.question, lines.text].filter(Boolean).join(" "), [], lines.why?.lines.length ? { label: t("hint.why.label"), lines: lines.why.lines } : null);
+    ui.live(hintSpoken(hintLines(r, { t, cardName, thirds, count, lang: getLang() })));
     director.redecorate();
   }
 
@@ -1057,6 +1058,8 @@ async function main() {
         if (!r.ok) return showRefusal(r.refusal);
         return advance(r);
       }
+      case "why":
+        return ui.toggleWhy();
       case "tracker":
       case "tracker-fold":
         return toggleTracker();
@@ -1512,7 +1515,8 @@ async function main() {
       if (id === "page") dismissPage(true);
       else if (id === "welcome") onDialog(["welcome", "continue"]); // its default; nothing is lost
       else ui.closeDialog(id); // help, review, keys, announce (the card stays chosen), clear (No), error, new (Cancel)
-    } else if (kind === "settings") settings.close();
+    } else if (kind === "why") ui.toggleWhy(false);
+    else if (kind === "settings") settings.close();
     else if (kind === "slate") {
       toggleSlate();
       ui.root.querySelector("[data-act=slate]")?.focus();
@@ -1539,6 +1543,7 @@ async function main() {
       // One press closes the topmost layer (overlays.js, TABLE3D 3.10.5).
       const target = escapeTarget({
         dialogs: ui.dialogIds(),
+        why: ui.whyOpen(),
         settings: !ui.settingsRoot.hidden,
         slate: !ui.slateRoot.hidden,
         hud: hud.isOpen(),

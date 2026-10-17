@@ -61,7 +61,7 @@ hint's; `ask.beat` is only in "Why?".
 |---|---|---|---|---|
 | `ask.beat` | Can I win it? / Kann ich ihn holen? | follow | research/16 `worth` (classes: beats the card led, does not); RULES 5.5 (no obligation to win) | `worth` |
 | `ask.worth` | Is the trick worth it? / Lohnt der Stich? | follow | Be p. 147 (a smaller trick, or wait for a higher count; research/16 `worth`); MS "den König schinden und ein Skartindel zugeben" (research/07 1.3) | `worth` |
-| `ask.cheap` | Which card costs least? / Welche Karte kostet am wenigsten? | follow | research/16 `cheap` (MS "Das Nach-hinten-Spielen", U p. 75) | `cheap` |
+| `ask.cheap` | Which card is worth least? / Welche Karte ist am wenigsten wert? | follow | research/16 `cheap` (MS "Das Nach-hinten-Spielen", U p. 75) | `cheap` |
 | `ask.keep` | Is {keep} safe to keep? / Ist {keep} sicher aufgehoben? | both | Pagat: MS keep it with more than 11 tarocks, cash it with 7 or fewer (research/07 1.4, 1.5), U p. 74; W p. 133 says only that it cannot be announced ultimo; Mond: U p. 74 and MS's Mondfang, the Mond-holder keeps one or two small tarocks so that he leads and the Mond answers (research/07 1.5, research/16 "Guarding the Mond"); packet kept against his Pagat ultimo: W p. 134 (research/07 1.2) | `pagat` |
 | `ask.beneath` | What lies beneath? / Was liegt darunter? | both | research/07 1.2 (MS: play the packets off, an exposed Dame or Cavall at once; W p. 134; U p. 71-75); RULES 6.1 (the card beneath is turned); research/16 `off` | `off` |
 | `ask.out` | What can still beat it? / Was kann sie noch schlagen? | lead | research/07 1.2 (W "genaues Tarokzählen", which card is major; MS counts of suits played and trumped), 1.3 (MS: a king trumped); research/16 `void`, `endgame` | `void`, `endgame` |
@@ -134,7 +134,7 @@ opposite sides:
 
 | Question | Decisive when |
 |---|---|
-| `ask.keep` | exactly one of X, A is a **key card** (Sküs, Mond, Pagat; or a card that keeps a packet against his Pagat ultimo, `rung2::reserved_packet`); `{keep}` is that card |
+| `ask.keep` | exactly one of X, A is a **key card** (Sküs, Mond, Pagat; or a card that keeps a packet against his Pagat ultimo, `rung2::reserved_packet`); `{keep}` is that card. **On a lead** only when X is a key card or X and A are both tarocks. **Only where the sentence can point the way of the play** (17 Oct 2026, review): the Mond played on his tarock with the Sküs out; the Mond held with the Sküs out; the Pagat held with 8 or more tarocks; a packet kept against his Pagat ultimo |
 | `ask.beneath` | exactly one of X, A is a cover (`Knowledge::covers`) |
 | `ask.out` | exactly one of X, A is a **master** (nothing out beats it: `tracker` `Group.master`, the hint calls the tracker), or exactly one leads a suit he has shown void |
 | `ask.suit` | X and A are both suit cards and differ in whose the suit is (mine, his, shared evenly) |
@@ -323,13 +323,13 @@ glosses it in the same hint.
 | follow suit, trump | `following` |
 | tarock, Sküs, Mond, Pagat | `the-cards` |
 | packet, cover, "beneath", turned up | `packets`, `from-a-packet` |
-| point(s), thirds | `thirds` |
+| card point(s), thirds, "worth", "worth least" (the card whose value is lowest: what is lost if the trick is lost) | `thirds` |
 | "still out", "master" (top card left) | Cards-out legend and line 2 (`TABLE3D.md` 6.6.4, 6.6.5) |
 | "showed no {suit}" | Cards-out line 3 |
 | "sampled deals" | the "Why?" first line: "I deal his hidden cards at random {w} times and play each out." |
 | "Mondfang" | glossed in "Why?" only: "answer his lead with the Mond, so the Sküs cannot catch it" |
 
-Not used: "key card", "draw his", "solid run" (a tarock "next in rank to another of
+Not used: "cheap", "cheapest", "dear", "dearer", "costs" and "billig", "teuer", "kostet" (a newcomer has not met them: say "worth least", "worth more", "the lowest-value card that wins", "you lose {n}"; a test fails them in any hint string unless this table lists them), "key card", "draw his", "solid run" (a tarock "next in rank to another of
 yours" instead), "open a suit" ("lead"), "ultimo" except after `pagat-ultimo`.
 
 ## 8. The quality bar
@@ -380,7 +380,7 @@ holds.
 | `beneath` | {card} lies on a packet; {n} cards are beneath it. | {cond}: play the packet card, so the card beneath is turned up. | {cond}: das Paketblatt spielen, dann wird das darunter aufgedeckt. | 15/14, 22/19 |
 | `worth-poor` | {led} is a poor trick: {trick_thirds}. | When he leads a card worth {t} or less, do not win it with a king. | Spielt er eine Karte von {t} oder weniger an, nicht mit einem König stechen. | 13/11, 23/19 |
 | `worth-rich` | He led {led}, worth {led_thirds}. | When he leads a card worth 7 thirds or more, take the trick. | Spielt er eine Karte von 7 Dritteln oder mehr an, den Stich holen. | 12/11, 20/18 |
-| `cheap` | {card} wins for less than {alt}. | When two cards win, play the one that costs less. | Stechen zwei Karten, die billigere spielen. | 12/12, 16/13 |
+| `cheap` | {card} wins for less than {alt}. | Following, win or lose with the fewest-points card (the lowest-value card that wins, when you take the trick). | Beim Bedienen mit der punkteärmsten Karte stechen oder abgeben (mit der punkteärmsten stechenden Karte, wenn Sie den Stich holen). | per M5r class wording, `m5r.rs` |
 | `out-void` | He showed no {suit}; {out} tarocks are out. | A suit he lacks, he trumps while a tarock is out: lead another. | Eine Farbe, die ihm fehlt, sticht er, solange ein Tarock draußen ist: eine andere anspielen. | 15/16, 20/22 |
 | `out-master` | Only a tarock can beat {card}. | When he has shown no tarock, your top card of a suit cannot be beaten: lead it. | Hat er kein Tarock gezeigt, ist Ihre höchste Karte einer Farbe nicht zu schlagen: anspielen. | 13/13, 24/22 |
 | `suit` (fact only: contested, 2) | {suit}: {mine} of its points are yours, {out} are out. | none | none | 16/15, none |
@@ -536,3 +536,59 @@ the page `leading` and three page lines; the quality-bar test. Order: the questi
 and the default form with the `hold-pagat` and duplicate fixes (one reviewed
 package), then the contrast and "Why?", then the pages and the brief change, then
 M5r (on approval), then the bar's run.
+
+## 14. Package 1: built (17 Oct 2026)
+
+Decisions on 13: 1 as written (A on a lead is the highest card held, the Sküs
+included); 4 the page `leading` is added later; 5 Mondfang and a kept packet stay
+outside the ladder; 6 `try.1` is replaced later; 7 the 25 / 30 budget stands; 8
+`ask.suit` and tarocks-first carry no rule. 2 and 3 are open.
+
+Built: `ask.rs` (A, the decisive question, the sentence, the facts), the reason
+order (`only-card`, `keep-packet`, `hold-pagat` only when the Pagat is A), the
+wire of 10, the strings and the budget test, the default hint in the table.
+
+Where the build settled what 3 to 10 leave open:
+
+- Wire: `question` is the key string and `keep` a field beside it; `contrast` is
+  one line and `trumped` the second (`vs.lead-trumped`); `answers` is `[]` until the
+  "Why?" is built; `suit` parameters are letters; `hint.ask.*` are the table's
+  keys for the questions.
+- `ans` lines added where 9 has none: `keep-mond-safe` (the Sküs is not out),
+  `keep-skus`, `cheap-lose`, `out-master-tarock`. `ask-differ` is neutral
+  ("{card} was better {b} times, the other {a}") and shorter, to fit the budget.
+- `fact.tarocks-out` counts every tarock neither mine nor played (line 1 of the
+  tab), not `unseen_tarocks()`. `fact.master` reads `Knowledge` (the same cards are
+  out as in the tracker). `fact.his-covers` is not emitted yet.
+- A suit's owner for `ask.suit` is `tutor::SPLIT_SHARE` with `SPLIT_MIN_POINTS`.
+- A leading Pagat is never A, so `hold-pagat` follows only.
+- The default box no longer shows the rule and odds clauses; they belong to the
+  "Why?".
+
+Changes after the review of package 1 (17 Oct 2026, `docs/review/hints-package-1.md`):
+
+- 3.3 `ask.keep` is decisive on a lead only for a key card X or two tarocks, and
+  only where its sentence has a direction (the row above). `ans.keep-mond-play`
+  ("Not while the Sküs is out: play it on his tarock, where it wins.") is the
+  Mond played, `-hold` the Mond kept, `ans.keep-pagat-hold` and `ans.keep-packet`
+  the others; with the Sküs not out the Mond raises no question.
+- A sentence for a yes/no question (`ask.worth`, `ask.keep`, `ask.trumps`) opens
+  with its verdict (Yes, No, Not yet). `ask.trumps` reads "Lead a tarock?" and "Not
+  yet: you hold 6 of the 22 still out." under half of the tarocks still out, "Yes"
+  from half. One count, `tarocks_out`, in every sentence and fact.
+- With no decisive question the hint gives `ans.ask-none`, or `ans.ask-none-even`
+  when the sample sees less than a third of a point between the cards, in place of
+  the plain `lead-*` reasons; a plain reason stands only where no sample was drawn.
+- `so.worth-rich` is told in points ("2⅓ points or more"). It is reached only when
+  X is the sole winner (A is then a loser and `ask.worth` decisive); with another
+  winner `ask.cheap` is asked, though the rule's own trigger is wider.
+- The "Why?" is built (package 2 of the table): `hint.why.label`, then
+  `hint.why.intro`, the contrast, the facts, the rule clause and the odds, the last
+  lines dropped when 90 words are spent. `answers` stays empty; the anchors are on
+  the lines (`data-anchor`) and nothing is highlighted yet.
+- `lead-draw`, `lead-exposed`, `lead-his-none` no longer say "lead {card}".
+
+Plain words (17 Oct 2026): hint strings say "worth least", "worth more" and "the
+lowest-value card that wins" where the notes said cheapest and dearer; in English
+the count's unit is "card point(s)" (`hint.unit.*`), in German Augen. Section 7
+lists the terms; `web3d/test/hinttext.test.js` fails any other price word.

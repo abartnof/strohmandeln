@@ -14,7 +14,7 @@ use serde::Deserialize;
 use serde_json::{json, Map, Value};
 use strohmandeln_ai::cardset::Kind;
 use strohmandeln_ai::explain::Param as HintParam;
-use strohmandeln_ai::hint::hint as ai_hint;
+use strohmandeln_ai::hint::hint_in as ai_hint;
 use strohmandeln_ai::opponent::{Config as AiConfig, Level, Opponent};
 use strohmandeln_ai::review::{explain_last, review_last, review_sitting, Bullet, Param, Review};
 use strohmandeln_ai::style::Style;
@@ -51,6 +51,31 @@ pub fn default_opponent(seed: u64, seat: Seat, level: f64, style: Style) -> Box<
 /// search budget is capped there; `docs/OPPONENT.md`).
 fn browser_config(style: Style) -> AiConfig {
     AiConfig::for_style(style, 0)
+}
+
+/// A hint's parameters as the wire has them: a card is its code, a suit its
+/// letter, the rest whole numbers.
+fn hint_params(params: &[(&'static str, HintParam)]) -> Map<String, Value> {
+    params
+        .iter()
+        .map(|(name, p)| {
+            let v = match p {
+                HintParam::Card(c) => json!(c),
+                HintParam::Int(n) => json!(n),
+                HintParam::Suit(s) => json!(s.letter().to_string()),
+            };
+            ((*name).to_string(), v)
+        })
+        .collect()
+}
+
+/// A sentence of the hint: `{key, params}` (`docs/PROTOCOL.md`, "The hint").
+fn hint_line(l: &strohmandeln_ai::ask::Line) -> Value {
+    let mut v = json!({"key": l.key, "params": hint_params(&l.params)});
+    if let Some((en, de)) = &l.text {
+        v["text"] = json!({"en": en, "de": de});
+    }
+    v
 }
 
 /// The level of the tutor's hint: always the top rung, whole.
@@ -453,11 +478,22 @@ impl Table {
                 "params": {},
                 "rule": null,
                 "odds": null,
+                "question": null,
+                "keep": null,
+                "so": null,
+                "ans": null,
+                "why": null,
             });
         };
         let v = self.my_view();
         let seed = self.sitting.seed() ^ 0x7417_0000_0000_0001;
-        let h = ai_hint(&v, seed, Level::from_f64(HINT_LEVEL), AiConfig::default());
+        let h = ai_hint(
+            &v,
+            seed,
+            Level::from_f64(HINT_LEVEL),
+            AiConfig::default(),
+            &self.sitting.settings(),
+        );
         let action = match &h.action {
             Action::Play { card, .. } => legal
                 .iter()
@@ -466,17 +502,7 @@ impl Table {
                 .unwrap_or(Value::Null),
             other => serde_json::to_value(other).unwrap_or(Value::Null),
         };
-        let params: serde_json::Map<String, Value> = h
-            .params
-            .iter()
-            .map(|(name, p)| {
-                let v = match p {
-                    HintParam::Card(c) => json!(c),
-                    HintParam::Int(n) => json!(n),
-                };
-                ((*name).to_string(), v)
-            })
-            .collect();
+        let params = hint_params(&h.params);
         let odds = h.odds.as_ref().map(|o| {
             json!({"alt": o.alt, "better": o.better, "worlds": o.worlds, "gain_thirds": o.gain_thirds})
         });
@@ -488,6 +514,23 @@ impl Table {
             "params": params,
             "rule": h.rule,
             "odds": odds,
+            "question": h.question,
+            "keep": h.keep,
+            "so": h.so.as_ref().map(hint_line),
+            "ans": h.ans.as_ref().map(hint_line),
+            "why": {
+                "alt": h.why.alt,
+                "answers": [],
+                "contrast": h.why.contrast.as_ref().map(hint_line),
+                "trumped": h.why.trumped.as_ref().map(hint_line),
+                "facts": h.why.facts.iter().map(|f| {
+                    let mut v = hint_line(&f.line);
+                    v["anchor"] = json!(f.anchor);
+                    v
+                }).collect::<Vec<_>>(),
+                "rule": h.why.rule.as_ref().map(|r| json!({"id": r.id, "p": r.p, "n": r.n, "late": r.late})),
+                "odds": odds,
+            },
         })
     }
 
@@ -1429,6 +1472,57 @@ mod tests {
         h.show(|t| t.tracker());
         h.render();
         assert_eq!(out(&h), before);
+    }
+
+    #[test]
+    fn the_hint_carries_the_question_the_sentence_and_the_why() {
+        let line = |v: &Value| v["key"].is_string() && v["params"].is_object();
+        let (mut asked, mut why_facts) = (0, 0);
+        let mut h = host(r#"{"seed":7,"touren":3,"level":2}"#);
+        for _ in 0..40 {
+            h.render();
+            if out(&h)["state"]["prompt"] == "over" {
+                break;
+            }
+            if out(&h)["state"]["prompt"] == "opponent" {
+                h.show(|t| t.hint());
+                let r = out(&h);
+                // Without a move the new fields are null too.
+                assert!(r["question"].is_null() && r["so"].is_null() && r["ans"].is_null());
+                assert!(r["why"].is_null());
+                h.step();
+                continue;
+            }
+            h.show(|t| t.hint());
+            let r = out(&h);
+            if r["hint"]["action"] == "play" {
+                assert!(line(&r["ans"]), "a play always has a because: {r}");
+                assert!(r["so"].is_null() || line(&r["so"]));
+                let q = r["question"].as_str();
+                assert!(q.is_none_or(|q| q.starts_with("ask.")), "{r}");
+                assert_eq!(q == Some("ask.keep"), r["keep"].is_string(), "{r}");
+                let why = &r["why"];
+                assert!(why["answers"].is_array() && why["facts"].is_array());
+                assert!(why["rule"].is_null() || why["rule"]["id"].is_string());
+                assert_eq!(why["odds"], r["odds"]);
+                for f in why["facts"].as_array().unwrap() {
+                    assert!(line(f) && f["anchor"].is_string(), "{f}");
+                    why_facts += 1;
+                }
+                if !why["contrast"].is_null() {
+                    assert!(line(&why["contrast"]));
+                    assert!(why["alt"].is_string());
+                }
+                asked += usize::from(q.is_some());
+            }
+            let a = if r["hint"]["action"] == "play" {
+                json!({"action":"play","card":r["hint"]["card"]})
+            } else {
+                r["hint"].clone()
+            };
+            assert_eq!(h.send(&a.to_string()), 1);
+        }
+        assert!(asked > 0 && why_facts > 0, "{asked} {why_facts}");
     }
 
     #[test]

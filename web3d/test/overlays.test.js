@@ -22,6 +22,13 @@ test("one layer per press, topmost first: dialogs, settings, slate, score list, 
   assert.equal(escapeTarget(s), null);
 });
 
+test("an open Why? closes first, then the layers beneath it; a dialog still comes before it", () => {
+  assert.deepEqual(at({ why: true }), { kind: "why" });
+  assert.deepEqual(at({ why: true, settings: true, slate: true, tracker: true, chosen: true }), { kind: "why" });
+  assert.deepEqual(at({ why: true, dialogs: ["help"] }), { kind: "dialog", id: "help" });
+  assert.deepEqual(at({ settings: true }), { kind: "settings" });
+});
+
 test("the topmost dialog is the last opened", () => {
   assert.deepEqual(at({ dialogs: ["page", "help"] }), { kind: "dialog", id: "help" });
   assert.deepEqual(at({ dialogs: ["clear"], settings: true }), { kind: "dialog", id: "clear" });
