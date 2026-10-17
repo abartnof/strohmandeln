@@ -3,6 +3,7 @@
 // grid of cells, a legend, the learner's lines and the screen reader's
 // sentences, in the current language. The engine decides the masters, the
 // voids and the points; this holds no rule of play, only words and layout.
+import { hintsOn } from "./tutor.js";
 import { GLYPH, courtLabels, parseCode, tarockNumeral } from "./tarockfaces.js";
 
 const SUITS = ["h", "d", "c", "s"];
@@ -19,17 +20,15 @@ const STATES = ["mine", "played", "theirs", "out"];
 
 // Shown while Hints is on, the setting is on, and the Kibitzer is not muted
 // (the mute is the tutor's, so with the tutor off it does not apply).
-export const trackerVisible = (prefs) => Boolean(prefs.hints && prefs.tracker && !(prefs.tutor && prefs.muted));
+export const trackerVisible = (prefs) => Boolean(hintsOn(prefs) && prefs.tracker);
 
 // The panel is for a wide window held sideways: upright or 700 px and under it
 // is not shown, and the engine is not asked (6.6.6; tracker.css hides the same).
 export const trackerFits = ({ width, height }) => width > 700 && width / height > 0.85;
 
-// Open or folded: the person's choice; unset, open on a large window.
-export function trackerOpen(prefs, { width, height }) {
-  if (typeof prefs.trackerFolded === "boolean") return !prefs.trackerFolded;
-  return width >= 900 && height >= 600;
-}
+// Open or folded: folded at the start of every deal and on load, like the score
+// HUD's by-deal list; open only once the person unfolds it. Nothing is saved.
+export const trackerOpen = ({ unfolded }) => unfolded === true;
 
 // A card as the grid and the lines write it: a suit's glyph and rank (K Q C J
 // or K D C B), a tarock's Roman numeral, "Sküs".

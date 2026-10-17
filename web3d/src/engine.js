@@ -29,6 +29,8 @@ export async function loadEngine(bytes, onTrap) {
       explain: () => call("explain"),
       tracker: () => call("tracker"),
       audit: () => call("audit"),
+      // The ids the new-sitting screen offers besides Normal and Random (docs/PROTOCOL.md).
+      styles: () => call("styles")?.styles ?? [],
       // The tutor (docs/PROTOCOL.md "The tutor"); stateless but for the focus.
       ...tutorApi(call, callNumber),
     },
