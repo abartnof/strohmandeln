@@ -354,3 +354,37 @@ Shoulds (18): 1.6, 1.7, 1.8, 1.9 (Rückhand = dealer, answered), 2.3, 2.4, 3.2,
 3.3, 3.4, 4.4, 4.5, 4.6, 5.1, 5.2, 5.3, 6.1, 6.2, 7.1.
 
 Nits: 1.10, 5.4, 7.2.
+
+## Fixes (17 Oct 2026)
+
+`docs/STYLES.md` revised; no code.
+
+| Item | Fix |
+|---|---|
+| 1.1 | `guard-mond` moved to Bermann and MS; Ulmann gets `cash-mond` only; research/16 correction listed (STYLES 7). |
+| 1.2 | Ulmann's Pagat hold and trick-27 claims dropped; `hunt-pagat` is `draw_from` (10 U, 12 MS; Normal 7 rung 2, 6 rung 3). |
+| 1.3 | Bermann: the `low_shown < 2` exception removed (T, reading stated); sixth contradiction listed for research/16. |
+| 1.4 | Writers carry T/I only; every parameter tagged; emphasis multipliers moved to the temperaments (E allowed there). |
+| 1.5 | Row 3 restated; Werner and Bermann `draw_trumps` changes dropped. |
+| 1.6 | "Five disagreements" claim removed; counting stays not modelled. |
+| 1.7 | Werner's bid is a sufficient condition read as the rule (I); the pass-means-at-most-5-tarocks exploit removed. |
+| 1.8 | Bermann: no tarock minimum is I; "every queen" now "queens as figures"; `spare-lead` limited to the one position of Be 150-151. |
+| 1.9 | Rückhand is the dealer (U 70, W 130, RULES 3.2); the stricter bid applies only to the hand type U names. |
+| 1.10 | No years in labels. |
+| 2.1, 2.2 | Stage 0 (divergence, bid rate) added before any tournament; the tells gate redefined (sitting window, deal-record features, one-vs-one cross-validated logistic, Normal v Normal null control). |
+| 2.3 | Rung-4 bid margin calibrated to the style rule's bid share (stage 0). |
+| 2.4 | Bid rates reported; literal v anchored is pending decision 5. |
+| 3.1 | Level 1's 12 weights, bid and constants given; a test per level. |
+| 3.2 | 1.5 and 2.5 merged now; 3.5 kept; consts become config fields (listed). |
+| 3.3 | A readable-not-random check, level 1 v random, level 2 v level 1; playtest is the maintainer's. |
+| 3.4 | Side effects of the half levels listed (tests, tournament specs, speed table, golden, saved sittings). |
+| 4.2 | `--negligible 1.0`; claims stated one-sided. |
+| 4.3 | Null runs planned at the maximum. |
+| 4.4 | One-sided claim with the `negligible` bound; families gated; a fresh-seed repeat for any shipped counter. |
+| 4.5 | Rung-4 exploits only where stage 0 shows divergence. |
+| 4.6 | Staged plan with native timings; stages over about 30 min flagged for approval. |
+| 5.1-5.3 | `drawn` authoritative; `bad-record` cases; `reveal` flag in the engine; headerless is `normal`; versions stay; golden re-recorded; abandoned Random reveals on leaving. |
+| 6.1 | No `style-tell` group; tells through the brief; the group is pending decision 2. |
+| 6.2 | `opponent_unnamed` is written first, test-first. |
+| 7.1 | Draft narrative removed; decisions carry date and source; pending decisions list is short. |
+| 7.2 | Writers in a table (parameter, value, text, tag). |
