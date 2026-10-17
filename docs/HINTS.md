@@ -536,3 +536,31 @@ the page `leading` and three page lines; the quality-bar test. Order: the questi
 and the default form with the `hold-pagat` and duplicate fixes (one reviewed
 package), then the contrast and "Why?", then the pages and the brief change, then
 M5r (on approval), then the bar's run.
+
+## 14. Package 1: built (17 Oct 2026)
+
+Decisions on 13: 1 as written (A on a lead is the highest card held, the Sküs
+included); 4 the page `leading` is added later; 5 Mondfang and a kept packet stay
+outside the ladder; 6 `try.1` is replaced later; 7 the 25 / 30 budget stands; 8
+`ask.suit` and tarocks-first carry no rule. 2 and 3 are open.
+
+Built: `ask.rs` (A, the decisive question, the sentence, the facts), the reason
+order (`only-card`, `keep-packet`, `hold-pagat` only when the Pagat is A), the
+wire of 10, the strings and the budget test, the default hint in the table.
+
+Where the build settled what 3 to 10 leave open:
+
+- Wire: `question` is the key string and `keep` a field beside it; `contrast` is
+  one line and `trumped` the second (`vs.lead-trumped`); `answers` is `[]` until the
+  "Why?" is built; `suit` parameters are letters; `hint.ask.*` are the table's
+  keys for the questions.
+- `ans` lines added where 9 has none: `keep-mond-safe` (the Sküs is not out),
+  `keep-skus`, `cheap-lose`, `out-master-tarock`. `ask-differ` is neutral
+  ("{card} was better {b} times, the other {a}") and shorter, to fit the budget.
+- `fact.tarocks-out` counts every tarock neither mine nor played (line 1 of the
+  tab), not `unseen_tarocks()`. `fact.master` reads `Knowledge` (the same cards are
+  out as in the tracker). `fact.his-covers` is not emitted yet.
+- A suit's owner for `ask.suit` is `tutor::SPLIT_SHARE` with `SPLIT_MIN_POINTS`.
+- A leading Pagat is never A, so `hold-pagat` follows only.
+- The default box no longer shows the rule and odds clauses; they belong to the
+  "Why?".
