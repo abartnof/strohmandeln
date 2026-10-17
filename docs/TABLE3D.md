@@ -549,10 +549,10 @@ the speech and the holds are unchanged, so nothing is missed.
 
 ### 3.10 Keyboard and screen reader
 
-3.10.1 The page is operable by keyboard alone. `Tab` order: the move bar; the hand
+3.10.1 The page is operable by keyboard alone. `Tab` order: the score HUD's chevron, then the cards-out card's chevron under it (6.6;
+the `.info` column comes first in the page); the move bar; the hand
 (one tab stop, arrow keys move within it, left/right, `Home`/`End`); the
-packets (one stop, `1 2 3` choose a packet, or arrows); the slate tab; the settings;
-the score HUD's chevron, then the cards-out card's chevron under it (6.6). Keys: `Enter` or `Space` choose or play the focused card; `A`
+packets (one stop, `1 2 3` choose a packet, or arrows); the slate tab; the settings. Keys: `Enter` or `Space` choose or play the focused card; `A`
 announce (first held honour); `T` take, `W` weiter; `S` the slate; `H` the hint;
 `M` mute the tutor (6.3); `?` the keys list; `Esc` closes the topmost overlay (3.10.5).
 Keys are discoverable under `?`.
@@ -1123,7 +1123,7 @@ the tracker is never called a slate.)
 6.6.2 **When it shows.** Hints on (7.1), the setting "Cards out" on (default on), the
 tutor not muted (as the hint, 6.3.4), and a deal under way. It is a second HUD card
 under the score HUD, the same width and look, with the HUD's own chevron
-(`aria-expanded`, rotating when open); the chevron or the title row opens and closes
+(`aria-expanded`, rotating when open); the chevron (the keyboard control) or the title row (pointer only) opens and closes
 it. Its name says what it does: "Show the cards out" / "Hide the cards out"
 ("Ausgespielte Karten zeigen" / "ausblenden"). Closed it is the title "Cards out" /
 "Ausgespielt" and the chevron; open it adds the lines, grid, legend and the screen
@@ -1194,7 +1194,7 @@ fan (`--tracker-max`). The table is framed below the tour line, not the card, so
 opening it does not move the cards. Mirrored at the right in left-handed mode with
 the column (17 Oct 2026, the maintainer: a native HUD under the scoring HUD, closed by
 default; this replaces the 400 px panel placed by measuring the HUD). The "not 36"
-chips, which show for 3 s while the count is read, lie over it. Held upright, or in a window under
+chips, which show for 3 s while the count is read, sit at the table's centre and are painted under the card (`.info` is z 13; review tracker-hud-card.md 1). Held upright, or in a window under
 700 px wide, it is not shown at all: **the phone layout is deferred** until the
 maintainer has played the game on a phone and decided what the table should carry
 there. Nothing in the tracker is phone-specific. Browser checks hold the rectangles
