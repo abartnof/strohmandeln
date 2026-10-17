@@ -93,10 +93,10 @@ impl Hint {
 /// Every sentence key of the default hint and the "Why?" (`docs/MESSAGES.md`,
 /// "Hint sentences"), besides the `reason.*` keys of [`KEYS`].
 pub const SENTENCES: &[&str] = &[
-    "ans.keep-mond",
-    "ans.keep-mond-safe",
-    "ans.keep-pagat",
-    "ans.keep-skus",
+    "ans.keep-mond-play",
+    "ans.keep-mond-hold",
+    "ans.keep-pagat-hold",
+    "ans.keep-packet",
     "ans.beneath",
     "ans.worth-poor",
     "ans.worth-rich",
@@ -104,11 +104,13 @@ pub const SENTENCES: &[&str] = &[
     "ans.cheap-lose",
     "ans.ask-differ",
     "ans.ask-none",
+    "ans.ask-none-even",
     "ans.out-void",
     "ans.out-master",
     "ans.out-master-tarock",
     "ans.suit",
-    "ans.trumps",
+    "ans.trumps-no",
+    "ans.trumps-yes",
     "so.worth-rich",
     "fact.tarocks-out",
     "fact.skus-out",
@@ -271,6 +273,8 @@ pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
     let evidence = Evidence {
         differ: follow.map(|f| (f.better, f.alt_better, f.worlds)),
         none: odds.as_ref().map(|o| (o.better, o.worlds, o.gain_thirds)),
+        // Solved, and the search sees less than a third of a point between them.
+        even: follow.is_some() && odds.is_none(),
     };
     let comp = compose(&k, card, &evidence);
     // A hint always has a "because": the plain local reason stands where the

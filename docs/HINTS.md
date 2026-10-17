@@ -134,7 +134,7 @@ opposite sides:
 
 | Question | Decisive when |
 |---|---|
-| `ask.keep` | exactly one of X, A is a **key card** (Sküs, Mond, Pagat; or a card that keeps a packet against his Pagat ultimo, `rung2::reserved_packet`); `{keep}` is that card |
+| `ask.keep` | exactly one of X, A is a **key card** (Sküs, Mond, Pagat; or a card that keeps a packet against his Pagat ultimo, `rung2::reserved_packet`); `{keep}` is that card. **On a lead** only when X is a key card or X and A are both tarocks. **Only where the sentence can point the way of the play** (17 Oct 2026, review): the Mond played on his tarock with the Sküs out; the Mond held with the Sküs out; the Pagat held with 8 or more tarocks; a packet kept against his Pagat ultimo |
 | `ask.beneath` | exactly one of X, A is a cover (`Knowledge::covers`) |
 | `ask.out` | exactly one of X, A is a **master** (nothing out beats it: `tracker` `Group.master`, the hint calls the tracker), or exactly one leads a suit he has shown void |
 | `ask.suit` | X and A are both suit cards and differ in whose the suit is (mine, his, shared evenly) |
@@ -564,3 +564,26 @@ Where the build settled what 3 to 10 leave open:
 - A leading Pagat is never A, so `hold-pagat` follows only.
 - The default box no longer shows the rule and odds clauses; they belong to the
   "Why?".
+
+Changes after the review of package 1 (17 Oct 2026, `docs/review/hints-package-1.md`):
+
+- 3.3 `ask.keep` is decisive on a lead only for a key card X or two tarocks, and
+  only where its sentence has a direction (the row above). `ans.keep-mond-play`
+  ("Not while the Sküs is out: play it on his tarock, where it wins.") is the
+  Mond played, `-hold` the Mond kept, `ans.keep-pagat-hold` and `ans.keep-packet`
+  the others; with the Sküs not out the Mond raises no question.
+- A sentence for a yes/no question (`ask.worth`, `ask.keep`, `ask.trumps`) opens
+  with its verdict (Yes, No, Not yet). `ask.trumps` reads "Lead a tarock?" and "Not
+  yet: you hold 6 of the 22 still out." under half of the tarocks still out, "Yes"
+  from half. One count, `tarocks_out`, in every sentence and fact.
+- With no decisive question the hint gives `ans.ask-none`, or `ans.ask-none-even`
+  when the sample sees less than a third of a point between the cards, in place of
+  the plain `lead-*` reasons; a plain reason stands only where no sample was drawn.
+- `so.worth-rich` is told in points ("2⅓ points or more"). It is reached only when
+  X is the sole winner (A is then a loser and `ask.worth` decisive); with another
+  winner `ask.cheap` is asked, though the rule's own trigger is wider.
+- The "Why?" is built (package 2 of the table): `hint.why.label`, then
+  `hint.why.intro`, the contrast, the facts, the rule clause and the odds, the last
+  lines dropped when 90 words are spent. `answers` stays empty; the anchors are on
+  the lines (`data-anchor`) and nothing is highlighted yet.
+- `lead-draw`, `lead-exposed`, `lead-his-none` no longer say "lead {card}".

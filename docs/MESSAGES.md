@@ -68,9 +68,9 @@ English and German the table shows.
 | `lose-other` | `card`, `led`, `alt`, `given_thirds` | Nothing beats {led}: {card} goes for {given_thirds}; {alt} would be cheaper. | Nichts sticht {led}: {card} geht für {given_thirds}; {alt} wäre billiger. |
 | `lose-packet` | `card`, `led`, `given_thirds` | Nothing beats {led}: give up the face-up packet card {card} ({given_thirds}) to see what lies beneath. | Nichts sticht {led}: das offene Paketblatt {card} ({given_thirds}) abgeben, um das darunter zu sehen. |
 | `lead-king` | `card`, `out` | {card} cannot be beaten in its suit: only a tarock takes it, and {out} tarocks are unseen. | {card} ist in seiner Farbe nicht zu schlagen: nur ein Tarock holt es, und {out} Tarock sind unbekannt. |
-| `lead-draw` | `card`, `mine`, `out` | You hold {mine} tarocks to {out} unseen: lead {card} to draw his trumps. | Sie halten {mine} Tarock gegen {out} unbekannte: {card} anspielen, um seine Tarock zu ziehen. |
-| `lead-exposed` | `card` | An exposed queen or cavall goes at once: lead {card}. | Eine offene Dame oder ein Cavall geht gleich: {card} anspielen. |
-| `lead-his-none` | `card` | He shows no packet card in this suit: lead {card}. | Er zeigt in dieser Farbe kein offenes Paketblatt: {card} anspielen. |
+| `lead-draw` | `mine`, `out` | You hold {mine} tarocks to {out} unseen, enough to draw his trumps. | Sie halten {mine} Tarock gegen {out} unbekannte, genug, um seine Tarock zu ziehen. |
+| `lead-exposed` | none | An exposed queen or cavall goes at once. | Eine offene Dame oder ein Cavall geht gleich. |
+| `lead-his-none` | none | He shows no packet card in this suit. | Er zeigt in dieser Farbe kein offenes Paketblatt. |
 | `lead-trump-void` | `card`, `out` | He has shown no tarock in hand, so only one from a packet could answer {card}; {out} tarocks are unseen. | Er hat kein Tarock in der Hand gezeigt, also könnte nur eines aus einem Paket {card} beantworten; {out} Tarock sind unbekannt. |
 | `lead-rate` | `card`, `wins`, `worlds` | {card} takes the trick in {wins} of {worlds} sampled deals. | {card} gewinnt den Stich in {wins} von {worlds} durchgespielten Austeilungen. |
 | `lead-cheap` | `card`, `wins`, `worlds`, `cost_thirds` | {card} usually loses the trick (it wins in {wins} of {worlds} sampled deals), but it costs least: {cost_thirds}. | {card} verliert den Stich meist (es gewinnt in {wins} von {worlds} durchgespielten Austeilungen), kostet aber am wenigsten: {cost_thirds}. |
@@ -116,7 +116,11 @@ card `keep` names, with its article ("the Mond"). A parameter ending `_thirds` i
 told in points, a `suit` by its name, the rest as for the reasons. Word budget
 of headline, question and sentence: 25 in English, 30 in German, a placeholder one word
 (`web3d/test/hinttext.test.js`). A reason key (`reason.<key>`) may stand as the
-sentence where the question has none.
+sentence where the sample has not been drawn. The sentence for a yes/no question
+(`ask.worth`, `ask.keep`, `ask.trumps`) opens with its verdict (Yes, No, Not yet).
+The "Why?" control is `hint.why.label`; its first line is `hint.why.intro`
+("I deal his hidden cards at random {w} times and play each out.") over the
+contrast, the facts, the rule clause and the odds, at most 90 words.
 
 | Key | Parameters | English | Deutsch |
 |---|---|---|---|
@@ -127,7 +131,7 @@ sentence where the question has none.
 | `ask.beneath` | none | What lies beneath? | Was liegt darunter? |
 | `ask.out` | none | What can still beat it? | Was kann sie noch schlagen? |
 | `ask.suit` | none | Whose suit is this? | Wessen Farbe ist das? |
-| `ask.trumps` | none | Should I lead a tarock? | Soll ich ein Tarock anspielen? |
+| `ask.trumps` | none | Lead a tarock? | Tarock anspielen? |
 
 `so` is a rule that passed M5 (`docs/HINTS.md` 5); `ans` is the fact; `fact.*`
 and `vs.*` are the "Why?" (`facts` carry an `anchor`, `line1` to `line4` or `row:<kind>`,
@@ -135,26 +139,28 @@ the Cards-out tab's line or row).
 
 | Key | Parameters | English | Deutsch |
 |---|---|---|---|
-| `ans.keep-mond` | none | The Sküs has not been played. | Der Sküs ist noch nicht gespielt. |
-| `ans.keep-mond-safe` | none | The Sküs is not out. | Der Sküs ist nicht mehr draußen. |
-| `ans.keep-pagat` | `tarocks` | You hold {tarocks} tarocks. | Sie halten {tarocks} Tarock. |
-| `ans.keep-skus` | `out`, `mine` | {out} tarocks are still out; you hold {mine}. | Noch {out} Tarock sind draußen; Sie halten {mine}. |
+| `ans.keep-mond-play` | none | Not while the Sküs is out: play it on his tarock, where it wins. | Nicht, solange der Sküs draußen ist: ihn auf sein Tarock spielen, wo er sticht. |
+| `ans.keep-mond-hold` | none | Not yet: while the Sküs is out, the Mond is for his tarock leads, not yours. | Noch nicht: solange der Sküs draußen ist, gehört der Mond zu seinen Tarock-Anspielen, nicht zu Ihren. |
+| `ans.keep-pagat-hold` | `tarocks` | Yes: with {tarocks} tarocks you can keep it for the last trick. | Ja: mit {tarocks} Tarock lässt er sich für den letzten Stich behalten. |
+| `ans.keep-packet` | none | Yes, keep it: his Pagat ultimo threatens. | Ja, behalten: sein Pagat ultimo droht. |
 | `ans.beneath` | `card`, `n` | {card} lies on a packet; {n} cards are beneath it. | {card} liegt auf einem Paket; darunter liegen {n} Karten. |
-| `ans.worth-poor` | `led`, `trick_thirds` | {led} is a poor trick: {trick_thirds}. | {led} ist ein armer Stich: {trick_thirds}. |
-| `ans.worth-rich` | `led`, `led_thirds` | He led {led}, worth {led_thirds}. | Er spielte {led} an, im Wert von {led_thirds}. |
+| `ans.worth-poor` | `led`, `trick_thirds` | No: {led} is a poor trick: {trick_thirds}. | Nein: {led} ist ein armer Stich: {trick_thirds}. |
+| `ans.worth-rich` | `led`, `led_thirds` | Yes: he led {led}, worth {led_thirds}. | Ja: er spielte {led} an, im Wert von {led_thirds}. |
 | `ans.cheap` | `card`, `alt` | {card} wins for less than {alt}. | {card} sticht billiger als {alt}. |
 | `ans.cheap-lose` | `card`, `alt` | {card} costs less than {alt}. | {card} kostet weniger als {alt}. |
 | `ans.ask-differ` | `card`, `a`, `b`, `w` | The books prefer the cheaper card; in {w} sampled deals {card} was better {b} times, the other {a}. | Die Bücher bevorzugen die billigere Karte; in {w} durchgespielten Austeilungen war {card} {b}-mal besser, die andere {a}-mal. |
 | `ans.ask-none` | `better`, `worlds`, `gain_thirds` | No question settles this one; the sampled deals favour it: {better} of {worlds} came out {gain_thirds} better. | Keine Frage entscheidet das; die durchgespielten Austeilungen sprechen dafür: {better} von {worlds} waren um {gain_thirds} besser. |
-| `ans.out-void` | `suit`, `out` | He showed no {suit}; {out} tarocks are out. | Er zeigte keine {suit}; {out} Tarock sind draußen. |
+| `ans.ask-none-even` | none | No question settles this one, and the sampled deals see little between the cards. | Keine Frage entscheidet das, und die durchgespielten Austeilungen sehen kaum einen Unterschied. |
+| `ans.out-void` | `suit`, `out` | He showed no {suit}; {out} tarocks are out. | Er zeigte kein {suit}; {out} Tarock sind draußen. |
 | `ans.out-master` | `card` | Only a tarock can beat {card}. | Nur ein Tarock kann {card} schlagen. |
 | `ans.out-master-tarock` | `card` | Nothing higher than {card} is out. | Nichts Höheres als {card} ist draußen. |
 | `ans.suit` | `suit`, `mine_thirds`, `out_thirds` | {suit}: yours {mine_thirds}, out {out_thirds}. | {suit}: Ihre {mine_thirds}, draußen {out_thirds}. |
-| `ans.trumps` | `mine`, `out` | You hold {mine} tarocks; {out} are unseen. | Sie halten {mine} Tarock; {out} sind unbekannt. |
-| `so.worth-rich` | none | When he leads a card worth 7 thirds or more, take the trick. | Spielt er eine Karte von 7 Dritteln oder mehr an, den Stich holen. |
+| `ans.trumps-no` | `mine`, `total` | Not yet: you hold {mine} of the {total} still out. | Noch nicht: Sie halten {mine} der {total} Tarock im Spiel. |
+| `ans.trumps-yes` | `mine`, `total` | Yes: you hold {mine} of the {total} still out. | Ja: Sie halten {mine} der {total} Tarock im Spiel. |
+| `so.worth-rich` | none | When he leads a card worth 2⅓ points or more, take the trick. | Spielt er eine Karte von 2⅓ Augen oder mehr an, den Stich holen. |
 | `fact.tarocks-out` | `out`, `mine` | {out} tarocks are still out; you hold {mine}. | Noch {out} Tarock sind draußen; Sie halten {mine}. |
 | `fact.skus-out` | none | The Sküs has not been played. | Der Sküs ist noch nicht gespielt. |
-| `fact.his-void` | `suit` | He showed no {suit}. | Er zeigte keine {suit}. |
+| `fact.his-void` | `suit` | He showed no {suit}. | Er zeigte kein {suit}. |
 | `fact.master` | `card` | Nothing higher than your {card} is out. | Nichts Höheres als {card} ist draußen. |
 | `fact.split` | `suit`, `mine_thirds`, `out_thirds` | {suit}: yours {mine_thirds}, out {out_thirds}. | {suit}: Ihre {mine_thirds}, draußen {out_thirds}. |
 | `fact.beneath` | `n` | {n} cards lie beneath it. | Darunter liegen {n} Karten. |

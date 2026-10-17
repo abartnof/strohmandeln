@@ -6,7 +6,7 @@ use crate::cardset::{leader_wins, CardSet, Kind};
 use crate::explain::Param;
 use crate::know::Knowledge;
 use crate::rules::CANDIDATES;
-use crate::rung2::reserved_packet;
+use crate::rung2::{reserved_packet, STRONG_TAROCKS};
 use crate::tutor::{suit_share, SPLIT_MIN_POINTS, SPLIT_SHARE};
 use strohmandeln_core::cards::{Card, Suit};
 use strohmandeln_core::types::Action;
@@ -33,6 +33,8 @@ pub struct Evidence {
     pub differ: Option<(u32, u32, u32)>,
     /// The search's own ranking of X: better in `.0` of `.1` deals by `.2`.
     pub none: Option<(u32, u32, u32)>,
+    /// The sample saw no real difference between X and the best other card.
+    pub even: bool,
 }
 
 /// The default hint after the headline.
@@ -158,10 +160,42 @@ fn owner(k: &Knowledge, suit: Suit) -> Owner {
     }
 }
 
+/// The four ways `ask.keep` can be asked with a sentence that points the way of
+/// the play (`docs/HINTS.md` 3.3): the Mond played on his tarock while the Sküs
+/// is out, the Mond held then, the Pagat held by a strong hand, a packet kept
+/// against his Pagat ultimo. On a lead only a key card X, or a choice between
+/// two tarocks, raises it.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum KeepCase {
+    MondPlay,
+    MondHold,
+    PagatHold,
+    Packet,
+}
+
+fn keep_case(k: &Knowledge, x: Card, a: Card) -> Option<KeepCase> {
+    if k.lead.is_none() && !(key_card(k, x) || (x.is_tarock() && a.is_tarock())) {
+        return None;
+    }
+    if x == Card::MOND && k.lead.is_some_and(Card::is_tarock) && wins(k, x) && skus_out(k) {
+        return Some(KeepCase::MondPlay);
+    }
+    if a == Card::MOND && x != Card::MOND && skus_out(k) {
+        return Some(KeepCase::MondHold);
+    }
+    if a == Card::PAGAT && x != Card::PAGAT && k.my_tarocks() >= STRONG_TAROCKS {
+        return Some(KeepCase::PagatHold);
+    }
+    if !key_card(k, x) && reserved_packet(k).is_some_and(|i| k.covers[i] == Some(a)) {
+        return Some(KeepCase::Packet);
+    }
+    None
+}
+
 fn decides(k: &Knowledge, x: Card, a: Card, q: &str) -> bool {
     let leading = k.lead.is_none();
     match q {
-        "ask.keep" => key_card(k, x) != key_card(k, a),
+        "ask.keep" => keep_case(k, x, a).is_some(),
         "ask.beneath" => k.is_cover(x) != k.is_cover(a),
         "ask.out" => {
             leading && (is_master(k, x) != is_master(k, a) || void_lead(k, x) != void_lead(k, a))
@@ -289,49 +323,41 @@ fn packet_of(k: &Knowledge, c: Card) -> Option<usize> {
 }
 
 fn none_line(ev: &Evidence) -> Option<Line> {
-    ev.none.map(|(better, worlds, gain)| {
-        line(
+    if let Some((better, worlds, gain)) = ev.none {
+        return Some(line(
             "ans.ask-none",
             &[
                 ("better", num(better)),
                 ("worlds", num(worlds)),
                 ("gain_thirds", num(gain)),
             ],
-        )
-    })
+        ));
+    }
+    ev.even.then(|| line("ans.ask-none-even", &[]))
 }
 
 type Answer = (Option<Line>, Option<Card>, Vec<Fact>);
 
-fn keep_answer(k: &Knowledge, kept: Card) -> (Line, Vec<Fact>) {
+fn keep_answer(k: &Knowledge, case: KeepCase) -> (Line, Vec<Fact>) {
     let mut facts = Vec::new();
-    let ans = match kept {
-        Card::MOND => {
-            if skus_out(k) {
-                facts.push(fact("fact.skus-out", &[], "row:trump"));
-            }
+    let ans = match case {
+        KeepCase::MondPlay | KeepCase::MondHold => {
+            facts.push(fact("fact.skus-out", &[], "row:trump"));
             facts.push(tarocks_fact(k));
             line(
-                if skus_out(k) {
-                    "ans.keep-mond"
+                if case == KeepCase::MondPlay {
+                    "ans.keep-mond-play"
                 } else {
-                    "ans.keep-mond-safe"
+                    "ans.keep-mond-hold"
                 },
                 &[],
             )
         }
-        Card::PAGAT => {
+        KeepCase::PagatHold => {
             facts.push(tarocks_fact(k));
-            line("ans.keep-pagat", &[("tarocks", int(k.my_tarocks()))])
+            line("ans.keep-pagat-hold", &[("tarocks", int(k.my_tarocks()))])
         }
-        Card::SKUS => {
-            facts.push(tarocks_fact(k));
-            line(
-                "ans.keep-skus",
-                &[("out", int(tarocks_out(k))), ("mine", int(k.my_tarocks()))],
-            )
-        }
-        _ => line("reason.keep-packet", &[]),
+        KeepCase::Packet => line("ans.keep-packet", &[]),
     };
     (ans, facts)
 }
@@ -424,8 +450,9 @@ fn cheap_answer(k: &Knowledge, x: Card, a: Card, ev: &Evidence) -> Option<Line> 
 fn answer(k: &Knowledge, x: Card, a: Card, q: &str, ev: &Evidence) -> Answer {
     match q {
         "ask.keep" => {
-            let kept = if key_card(k, x) { x } else { a };
-            let (ans, facts) = keep_answer(k, kept);
+            let case = keep_case(k, x, a).expect("decisive");
+            let kept = if case == KeepCase::MondPlay { x } else { a };
+            let (ans, facts) = keep_answer(k, case);
             (Some(ans), Some(kept), facts)
         }
         "ask.beneath" => {
@@ -456,13 +483,13 @@ fn answer(k: &Knowledge, x: Card, a: Card, q: &str, ev: &Evidence) -> Answer {
             )
         }
         "ask.trumps" => {
-            let ans = line(
-                "ans.trumps",
-                &[
-                    ("mine", int(k.my_tarocks())),
-                    ("out", int(k.unseen_tarocks())),
-                ],
-            );
+            let (mine, total) = (k.my_tarocks(), k.my_tarocks() + tarocks_out(k));
+            let key = if mine * 2 >= total {
+                "ans.trumps-yes"
+            } else {
+                "ans.trumps-no"
+            };
+            let ans = line(key, &[("mine", int(mine)), ("total", int(total))]);
             (Some(ans), None, vec![tarocks_fact(k)])
         }
         "ask.worth" => (Some(worth_answer(k, x, a)), None, Vec::new()),
@@ -571,7 +598,7 @@ mod tests {
 
     #[test]
     fn the_decisive_question_follows_the_table() {
-        // keep: the Mond (key) against III.
+        // keep: the Mond (key) against III, with the Sküs out and a tarock led.
         let k = uhu_led();
         assert_eq!(qs(&k, "T21", "T3")[0], "ask.keep");
         // beneath: a cover against a hand card.
@@ -611,7 +638,7 @@ mod tests {
     fn a_passed_rule_outranks_the_teaching_order() {
         // Following: keep (Pagat) and worth are both decisive; with no rule
         // the teaching order puts keep first; with worth's rule firing, worth.
-        let hand = ["T1", "T8", "T9"];
+        let hand = ["T1", "T3", "T4", "T5", "T6", "T7", "T8", "T9"];
         let k = know(&hand, NO, NO, &[], Some("Kh"));
         // X = T8 wins the king (13 thirds), A = the Pagat... a winner too.
         let x = c("T8");
@@ -641,14 +668,14 @@ mod tests {
         assert_eq!(comp.keep, Some(Card::MOND));
         // The Mond rule has not passed: the fact, no rule.
         assert_eq!(comp.so, None);
-        assert_eq!(comp.ans.as_ref().unwrap().key, "ans.keep-mond");
+        assert_eq!(comp.ans.as_ref().unwrap().key, "ans.keep-mond-play");
         let text = format!("{comp:?}");
         assert!(!text.contains("PAGAT") && !text.contains("pagat"), "{text}");
-        // With the Sküs not out the Mond is safe.
+        // With the Sküs not out there is nothing to say of the Mond.
         let mut k = uhu_led();
         k.unseen.remove(Card::SKUS);
         let comp = compose(&k, c("T21"), &Evidence::default());
-        assert_eq!(comp.ans.unwrap().key, "ans.keep-mond-safe");
+        assert_ne!(comp.question, Some("ask.keep"));
     }
 
     #[test]
@@ -660,8 +687,10 @@ mod tests {
         assert_eq!(comp.question, Some("ask.trumps"));
         assert_eq!(comp.so, None);
         let ans = comp.ans.unwrap();
-        assert_eq!(ans.key, "ans.trumps");
+        assert_eq!(ans.key, "ans.trumps-no");
         assert!(ans.params.contains(&("mine", Param::Int(6))));
+        // 22 tarocks, 6 mine: 16 out, so 6 of the 22 still out.
+        assert!(ans.params.contains(&("total", Param::Int(22))));
     }
 
     #[test]
@@ -682,6 +711,7 @@ mod tests {
         let ev = Evidence {
             differ: Some((9, 3, 20)),
             none: Some((12, 20, 4)),
+            even: false,
         };
         let cheaper = compose(&k, c("Qh"), &ev);
         assert_eq!(cheaper.ans.unwrap().key, "ans.cheap");
@@ -701,10 +731,20 @@ mod tests {
         let ev = Evidence {
             differ: None,
             none: Some((30, 50, 4)),
+            even: false,
         };
         let comp = compose(&k, c("8c"), &ev);
         assert_eq!(comp.question, None);
         assert_eq!(comp.ans.unwrap().key, "ans.ask-none");
+        // A sample that sees nothing between them says so, still honestly.
+        let even = Evidence {
+            even: true,
+            ..Evidence::default()
+        };
+        assert_eq!(
+            compose(&k, c("8c"), &even).ans.unwrap().key,
+            "ans.ask-none-even"
+        );
         assert_eq!(compose(&k, c("8c"), &Evidence::default()).ans, None);
     }
 
@@ -741,6 +781,119 @@ mod tests {
             [("out", Param::Int(8)), ("mine", Param::Int(13))]
         );
         assert_eq!(comp.facts[1].anchor, "line1");
+    }
+
+    /// A lead with the Mond held and the Sküs out: hand T5, T9, the Mond and Kh.
+    fn mond_held() -> Knowledge {
+        know(&["T5", "T9", "T21", "Kh"], NO, NO, &[], None)
+    }
+
+    #[test]
+    fn on_a_lead_keep_is_asked_only_of_a_key_card_or_between_two_tarocks() {
+        let k = mond_held();
+        // A is the Mond; X a master king is not a choice about keeping it.
+        assert_eq!(alt(&k, "Kh"), Some(c("T21")));
+        assert!(!qs(&k, "Kh", "T21").contains(&"ask.keep"));
+        // X a small tarock: the choice is to spend a tarock or keep the Mond.
+        assert_eq!(qs(&k, "T5", "T21")[0], "ask.keep");
+    }
+
+    #[test]
+    fn a_keep_sentence_points_the_way_of_the_play() {
+        // The Mond played on his tarock with the Sküs out: kept == X, "play".
+        let k = uhu_led();
+        let comp = compose(&k, c("T21"), &Evidence::default());
+        assert_eq!(comp.keep, Some(Card::MOND));
+        assert_eq!(comp.ans.as_ref().unwrap().key, "ans.keep-mond-play");
+        // The Mond held while a small tarock goes: kept == A, "hold".
+        let k = mond_held();
+        let comp = compose(&k, c("T5"), &Evidence::default());
+        assert_eq!(comp.keep, Some(Card::MOND));
+        assert_eq!(comp.ans.as_ref().unwrap().key, "ans.keep-mond-hold");
+        // The Mond held with the Sküs not out: nothing to say of it.
+        let mut k = mond_held();
+        k.unseen.remove(Card::SKUS);
+        assert_ne!(
+            compose(&k, c("T5"), &Evidence::default()).question,
+            Some("ask.keep")
+        );
+        // The Mond led with the Sküs out is not "play it on his tarock".
+        let k = mond_held();
+        assert_ne!(
+            compose(&k, c("T21"), &Evidence::default()).question,
+            Some("ask.keep")
+        );
+        // Over many positions the key of the sentence matches who is kept.
+        for k in [uhu_led(), mond_held(), jack_cover()] {
+            for &x in &k.legal {
+                let comp = compose(&k, x, &Evidence::default());
+                if comp.question != Some("ask.keep") {
+                    continue;
+                }
+                let key = comp.ans.unwrap().key;
+                if comp.keep == Some(x) {
+                    assert!(key.ends_with("-play"), "{x:?} {key}");
+                } else {
+                    assert!(
+                        key.ends_with("-hold") || key == "ans.keep-packet",
+                        "{x:?} {key}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn a_yes_no_question_is_answered_with_its_verdict_first() {
+        // Lead a tarock? 6 of 22: not yet; 12 of 22: yes.
+        let k = jack_cover();
+        assert_eq!(
+            compose(&k, c("Jd"), &Evidence::default()).ans.unwrap().key,
+            "ans.trumps-no"
+        );
+        let hand = [
+            "T3", "T7", "T9", "T12", "T15", "T19", "T4", "T5", "T6", "T8", "T10", "T11",
+        ];
+        let k = know(&hand, ["Jd", "", ""], NO, &[], None);
+        let ans = compose(&k, c("Jd"), &Evidence::default()).ans.unwrap();
+        assert_eq!(ans.key, "ans.trumps-yes");
+        // The worth of a trick: yes when rich, no when poor.
+        let k = know(&["Kh", "4h"], NO, NO, &[], Some("Qh"));
+        assert_eq!(
+            compose(&k, c("Kh"), &Evidence::default()).ans.unwrap().key,
+            "ans.worth-rich"
+        );
+        let k = know(&["Kh", "4h"], NO, NO, &[], Some("2h"));
+        assert_eq!(
+            compose(&k, c("Kh"), &Evidence::default()).ans.unwrap().key,
+            "ans.worth-poor"
+        );
+    }
+
+    #[test]
+    fn the_tarock_counts_of_the_sentence_and_the_fact_agree() {
+        // One tarock of his is known face up: out counts it, as the tab does.
+        let hand = ["T3", "T7", "T9", "T12", "T15", "T19"];
+        let k = know(&hand, ["Jd", "", ""], NO, &["T20"], None);
+        let comp = compose(&k, c("Jd"), &Evidence::default());
+        let out = tarocks_out(&k);
+        assert_eq!(out, 16);
+        let ans = comp.ans.unwrap();
+        assert!(ans.params.contains(&("total", Param::Int(6 + out as i64))));
+        let fact = comp
+            .facts
+            .iter()
+            .find(|f| f.line.key == "fact.tarocks-out")
+            .unwrap();
+        assert!(fact.line.params.contains(&("out", Param::Int(out as i64))));
+        // And the sentence about a suit he lacks.
+        let mut k = know(&["7c", "8s", "T9"], NO, NO, &["T20"], None);
+        k.opp_void[Kind::Suit(Suit::Clubs).index()] = true;
+        let (ans, _) = out_answer(&k, c("7c"), c("8s"));
+        assert!(ans
+            .unwrap()
+            .params
+            .contains(&("out", Param::Int(tarocks_out(&k) as i64))));
     }
 
     #[test]
