@@ -656,8 +656,11 @@ async function main() {
       hud.node.classList.toggle("edge", edge.tick);
       for (const side of edge.short) ui.chip(t("chip.not-36", { a: thirds(hud.totals()[side]) }), { x: 120, y: side === "you" ? 150 : 100, kind: "edge", ms: 3000 });
     });
-    const paid = bonusLines(scored?.credits ?? [], human, (cause) => t(`slate.cause.${cause}`));
-    for (const ev of countEvents(game, paid, { at, hand: 1 })) if (!ev.end) later(count.end + 700, () => hud.score(ev));
+    // The labels are read when the bonuses land, so a language switched during the count is the language shown.
+    later(count.end + 700, () => {
+      const paid = bonusLines(scored?.credits ?? [], human, (cause) => t(`slate.cause.${cause}`));
+      for (const ev of countEvents(game, paid, { at, hand: 1 })) if (!ev.end) hud.score(ev);
+    });
   }
 
   // The running tally (2.5.3): the HUD's lines hold the take so far, counted as the count

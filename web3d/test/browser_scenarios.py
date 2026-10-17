@@ -329,7 +329,8 @@ def check_trick_gather(browser, failures):
 
 
 def check_last_trick_ultimo(browser, failures):
-    for seed, human, result in [(2, 1, "won"), (1, 1, "lost")]:
+    # Seeds depend on the opponent at ?level=1, which is deterministic: rescan with web3d/test/seed_scan.mjs after an opponent change.
+    for seed, human, result in [(7, 1, "won"), (27, 1, "lost")]:
         page = open_page(browser, f"seed={seed}&speed=instant&human={human}")
         watch_chips(page)
         ok = drive(page, has("pagat_ultimo", result=result))
@@ -434,7 +435,8 @@ def check_game_scored_banner(browser, failures):
 
 
 def check_draw_and_doubling(browser, failures):
-    page = open_page(browser, "seed=2&speed=instant&human=1")
+    # Seeds depend on the opponent at ?level=1, which is deterministic: rescan with web3d/test/seed_scan.mjs after an opponent change.
+    page = open_page(browser, "seed=5&speed=instant&human=1")
     page.evaluate("window.__banners = []; new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => window.__banners.push(n.textContent)))).observe(document.querySelector('.banner'), { childList: true })")
     watch_chips(page)
     ok = drive(page, has("game_scored", result="draw"), policy="weiter")
@@ -861,8 +863,9 @@ def check_keyboard_sitting(browser, failures):
 
 
 def check_screen_reader(browser, failures):
+    # Seeds depend on the opponent at ?level=1, which is deterministic: rescan with web3d/test/seed_scan.mjs after an opponent change.
     for lang in ("en", "de"):
-        page = open_page(browser, f"seed=7&speed=instant&human=1&lang={lang}", wait=False)
+        page = open_page(browser, f"seed=2&speed=instant&human=1&lang={lang}", wait=False)
         page.evaluate("window.__live = []; new MutationObserver(() => { const t = document.querySelector('.sr-live').textContent; if (t) window.__live.push(t); }).observe(document.querySelector('.sr-live'), { childList: true, characterData: true, subtree: true })")
         rest(page)
         drive(page, has("trick_won"))
