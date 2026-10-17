@@ -17,9 +17,8 @@ fails if a source of the phrase bank is not named below.
 None. The 54 card faces and the back are drawn at runtime with Canvas 2D
 (`web3d/src/tarockfaces.js`); no image, scan or figure art is bundled or
 fetched. Text is set in the reader's own system fonts (the stacks are in
-`tarockfaces.js` and the stylesheets). The table's text asks for a face called
-"Chalk" and falls back to the system's handwriting fonts (`web3d/src/table.css`);
-no font file is embedded or fetched. No icon set is used.
+`tarockfaces.js` and the stylesheets). The slate uses the page's system font
+(`web3d/src/style.css`); no font file is embedded or fetched. No icon set is used.
 
 The structure of the pack (22 trumps, the Sküs, four suits of eight) and the
 trumps' nicknames follow the sources in `research/08-cards-and-art.md`.
