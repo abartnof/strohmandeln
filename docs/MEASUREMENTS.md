@@ -774,6 +774,67 @@ chances in which the trigger fires) was not measured.
 worth.rich.1,announce.1` and the same with `57000000 v124`, `58000000 throwin`,
 `59000000 ult2`.
 
+## M5r Rule refinement
+
+### Plan (2026-10-17, before the selection run)
+
+Specified in `docs/HINTS.md` 5.2; code in `crates/strohmandeln-ai/src/m5r.rs`
+(tests in `m5r_tests.rs`), binary `m5r`. Mirrored pairs are not used: no two
+players are compared; the measure counts how often rung 4's own move is in a
+class (as M5).
+
+**Data.** Rung 4 against rung 3, seats alternating by sitting, 3 Touren, every
+decision of rung 4 logged with the atoms that hold and, per class whose trigger
+fires, whether the card played is in the class. Seeds: selection 60,000,000
+(400 sittings), confirmation 65,000,000 (batches of 100 sittings), settings
+66,000,000 (values 1/2/3), 67,000,000 (1/2/4), 68,000,000 (both pass: throw
+in), 69,000,000 (ultimo 2), 200 sittings each.
+
+**Ideas and classes (15).** Triggers are M5's without their numbers
+(`rules.rs`, helpers made `pub(crate)`): `worth.poor/no-king` (a card of 4
+thirds or less led, a king wins, another card legal); `cheap/outcome`,
+`cheap/winner`; `off/follow-cover`, `off/lead-cover`, `off/figure-cover`,
+`off/figure-higher`; `run/top`, `run/any`; `pagat/keep`, `pagat/cash` (following
+with the Pagat and another card legal, no tarock count); `void/avoid`;
+`mond/mond` (following, the Mond legal and winning, another card legal: the
+Mond); `trumps/tarock`, `trumps/suit` (leading with a tarock and a suit card
+legal). Excluded as in HINTS 5.2: `behind`, `worth.rich`, `announce`,
+`endgame`.
+
+**Family (31 atoms, `m5r::ATOMS`; visible state only).** Tarocks unseen at most
+0, 2, 4, 6, 8; my tarocks at least 6, 8, 10, 12 or at most 5, 7; he shows the
+suit void; he has shown no tarock; the Sküs unplayed and not mine; the Mond
+mine; the suit's thirds left at most 13, 26 (HINTS 5.2 says "at most"); trick
+1-9, 10-18, 19-27; my covers at least 1, 2; his shown covers of the suit at
+least 1, 2; the card led worth at least 1, 4, 7, 10, 13 thirds; I hold the
+suit's master. The "suit" is the suit led when following, else the suit the
+class is about (the void suit, the highest cover's, the figure's) or none (the
+suit atoms are then false). Each class lists 12 of the atoms (`m5r.rs`
+`A_*`); a candidate is one atom or two atoms of different groups (thresholds of
+one quantity are one group): at most 78 per class. An atom true at every firing
+of a class is not tried.
+
+**Fitting.** Per class, eligible if the effective sample (clustered by deal,
+as M5) is at least 60 and the Wilson lower bound at least 0.80; the widest
+(most firings, ties by lower bound) is taken forward.
+
+**Confirmation.** Per taken-forward candidate, looks at 100, 200, 300, 400
+sittings; z = (p - 0.80) / sqrt(0.8 x 0.2 / n_eff); pass at the first look
+with z at or above 4.05, 2.86, 2.34, 2.02 (one-sided use of the two-sided
+O'Brien-Fleming boundaries) and n_eff at least 60; fail from look 2 at z at
+most -1.645, and at look 4 without a pass; interval of the last look reported.
+A passed rule is told under a setting where its lower bound there is at least
+0.80. Reach: the share of deals with a firing; below 1 in 40 the rule is
+recorded as too rare to count.
+
+**Wording.** `m5r::sentence`: the atoms' templates joined with "and" and the
+class's action; condition at most 8 words (the atoms' words, without "when"
+and "and"), action at most 10; tested for passed rules.
+
+**Commands.** `cargo run --release -p strohmandeln-ai --bin m5r -- select |
+confirm | settings | emit` (flags in the binary's header). Looks are logged
+to `confirm.log` in the output directory.
+
 ## M6 Diagnosis
 
 ### Plan (2026-10-15, before the run)
