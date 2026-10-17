@@ -46,7 +46,7 @@ import { trackerPanel } from "./trackerview.js";
 import { createBriefing } from "./briefing.js";
 import { explainText, briefBlocks, nudgeText } from "./review.js";
 import { MAX_IMPORT, clearTutor, exportText, importText, loadDeals, refreshOne } from "./tutorstore.js";
-import { createTutor, extendPromptDue, PAGE_KEYS, publicSlots, takePublicNote, tutorialPages } from "./tutor.js";
+import { createTutor, extendPromptDue, hintsOn, PAGE_KEYS, publicSlots, takePublicNote, tutorialPages } from "./tutor.js";
 import { helpBody, pageBody, reviewBody } from "./tutorview.js";
 import TUTORIAL_DE from "../tutorial.md";
 import TUTORIAL_EN from "../tutorial.en.md";
@@ -260,6 +260,8 @@ async function main() {
   const showTutor = () => {
     ui.setTutor({ on: prefs.tutor, muted: prefs.muted, review: reviewChip, working: owed.length > 0 || settling });
     showTracker(); // the Kibitzer's mute is the slate's too (6.6.2)
+    if (S) director.redecorate(); // the mute and the tutor setting take the gold dots too (1.5.7)
+    publicNote();
   };
   const tutorWords = () => ({ t, lang: getLang(), cardName: romanName, thirds, signed, suitName: (c) => (getLang() === "en" ? suitName(c).toLowerCase() : suitName(c)) });
   showTutor();
@@ -462,7 +464,8 @@ async function main() {
   // The Kibitzer's note on the gold dot, once, the first time hints are on (TABLE3D 1.5.7).
   function publicNote() {
     if (!wasm || director.busy() || pending > 0 || ui.dialogOpen() || !ui.settingsRoot.hidden) return; // after the menu closes
-    if (!takePublicNote(() => prefs, save)) return;
+    const dots = Boolean(S) && [...S.model.hand, ...S.model.opp].some((c) => c.public);
+    if (!takePublicNote(() => prefs, save, dots)) return;
     ui.dialog({ id: "note", title: t("ui.public.note.title"), body: t("ui.public.note"), buttons: [{ label: t("ui.close"), act: "close", primary: true, focus: true }] });
   }
 
@@ -863,6 +866,7 @@ async function main() {
         });
       }
     }
+    // The chip is a hint (hintsOn); it keeps Hints and the mute apart to say "Tips are off" (6.3.4).
     if (mine && !busy && prefs.hints && wasm.phase !== "extend") groups.push({ kind: "hint", buttons: [{ act: "hint", label: t("ui.hint"), enabled: true }] });
     ui.setBar(groups, { left: prefs.leftHanded });
     // The extension prompt.
@@ -1340,6 +1344,10 @@ async function main() {
     // An open page is drawn again in the new language; the lists are closed.
     ui.closeDialog("help");
     ui.closeDialog("review");
+    if (ui.dialogOpen("note")) {
+      ui.closeDialog("note");
+      ui.dialog({ id: "note", title: t("ui.public.note.title"), body: t("ui.public.note"), buttons: [{ label: t("ui.close"), act: "close", primary: true, focus: true }] });
+    }
     if (tutor.current() && ui.dialogOpen("page")) openPage(tutor.current(), { help: pageHelp });
     stage.render();
   });

@@ -31,6 +31,23 @@ test("the note on the gold dot is due once, when hints are first on", () => {
   assert.equal(publicNoteDue({ hints: true, tutor: true, muted: false, seen: [PUBLIC_NOTE] }), false, "never again once seen");
 });
 
+test("the note waits for a dot on the table: it is not spent before one is shown", () => {
+  let prefs = { hints: true, tutor: true, muted: false, seen: [] };
+  const patch = (p) => { prefs = { ...prefs, ...p }; };
+  assert.equal(publicNoteDue(prefs, false), false);
+  assert.equal(takePublicNote(() => prefs, patch, false), false);
+  assert.deepEqual(prefs.seen, [], "still due");
+  assert.equal(takePublicNote(() => prefs, patch, true), true);
+});
+
+test("the tracker's condition is the hints' condition and its own setting", async () => {
+  const { trackerVisible } = await import("../src/tracker.js");
+  for (const p of [{ hints: true, tutor: true, muted: false }, { hints: true, tutor: true, muted: true }, { hints: false, tutor: true, muted: false }, { hints: true, tutor: false, muted: true }]) {
+    assert.equal(trackerVisible({ ...p, tracker: true }), hintsOn(p));
+    assert.equal(trackerVisible({ ...p, tracker: false }), false);
+  }
+});
+
 test("the note is kept as seen (persisted) and is not due again after a reload", () => {
   const data = new Map();
   const store = { getItem: (k) => data.get(k) ?? null, setItem: (k, v) => data.set(k, v), removeItem: (k) => data.delete(k) };
@@ -49,4 +66,6 @@ test("the note is kept as seen (persisted) and is not due again after a reload",
 test("the note and the tip are in both languages", () => {
   const s = JSON.parse(readFileSync(new URL("../strings.json", import.meta.url), "utf8"));
   for (const k of ["ui.public.tip", "ui.public.note.title", "ui.public.note"]) assert.ok(s[k]?.en && s[k]?.de, k);
+  assert.match(s["ui.public.note"].en, /honour/, "announced honours are public too (RULES 13.5)");
+  assert.match(s["ui.public.note"].de, /Ehren|Honneur|Ansage|angesagt/);
 });

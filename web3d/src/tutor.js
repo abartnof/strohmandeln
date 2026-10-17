@@ -197,10 +197,11 @@ export const publicSlots = (placement, prefs) => (hintsOn(prefs) ? placement.fil
 // The Kibitzer's note on the dot is shown once, the first time hints are on; its
 // key is kept in the seen list (not a page: never in Help).
 export const PUBLIC_NOTE = "public-mark";
-export const publicNoteDue = (prefs) => hintsOn(prefs) && !(prefs.seen ?? []).includes(PUBLIC_NOTE);
+// `dots`: a public hand card is on the table, so the note explains a dot that is there.
+export const publicNoteDue = (prefs, dots = true) => dots && hintsOn(prefs) && !(prefs.seen ?? []).includes(PUBLIC_NOTE);
 // True, and kept as seen, when the note is due now.
-export function takePublicNote(prefs, patch) {
-  if (!publicNoteDue(prefs())) return false;
+export function takePublicNote(prefs, patch, dots = true) {
+  if (!publicNoteDue(prefs(), dots)) return false;
   patch({ seen: [...(prefs().seen ?? []), PUBLIC_NOTE] });
   return true;
 }
