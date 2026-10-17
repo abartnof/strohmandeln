@@ -21,7 +21,10 @@ use crate::cardset::CardSet;
 use crate::cardset::Kind;
 use crate::know::Knowledge;
 use crate::opponent::{Config, Level, Opponent};
-use crate::rung2::{bid_as, cover_index, my_value_in, opp_visible, play_card, BidRule};
+use crate::rung2::{
+    bid_with, cash_mond_chance, cover_index, mond_unescorted, my_value_in, opp_visible, play_card,
+    small_tarock, spare_lead_position, BidRule,
+};
 use crate::rung4;
 use crate::style::Style;
 use strohmandeln_core::cards::Card;
@@ -55,15 +58,23 @@ pub struct Features {
     pub split_open: u32,
     /// The Mond played before trick 14.
     pub mond_early: u32,
-    /// Decisions with a choice, and those where Normal would have chosen
-    /// otherwise.
-    pub decisions: u32,
-    pub diverged: u32,
+    /// The Mond played on a rich suit trick, holding no Sküs (`cash-mond`).
+    pub cash_mond: u32,
+    /// A card other than a small tarock played while holding the Mond without
+    /// the Sküs and a small tarock (`guard-mond` kept).
+    pub guard_mond_kept: u32,
+    /// The highest spare low card led from the fork position (`spare-lead`).
+    pub spare_lead: u32,
+    /// Not features: what only the probe knows, for the tally. Stage 1 reads
+    /// the public columns above and never these (the divergence from Normal is
+    /// not visible to a player).
+    pub meta_decisions: u32,
+    pub meta_diverged: u32,
 }
 
 impl Features {
     /// The columns of a CSV row, in order.
-    pub const COLUMNS: [&'static str; 13] = [
+    pub const COLUMNS: [&'static str; 16] = [
         "tarock_lead_ge5",
         "tarock_lead_early",
         "bid_decisions",
@@ -75,11 +86,14 @@ impl Features {
         "figure_two_low",
         "split_open",
         "mond_early",
-        "decisions",
-        "diverged",
+        "cash_mond",
+        "guard_mond_kept",
+        "spare_lead",
+        "meta_decisions",
+        "meta_diverged",
     ];
 
-    pub fn values(&self) -> [u32; 13] {
+    pub fn values(&self) -> [u32; 16] {
         [
             self.tarock_lead_ge5,
             self.tarock_lead_early,
@@ -92,8 +106,11 @@ impl Features {
             self.figure_two_low,
             self.split_open,
             self.mond_early,
-            self.decisions,
-            self.diverged,
+            self.cash_mond,
+            self.guard_mond_kept,
+            self.spare_lead,
+            self.meta_decisions,
+            self.meta_diverged,
         ]
     }
 
@@ -123,6 +140,14 @@ impl Features {
                 if card == Card::MOND && k.trick_number < 14 {
                     self.mond_early += 1;
                 }
+                self.cash_mond += u32::from(cash_mond_chance(k, card));
+                if mond_unescorted(k)
+                    && !small_tarock(card)
+                    && k.playable().iter().any(small_tarock)
+                {
+                    self.guard_mond_kept += 1;
+                }
+                self.spare_lead += u32::from(leading && spare_lead_position(k, card));
                 if leading {
                     if let Some(suit) = card.suit() {
                         let visible = opp_visible(k, Kind::of(card));
@@ -305,10 +330,10 @@ pub fn run_style(
                 // No tell in an extension.
             } else if choice {
                 tally.decisions += 1;
-                row.features.decisions += 1;
+                row.features.meta_decisions += 1;
                 if !same(&both.action, &both.normal) {
                     tally.diverged += 1;
-                    row.features.diverged += 1;
+                    row.features.meta_diverged += 1;
                 }
                 if bid {
                     tally.bids += 1;
@@ -352,11 +377,7 @@ impl Calibration {
 
     /// The share of the hands `rule` takes up on (as forehand).
     pub fn share(&self, rule: BidRule) -> f64 {
-        let n = self
-            .hands
-            .iter()
-            .filter(|&&h| bid_as(h, rule, false).0)
-            .count();
+        let n = self.hands.iter().filter(|&&h| bid_with(h, rule).0).count();
         n as f64 / self.hands.len().max(1) as f64
     }
 
@@ -381,6 +402,77 @@ impl Calibration {
             (Some(hi), None) => hi - 1.0,
             (None, None) => 0.0,
         }
+    }
+}
+
+/// The command line of `stage0`.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Options {
+    pub deals: u64,
+    pub seed: u64,
+    pub skills: Vec<f64>,
+    pub styles: Vec<Style>,
+    pub calib_hands: Option<u64>,
+    pub out: Option<String>,
+    /// Only the rung-4 margin calibration: no deals are played.
+    pub calibrate_only: bool,
+}
+
+impl Options {
+    /// Reads `args` (without the program name); a message for a bad one.
+    pub fn parse(args: &[String]) -> Result<Options, String> {
+        let mut o = Options {
+            deals: 1000,
+            seed: 5_000_000,
+            skills: vec![3.0, 4.0],
+            styles: std::iter::once(Style::Normal).chain(Style::POOL).collect(),
+            calib_hands: None,
+            out: None,
+            calibrate_only: false,
+        };
+        let mut i = 0;
+        while i < args.len() {
+            let flag = args[i].as_str();
+            if flag == "--calibrate-only" {
+                o.calibrate_only = true;
+                i += 1;
+                continue;
+            }
+            let value = args.get(i + 1).ok_or(format!("{flag} wants a value"))?;
+            let num = |what: &str| value.parse::<u64>().map_err(|_| format!("{flag}: {what}"));
+            match flag {
+                "--deals" => o.deals = num("a number of deals")?,
+                "--seed" => o.seed = num("a seed")?,
+                "--calib-hands" => o.calib_hands = Some(num("a number of hands")?),
+                "--out" => o.out = Some(value.clone()),
+                "--skills" => {
+                    o.skills = if value.is_empty() {
+                        Vec::new()
+                    } else {
+                        value
+                            .split(',')
+                            .map(|s| s.parse::<f64>().map_err(|_| format!("--skills: {s:?}")))
+                            .collect::<Result<_, _>>()?
+                    };
+                }
+                "--styles" => {
+                    o.styles = value
+                        .split(',')
+                        .map(|s| {
+                            Style::parse(s)
+                                .filter(|s| *s != Style::Random)
+                                .ok_or(format!("--styles: {s:?} is not a style (random is not)"))
+                        })
+                        .collect::<Result<_, _>>()?;
+                }
+                other => return Err(format!("unknown {other}")),
+            }
+            i += 2;
+        }
+        if o.skills.is_empty() && !o.calibrate_only {
+            return Err("--skills is empty: name a skill, or use --calibrate-only".to_string());
+        }
+        Ok(o)
     }
 }
 

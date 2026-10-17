@@ -4,7 +4,7 @@
 //!
 //! ```text
 //! stage0 [--deals N] [--seed S] [--skills 3,4] [--styles a,b,...]
-//!        [--calib-hands N] [--out FILE.csv]
+//!        [--calib-hands N] [--calibrate-only] [--out FILE.csv]
 //! ```
 //!
 //! For each style (default: Normal and every member of the Random pool) at each
@@ -16,11 +16,15 @@
 //! thirds) and inside the style's. Then, once, the rung-4 bid-margin
 //! calibration: for each style, the share of `--calib-hands` first-bidder hands
 //! its rule takes up, and the advantage (Points) at which Normal's rung-4 sample
-//! bids that share (`style.rs` `MARGINS`).
+//! bids that share (`style.rs` `MARGINS`). `--calibrate-only` runs the
+//! calibration alone.
 //!
-//! `--out` writes one CSV row per deal and seat with the tells counted
-//! (`probe::Features`), for the tells gate of 4.2. Normal's rows are its null
-//! control: run again with another `--seed` for the disjoint-seed control.
+//! `--out` writes one CSV row per deal and seat. The columns up to `meta_` are
+//! the public tells counted (`probe::Features`), all that stage 1 (the tells
+//! gate of 4.2) may read; the `meta_` columns are the probe's own tally (the
+//! divergence from Normal is invisible to a player) and stage 1 must not use
+//! them. Normal's rows are its null control: run again with another `--seed`
+//! for the disjoint-seed control.
 //!
 //! Single-threaded. Time per deal is printed for each style and skill.
 
@@ -28,64 +32,38 @@ use std::fs::File;
 use std::io::Write;
 use std::time::Instant;
 use strohmandeln_ai::opponent::{Config, Level};
-use strohmandeln_ai::probe::{csv_header, csv_line, run_style, styled, Calibration};
-use strohmandeln_ai::style::Style;
-
-const USAGE: &str = "stage0 [--deals N] [--seed S] [--skills 3,4] [--styles a,b,...] \
-[--calib-hands N] [--out FILE.csv]";
+use strohmandeln_ai::probe::{csv_header, csv_line, run_style, styled, Calibration, Options};
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let mut deals = 1000u64;
-    let mut seed = 5_000_000u64;
-    let mut skills: Vec<f64> = vec![3.0, 4.0];
-    let mut styles: Vec<Style> = std::iter::once(Style::Normal).chain(Style::POOL).collect();
-    let mut calib_hands: Option<u64> = None;
-    let mut out: Option<File> = None;
-    let mut i = 0;
-    while i < args.len() {
-        let value = args.get(i + 1).cloned().unwrap_or_default();
-        match args[i].as_str() {
-            "--deals" => deals = value.parse().expect("--deals N"),
-            "--seed" => seed = value.parse().expect("--seed S"),
-            "--skills" => {
-                skills = value
-                    .split(',')
-                    .map(|s| s.parse().expect("--skills 3,4"))
-                    .collect()
-            }
-            "--styles" => {
-                styles = value
-                    .split(',')
-                    .map(|s| {
-                        Style::parse(s)
-                            .filter(|s| *s != Style::Random)
-                            .unwrap_or_else(|| panic!("a style (not random): {s}"))
-                    })
-                    .collect()
-            }
-            "--calib-hands" => calib_hands = Some(value.parse().expect("--calib-hands N")),
-            "--out" => out = Some(File::create(&value).expect("--out FILE")),
-            other => panic!("unknown {other}; {USAGE}"),
-        }
-        i += 2;
-    }
+    let o = Options::parse(&args).unwrap_or_else(|e| {
+        eprintln!("stage0: {e}");
+        eprintln!(
+            "usage: stage0 [--deals N] [--seed S] [--skills 3,4] [--styles a,b,...] \
+[--calib-hands N] [--calibrate-only] [--out FILE.csv]"
+        );
+        std::process::exit(2);
+    });
+    let mut out = o.out.as_ref().map(|p| File::create(p).expect("--out FILE"));
     // A sitting of 3 Touren is 6 deals unless a deal is void.
-    let sittings = deals.div_ceil(6).max(1);
+    let sittings = o.deals.div_ceil(6).max(1);
+    let (seed, deals) = (o.seed, o.deals);
     let base = Config::default();
     if let Some(f) = out.as_mut() {
         writeln!(f, "{}", csv_header()).expect("write");
     }
-    println!(
-        "stage 0: {deals} deals ({sittings} sittings of 3 Touren, a style in both seats), \
+    if !o.calibrate_only {
+        println!(
+            "stage 0: {deals} deals ({sittings} sittings of 3 Touren, a style in both seats), \
 first seed {seed}"
-    );
-    println!(
-        "style      skill   deals  decisions  divergence  bid rate  band .34  style band  s/deal"
-    );
-    for &skill in &skills {
+        );
+        println!(
+            "style      skill   deals  decisions  divergence  bid rate  band .34  style band  s/deal"
+        );
+    }
+    for &skill in o.skills.iter().filter(|_| !o.calibrate_only) {
         let level = Level::from_f64(skill);
-        for &style in &styles {
+        for &style in &o.styles {
             let started = Instant::now();
             let (t, rows) = run_style(level, style, seed..seed + sittings, &base);
             let per_deal = started.elapsed().as_secs_f64() / t.deals.max(1) as f64;
@@ -115,7 +93,7 @@ first seed {seed}"
             }
         }
     }
-    let hands = calib_hands.unwrap_or(deals.min(1000));
+    let hands = o.calib_hands.unwrap_or(deals.min(1000));
     let started = Instant::now();
     let cal = Calibration::sample(seed..seed + hands, base.budget.bid_worlds);
     println!(
@@ -129,7 +107,7 @@ first seed {seed}"
         100.0 * cal.share(base.bid)
     );
     println!("style      rule bids   margin (Points)");
-    for &style in &styles {
+    for &style in &o.styles {
         let share = cal.share(styled(&base, style).bid);
         println!(
             "{:<10} {:>8.1}% {:>+10.3}",

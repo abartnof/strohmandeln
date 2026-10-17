@@ -43,7 +43,7 @@ fn normal_does_not_diverge_from_normal() {
         assert!(t.decisions > 50, "{t:?}");
         assert_eq!(t.diverged, 0, "level {halves}");
         assert_eq!(rows.len() as u64, 2 * t.deals);
-        assert!(rows.iter().all(|r| r.features.diverged == 0));
+        assert!(rows.iter().all(|r| r.features.meta_diverged == 0));
     }
 }
 
@@ -53,13 +53,13 @@ fn a_style_diverges_from_normal_in_bids_and_plays() {
     assert!(t.diverged > 0, "{t:?}");
     assert!(t.divergence() > 0.0 && t.divergence() < 1.0);
     assert!(t.bids > 0 && t.bid_rate() >= 0.0 && t.bid_rate() <= 1.0);
-    let by_rows: u32 = rows.iter().map(|r| r.features.diverged).sum();
+    let by_rows: u32 = rows.iter().map(|r| r.features.meta_diverged).sum();
     assert_eq!(
         u64::from(by_rows),
         t.diverged,
         "the rows add up to the tally"
     );
-    let decisions: u32 = rows.iter().map(|r| r.features.decisions).sum();
+    let decisions: u32 = rows.iter().map(|r| r.features.meta_decisions).sum();
     assert_eq!(u64::from(decisions), t.decisions);
 }
 
@@ -122,6 +122,27 @@ fn the_tells_are_counted_from_the_decisions() {
     let mut f = Features::default();
     f.observe(&k, &play("Qh"));
     assert_eq!((f.figure_blank, f.figure_two_low), (0, 1));
+    // The Mond maxims: cashed on a rich trick, and a small tarock kept.
+    let k = know(&["T21", "T5", "T2", "7c"], NO, NO, &[], Some("Kh"));
+    let mut f = Features::default();
+    f.observe(&k, &play("T21"));
+    assert_eq!(f.cash_mond, 1);
+    let k = know(&["T21", "T5", "T2", "7c"], NO, NO, &[], None);
+    let mut f = Features::default();
+    f.observe(&k, &play("7c"));
+    assert_eq!(f.guard_mond_kept, 1);
+    f.observe(&k, &play("T2"));
+    assert_eq!(
+        f.guard_mond_kept, 1,
+        "playing the small tarock keeps nothing"
+    );
+    // The fork position led from with the higher spare card.
+    let k = know(&["Kh", "Ch", "2h", "4h", "7c"], NO, NO, &[], None);
+    let mut f = Features::default();
+    f.observe(&k, &play("2h"));
+    assert_eq!(f.spare_lead, 1);
+    f.observe(&k, &play("4h"));
+    assert_eq!(f.spare_lead, 1);
     // A bid with few tarocks.
     let k = know(&["Kh", "Kd", "T2", "T3"], NO, NO, &[], None);
     let mut f = Features::default();
@@ -168,10 +189,53 @@ fn csv_lines_match_their_header() {
     let (_, rows) = run_style(Level::from_halves(4), Style::Hunter, 0..1, &small());
     let cols = csv_header().split(',').count();
     assert_eq!(cols, 5 + Features::COLUMNS.len());
+    // The public features come first; what only the probe knows is `meta_`.
+    let names: Vec<&str> = Features::COLUMNS.to_vec();
+    let first_meta = names.iter().position(|n| n.starts_with("meta_")).unwrap();
+    assert!(names[first_meta..].iter().all(|n| n.starts_with("meta_")));
+    assert_eq!(&names[first_meta..], ["meta_decisions", "meta_diverged"]);
+    assert!(!names.contains(&"decisions") && !names.contains(&"diverged"));
     for r in &rows {
         let line = csv_line(Style::Hunter, Level::from_halves(4), r);
         assert_eq!(line.split(',').count(), cols, "{line}");
         assert!(line.starts_with("hunter,2,0,"), "{line}");
     }
     assert!(!rows.is_empty());
+}
+
+fn args(a: &[&str]) -> Vec<String> {
+    a.iter().map(|s| s.to_string()).collect()
+}
+
+#[test]
+fn the_options_default_to_the_stage_0_plan() {
+    let o = Options::parse(&[]).unwrap();
+    assert_eq!(
+        (o.deals, o.seed, o.calibrate_only),
+        (1000, 5_000_000, false)
+    );
+    assert_eq!(o.skills, [3.0, 4.0]);
+    assert_eq!(o.styles.len(), 8);
+    assert!(!o.styles.contains(&Style::Random));
+}
+
+#[test]
+fn calibrate_only_is_a_flag_and_an_empty_skills_list_is_an_error() {
+    let o = Options::parse(&args(&["--calibrate-only", "--calib-hands", "50"])).unwrap();
+    assert!(o.calibrate_only);
+    assert_eq!(o.calib_hands, Some(50));
+    for bad in [
+        vec!["--skills", ""],
+        vec!["--skills", "3,,4"],
+        vec!["--skills", "x"],
+        vec!["--styles", "random"],
+        vec!["--styles", ""],
+        vec!["--deals", "x"],
+        vec!["--nope"],
+        vec!["--deals"],
+    ] {
+        assert!(Options::parse(&args(&bad)).is_err(), "{bad:?}");
+    }
+    // Empty skills are fine when only calibrating: no play is asked for.
+    assert!(Options::parse(&args(&["--calibrate-only", "--skills", ""])).is_ok());
 }

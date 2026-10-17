@@ -199,3 +199,18 @@ must: 5.1 (CSV columns), 5.4 (order: calibrate before any rung-4 style run).
 should: 2.1 (short Pagat is not an honour), 2.2 (remove the dead dealer
 clause), 2.6 (tag), 5.2 (features for the new maxims).
 nit: 2.3, 2.4, 2.5, 2.7, 3 (`rungs()`), 4 (STYLES 6), 5.3, 5.5.
+
+## Fixes (17 Oct 2026)
+
+| Item | Fix |
+|---|---|
+| 5.1 | The CSV's `decisions` and `diverged` are `meta_decisions` and `meta_diverged`, last; stage1 reads only the public columns (documented in `stage0.rs`, `probe::Features`); a test holds the split. |
+| 5.4 | `stage0 --calibrate-only` runs the calibration alone (`probe::Options`); an empty `--skills` is an error without it, not a panic. Order as the review gave it; `style::MARGINS` stays 0.0 until the measured margins are pasted. |
+| 5.5 | Open: the margin test stays tautological until real margins are in; then a test of the styled rung-4 bid rate against the rule's share. |
+| 2.1 | An honour count takes the Pagat only with six tarocks (U 78), for Ulmann and Werner; tested short and long. |
+| 2.2 | Ulmann's dealer clause and `bid_as`'s `dealer` parameter are deleted (`bid_with` is the one entry); the comment in `rung2.rs`, `style.rs` and STYLES 2.1 says it could change nothing. |
+| 2.6 | Bermann's `guard-mond` is tagged I. |
+| 5.2 | Feature columns `cash_mond`, `guard_mond_kept`, `spare_lead`; the positions are shared with the maxims (`mond_unescorted`, `cash_mond_chance`, `spare_lead_position`). |
+| 2.3, 2.4, 2.5, 2.7, 5.3 | `cash-mond` trigger and `spare-lead` tagged I; the spare-lead test renamed (`..._highest_spare_card`); Ulmann's hunt comment names the omitted "no Pagat in hand" and "closed run". |
+| 3 | Not done: `hint.rs:163` still calls `rungs()`; hint.rs is changing on another branch. `Level::rung()` exists; switch the call and drop `rungs()` after that merge. |
+| 4 | STYLES 6: `new` answers `bad-config`, field `style`. |
