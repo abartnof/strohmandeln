@@ -21,3 +21,12 @@ Branch reviewed: `worktree-agent-a688112ff208b7faf` (8ff907f, 20a4904, e4700c0, 
 ## Verdict
 
 Sound. Fix before done or record as open: finding 3 (uncited line), finding 4 (matsch gloss, drop tapper), finding 7 (sr.pass strings). The rest are low.
+
+## Fixes
+
+- 2 (one wording): `luck-yours` now reads "Luck is better than good play.", as `run-mine`; a test holds the `Glück 360` saying to one English wording.
+- 3 (Kiebitz line): the line is cited (05c LIT-S11, Neues Wiener Journal, 29 Mar 1895: "Kiebitz, halt's Maul!"; 05b only lacks it among proverb lexica). It is dropped from `kibitz-mute` all the same, which keeps three wordings; the § 13 form stays in the tutor strings.
+- 4 (matsch, tapper): the English no longer uses "matsch" ("Every last trick is mine!", "Not a trick for you. Swept clean.", "Every trick gone: I am done for!", "Not one trick for me. Done for!"); the German keeps it. `matsch` is out of the allowlist and a test keeps it out of the English. `tapper` stays: "No third for a Tapper?" (greet.4, Figaro 1888) is an English text that uses it, as the name of the game.
+- 6 (Kibitzer note): the timed note is kept by key while up and re-lettered on a switch; a later note is not cleared by an earlier note's timer.
+- 7 (sr.pass): `sr.pass.you` / `sr.pass.opp` read "You pass." / "Your opponent passes." in English (German unchanged); `EnglishIsEnglish` scans the `en` of every `sr.*` string.
+- Kept: "All three!" (finding 1).
