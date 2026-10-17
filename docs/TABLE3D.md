@@ -551,8 +551,8 @@ the speech and the holds are unchanged, so nothing is missed.
 
 3.10.1 The page is operable by keyboard alone. `Tab` order: the move bar; the hand
 (one tab stop, arrow keys move within it, left/right, `Home`/`End`); the
-packets (one stop, `1 2 3` choose a packet, or arrows); the cards-out tab (6.6);
-the slate tab; the settings; then the cards-out panel, whose Fold button follows them. Keys: `Enter` or `Space` choose or play the focused card; `A`
+packets (one stop, `1 2 3` choose a packet, or arrows); the slate tab; the settings;
+the score HUD's chevron, then the cards-out card's chevron under it (6.6). Keys: `Enter` or `Space` choose or play the focused card; `A`
 announce (first held honour); `T` take, `W` weiter; `S` the slate; `H` the hint;
 `M` mute the tutor (6.3); `?` the keys list; `Esc` closes the topmost overlay (3.10.5).
 Keys are discoverable under `?`.
@@ -1121,13 +1121,18 @@ capital is what is paid, Points; the count is "card points", Augen. The Slate is
 the tracker is never called a slate.)
 
 6.6.2 **When it shows.** Hints on (7.1), the setting "Cards out" on (default on), the
-tutor not muted (as the hint, 6.3.4), and a deal under way. A tab "Cards out" /
-"Ausgespielt" in the top row, left of the slate's, folds and unfolds it
-(`aria-expanded`); so does the panel's own "Fold" button. The panel is folded
-on load and at the start of every deal, at any window size, as the score HUD's
-by-deal list is, and opens only when the person opens it; nothing is kept
-(17 Oct 2026, the maintainer's play-through notes; an old saved `trackerFolded`
-is ignored). On a phone it is not
+tutor not muted (as the hint, 6.3.4), and a deal under way. It is a second HUD card
+under the score HUD, the same width and look, with the HUD's own chevron
+(`aria-expanded`, rotating when open); the chevron or the title row opens and closes
+it. Its name says what it does: "Show the cards out" / "Hide the cards out"
+("Ausgespielte Karten zeigen" / "ausblenden"). Closed it is the title "Cards out" /
+"Ausgespielt" and the chevron; open it adds the lines, grid, legend and the screen
+reader's sentences. It is closed on load and at the start of every deal, at any
+window size, as the score HUD's by-deal list is, and opens only when the person opens
+it; nothing is kept (17 Oct 2026, the maintainer's play-through notes; an old saved
+`trackerFolded` is ignored). No tab chip in the top row and no word "Fold" (it reads
+as the poker action): the card has no button but the chevron (17 Oct 2026, the
+maintainer). `Esc` closes it when open, with focus on its chevron. On a phone it is not
 shown at all, and the engine is not asked for it (6.6.6, `trackerFits`).
 
 6.6.3 **When it changes.** With the cards at rest (the director's `rested`, as 6.3.4):
@@ -1181,23 +1186,26 @@ Kibitzer's byline under the title is "The Kibitzer keeps count" / "Der Kiebitz z
 mit" (6.5).
 
 6.6.6 **Where it lies.** It must not cover the hand, the move bar, the prompt, the
-HUD or the Kibitzer's tabs, and it lies under the dialogs and the slate (z-order). A
-card of 400 px at the left, under the HUD, scrolling inside if it is taller. Its top
-follows the HUD's actual bottom (the tour line and the "not 36" chips included) and
-slides down when the by-deal list opens and back when it folds (17 Oct 2026, the
-maintainer: the two should be on screen together, not colliding);
-mirrored at the right in left-handed mode. Held upright, or in a window under
+HUD or the Kibitzer's tabs, and it lies under the dialogs and the slate (z-order). It
+is the `.info` column's second card, after the score HUD and its tour line, so it is
+as wide as the HUD (384 px at most) and flows down when the by-deal list opens and
+back when it folds; the open body scrolls inside, above the Kibitzer's tabs and the
+fan (`--tracker-max`). The table is framed below the tour line, not the card, so
+opening it does not move the cards. Mirrored at the right in left-handed mode with
+the column (17 Oct 2026, the maintainer: a native HUD under the scoring HUD, closed by
+default; this replaces the 400 px panel placed by measuring the HUD). The "not 36"
+chips, which show for 3 s while the count is read, lie over it. Held upright, or in a window under
 700 px wide, it is not shown at all: **the phone layout is deferred** until the
 maintainer has played the game on a phone and decided what the table should carry
 there. Nothing in the tracker is phone-specific. Browser checks hold the rectangles
 apart at 1280 × 720, 1024 × 768, 1440 × 900 and 1920 × 1080, in English and German, the HUD's list closed and open (`tracker_clear`, 10.4).
 
-6.6.7 **Accessibility.** The panel is a labelled region; the lines are a list; the grid
+6.6.7 **Accessibility.** The card is a labelled region; the lines are a list; the grid
 is hidden from the screen reader and replaced by one visually hidden sentence per
 suit and for the tarocks, with the kind's three counts ("Hearts: yours queen; still out
 king, cavall. Counted: you 2, your opponent 1, seen 3"). It does
-not announce itself on every update. The tab and the Fold button are 44 px targets
-with visible focus. The panel sets its own `--md-sys-color-*` on `.tracker-root`,
+not announce itself on every update. The chevron is a 44 px target with the HUD's
+visible focus ring and an accessible name that follows its state. The panel sets its own `--md-sys-color-*` on `.tracker-root`,
 the score HUD's dark greys in either colour scheme, and `--tracker-opp` for his
 cards; text reaches AA on its ground (`colour.test.js`); under
 `prefers-contrast: more` borders are solid and tints are dropped; under
@@ -1206,7 +1214,7 @@ cards; text reaches AA on its ground (`colour.test.js`); under
 6.6.8 **Tests.** The engine's (hidden-card twins, places, masters, voids, thirds)
 in `strohmandeln-ai`; the wire in `strohmandeln-wasm` and `smoke.mjs`; the page's
 model (`web3d/src/tracker.js`: what it shows for a payload, in both languages, the
-fold, hidden when Hints is off) in `web3d/test/tracker.test.js`.
+open state, hidden when Hints is off, no poker words in its strings) in `web3d/test/tracker.test.js`.
 
 ## 7. Settings
 
@@ -1539,16 +1547,18 @@ motion are saved to `web3d/test/out/`.
   ("Dealer" / "Geber") with a tooltip; after the human's take-up "(D)" / "(A)" follows "You" /
   "Sie" with its tooltip, reachable by Tab and showing on focus; a simple game has no mark
   (2.5.8). `hud_not_clipped` also holds with the mark on both rows.
-- `tracker_clear`: with Hints on, the cards-out panel is open at rest, of the trick at
+- `tracker_clear`: with Hints on, the cards-out card is open at rest, of the trick at
   rest, with two to four lines and the 54-cell grid, and its rectangle meets none of
   the hand, the move bar, the prompt, the HUD or the Kibitzer's tabs at the window
   sizes of 6.6.6, with the whole legend inside it (no scrolling).
-- `tracker_fold_and_settings`: a fresh page starts folded at 1280 × 720; the tab
-  and Fold open and fold it; it follows the cards at rest; Hints off, its own
+- `tracker_open_and_settings`: a fresh page starts closed at 1280 × 720 (the title and
+  the chevron, no top-right chip, no word "Fold"); the chevron and the title row
+  open and close it; it follows the cards at rest; Hints off, its own
   setting off, or the Kibitzer muted takes it away, and back on returns it; the
-  next deal starts folded again.
-- `tracker_languages`: the tab, the lines and the court labels are German in
-  German, and the German legend is whole inside the panel; held upright it is not shown.
+  next deal starts closed again.
+- `tracker_languages`: the chevron's name, the title, the lines and the court labels
+  are German in German, and the German legend is whole inside the card; held upright
+  it is not shown.
 - `public_mark`: with hints off no gold dot and no note; switched on (the menu open defers the
   note to its closing) the dots appear with a tooltip, the note once and kept as seen; off, or
   the Kibitzer muted, takes the dots away at once, and back on returns them (1.5.7).
