@@ -595,6 +595,7 @@ mod tests {
                 || k.starts_with("tutor.well.")
                 || k.starts_with("tutor.none.")
                 || k.starts_with("tutor.miss.")
+                || k.starts_with("tutor.style.")
                 || ["tutor.short", "tutor.how", "tutor.method"].contains(&k);
             assert!(owned, "{k} is documented but nothing carries it");
         }

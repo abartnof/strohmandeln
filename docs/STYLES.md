@@ -288,12 +288,15 @@ sitting.
   and named when the sitting ends."
 - **The menu's "This sitting" line**: "Skill 3, after Bermann"; Random until
   revealed: "Skill 3, Random".
-- **The after-deal brief** (`docs/TUTOR.md`): a bullet "Their style" with the
-  tendency counted from the record (`tutor.style.<id>.seen`: "it took up on 3
-  of 3 deals with 4 tarocks or fewer") and the counter
-  (`tutor.style.<id>.counter`). The counter ships as a rule only if its exploit
-  passes 4.3 (as TUTOR M5); until then the fact alone. The end-of-sitting brief
-  names the style, Random included.
+- **The after-deal brief** (`docs/TUTOR.md` 6): a line "Their style" with the
+  tendency counted from the sitting's record so far (`tutor.style.took`:
+  "your opponent has taken up 4 of 6 bids so far"), for every style but Normal,
+  Random included, and naming none. No counter: none passed stage 2 (9), so the
+  fact alone. Built (17 Oct 2026): the bid is the one tell counted, since it is
+  the one that separates the offered styles from Normal's 19% in the stage 0
+  counts (Bermann 6%, MS and Cautious 3%, Bold 46%); the exposed queen, the
+  contested suit and the Mond reserve do not separate them per deal there.
+  The end-of-sitting brief names the style, Random included.
 - **The talk**: no new group. The opponent's lines stay as in
   `docs/PHRASES.md` (research/05*); the tells come through the brief, not
   through speech. A `style-tell` group of writers' maxims would come from the
