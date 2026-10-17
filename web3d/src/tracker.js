@@ -16,7 +16,7 @@ const TAROCK_ROWS = [8, 8, 6];
 const TAROCKS_HIGH_TO_LOW = ["SK", ...Array.from({ length: 21 }, (_, i) => `T${21 - i}`)];
 // How many of the tarocks out the first line names.
 const NAMED = 4;
-const STATES = ["mine", "played", "out"];
+const STATES = ["mine", "played", "theirs", "out"];
 
 // Shown while Hints is on, the setting is on, and the Kibitzer is not muted
 // (the mute is the tutor's, so with the tutor off it does not apply).
@@ -59,7 +59,7 @@ export function trackerModel(p, words) {
   const cell = (code) => {
     const place = p.cards[code];
     const played = place.place === "played";
-    const state = played ? "played" : place.place === "hand" || place.place === "cover" ? "mine" : "out";
+    const state = played ? (place.by === p.human ? "played" : "theirs") : place.place === "hand" || place.place === "cover" ? "mine" : "out";
     const how = played ? t(`tracker.state.${place.by === p.human ? "you" : "opp"}`, { n: place.trick }) : t(`tracker.state.${place.place}`);
     return { code, label: cellLabel(code, words), state, title: `${romanName(code)}: ${how}` };
   };

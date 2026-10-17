@@ -73,7 +73,9 @@ export function briefBlocks(brief, review, fmt, { whole = false, tips = true } =
   const header = first?.key ? words(first, fmt) : null;
   let list = (brief?.bullets ?? []).filter((b) => b && b.key);
   if (!tips) list = list.filter((b) => b.lead === "tutor.lead.well").slice(0, 1);
-  const bullets = list.slice(0, 3).map((b) => tutorWords(b, fmt));
+  // at most three bullets of the focus, then "Their style" when the engine says it
+  const isStyle = (b) => b.lead === "tutor.lead.style";
+  const bullets = [...list.filter((b) => !isStyle(b)).slice(0, 3), ...list.filter(isStyle).slice(0, 1)].map((b) => tutorWords(b, fmt));
   if (!header && !bullets.length) return null;
   return {
     title: t(whole ? "review.sitting" : "review.deal"),
