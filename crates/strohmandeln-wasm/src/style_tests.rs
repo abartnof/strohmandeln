@@ -245,3 +245,32 @@ fn normal_at_level_two_is_the_default_opponent_still() {
     };
     assert_eq!(a, b);
 }
+
+#[test]
+fn the_styles_export_lists_exactly_the_offered_pool() {
+    let v = crate::styles_reply();
+    assert_eq!(v["protocol"], crate::PROTOCOL);
+    let ids: Vec<&str> = v["styles"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s.as_str().unwrap())
+        .collect();
+    assert_eq!(ids, ["bermann", "ms", "bold", "cautious"]);
+    let want: Vec<&str> = Style::POOL.iter().map(|s| s.id()).collect();
+    assert_eq!(ids, want);
+}
+
+#[test]
+fn a_record_that_drew_a_style_no_longer_offered_still_imports_and_replays() {
+    let mut h = host(r#"{"seed":11,"touren":3,"style":"random"}"#);
+    play_out(&mut h, |_| {});
+    let saved = export(&mut h);
+    for old in ["ulmann", "werner", "hunter"] {
+        let mut rec = saved.clone();
+        rec["drawn"] = json!(old);
+        let mut g = Host::default();
+        assert_eq!(g.import(&rec.to_string(), default_opponent), 1, "{old}");
+        assert_eq!(export(&mut g)["drawn"], old);
+    }
+}

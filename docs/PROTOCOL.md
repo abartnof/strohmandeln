@@ -46,6 +46,7 @@ Text goes in and out through linear memory, as in Cassino. `kit/js/engine.js`
 | `strohmandeln_deal_record()` | | | `{protocol, record}`: the record text of the deal that last ended, or `record: null` before one has. See "The tutor" |
 | `strohmandeln_evidence_of(len)` | a record, a line `==`, the assisted action numbers | | `{protocol, summary, detail}` or an error. Stateless |
 | `strohmandeln_learner(len)` | summaries, oldest first, a line `--` between | | `{protocol, deals, focus, mastered, just_mastered, stale, version}`. Stateless |
+| `strohmandeln_styles()` | | | `{protocol, styles}`: the ids the dialog offers besides `normal` and `random`, in the dialog's order; Random draws from these. A record's `drawn` may still name any style the code plays (`ulmann`, `werner`, `hunter` too). Stateless |
 | `strohmandeln_brief_of_record(len)` | `level n`, optional `style`, `drawn`, `reveal` lines, a record, `==`, the assisted numbers, `--`, the history | | `{protocol, brief}`. Stateless |
 | `strohmandeln_brief_sitting(len)` | `level n`, the same optional lines, the sitting's kept details, each with its number, `--`, the history | | the same, over the sitting. Runs no advisor. Stateless |
 | `strohmandeln_set_focus(len)` | a skill's slug (empty: none) | 1 set, 0 not a skill | none |
@@ -319,7 +320,7 @@ drew (`null` for any other). `drawn` is authoritative: the hash of the seed
 decides only when it is absent, since the pool of styles may change. A record
 without `style` is `normal`. Errors: `bad-record` (unparsable, wrong
 `protocol`, record `version` other than 1, a move refused on replay, an unknown
-`style`, or a `drawn` that is not a member of the pool or that comes with a
+`style`, or a `drawn` that is not a style the code plays or that comes with a
 style other than `random`; `field` says which). `protocol` and `record.version`
 stay 1: the opponent's own moves are recorded;
 what it would do next is not (an imported sitting continues with a freshly
@@ -426,7 +427,7 @@ history is summaries, oldest first, a line `--` between (each summary is the tex
 `level n`, the opponent's level, 1 to 4 (anything else is `bad-input`): it
 decides whether "try the next opponent up" can be said. Optional lines may follow,
 in any order: `style <id>` (default `normal`), `drawn <id>` (what a `random`
-style drew; a member of the pool, and only with `style random`) and `reveal`
+style drew; a style the code plays, and only with `style random`) and `reveal`
 (the sitting is over). The brief's `style` is `{"id", "drawn"}`; `drawn` is
 `null` unless `reveal` is given, so the engine, not the table, withholds it.
 An unknown style, or a bad `drawn`, is `bad-input`. The sitting's deals are

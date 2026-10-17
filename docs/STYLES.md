@@ -191,8 +191,8 @@ the weights of `worth`/`cheap` only (the other weights are zero there), so
 the temperaments' and writers' leads are alike; the bid shows. At 2 and 3 all
 parameters act (rung 3's sampler keeps the `Weights`). At 3.5 and 4, rung 4
 plays the best sampled margin, and weights decide only within 0.34 thirds of
-it (`rung4::best_card`); so the style acts in the bid and in a tolerance band
-for the maxims (2 thirds; set against the cost in 4.3). Rung 4 bids by
+it (`rung4::best_card`); a style keeps that same band (17 Oct 2026, 9), so it
+acts in the bid margin and in the weights inside the band. Rung 4 bids by
 `bid_advantage > bid_margin`, not by `BidRule`: a style's rung-4 bid margin is
 the Points advantage at which Normal's rung-4 sample bids the same share of
 1 000 hands as the style's own rule does (calibrated in stage 0). If a style's
@@ -474,3 +474,79 @@ the Pagat hunter's tarock leads) do not survive the search's own variance. A
 style's tells at skill 4 need either a narrower style band or the stage-0
 margins applied to the play as well; until then Random and the styles whose bid
 differs (Bold, MS, Cautious) are the ones whose skill-4 tells are claimed.
+
+### Stage 0 and stage 1 with Normal's band at rung 4, 17 Oct 2026 (`run-c`)
+
+Change: a style at rung 4 uses Normal's 0.34-thirds band (`style::BAND`, 2.0,
+removed); decision of 17 Oct 2026. Test: `at_rung_four_a_style_keeps_normals_band`
+(Werner plays Normal's card in every play decision of two walked sittings).
+
+    stage0 --deals 1000 --seed 5300000 --skills 3,4 --calib-hands 1000 --out run-c.csv
+    python3 -I research/sim/styles_stage1.py run-c.csv --null run-null.csv --reps 5
+
+Fresh seeds (1 169 deals, 167 sittings, 334 samples per style and skill).
+Divergence from Normal at skill 4, before (`run-b`, band 2.0) and after (`run-c`):
+
+| Style | Before | After | Skill 4 bid rate (after) | Skill 3 divergence (after) | Skill 3 bid rate (after) |
+|---|---|---|---|---|---|
+| bermann | 12.31% | 1.07% | 7.6% | 5.85% | 6.1% |
+| ulmann | 11.88% | 1.34% | 24.0% | 3.87% | 19.3% |
+| ms | 13.58% | 2.66% | 5.7% | 11.07% | 3.0% |
+| werner | 11.18% | 0.26% | 13.0% | 0.38% | 8.6% |
+| bold | 11.94% | 1.24% | 52.1% | 8.09% | 45.9% |
+| cautious | 12.35% | 1.65% | 5.7% | 7.07% | 3.0% |
+| hunter | 11.27% | 0.59% | 19.9% | 3.88% | 18.2% |
+
+Normal's rung 4 bids 19.9% at margin 0. Calibration (1 000 hands): bermann
++0.400, ulmann -0.025, ms +0.550, werner +0.250, bold -0.475, cautious +0.550,
+hunter +0.100, normal +0.012 (the figures in `style::MARGINS` stand; they differ
+from the stage-0 ones by up to 0.04, inside the calibration's noise).
+
+AUC, skill 3 (* below 0.8):
+
+| | bermann | ulmann | ms | werner | bold | cautious | hunter |
+|---|---|---|---|---|---|---|---|
+| normal | 0.918 | 0.665* | 0.942 | 0.764* | 0.904 | 0.885 | 0.777* |
+| bermann | | 0.921 | 0.868 | 0.885 | 0.988 | 0.902 | 0.956 |
+| ulmann | | | 0.944 | 0.810 | 0.906 | 0.898 | 0.853 |
+| ms | | | | 0.867 | 0.994 | 0.855 | 0.946 |
+| werner | | | | | 0.976 | 0.734* | 0.799* |
+| bold | | | | | | 0.993 | 0.963 |
+| cautious | | | | | | | 0.918 |
+
+AUC, skill 4:
+
+| | bermann | ulmann | ms | werner | bold | cautious | hunter |
+|---|---|---|---|---|---|---|---|
+| normal | 0.762* | 0.588* | 0.795* | 0.642* | 0.916 | 0.796* | 0.501* |
+| bermann | | 0.820 | 0.569* | 0.649* | 0.986 | 0.579* | 0.765* |
+| ulmann | | | 0.853 | 0.725* | 0.871 | 0.853 | 0.589* |
+| ms | | | | 0.686* | 0.992 | 0.545* | 0.795* |
+| werner | | | | | 0.967 | 0.681* | 0.642* |
+| bold | | | | | | 0.992 | 0.916 |
+| cautious | | | | | | | 0.795* |
+
+Null control: 0.543 (skill 3), 0.507 (skill 4), 0.481 (Normal v Normal of
+`run-null.csv`, skill 3).
+
+Gate (fixed before the run): offered if at skill 3 every pairwise AUC against
+Normal and the other offered styles is at least 0.80 in `run-c`; at skill 4 no
+separate gate, a style below 0.80 against Normal carries the dialog's note that
+it shows mostly in the bidding.
+
+| Style | Skill 3 against Normal | Verdict |
+|---|---|---|
+| bermann | 0.918 | offered |
+| ms | 0.942 | offered |
+| bold | 0.904 | offered |
+| cautious | 0.885 | offered |
+| hunter | 0.777 | not offered (0.800 in `run-b`; the fresh seeds put it below the gate) |
+| ulmann | 0.665 | not offered |
+| werner | 0.764 | not offered |
+
+Among the four offered styles every skill-3 pair is at least 0.855. At skill 4
+the note applies to Bermann (0.762), MS (0.795) and Cautious (0.796) against
+Normal; Bold reads at 0.916. The narrower band did not raise skill-4 AUC (it
+fell, for example Bermann 0.795 to 0.762, Werner 0.678 to 0.642): the gain
+the wide band's shared noise gave was not a tell, and the skill-4 style rests on
+its bid.

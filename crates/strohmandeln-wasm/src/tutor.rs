@@ -176,7 +176,7 @@ fn parse_header(text: &str) -> Result<(Header, &str), Value> {
         if let Some(id) = line.strip_prefix("style ") {
             h.style = Style::parse(id.trim()).ok_or_else(|| bad("style"))?;
         } else if let Some(id) = line.strip_prefix("drawn ") {
-            let drawn = Style::parse(id.trim()).filter(|d| Style::POOL.contains(d));
+            let drawn = Style::parse(id.trim()).filter(|d| Style::CANDIDATES.contains(d));
             h.drawn = Some(drawn.ok_or_else(|| bad("drawn"))?);
         } else if line == "reveal" {
             h.reveal = true;
