@@ -19,3 +19,11 @@ Run: `node --test kit/test web3d/test` 543 pass, 0 fail; `kit/build.py --check` 
 4. Low (tests). `overlays.test.js` is meaningful for the order and the answer-required set, but covers the pure function only. The wiring is untested: `page` closing as "Remind me", `announce` closing without playing and leaving the card chosen, `new` Cancel with and without a sitting, `extend`/`over`/`welcome` swallowing Escape, selection clearing. `escape_closes` covers help, clear, keys, settings, slate, HUD and tracker. Add browser steps for page and announce at least. The settings unit test now asserts Escape no longer closes the menu, which pins the removal and is fine.
 5. Low (process). The author states the pure test was written with the code, not first. The tests would have failed before (module absent) and were not weakened, so no rework; recorded as a lapse against CLAUDE.md.
 6. Info. `ui.dialogIds()` reads DOM order, which is open order because `dialog()` appends and a re-opened id is removed first, so it moves to the top, as it should.
+
+## Fixes
+
+- Finding 1: `selectGuard` (overlays.js) tracks an open native select (mousedown, Alt+Arrow, Space, F4 open it; change, focusout, Escape clear it) and the Escape branch returns early for that press. Node test only: main has no `<select>` yet, so no browser step; add one when the settings split lands.
+- Finding 2: `welcome` acts as Continue. `extend`, `over` and `new` without Cancel: `escapeTarget` returns `{kind: "focus"}`, the handler prevents default and focuses the dialog's `[data-focus]` button.
+- Finding 3: focus falls back from a gone, hidden or body opener to the cog (settings) or, for dialogs, the move bar's first button then the cog. `settleFocus()` is the tutor's focus decision, not a DOM focus, so it is not used.
+- Finding 4: `escape_dialogs` covers a tutor page (closes, Help stays), the announce prompt (closes, nothing played, card still in hand) and the extension prompt (stays, focus on the dialog). `new` Cancel and `over` are covered by the pure test only.
+- The public-mark note (`note`, now a dialog on main) is a plain dismissible layer; the ids on main are page, help, review, over, error, extend, announce, new, clear, keys, welcome, note, all handled.

@@ -275,7 +275,11 @@ export function createUi(root, { t, onAct }) {
       if (!shade) return;
       const held = shade.contains(document.activeElement) || document.activeElement === document.body;
       shade.remove();
-      if (held && shade.opener?.isConnected) shade.opener.focus();
+      if (!held) return;
+      // Back to the opener; if it is gone, hidden or body, to the move bar's first button, else the cog.
+      const usable = (n) => n && n !== document.body && n.isConnected && !n.closest("[hidden]");
+      const to = [shade.opener, root.querySelector(".move-bar button"), root.querySelector("[data-act=settings]")].find(usable);
+      to?.focus();
     },
     dialogIds: () => [...dialogs.children].map((n) => n.dataset.shade),
     dialogOpen: (id = null) => Boolean(id ? dialogs.querySelector(`[data-shade="${id}"]`) : dialogs.children.length),

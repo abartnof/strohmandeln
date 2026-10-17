@@ -176,7 +176,10 @@ export function createSettings(rootEl, { t, prefs, onChange = () => {}, onAction
   function close() {
     rootEl.hidden = true;
     rootEl.setAttribute("aria-hidden", "true");
-    if (opener?.isConnected && !rootEl.contains?.(opener)) opener.focus?.();
+    // Back to the opener; if it is gone, hidden or body (a click does not focus a button in Safari), to the cog.
+    const usable = (n) => n && n !== doc.body && n.isConnected && !n.closest?.("[hidden]") && !rootEl.contains?.(n);
+    const to = [opener, doc.querySelector?.("[data-act=settings]")].find(usable);
+    to?.focus?.();
     opener = null;
   }
   onLang(render);

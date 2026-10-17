@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { escapeTarget } from "../src/overlays.js";
+import { escapeTarget, selectGuard } from "../src/overlays.js";
 
 const none = { dialogs: [], settings: false, slate: false, hud: false, tracker: false, chosen: false, canCancelNew: false };
 const at = (over) => escapeTarget({ ...none, ...over });
@@ -27,12 +27,35 @@ test("the topmost dialog is the last opened", () => {
   assert.deepEqual(at({ dialogs: ["clear"], settings: true }), { kind: "dialog", id: "clear" });
 });
 
-test("a dialog that needs an answer is never dismissed, and holds back what is beneath it", () => {
-  for (const id of ["extend", "over", "welcome"]) {
-    assert.equal(at({ dialogs: [id], slate: true, chosen: true }), null, id);
+test("a dialog that needs an answer is never dismissed: Escape moves focus to its default, and holds back what is beneath", () => {
+  for (const id of ["extend", "over"]) {
+    assert.deepEqual(at({ dialogs: [id], slate: true, chosen: true }), { kind: "focus", id }, id);
   }
-  assert.equal(at({ dialogs: ["new"] }), null);
+  assert.deepEqual(at({ dialogs: ["new"] }), { kind: "focus", id: "new" });
   assert.deepEqual(at({ dialogs: ["new"], canCancelNew: true }), { kind: "dialog", id: "new" });
+});
+
+test("the welcome acts as its default (Continue): nothing is lost", () => {
+  assert.deepEqual(at({ dialogs: ["welcome"] }), { kind: "dialog", id: "welcome" });
+});
+
+test("the table's note is a layer", () => {
+  assert.deepEqual(at({ dialogs: ["note"] }), { kind: "dialog", id: "note" });
+});
+
+test("an open native select takes its own Escape; a closed one does not", () => {
+  const g = selectGuard();
+  const sel = { tagName: "SELECT" };
+  const other = { tagName: "BUTTON" };
+  assert.equal(g.swallows({ type: "keydown", key: "Escape", target: sel }), false); // closed
+  g.observe({ type: "mousedown", target: sel }); // opened
+  assert.equal(g.swallows({ type: "keydown", key: "Escape", target: sel }), true); // closes the select only
+  assert.equal(g.swallows({ type: "keydown", key: "Escape", target: sel }), false); // the next one is the page's
+  g.observe({ type: "keydown", key: "ArrowDown", altKey: true, target: sel });
+  g.observe({ type: "change", target: sel });
+  assert.equal(g.swallows({ type: "keydown", key: "Escape", target: sel }), false);
+  g.observe({ type: "mousedown", target: other });
+  assert.equal(g.swallows({ type: "keydown", key: "Escape", target: other }), false);
 });
 
 test("dialogs with a way back or a single Close are dismissed", () => {
