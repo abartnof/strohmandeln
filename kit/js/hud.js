@@ -133,9 +133,18 @@ export function createHud(root, game, { later = (ms, fn) => setTimeout(fn, ms), 
   let open = false;
   let flash = null; // { cat, side }: the live line that just changed
   let names = { ...game.names };
+  const marks = { you: null, opp: null }; // { text, title } after a side's name, or null
   let epoch = 0; // a reset cancels what was queued before it
   const queue = { you: [], opp: [] };
   const busyUntil = { you: false, opp: false };
+
+  // A side's name, and after it its mark (a "(D)" with a tooltip; focusable, so a keyboard reaches it).
+  function drawName(side) {
+    const mark = marks[side];
+    blocks[side].nameNode.replaceChildren(
+      ...(mark ? [`${names[side]} `, el("span", { class: "hud-mark", tabindex: "0", role: "note", title: mark.title, "aria-label": mark.title }, `(${mark.text})`)] : [names[side]]),
+    );
+  }
 
   function drawSegments(side, from = null) {
     lines[side].forEach((seg, i) => {
@@ -272,8 +281,8 @@ export function createHud(root, game, { later = (ms, fn) => setTimeout(fn, ms), 
       queue.opp.length = 0;
       busyUntil.you = busyUntil.opp = false;
       names = { ...who };
-      blocks.you.nameNode.textContent = who.you;
-      blocks.opp.nameNode.textContent = who.opp;
+      drawName("you");
+      drawName("opp");
       headYou.textContent = who.you;
       headOpp.textContent = who.opp;
       ledger = new Map(given.hands.map((h, i) => [i + 1, copy(h)]));
@@ -290,6 +299,12 @@ export function createHud(root, game, { later = (ms, fn) => setTimeout(fn, ms), 
       drawSegments("opp");
       drawNumbers();
       drawList();
+    },
+    // A mark after a side's name ({ text, title }), or none (null). It stays
+    // through resets until changed.
+    mark(side, spec) {
+      marks[side] = spec ?? null;
+      drawName(side);
     },
     // A scoring event ({ side, cat, label, pts, hand }: countEvents, or the
     // game's own, such as a point shown as it is made), played out when its

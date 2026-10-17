@@ -108,6 +108,27 @@ test("another game: a longer line, its own names, its goal said", () => {
   done();
 });
 
+test("a mark after a side's name, with its tooltip; it outlasts a reset and goes when cleared", () => {
+  const { hud } = setup();
+  const mark = () => all(hud.node, "hud-mark");
+  assert.equal(mark().length, 0);
+  hud.mark("you", { text: "D", title: "Declarer: took it up." });
+  assert.deepEqual(all(hud.node, "hud-name").map(text), ["Opp", "You (D)"]);
+  assert.equal(mark().length, 1);
+  assert.equal(mark()[0].getAttribute("title"), "Declarer: took it up.");
+  assert.equal(mark()[0].getAttribute("tabindex"), "0");
+  assert.equal(mark()[0].getAttribute("aria-label"), "Declarer: took it up.");
+  hud.reset({ hands: [], live: null }, { you: "Cora", opp: "Dirk" });
+  assert.deepEqual(all(hud.node, "hud-name").map(text), ["Dirk", "Cora (D)"]);
+  hud.mark("opp", { text: "D", title: "x" });
+  assert.deepEqual(all(hud.node, "hud-name").map(text), ["Dirk (D)", "Cora (D)"]);
+  hud.mark("you", null);
+  hud.mark("opp", null);
+  assert.deepEqual(all(hud.node, "hud-name").map(text), ["Dirk", "Cora"]);
+  assert.equal(mark().length, 0);
+  done();
+});
+
 test("a hand's late popups stay in that hand, and the next hand's live block opens at its deal", () => {
   const { c, hud, game } = setup();
   for (const [cat, pts] of [["cards", 3], ["spades", 1], ["big", 2], ["little", 1], ["aces", 3]]) hud.score({ side: "you", cat, label: cat, pts, hand: 1 });

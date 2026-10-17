@@ -386,3 +386,33 @@
     transition-delay: 0s !important;
   }
 }
+/* A mark after a name ("(D)"): a tooltip on hover (title) and, for a keyboard, on focus. */
+.hud-mark {
+  position: relative;
+  white-space: nowrap;
+  cursor: help;
+  margin-left: 2px;
+  color: #f7f8fa;
+  border-radius: 3px;
+}
+.hud-mark:focus-visible {
+  outline: 2px solid #f7f8fa;
+  outline-offset: 1px;
+}
+.hud-mark:focus-visible::after {
+  content: attr(title);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 5;
+  width: 15em;
+  margin-top: 4px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #1d2433;
+  color: #fff;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: normal;
+  pointer-events: none;
+}
