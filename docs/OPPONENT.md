@@ -15,10 +15,31 @@ a record replays.
 
 ## Level dial
 
-`level` is 1 to 4 in half steps (the protocol clamps and rounds). A whole level
-plays that rung. Level L.5 plays rung L+1, but on each decision slips down one
-rung with probability one half (a draw from a hash of the view, so it stays a
-function of the seed and view). A slip is one rung only.
+The skill dial is 1, 2, 3, 3.5, 4 (`docs/STYLES.md` 1.1; the protocol clamps and
+snaps any other number to the nearest position, ties down: 1.5 is 1, 2.5 is 2).
+Nothing is played at random to be weak.
+
+| Level | Plays |
+|---|---|
+| 1 | Rung 2 with `burden` only (the maxims `worth` and `cheap`); ties by card order, not by the seed; takes up with 60 sure thirds and any tarocks. A style at level 1 changes the bid only. |
+| 2, 3, 4 | Rungs 2, 3, 4. |
+| 3.5 | Rung 4 with 3 worlds and 8 000 nodes at most (a smaller `Budget` still binds). |
+
+Rung 1 stays as the test baseline (`rung1.rs`), not on the dial. Saved sittings
+at 1 or x.5 replay (the opponent's moves are recorded) and continue under the new
+meaning.
+
+## Styles
+
+`docs/STYLES.md`: a style is a parameter set over `rung2::Weights`, the bid rule
+(`BidRule`) and Rung 4's band (`style.rs`, each parameter tagged T, I or E with
+its passage). Normal is every default; `golden_tests.rs` hashes its decisions at
+levels 2, 3 and 4. At rung 4 a style acts in the bid (a margin per style,
+`style::MARGINS`, 0.0 until `stage0` has calibrated it) and in a band of 2
+thirds where the maxims decide (Normal 0.34).
+`cargo build --release -p strohmandeln-ai --bin stage0`: the stage-0 probe
+(divergence from Normal, bid rate, the rung-4 margin calibration, the tells'
+features as CSV). `tournament` takes `style=ID` in a spec.
 
 The tutor's hint (`hint.rs`) always plays rung 4 at whole level 4 and names the
 maxim that weighed most (reason keys: `docs/MESSAGES.md`).
@@ -33,10 +54,15 @@ O'Brien-Fleming boundaries fixed before the first batch, futility stop off.
 
 | Comparison | Plan (batch x looks) | Stopped | Pairs | Mean +- se | 95% interval at last look |
 |---|---|---|---|---|---|
-| 2 vs 1 | 50 x 4 | look 1 (z 19.4 > 4.05) | 50 | +18.36 +- 0.95 | +16.50 to +20.22 |
+| 2 vs 1, old level 1 (random play) | 50 x 4 | look 1 (z 19.4 > 4.05) | 50 | +18.36 +- 0.95 | +16.50 to +20.22 |
 | 3 vs 2 | 50 x 4 | look 3 (z 2.35 > 2.34) | 150 | +1.39 +- 0.59 | +0.23 to +2.56 |
 | 3 vs 2, rerun (15 Oct 2026, first seed 2 000 000, `--negligible 0.5`) | 100 x 6 | look 3 (z 3.88 > 2.90) | 300 | +1.53 +- 0.40 | +0.76 to +2.31 |
 | 4 vs 3 | 20 x 5 | look 2 (z 5.81 > 3.23) | 40 | +6.73 +- 1.16 | +4.46 to +8.99 |
+
+The rows above predate the dial: "1" in them is rung 1, random play, now only a
+test baseline. Level 1 against random and level 2 against level 1 are the tests
+`level_one_beats_random_play...` and `level_two_beats_level_one...` in
+`tournament.rs`, not yet measured at length.
 
 Rung 3 over rung 2 is the thinnest step. The first run stopped on the boundary
 at its third look; the rerun on fresh deals (twice the pairs) agrees and stops
@@ -45,7 +71,9 @@ clear of it: +1.53 Points per pair, interval +0.76 to +2.31.
 ## Speed
 
 wasm build in Node on the development machine (2 vCPU), opponent `step`, whole
-3-Tour sittings, three seeds per level (about 495 decisions each):
+3-Tour sittings, three seeds per level (about 495 decisions each). Measured
+before the dial changed: level 1 was random, and level 3.5 did not exist (not
+re-measured):
 
 | Level | median | 95th percentile | max |
 |---|---|---|---|
