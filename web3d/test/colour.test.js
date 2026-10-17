@@ -79,7 +79,7 @@ test("the cards-out panel sets its own palette, whatever the colour scheme", () 
 });
 
 test("the cards-out panel's ground and text are the score HUD's", () => {
-  const hud = hcss.match(/\.hud\s*\{[^}]*\}/)[0];
+  const hud = hcss.match(/\.hud,\s*\.hud-card\s*\{[^}]*\}/)[0];
   assert.equal(tracker[M + "surface-container-lowest"], hud.match(/background:\s*(#[0-9a-f]{6})/i)[1]);
   assert.equal(tracker[M + "on-surface"], hud.match(/\bcolor:\s*(#[0-9a-f]{6})/i)[1]);
 });
@@ -116,7 +116,7 @@ test("the opponent's played cell is a single red, and keeps its high-contrast ru
   assert.match(more, /data-state="theirs"/);
 });
 
-test("the cell played by you is dashed against the solid outline of one still out; the panel's head stays in view", () => {
+test("the cell played by you is dashed against the solid outline of one still out; the card's head is the HUD's card, its body scrolls under it", () => {
   assert.match(tcss, /\[data-state="played"\][^{]*\{[^}]*border-style:\s*dashed/);
-  assert.match(tcss, /\.tracker-head\s*\{[^}]*position:\s*sticky/);
+  assert.match(tcss, /\.tracker\s*\{[^}]*overflow-y:\s*auto/);
 });

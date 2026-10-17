@@ -229,12 +229,25 @@ test("the screen reader gets a sentence per kind in place of the grid", () => {
   assert.match(trackerModel(p, words("de")).sr[0], /^Herz: Ihre Herz-Dame; noch draußen Herz-König, Herz-Cavall\. Gezählt: Sie 2, Ihr Gegner 1, gesehen 3\.$/);
 });
 
-test("the panel: a labelled region, the lines a list, the grid hidden from the screen reader, a Fold button", () => {
+test("the card: a labelled region with a chevron; closed it is the head alone, open it holds the lines, the grid hidden from the screen reader, the legend and the sentences", () => {
   const w = words("en");
   const m = trackerModel(payload({ groups: { h: { void: true } } }), w);
-  const node = trackerPanel(fakeRoot().ownerDocument, m, { foldLabel: w.t("tracker.fold"), foldTitle: w.t("tracker.fold.title") });
-  assert.equal(node.getAttribute("role"), "region");
-  assert.equal(node.getAttribute("aria-label"), "Cards out");
+  const doc = fakeRoot().ownerDocument;
+  const words2 = { title: w.t("tracker.title"), showLabel: w.t("tracker.show"), hideLabel: w.t("tracker.hide") };
+  const closed = trackerPanel(doc, null, { ...words2, open: false });
+  assert.equal(closed.getAttribute("role"), "region");
+  assert.equal(closed.getAttribute("aria-label"), "Cards out");
+  assert.equal(closed.byClass("tracker").length, 0, "no body while closed");
+  const chev0 = closed.byClass("hud-chev")[0];
+  assert.equal(chev0.getAttribute("data-act"), "tracker");
+  assert.equal(chev0.getAttribute("aria-expanded"), "false");
+  assert.equal(chev0.getAttribute("aria-label"), "Show the cards out");
+  assert.equal(closed.byClass("tracker-title")[0].textContent, "Cards out");
+  const node = trackerPanel(doc, m, { ...words2, open: true });
+  assert.ok(node.className.split(" ").includes("open"));
+  const chev = node.byClass("hud-chev")[0];
+  assert.equal(chev.getAttribute("aria-expanded"), "true");
+  assert.equal(chev.getAttribute("aria-label"), "Hide the cards out");
   assert.equal(node.byClass("tracker-lines")[0].tagName, "UL");
   assert.equal(node.byClass("tracker-lines")[0].children.length, m.lines.length);
   assert.equal(node.byClass("tracker-grid")[0].getAttribute("aria-hidden"), "true");
@@ -242,12 +255,15 @@ test("the panel: a labelled region, the lines a list, the grid hidden from the s
   assert.equal(node.byClass("tracker-grid")[0].byClass("tracker-count").length, 7 * 3, "three counts a row");
   assert.deepEqual(node.byClass("tracker-count-head").map((c) => c.textContent), ["You", "Opp.", "Seen"]);
   assert.equal(node.byClass("tracker-sr")[0].children.length, 5);
-  const fold = node.byAttr("data-act", "tracker-fold")[0];
-  assert.equal(fold.getAttribute("title"), "Fold the count away");
-  assert.equal(fold.textContent, "Fold");
   const mark = node.byClass("tracker-cell").find((c) => c.getAttribute("data-code") === "Kh");
   assert.equal(mark.getAttribute("data-state"), "out");
   assert.equal(node.byClass("tracker-legend")[0].children.length, 4);
+});
+
+test("no poker words in the card's strings, either language", () => {
+  const all = JSON.parse(readFileSync(new URL("../strings.json", import.meta.url), "utf8"));
+  for (const [k, v] of Object.entries(all)) if (k.startsWith("tracker.")) for (const lang of ["en", "de"]) assert.doesNotMatch(v[lang], /\b(fold|check|call|raise)\b|einklapp/i, `${k} ${lang}`);
+  assert.ok(!("tracker.fold" in all) && !("tracker.tab" in all));
 });
 
 test("over a real sitting every payload makes a panel of two to four lines in both languages, nothing unspoken", async () => {

@@ -283,35 +283,34 @@ async function main() {
     const open = on && trackerOpen({ unfolded: trackerUnfolded });
     if (on && !trackerData && !director.busy() && pending === 0) trackerData = engine.tracker()?.tracker ?? null;
     const sig = JSON.stringify([on, open, trackerData, getLang()]);
-    if (sig === trackerSig) return placeTracker();
+    if (sig === trackerSig) return sizeTracker();
     trackerSig = sig;
     const model = open && trackerData ? trackerModel(trackerData, { t, lang: getLang(), cardName, romanName, thirds }) : null;
-    const node = model ? trackerPanel(document, model, { foldLabel: t("tracker.fold"), foldTitle: t("tracker.fold.title") }) : null;
-    const hadFocus = document.activeElement?.dataset?.act === "tracker-fold";
-    ui.setTracker({ tab: on, open, node });
-    placeTracker();
-    if (hadFocus) ui.trackerRoot.querySelector("[data-act=tracker-fold]")?.focus();
+    const node = on ? trackerPanel(document, model, { title: t("tracker.title"), showLabel: t("tracker.show"), hideLabel: t("tracker.hide"), open }) : null;
+    const hadFocus = ui.trackerRoot.contains(document.activeElement) && document.activeElement?.dataset?.act === "tracker";
+    ui.setTracker({ node });
+    sizeTracker();
+    if (hadFocus) ui.trackerRoot.querySelector(".hud-chev")?.focus();
   }
   function updateTracker() {
     trackerData = wasm?.deal && trackerShown() ? (engine.tracker()?.tracker ?? null) : null;
     showTracker();
   }
-  // The panel lies below the HUD and above the Kibitzer's tabs, with a height to
-  // scroll inside (6.6.6).
-  function placeTracker() {
+  // The open card's body has a height to scroll inside, above the Kibitzer's
+  // tabs and the fan (6.6.6).
+  function sizeTracker() {
     const root = ui.trackerRoot;
-    if (!root.firstChild) return;
-    // Below the HUD as it is now (its by-deal list open or folded) and the "not 36" chips under it.
-    let below = 0;
-    for (const e of document.querySelectorAll(".info .hud, .info .tour-line")) below = Math.max(below, e.getBoundingClientRect().bottom);
-    for (const c of document.querySelectorAll(".floats .chip.edge")) below = Math.max(below, c.getBoundingClientRect().bottom);
-    const top = below + 6;
+    // The card flows under the score HUD (its by-deal list pushes it down); only
+    // its body's height is bounded, to scroll inside.
+    const body = root.querySelector(".tracker");
+    if (!body) return;
+    const top = body.getBoundingClientRect().top;
     let limit = ui.root.querySelector(".tutor-row").getBoundingClientRect().top;
     // The fan's outer cards reach up beside the panel on a narrower window.
     const lane = root.getBoundingClientRect();
     if (S) for (const r of cardRectsOf("your-hand")) if (r.left < lane.right && r.right > lane.left) limit = Math.min(limit, r.top);
-    root.style.setProperty("--tracker-top", `${Math.round(top)}px`);
-    root.style.setProperty("--tracker-max", `${Math.max(120, Math.round(limit - top - 6))}px`);
+    const chrome = lane.bottom - body.getBoundingClientRect().bottom; // the card's padding under the body
+    root.style.setProperty("--tracker-max", `${Math.max(120, Math.round(limit - top - chrome - 2))}px`);
   }
   // The person's fold, for this deal only.
   function toggleTracker() {
@@ -1110,7 +1109,6 @@ async function main() {
       case "why":
         return ui.toggleWhy();
       case "tracker":
-      case "tracker-fold":
         return toggleTracker();
       case "slate":
         return toggleSlate();
@@ -1472,7 +1470,7 @@ async function main() {
     tapped(director.pick(e.clientX, e.clientY), { x: e.clientX, y: e.clientY });
   });
   document.getElementById("overlay").addEventListener("click", (e) => {
-    if (e.target.closest("button, .dialog, .slate, .settings, .hud")) return;
+    if (e.target.closest("button, .dialog, .slate, .settings, .hud, .hud-card")) return;
     if (director.busy() || pending > 0) director.skip();
   });
   // A row of cards wider than the screen scrolls.
@@ -1571,10 +1569,10 @@ async function main() {
       ui.root.querySelector("[data-act=slate]")?.focus();
     } else if (kind === "hud") {
       hud.fold();
-      ui.root.querySelector(".hud-chev")?.focus();
+      ui.root.querySelector(".hud .hud-chev")?.focus();
     } else if (kind === "tracker") {
       toggleTracker();
-      ui.root.querySelector("[data-act=tracker]")?.focus();
+      ui.root.querySelector(".tracker-card .hud-chev")?.focus();
     } else if (kind === "selection") {
       sel = { ...sel, chosen: null };
       refresh();
@@ -1596,7 +1594,7 @@ async function main() {
         settings: !ui.settingsRoot.hidden,
         slate: !ui.slateRoot.hidden,
         hud: hud.isOpen(),
-        tracker: Boolean(ui.trackerRoot.firstChild),
+        tracker: Boolean(ui.trackerRoot.querySelector(".tracker")),
         chosen: Boolean(sel.chosen),
         canCancelNew: Boolean(wasm && !sittingOver),
       });
@@ -1641,12 +1639,13 @@ async function main() {
   });
   // The table is framed between the score and the controls (kit/js/framing.js).
   function fitStrips() {
-    const hud = document.querySelector(".info").getBoundingClientRect();
+    // The score HUD and its tour line frame the table; the cards-out card under them lies over it.
+    const hud = document.querySelector(".info .tour-line").getBoundingClientRect();
     const controls = ui.controls.getBoundingClientRect();
     // Upright, the Kibitzer's tabs lie in a row above the controls (tutor.css).
     const tabs = window.matchMedia("(max-aspect-ratio: 85/100)").matches ? ui.root.querySelector(".tutor-row").getBoundingClientRect().top : Infinity;
     stage.setStrips({ top: hud.bottom + 6, foot: window.innerHeight - Math.min(controls.top, tabs) + 6, raised: 0 });
-    placeTracker();
+    sizeTracker();
   }
   new ResizeObserver(() => {
     fitStrips();
@@ -1656,8 +1655,8 @@ async function main() {
   }).observe(document.getElementById("overlay"));
   fitStrips();
   // The cards-out panel follows the HUD's bottom as the by-deal list opens and folds, and the edge chips that come and go (6.6.6).
-  new ResizeObserver(placeTracker).observe(document.querySelector(".info .hud"));
-  new MutationObserver(placeTracker).observe(ui.root.querySelector(".floats"), { childList: true });
+  for (const e of document.querySelectorAll(".info .hud, .info .tour-line")) new ResizeObserver(sizeTracker).observe(e);
+  
   stage.onReframe = () => S && director.relayout();
 
   stopped = () => ui.dialog({ id: "error", title: t("error.opponent-refused"), body: "", buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
@@ -1694,7 +1693,7 @@ async function main() {
     faces: () => director.placement().filter((m) => m.code).map((m) => m.code),
     shown: () => director.meshes.map((m) => m.userData.code),
     hidden: () => engine.audit().hidden,
-    tracker: () => ({ data: trackerData, open: Boolean(ui.trackerRoot.firstChild) }),
+    tracker: () => ({ data: trackerData, open: Boolean(ui.trackerRoot.querySelector(".tracker")) }),
     busy: () => director.busy() || pending > 0 || stage.reframing(),
     timing: () => lastTiming,
     debug: () => ({ pending, dbusy: director.busy(), reframing: stage.reframing(), held: director.held(), stepping, prompt: wasm?.prompt, events: log.length }),

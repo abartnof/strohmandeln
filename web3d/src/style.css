@@ -84,8 +84,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #edeef0; col
 .loading { position: fixed; inset: 0; display: grid; place-items: center; margin: 0; color: #444; }
 button { font: inherit; }
 
-.info { z-index: 13; /* an opened HUD lies over the cards-out panel (z 12), not under it */ position: absolute; top: 8px; left: 8px; width: min(384px, calc(100vw - 150px)); pointer-events: none; }
-.info .hud { pointer-events: auto; }
+.info { z-index: 13; position: absolute; top: 8px; left: 8px; width: min(384px, calc(100vw - 150px)); pointer-events: none; }
+.info :is(.hud, .hud-card) { pointer-events: auto; }
 /* The score reaches "35⅔": room for it beside the line, and for "opponent" in the name column. */
 .info .hud { --seg-gap: 1px; --seg-gap-group: 3px; } /* 36 segments a line */
 .info .hud-side { grid-template-columns: 3.9em 1fr; }

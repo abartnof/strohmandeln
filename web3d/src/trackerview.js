@@ -1,21 +1,30 @@
-// The cards-out panel's DOM (docs/TABLE3D.md 6.6) as a pure builder over a
-// document: it draws the model of tracker.js and reports a press of Fold by a
-// `data-act` the page's click handler reads. The words arrive translated.
+// The cards-out card's DOM (docs/TABLE3D.md 6.6) as a pure builder over a
+// document: the HUD's card shape (hud.css `.hud-card`) with its chevron, closed
+// to the head alone and open to the model of tracker.js. A press of the head or
+// its chevron is reported by `data-act="tracker"`, which the page's click
+// handler reads. The words arrive translated.
+import { CHEVRON_SVG } from "../../kit/js/hud.js";
 import { h } from "./dom.js";
 
-// `model`: trackerModel's. `foldLabel`, `foldTitle`: the Fold button's words.
-export function trackerPanel(doc, model, { foldLabel, foldTitle }) {
+// `model`: trackerModel's, or null while closed. `open`: the card's state.
+// `title`, `showLabel`, `hideLabel`: the head's words and the chevron's name.
+export function trackerPanel(doc, model, { title, showLabel, hideLabel, open }) {
+  const name = open ? hideLabel : showLabel;
+  const chevron = h(doc, "button", { class: "hud-chev", type: "button", "data-act": "tracker", "aria-expanded": String(open), "aria-label": name, title: name });
+  chevron.innerHTML = CHEVRON_SVG;
+  // Closed, the head is the title and the chevron; open, the Kibitzer's byline sits under the title.
+  const titles = h(doc, "div", { class: "tracker-titles" }, h(doc, "h2", { class: "tracker-title" }, title), open && model ? h(doc, "p", { class: "tracker-byline" }, model.byline) : null);
+  const head = h(doc, "div", { class: "tracker-head", "data-act": "tracker" }, titles, chevron);
+  const card = h(doc, "section", { class: open ? "hud-card tracker-card open" : "hud-card tracker-card", role: "region", "aria-label": title, "data-trick": model ? String(model.trick) : null }, head);
+  if (open && model) card.append(trackerBody(doc, model));
+  return card;
+}
+
+function trackerBody(doc, model) {
   return h(
     doc,
-    "section",
-    { class: "tracker", role: "region", "aria-label": model.title, "data-trick": String(model.trick) },
-    h(
-      doc,
-      "div",
-      { class: "tracker-head" },
-      h(doc, "div", { class: "tracker-titles" }, h(doc, "h2", { class: "tracker-title" }, model.title), h(doc, "p", { class: "tracker-byline" }, model.byline)),
-      h(doc, "button", { class: "tracker-fold", type: "button", "data-act": "tracker-fold", title: foldTitle }, foldLabel),
-    ),
+    "div",
+    { class: "tracker" },
     h(doc, "ul", { class: "tracker-lines" }, model.lines.map((l) => h(doc, "li", { "data-line": l.id }, l.text))),
     // The grid is for the eye; the screen reader reads the sentences instead.
     h(

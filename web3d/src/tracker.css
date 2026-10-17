@@ -1,12 +1,12 @@
-/* The cards-out tracker (docs/TABLE3D.md 6.6): the Kibitzer's slate of the cards
-   played and still out. A card at the left under the HUD (mirrored when
-   left-handed). main.js sets --tracker-top and --tracker-max so it clears the
-   HUD and the Kibitzer's tabs. */
+/* The cards-out card (docs/TABLE3D.md 6.6): the Kibitzer's slate of the cards
+   played and still out. The second HUD card of the `.info` column, under the
+   score HUD and its tour line (mirrored with it when left-handed): the HUD's
+   card and chevron (kit/css/hud.css `.hud-card`), closed to its head. main.js
+   sets --tracker-max on the root so the open body scrolls above the Kibitzer's
+   tabs. */
 
-.tracker-tab[aria-expanded="true"] { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
-
-/* The panel is a dark card of the score HUD's neutral greys (kit/css/hud.css) in
-   either colour scheme, so the two panels at the left read as one set. */
+/* The card is a dark card of the score HUD's neutral greys (kit/css/hud.css) in
+   either colour scheme; the body's tokens are set here. */
 .tracker-root {
   --md-sys-color-surface-container-lowest: #1b1f24; /* the HUD's ground */
   --md-sys-color-surface-container-high: #2b3138; /* the HUD's buttons */
@@ -21,44 +21,23 @@
   --md-sys-color-error: #ffb4ab;
   --tracker-opp: #a8322d; /* a card he played: a clear red (the slate's teal is his colour elsewhere) */
   --tracker-on-opp: #ffffff;
-  position: absolute;
-  left: 8px;
-  top: var(--tracker-top, 160px);
-  width: min(400px, calc(100vw - 16px));
-  z-index: 12;
-  pointer-events: none;
+  margin-top: 6px;
 }
-.left .tracker-root { left: auto; right: 8px; }
+.tracker-card { padding: 4px 10px 4px 16px; }
+.tracker-card.open { padding-bottom: 8px; }
+.tracker-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; }
+.tracker-title { margin: 0; font-size: 15px; font-weight: 600; }
 .tracker {
-  pointer-events: auto;
   box-sizing: border-box;
   max-height: var(--tracker-max, 60vh);
   overflow-y: auto;
-  padding: 2px 10px 8px 12px;
-  border-radius: 12px;
-  border-left: 3px solid var(--md-sys-color-tertiary);
-  background: var(--md-sys-color-surface-container-lowest);
+  padding: 0 6px 0 0;
   color: var(--md-sys-color-on-surface);
   font-size: 13px;
-  line-height: 1.3;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.18), 0 3px 10px 2px rgb(0 0 0 / 0.08);
+  line-height: 1.25;
 }
-.tracker-head { position: sticky; top: 0; z-index: 1; background: inherit; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.tracker-title { margin: 0; font-size: 15px; font-weight: 600; }
 .tracker-byline { margin: 0; font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
-.tracker-fold {
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 22px;
-  background: var(--md-sys-color-surface-container-high);
-  color: var(--md-sys-color-on-surface);
-  font-size: 13px;
-  cursor: pointer;
-}
-.tracker-fold:focus-visible { outline: 3px solid var(--md-sys-color-primary); outline-offset: 2px; }
-.tracker-lines { margin: 0 0 4px; padding: 0; list-style: none; }
+.tracker-lines { margin: 0 0 2px; padding: 0; list-style: none; }
 .tracker-lines li { margin: 2px 0; }
 
 /* The grid: a mark, eight cells, then the row's three counts. A state is never colour alone. */
@@ -92,7 +71,7 @@
 /* Played by your opponent: one clear red, white label; set apart from a card played by you by its solid field and edge (yours is dimmed and dashed). */
 .tracker-cell[data-state="theirs"] { background: var(--tracker-opp); border-color: var(--tracker-opp); color: var(--tracker-on-opp); }
 
-.tracker-legend { display: flex; flex-wrap: wrap; gap: 0 10px; margin: 4px 0 0; padding: 0; list-style: none; font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
+.tracker-legend { display: flex; flex-wrap: wrap; gap: 0 10px; margin: 2px 0 0; padding: 0; list-style: none; font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
 .tracker-legend li { display: flex; align-items: center; gap: 4px; line-height: 1.2; }
 .tracker-swatch { display: inline-block; width: 18px; min-height: 14px; padding: 0; }
 .tracker-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; padding: 0; list-style: none; }
@@ -100,11 +79,11 @@
 /* A phone layout is deferred (docs/TABLE3D.md 6.6.6): upright or narrow, the
    tracker is simply not there, so it cannot break the page. */
 @media (max-aspect-ratio: 85/100), (max-width: 700px) {
-  .tracker-tab, .tracker-root { display: none; }
+  .tracker-root { display: none; }
 }
 
 @media (prefers-contrast: more) {
-  .tracker { border: 2px solid var(--md-sys-color-on-surface); box-shadow: none; background: var(--md-sys-color-surface-container-lowest); }
+  .tracker-card { border: 2px solid var(--md-sys-color-on-surface); }
   .tracker-byline, .tracker-legend, .tracker-count, .tracker-count-head { color: var(--md-sys-color-on-surface); }
   .tracker-cell { border-color: var(--md-sys-color-on-surface); }
   .tracker-cell[data-state="theirs"] { border-color: var(--md-sys-color-on-surface); border-style: dashed; color: var(--md-sys-color-on-surface); background: transparent; text-decoration: line-through 2px; }

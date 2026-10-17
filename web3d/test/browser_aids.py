@@ -842,7 +842,7 @@ def check_hud_not_clipped(browser, failures):
                   document.querySelectorAll('.hud-num, .hud-pop-pts').forEach((n) => { n.textContent = '35\\u2154'; });
                   document.querySelectorAll('.hud-pop-label').forEach((n) => { n.textContent = label; });
                   document.querySelectorAll('.hud-v, .hud-sv, .hud-tot-you, .hud-tot-opp').forEach((n) => { n.textContent = '135\\u2154'; });
-                  document.querySelector('.hud-chev').click();
+                  document.querySelector('.hud .hud-chev').click();
                 }""",
                 STRINGS["hud.bonus"][lang],
             )
@@ -1172,25 +1172,25 @@ def check_red_pips_note(browser, failures):
 TRACKER_SIZES = [("1280x720", {"width": 1280, "height": 720}), ("1024x768", {"width": 1024, "height": 768}), ("1440x900", {"width": 1440, "height": 900}), ("1920x1080", {"width": 1920, "height": 1080})]  # a phone layout is deferred (6.6.6)
 BOXES = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; };
   const shown = (sel) => [...document.querySelectorAll(sel)].filter((e) => !e.hidden && e.getBoundingClientRect().width > 0).map(box);
-  const panel = document.querySelector('.tracker');
+  const panel = document.querySelector('.tracker-card');
   return { panel: panel ? box(panel) : null, bar: shown('.move-bar button'), prompt: shown('.prompt, .aid-line, .refusal'), tabs: shown('.tutor-row > button'), hud: shown('.info .hud'),
     hand: window.strohmandeln3d.cardRects('your-hand') }; })()"""
 
 
 def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0", unfold=True):
-    # The panel starts folded (6.6.2); unfold it by its tab, where the window shows one.
+    # The card starts closed (6.6.2); open it by its chevron, where the window shows one.
     page = with_prefs(browser, {"hints": True, "seen": ["public-mark"], "slateAuto": False, **(prefs or {})}, query, viewport=size)
     take_if_bidding(page)
     drive(page, lambda s, log: sum(e["type"] == "trick_won" for e in log) >= 3 or s["prompt"] == "over")
     rest(page)
-    tab = page.locator("[data-act=tracker]:not([hidden])")
+    tab = page.locator(".tracker-card .hud-chev")
     if unfold and tab.count() and tab.is_visible():
         tab.click()
     return page
 
 
 HUD_AND_PANEL = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; };
-  const hud = document.querySelector('.info .hud'), panel = document.querySelector('.tracker'), tour = document.querySelector('.info .tour-line');
+  const hud = document.querySelector('.info .hud'), panel = document.querySelector('.tracker-card'), tour = document.querySelector('.info .tour-line');
   const tabs = [...document.querySelectorAll('.tutor-row > button')].filter((e) => !e.hidden && e.getBoundingClientRect().width > 0).map(box);
   return { tabs, tour: tour && tour.textContent ? box(tour) : null, hud: hud ? box(hud) : null, panel: panel ? box(panel) : null }; })()"""
 
@@ -1199,7 +1199,7 @@ def check_hud_clear(page, failures, where):
     # The score HUD's rectangle and the panel's never meet, the by-deal list closed and open (6.6.6).
     for step in ("closed", "open"):
         if step == "open":
-            page.locator(".hud-chev").click()
+            page.locator(".hud .hud-chev").click()
             page.wait_for_timeout(1500)
         boxes = page.evaluate(HUD_AND_PANEL)
         fail_if(not boxes["hud"] or not boxes["panel"], failures, f"{where}list {step}: no HUD or no panel")
@@ -1232,7 +1232,7 @@ def check_tracker_clear(browser, failures):
             fail_if(page.locator(".tracker-sr li").count() != 5, failures, f"{where}the screen reader has not 5 sentences")
             first = page.locator(".tracker-lines li").first.inner_text()
             fail_if(not first.startswith(("Tarocks still out", "No tarock is out")), failures, f"{where}the first line is {first!r}")
-            fail_if(page.locator("[data-act=tracker]").get_attribute("aria-expanded") != "true", failures, f"{where}the tab does not say it is open")
+            fail_if(page.locator(".tracker-card .hud-chev").get_attribute("aria-expanded") != "true", failures, f"{where}the chevron does not say it is open")
             scroll = page.evaluate("(() => { const p = document.querySelector('.tracker'); return p.scrollHeight - p.clientHeight; })()")
             fail_if(scroll > 1, failures, f"{where}the panel scrolls by {scroll} px: the legend is cut off")
         check_offline(page, failures, where)
@@ -1243,38 +1243,43 @@ def check_tracker_clear(browser, failures):
             close_all(browser)
 
 
-def check_tracker_fold_and_settings(browser, failures):
-    where = "tracker_fold_and_settings: "
+def check_tracker_open_and_settings(browser, failures):
+    where = "tracker_open_and_settings: "
     page = tracker_page(browser, TRACKER_SIZES[0][1])
-    tab = page.locator("[data-act=tracker]")
-    # A tap on the tab folds it; another opens it. A fresh page starts folded, at this large window too.
+    tab = page.locator(".tracker-card .hud-chev")
+    # A fresh page starts closed, at this large window too: the head and the chevron, no body, no top-right chip.
     fresh = tracker_page(browser, TRACKER_SIZES[0][1], unfold=False)
-    fail_if(fresh.locator(".tracker").count(), failures, f"{where}the panel starts open")
-    fail_if(fresh.locator("[data-act=tracker]").get_attribute("aria-expanded") != "false", failures, f"{where}the fresh tab says open")
+    fail_if(fresh.locator(".tracker").count(), failures, f"{where}the card starts open")
+    fail_if(fresh.locator(".tracker-card").count() != 1, failures, f"{where}the closed card is not there")
+    fail_if(fresh.locator(".tracker-card .hud-chev").get_attribute("aria-expanded") != "false", failures, f"{where}the fresh chevron says open")
+    fail_if(fresh.locator(".tracker-title").inner_text() != "Cards out", failures, f"{where}the closed card's title")
+    fail_if(fresh.locator(".tracker-tab, .top-right [data-act=tracker]").count(), failures, f"{where}the top-right chip is still there")
+    fail_if(bool(re.search(r"\bfold\b", fresh.locator(".tracker-card").inner_html(), re.I)), failures, f"{where}the word Fold is in the card")
     fresh.close()
+    # The chevron closes the open card; another press opens it; the head opens it too.
     tab.click()
-    fail_if(page.locator(".tracker").count(), failures, f"{where}the tab did not fold the panel")
-    fail_if(tab.get_attribute("aria-expanded") != "false", failures, f"{where}the tab says open while folded")
+    fail_if(page.locator(".tracker").count(), failures, f"{where}the chevron did not close the card")
+    fail_if(tab.get_attribute("aria-expanded") != "false", failures, f"{where}the chevron says open while closed")
     tab.click()
-    fail_if(page.locator(".tracker").count() != 1, failures, f"{where}the tab did not open the panel")
-    page.locator("[data-act=tracker-fold]").click()
-    fail_if(page.locator(".tracker").count(), failures, f"{where}Fold did not fold the panel")
+    fail_if(page.locator(".tracker").count() != 1, failures, f"{where}the chevron did not open the card")
+    page.locator(".tracker-title").click()
+    fail_if(page.locator(".tracker").count(), failures, f"{where}the head did not close the card")
     tab.click()
     # It follows the cards: after the human's next play and the reply, the panel is of the new trick.
     before = js(page, "tracker()")["data"]["trick"]
     drive(page, lambda s, log: (s["deal"] or {}).get("trick_number", 0) > before or s["prompt"] == "over")
     rest(page)
     if state(page)["prompt"] != "over":
-        fail_if(page.locator(".tracker").get_attribute("data-trick") != str(state(page)["deal"]["trick_number"]), failures, f"{where}the panel was not updated at rest")
+        fail_if(page.locator(".tracker-card").get_attribute("data-trick") != str(state(page)["deal"]["trick_number"]), failures, f"{where}the panel was not updated at rest")
     # Hints off: no tab, no panel; back on, and the tracker's own setting off: the same.
     page.locator("[data-act=settings]").dispatch_event("click")
     page.wait_for_selector(".settings-root:not([hidden])", timeout=10_000)
     page.locator("[data-row=hints] [data-value=toggle]").click()
-    fail_if(page.locator("[data-act=tracker]:not([hidden])").count() or page.locator(".tracker").count(), failures, f"{where}Hints off left the tracker")
+    fail_if(page.locator(".tracker-card").count() or page.locator(".tracker").count(), failures, f"{where}Hints off left the tracker")
     page.locator("[data-row=hints] [data-value=toggle]").click()
     fail_if(page.locator(".tracker").count() != 1, failures, f"{where}Hints on did not bring the panel back")
     page.locator("[data-row=tracker] [data-value=toggle]").click()
-    fail_if(page.locator("[data-act=tracker]:not([hidden])").count() or page.locator(".tracker").count(), failures, f"{where}the tracker setting off left it")
+    fail_if(page.locator(".tracker-card").count() or page.locator(".tracker").count(), failures, f"{where}the tracker setting off left it")
     page.locator("[data-row=tracker] [data-value=toggle]").click()
     # The Kibitzer's mute takes it away; unmuting brings it back.
     page.keyboard.press("Escape")
@@ -1286,7 +1291,7 @@ def check_tracker_fold_and_settings(browser, failures):
     drive(page, lambda s, log: sum(e["type"] == "deal_start" for e in log) >= 2)
     rest(page)
     fail_if(page.locator(".tracker").count(), failures, f"{where}the next deal kept the panel open")
-    fail_if(page.locator("[data-act=tracker]").get_attribute("aria-expanded") != "false", failures, f"{where}the next deal's tab says open")
+    fail_if(page.locator(".tracker-card .hud-chev").get_attribute("aria-expanded") != "false", failures, f"{where}the next deal's tab says open")
     check_offline(page, failures, where)
 
 
@@ -1294,7 +1299,7 @@ def check_tracker_languages(browser, failures):
     # In German the tab, the lines and the court labels are German; upright the tracker is out of the way.
     where = "tracker_languages: "
     page = tracker_page(browser, TRACKER_SIZES[0][1], {"lang": "de"})
-    fail_if(page.locator("[data-act=tracker]").inner_text() != t("tracker.tab", "de"), failures, f"{where}the tab is not German")
+    fail_if(page.locator(".tracker-card .hud-chev").get_attribute("aria-label") != t("tracker.hide", "de") or page.locator(".tracker-title").inner_text() != t("tracker.title", "de"), failures, f"{where}the card head is not German")
     first = page.locator(".tracker-lines li").first.inner_text()
     fail_if(not first.startswith(("Tarock noch draußen", "Kein Tarock")), failures, f"{where}the first German line is {first!r}")
     labels = page.locator("[data-row=h] .tracker-cell").all_inner_texts()[:4]
@@ -1305,7 +1310,7 @@ def check_tracker_languages(browser, failures):
     close_all(browser)
     # Upright, the tracker is not there at all (deferred, 6.6.6): it cannot break the page.
     upright = tracker_page(browser, {"width": 390, "height": 844})
-    fail_if(upright.locator(".tracker-root").is_visible() or upright.locator("[data-act=tracker]").is_visible(), failures, f"{where}the tracker shows on a phone")
+    fail_if(upright.locator(".tracker-root").is_visible() or upright.locator(".tracker-card").is_visible(), failures, f"{where}the tracker shows on a phone")
     fail_if(js(upright, "tracker()")["data"] is not None, failures, f"{where}the engine was asked for a tracker nobody sees")
     check_offline(upright, failures, f"{where}upright: ")
 
@@ -1455,8 +1460,8 @@ def check_escape_closes(browser, failures):
     # Escape closes the topmost overlay, one per press, and focus goes back to what opened it (TABLE3D 3.10.5).
     where = "escape_closes: "
     page = tracker_page(browser, TRACKER_SIZES[0][1])
-    page.locator("[data-act=tracker]").click()  # folded and open again, so it has an opener
-    page.locator("[data-act=tracker]").click()
+    page.locator(".tracker-card .hud-chev").click()  # folded and open again, so it has an opener
+    page.locator(".tracker-card .hud-chev").click()
     page.mouse.click(5, 5)
 
     def focused():
@@ -1467,7 +1472,7 @@ def check_escape_closes(browser, failures):
           dialog: Array.from(document.querySelectorAll('.dialogs [data-shade]')).map((n) => n.dataset.shade),
           settings: !document.querySelector('.settings-root').hidden,
           slate: !document.querySelector('.slate-root').hidden,
-          hud: document.querySelector('.hud-chev').getAttribute('aria-expanded') === 'true',
+          hud: document.querySelector('.hud .hud-chev').getAttribute('aria-expanded') === 'true',
           tracker: Boolean(document.querySelector('.tracker')),
         }))()""")
 
@@ -1481,7 +1486,7 @@ def check_escape_closes(browser, failures):
     base = {"dialog": [], "settings": False, "slate": False, "hud": False, "tracker": True}
     fail_if(open_flags() != base, failures, f"{where}start: {open_flags()}")
     # Everything open at once: the score list, the slate, the settings, then a dialog over them.
-    page.locator(".hud-chev").click()
+    page.locator(".hud .hud-chev").click()
     page.keyboard.press("s")
     page.locator("[data-act=settings]").focus()
     page.locator("[data-act=settings]").dispatch_event("click")
@@ -1599,5 +1604,5 @@ CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_tips, check_slate_points_and_settlement_note, check_talk_events, check_talk_english, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_settings_no_rules, check_new_sitting_from_table, check_skill_speed, check_new_sitting_style, check_random_style_hidden,
     check_language_switch, check_language_switch_at_count, check_hud_not_clipped, check_declarer_mark, check_prefs_storage, check_save_restore, check_export_import_file,
-    check_tutor_pages, check_red_pips_note, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief, check_hint_why,
+    check_tutor_pages, check_red_pips_note, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_open_and_settings, check_tracker_languages, check_public_mark, check_deal_brief, check_hint_why,
 ]
