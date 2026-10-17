@@ -934,6 +934,11 @@ def check_screen_reader(browser, failures):
         page.evaluate("window.__live = []; new MutationObserver(() => { const t = document.querySelector('.sr-live').textContent; if (t) window.__live.push(t); }).observe(document.querySelector('.sr-live'), { childList: true, characterData: true, subtree: true })")
         rest(page)
         drive(page, has("trick_won"))
+        # The live line lags the log: wait for the trick's play sentence before reading what was said.
+        try:
+            page.wait_for_function("window.__live.some((t) => / plays | spielt /.test(t))", timeout=3000)
+        except Exception:
+            pass
         spoken = page.evaluate("window.__live")
         fail_if(len(spoken) < 10, failures, f"screen_reader ({lang}): only {len(spoken)} sentences")
         if lang == "de":
