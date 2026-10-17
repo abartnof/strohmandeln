@@ -2,11 +2,13 @@
 //! "M5r"). The computations are in `strohmandeln_ai::m5r`.
 //!
 //! ```text
-//! m5r select   [--seed 60000000] [--sittings 400] [--out DIR]     fit: log, table, selection.tsv
-//! m5r confirm  [--seed 65000000] [--batch 100] [--cands FILE] [--out DIR]
-//!                                                                  sequential confirmation: confirmed.tsv
-//! m5r settings [--sittings 200] [--rules FILE] [--out DIR]         each other setting: settings.tsv
-//! m5r emit     [--rules FILE] [--settings FILE]                    prints m5r_rules.rs
+//! m5r select   [--seed 71000000] [--sittings 400] [--out DIR]    fit: selection.log.tsv, table, selection.tsv
+//! m5r confirm  [--seed 76000000] [--batch 100] [--k N] [--cands FILE] [--out DIR]
+//!                                       sequential confirmation at the Bonferroni boundaries for k
+//!                                       classes (default: the candidates): confirmed.tsv, confirm.log
+//! m5r settings [--sittings 200] [--rules FILE] [--out DIR]       each other setting: settings.tsv
+//! m5r emit     [--confirmed FILE] [--settings FILE]              prints m5r_rules.rs
+//! m5r bounds   [--k N]                                           prints the boundaries for k classes
 //! ```
 
 use std::io::Write;
@@ -35,12 +37,12 @@ fn atoms_of(text: &str) -> Vec<usize> {
     text.split(',').filter(|s| !s.is_empty()).map(atom_index).collect()
 }
 
-/// The settings of the settings run, with their seed blocks (HINTS 5.2).
+/// The settings of the settings run, with their seed blocks.
 const SETTINGS: [(&str, u64); 4] = [
-    ("v123", 66_000_000),
-    ("v124", 67_000_000),
-    ("throwin", 68_000_000),
-    ("ult2", 69_000_000),
+    ("v123", 77_000_000),
+    ("v124", 78_000_000),
+    ("throwin", 79_000_000),
+    ("ult2", 80_000_000),
 ];
 
 fn setting_named(name: &str) -> Settings {
@@ -67,25 +69,26 @@ fn setting_named(name: &str) -> Settings {
 
 fn main() {
     let mut argv: Vec<String> = std::env::args().skip(1).collect();
-    assert!(!argv.is_empty(), "m5r select|confirm|settings|emit");
+    assert!(!argv.is_empty(), "m5r select|confirm|settings|emit|bounds");
     let which = argv.remove(0);
     match which.as_str() {
         "select" => select_cmd(&argv),
         "confirm" => confirm_cmd(&argv),
         "settings" => settings_cmd(&argv),
         "emit" => emit_cmd(&argv),
+        "bounds" => println!("{:?}", family_boundaries(num(&argv, "--k", 1) as usize)),
         other => panic!("unknown command {other}"),
     }
 }
 
 fn select_cmd(rest: &[String]) {
     let started = Instant::now();
-    let first = num(rest, "--seed", 60_000_000);
+    let first = num(rest, "--seed", 71_000_000);
     let sittings = num(rest, "--sittings", 400);
     let out = arg(rest, "--out", ".");
     let log = collect(first, sittings, 0, Settings::default());
     println!(
-        "M5r selection: {} deals ({sittings} sittings from {first}), {:.0}s",
+        "M5r selection: {} deals ({sittings} sittings from {first}), {:.0}s wall",
         log.ndeals,
         started.elapsed().as_secs_f64()
     );
@@ -93,20 +96,21 @@ fn select_cmd(rest: &[String]) {
     let sel = select(&log);
     let mut chosen = String::new();
     println!(
-        "{:20} {:>6} {:>6} {:>6} {:>5} {:>4}  best candidate (fired, p, n_eff, lower, reach)",
+        "{:20} {:>6} {:>6} {:>6} {:>5} {:>4}  best candidate (atoms, fired, p, n_eff, lower, reach, late10)",
         "class", "fired", "base", "baseLB", "cand", "elig"
     );
     for s in &sel {
         let cl = &CLASSES[s.class];
         let best = s.best.as_ref().map_or("none".to_string(), |b| {
             format!(
-                "{}  {} {:.3} {:.0} {:.3} {:.3}",
+                "{}  {} {:.3} {:.0} {:.3} {:.3} {:.3}",
                 names(&b.atoms),
                 b.prec.fired,
                 b.prec.p,
                 b.prec.n_eff,
                 b.prec.lower,
-                b.reach
+                b.reach,
+                b.late10
             )
         });
         println!(
@@ -115,47 +119,64 @@ fn select_cmd(rest: &[String]) {
         );
         if let Some(b) = &s.best {
             chosen.push_str(&format!(
-                "{}\t{}\t{}\t{:.4}\t{:.1}\t{:.4}\t{:.4}\n",
+                "{}\t{}\t{}\t{:.4}\t{:.1}\t{:.4}\t{:.4}\t{:.4}\t{:.4}\n",
                 cl.id,
                 names(&b.atoms),
                 b.prec.fired,
                 b.prec.p,
                 b.prec.n_eff,
                 b.prec.lower,
-                b.reach
+                b.reach,
+                b.late10,
+                b.late19
             ));
         }
     }
-    std::fs::write(format!("{out}/selection.tsv"), chosen).expect("the selection");
-    println!("total {:.0}s", started.elapsed().as_secs_f64());
+    std::fs::write(format!("{out}/selection.tsv"), &chosen).expect("the selection");
+    println!(
+        "{} classes taken forward; total {:.0}s wall",
+        chosen.lines().count(),
+        started.elapsed().as_secs_f64()
+    );
 }
 
 fn confirm_cmd(rest: &[String]) {
     let started = Instant::now();
-    let first = num(rest, "--seed", 65_000_000);
+    let first = num(rest, "--seed", 76_000_000);
     let batch = num(rest, "--batch", 100);
     let out = arg(rest, "--out", ".");
     let cands = std::fs::read_to_string(arg(rest, "--cands", &format!("{out}/selection.tsv")))
         .expect("the selection");
-    let mut live: Vec<(usize, Vec<usize>, String)> = cands
+    let mut live: Vec<(usize, Vec<usize>)> = cands
         .lines()
         .map(|l| {
             let f: Vec<&str> = l.split('\t').collect();
-            (class_index(f[0]), atoms_of(f[1]), l.to_string())
+            (class_index(f[0]), atoms_of(f[1]))
         })
         .collect();
+    let k = num(rest, "--k", live.len() as u64) as usize;
+    let bounds = family_boundaries(k);
     let mut log = Log::new();
     let mut verdicts = String::new();
     let mut lookfile = std::fs::File::create(format!("{out}/confirm.log")).expect("a log file");
-    for look in 1..=BOUNDARIES.len() {
-        let part = collect(first + (look as u64 - 1) * batch, batch, (look as u64 - 1) * batch, Settings::default());
+    let head = format!("k = {k} classes, boundaries {bounds:?}, futility z <= {FUTILITY_Z}");
+    println!("{head}");
+    writeln!(lookfile, "{head}").expect("log");
+    for look in 1..=LOOKS {
+        let part = collect(
+            first + (look as u64 - 1) * batch,
+            batch,
+            (look as u64 - 1) * batch,
+            Settings::default(),
+        );
         log.append(&part);
         let mut still = Vec::new();
-        for (class, atoms, line) in live {
-            let (p, reach) = evaluate(&log, class, &atoms);
-            let st = step(look, &p);
+        for (class, atoms) in live {
+            let e = evaluate(&log, class, &atoms);
+            let p = e.prec;
+            let st = step(look, &p, &bounds);
             let msg = format!(
-                "look {look} ({} sittings, {:.0}s) {} [{}] fired {} p {:.3} n_eff {:.0} lower {:.3} z {:.2} (boundary {:.2}) reach {:.3}: {:?}",
+                "look {look} ({} sittings, {:.0}s wall) {} [{}] fired {} p {:.3} n_eff {:.0} lower {:.3} z {:.2} (boundary {:.2}) reach {:.3} late10 {:.3}: {:?}",
                 look as u64 * batch,
                 started.elapsed().as_secs_f64(),
                 CLASSES[class].id,
@@ -165,16 +186,17 @@ fn confirm_cmd(rest: &[String]) {
                 p.n_eff,
                 p.lower,
                 z_of(&p),
-                BOUNDARIES[look - 1],
-                reach,
+                bounds[look - 1],
+                e.reach,
+                e.late10,
                 st
             );
             println!("{msg}");
             writeln!(lookfile, "{msg}").expect("log");
             match st {
-                Step::Continue => still.push((class, atoms, line)),
+                Step::Continue => still.push((class, atoms)),
                 Step::Pass | Step::Fail => verdicts.push_str(&format!(
-                    "{}\t{}\t{}\t{look}\t{}\t{:.4}\t{:.1}\t{:.4}\t{:.4}\n",
+                    "{}\t{}\t{}\t{look}\t{}\t{:.4}\t{:.1}\t{:.4}\t{:.4}\t{:.4}\t{:.4}\n",
                     CLASSES[class].id,
                     names(&atoms),
                     if st == Step::Pass { "pass" } else { "fail" },
@@ -182,7 +204,9 @@ fn confirm_cmd(rest: &[String]) {
                     p.p,
                     p.n_eff,
                     p.lower,
-                    reach
+                    e.reach,
+                    e.late10,
+                    e.late19
                 )),
             }
         }
@@ -192,16 +216,16 @@ fn confirm_cmd(rest: &[String]) {
         }
     }
     std::fs::write(format!("{out}/confirmed.tsv"), verdicts).expect("verdicts");
-    println!("total {:.0}s", started.elapsed().as_secs_f64());
+    println!("total {:.0}s wall", started.elapsed().as_secs_f64());
 }
 
-fn passed(rest: &[String], out: &str) -> Vec<(String, String, Vec<String>)> {
+fn passed(rest: &[String], out: &str) -> Vec<(String, String)> {
     let text = std::fs::read_to_string(arg(rest, "--rules", &format!("{out}/confirmed.tsv")))
         .expect("confirmed.tsv");
     text.lines()
         .map(|l| l.split('\t').map(str::to_string).collect::<Vec<_>>())
         .filter(|f| f[2] == "pass")
-        .map(|f| (f[0].clone(), f[1].clone(), f))
+        .map(|f| (f[0].clone(), f[1].clone()))
         .collect()
 }
 
@@ -210,60 +234,27 @@ fn settings_cmd(rest: &[String]) {
     let sittings = num(rest, "--sittings", 200);
     let out = arg(rest, "--out", ".");
     let rules = passed(rest, &out);
-    let mut result = String::new();
     let mut cells: Vec<Vec<String>> = vec![Vec::new(); rules.len()];
     for (name, seed) in SETTINGS {
         let log = collect(seed, sittings, 0, setting_named(name));
-        for (i, (class, atoms, _)) in rules.iter().enumerate() {
-            let (p, _) = evaluate(&log, class_index(class), &atoms_of(atoms));
+        for (i, (class, atoms)) in rules.iter().enumerate() {
+            let p = evaluate(&log, class_index(class), &atoms_of(atoms)).prec;
             let cell = format!("{name}:{}:{:.4}:{:.1}:{:.4}", p.fired, p.p, p.n_eff, p.lower);
-            println!("{class} [{atoms}] {cell}  ({:.0}s)", started.elapsed().as_secs_f64());
+            println!("{class} [{atoms}] {cell}  ({:.0}s wall)", started.elapsed().as_secs_f64());
             cells[i].push(cell);
         }
     }
-    for ((class, atoms, _), c) in rules.iter().zip(&cells) {
+    let mut result = String::new();
+    for ((class, atoms), c) in rules.iter().zip(&cells) {
         result.push_str(&format!("{class}\t{atoms}\t{}\n", c.join("\t")));
     }
     std::fs::write(format!("{out}/settings.tsv"), result).expect("settings");
-    println!("total {:.0}s", started.elapsed().as_secs_f64());
+    println!("total {:.0}s wall", started.elapsed().as_secs_f64());
 }
 
 fn emit_cmd(rest: &[String]) {
-    let out = arg(rest, "--out", ".");
-    let rules = passed(rest, &out);
-    let settings = std::fs::read_to_string(arg(rest, "--settings", &format!("{out}/settings.tsv")))
-        .unwrap_or_default();
-    println!("//! The rules that passed M5r (`docs/MEASUREMENTS.md`), generated by");
-    println!("//! `m5r emit` from the confirmation and settings runs. Do not edit.\n");
-    println!("use crate::m5r::PassedRule;\n");
-    println!("pub const PASSED: &[PassedRule] = &[");
-    for (class, atoms, f) in &rules {
-        let ok = settings
-            .lines()
-            .find(|l| l.starts_with(&format!("{class}\t{atoms}\t")))
-            .is_some_and(|l| {
-                l.split('\t').skip(2).all(|c| {
-                    let v: Vec<&str> = c.split(':').collect();
-                    v[1] != "0" && v[4].parse::<f64>().is_ok_and(|x| x >= GATE)
-                })
-            });
-        let reach: f64 = f[8].parse().expect("reach");
-        let list: Vec<String> = atoms_of(atoms).iter().map(|&a| format!("{:?}", ATOMS[a].id)).collect();
-        println!("    PassedRule {{");
-        println!("        id: \"{class}:{}\",", atoms.replace(',', "+"));
-        println!("        class: \"{class}\",");
-        println!("        atoms: &[{}],", list.join(", "));
-        println!("        fired: {},", f[4]);
-        println!("        precision: {},", f[5]);
-        println!("        n_eff: {},", f[6]);
-        println!("        lower: {},", f[7]);
-        println!("        reach: {reach},");
-        println!("        too_rare: {},", reach < 1.0 / 40.0);
-        println!("        settings_ok: {ok},");
-        let atom_ids: Vec<&str> = atoms_of(atoms).iter().map(|&a| ATOMS[a].id).collect();
-        let (cw, aw) = word_counts(&atom_ids, class);
-        println!("        fits_budget: {},", cw <= 8 && aw <= 10);
-        println!("    }},");
-    }
-    println!("];");
+    let confirmed = std::fs::read_to_string(arg(rest, "--confirmed", "confirmed.tsv"))
+        .expect("confirmed.tsv");
+    let settings = std::fs::read_to_string(arg(rest, "--settings", "settings.tsv")).unwrap_or_default();
+    print!("{}", emit_source(&confirmed, &settings));
 }

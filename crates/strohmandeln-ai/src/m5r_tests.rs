@@ -53,18 +53,45 @@ fn candidates_never_pair_two_atoms_of_one_group() {
 #[test]
 fn tarock_count_atoms() {
     let mut k = know(&["T9", "T5", "T3", "Kh"], NO, HID, &[], None);
-    // 22 tarocks (with the Sküs), 3 mine, none played: 19 unseen
+    // 22 tarocks (with the Sküs), 3 mine, none played: 19 still out
     assert!(holds("ml5", &k, None));
     assert!(holds("ml7", &k, None));
     assert!(!holds("mt6", &k, None));
     assert!(!holds("tu8", &k, None));
     for i in 0..22u8 {
         if ![8, 4, 2].contains(&i) {
-            k.unseen.remove(Card::from_index(i).unwrap());
+            k.played.insert(Card::from_index(i).unwrap());
         }
     }
     assert!(holds("tu0", &k, None));
     assert!(holds("tu8", &k, None));
+}
+
+#[test]
+fn tarocks_out_include_his_face_up_ones_as_the_table_counts_them() {
+    // two tarocks on his covers: unseen drops them, out keeps them
+    let k = know(&["T9", "Kh"], NO, ["T7", "T8", ""], &[], None);
+    assert_eq!(k.out_tarocks(), 21);
+    assert_eq!(k.out_tarocks(), k.unseen_tarocks() + 2);
+}
+
+#[test]
+fn out_tarocks_equal_the_trackers_count_on_sample_views() {
+    use crate::tracker::tracker;
+    use strohmandeln_core::view::view;
+    let mut checked = 0;
+    for seed in 0..6 {
+        crate::testutil::walk(seed, |s, seat| {
+            let v = view(s, seat);
+            let Some(k) = crate::know::Knowledge::from_view(&v) else {
+                return;
+            };
+            let t = tracker(&v).expect("a tracker");
+            assert_eq!(k.out_tarocks(), t.groups[4].out.len(), "seed {seed}");
+            checked += 1;
+        });
+    }
+    assert!(checked > 100);
 }
 
 #[test]
@@ -257,9 +284,42 @@ fn an_atom_true_at_every_firing_is_not_a_candidate() {
 fn reach_is_the_share_of_deals_with_a_firing() {
     let a = 1u32 << atom_index("mt8");
     let log = synthetic("trumps/tarock", 100, |d| (if d % 4 == 0 { a } else { 0 }, true));
-    let (p, reach) = evaluate(&log, class_index("trumps/tarock"), &[atom_index("mt8")]);
-    assert_eq!(p.fired, 25);
-    assert!((reach - 0.25).abs() < 1e-9);
+    let e = evaluate(&log, class_index("trumps/tarock"), &[atom_index("mt8")]);
+    assert_eq!(e.prec.fired, 25);
+    assert!((e.reach - 0.25).abs() < 1e-9);
+}
+
+#[test]
+fn late_shares_count_firings_after_trick_9_and_19() {
+    let (ph1, ph2, ph3) = (
+        1u32 << atom_index("ph1"),
+        1u32 << atom_index("ph2"),
+        1u32 << atom_index("ph3"),
+    );
+    let log = synthetic("trumps/tarock", 100, |d| {
+        (if d < 20 { ph1 } else if d < 50 { ph2 } else { ph3 }, true)
+    });
+    let e = evaluate(&log, class_index("trumps/tarock"), &[atom_index("ph1")]);
+    assert_eq!(e.prec.fired, 20);
+    assert_eq!(e.late10, 0.0);
+    let all = {
+        let mut l = synthetic("trumps/tarock", 100, |d| {
+            ((if d < 20 { ph1 } else if d < 50 { ph2 } else { ph3 }) | 1, true)
+        });
+        l.ndeals = 100;
+        l
+    };
+    let e = evaluate(&all, class_index("trumps/tarock"), &[0]);
+    assert!((e.late10 - 0.8).abs() < 1e-9 && (e.late19 - 0.5).abs() < 1e-9);
+}
+
+#[test]
+fn the_family_boundaries_tighten_with_the_classes_confirmed() {
+    assert_eq!(family_boundaries(1), BOUNDARIES.to_vec());
+    let k8 = family_boundaries(8);
+    for (a, b) in k8.iter().zip(BOUNDARIES) {
+        assert!(*a > b);
+    }
 }
 
 #[test]
@@ -287,18 +347,18 @@ fn prec(p: f64, n: f64) -> Precision {
 #[test]
 fn a_look_passes_at_its_boundary_and_the_minimum_sample() {
     // z = (p - .8) / sqrt(.16 / n) = 0.5 * (p - .8) * sqrt(n) / .2 ...
-    assert_eq!(step(1, &prec(1.0, 400.0)), Step::Pass, "z = 10");
-    assert_eq!(step(1, &prec(0.95, 100.0)), Step::Continue, "z = 3.75 < 4.05");
-    assert_eq!(step(2, &prec(0.95, 100.0)), Step::Pass, "3.75 > 2.86");
-    assert_eq!(step(2, &prec(1.0, 50.0)), Step::Continue, "n below 60");
+    assert_eq!(step(1, &prec(1.0, 400.0), &BOUNDARIES), Step::Pass, "z = 10");
+    assert_eq!(step(1, &prec(0.95, 100.0), &BOUNDARIES), Step::Continue, "z = 3.75 < 4.05");
+    assert_eq!(step(2, &prec(0.95, 100.0), &BOUNDARIES), Step::Pass, "3.75 > 2.86");
+    assert_eq!(step(2, &prec(1.0, 50.0), &BOUNDARIES), Step::Continue, "n below 60");
 }
 
 #[test]
 fn futility_from_the_second_look_and_the_last_look_without_a_pass() {
-    assert_eq!(step(1, &prec(0.5, 200.0)), Step::Continue, "no futility at look 1");
-    assert_eq!(step(2, &prec(0.5, 200.0)), Step::Fail);
-    assert_eq!(step(2, &prec(0.80, 200.0)), Step::Continue);
-    assert_eq!(step(4, &prec(0.80, 200.0)), Step::Fail, "no pass by the last look");
+    assert_eq!(step(1, &prec(0.5, 200.0), &BOUNDARIES), Step::Continue, "no futility at look 1");
+    assert_eq!(step(2, &prec(0.5, 200.0), &BOUNDARIES), Step::Fail);
+    assert_eq!(step(2, &prec(0.80, 200.0), &BOUNDARIES), Step::Continue);
+    assert_eq!(step(4, &prec(0.80, 200.0), &BOUNDARIES), Step::Fail, "no pass by the last look");
     let none = Precision {
         fired: 0,
         satisfied: 0,
@@ -306,18 +366,18 @@ fn futility_from_the_second_look_and_the_last_look_without_a_pass() {
         n_eff: 0.0,
         lower: 0.0,
     };
-    assert_eq!(step(2, &none), Step::Continue);
+    assert_eq!(step(2, &none, &BOUNDARIES), Step::Continue);
 }
 
 #[test]
 fn a_sentence_is_the_atoms_joined_to_the_action() {
     let en = sentence(&["tu0"], "pagat/keep", false);
-    assert_eq!(en, "When no tarock is out, keep the Pagat.");
+    assert_eq!(en, "Following with no tarock still out, keep the Pagat.");
     let de = sentence(&["tu0", "mt8"], "pagat/keep", true);
-    assert!(de.starts_with("Wenn kein Tarock draußen ist und "), "{de}");
+    assert!(de.starts_with("Beim Bedienen mit keinem Tarock mehr draußen und "), "{de}");
     assert!(de.ends_with(": den Pagat behalten."), "{de}");
     let (cw, aw) = word_counts(&["tu0", "mt8"], "pagat/keep");
-    assert_eq!((cw, aw), (4 + 6, 3));
+    assert_eq!((cw, aw), (4 + 6, 3 + 1));
 }
 
 #[test]
@@ -327,8 +387,40 @@ fn every_template_is_short() {
         assert!(!a.de.is_empty());
     }
     for cl in CLASSES {
-        assert!(cl.en.split_whitespace().count() <= 10, "{}", cl.id);
+        assert!(cl.en.split_whitespace().count() <= 14, "{}", cl.id);
         assert!(!cl.de.is_empty());
+    }
+}
+
+/// The tutor's voice (review of 17 Oct 2026): no "cheap", the opponent is
+/// "your opponent", no "neighbouring", points not thirds.
+#[test]
+fn no_template_uses_a_banned_word() {
+    const EN: [&str; 9] = [
+        "cheap", "cheapest", "he", "his", "him", "neighbouring", "neighboring", "third", "thirds",
+    ];
+    const DE: [&str; 8] = ["er", "ihm", "ihn", "sein", "seine", "seinen", "benachbarten", "drittel"];
+    let words = |s: &str| -> Vec<String> {
+        s.split(|c: char| !c.is_alphanumeric() && c != '\u{fc}')
+            .filter(|w| !w.is_empty())
+            .map(str::to_lowercase)
+            .collect()
+    };
+    let mut check = |what: &str, text: &str, banned: &[&str], prefix: &[&str]| {
+        for w in words(text) {
+            assert!(!banned.contains(&w.as_str()), "{what}: '{w}' in '{text}'");
+            assert!(!prefix.iter().any(|p| w.starts_with(p)), "{what}: '{w}' in '{text}'");
+        }
+    };
+    for a in ATOMS {
+        check(a.id, a.en, &EN, &[]);
+        check(a.id, a.de, &DE, &["billig", "drittel"]);
+    }
+    for cl in CLASSES {
+        check(cl.id, cl.en, &EN, &[]);
+        check(cl.id, cl.lead_en, &EN, &[]);
+        check(cl.id, cl.de, &DE, &["billig", "drittel"]);
+        check(cl.id, cl.lead_de, &DE, &["billig", "drittel"]);
     }
 }
 
@@ -346,7 +438,19 @@ fn the_passed_rules_are_consistent_with_their_classes_and_atoms() {
         assert_eq!(r.fits_budget, cw <= 8 && aw <= 10, "{}: {cw} + {aw} words", r.id);
         assert_eq!(r.too_rare, r.reach < 1.0 / 40.0, "{}", r.id);
         assert!((0.0..=1.0).contains(&r.reach));
+        assert_eq!(r.late, r.late10 >= 0.80, "{}", r.id);
+        assert!(r.late19 <= r.late10);
+        assert_eq!(r.ships, r.fits_budget && !NOT_SHIPPED.contains(&r.class), "{}", r.id);
     }
+}
+
+/// `m5r emit` over the committed lists is the committed rules file.
+#[test]
+fn emit_reproduces_the_rules_file() {
+    let confirmed = include_str!("../../../docs/measurements/m5r-confirmed.tsv");
+    let settings = include_str!("../../../docs/measurements/m5r-settings.tsv");
+    let want = include_str!("m5r_rules.rs");
+    assert_eq!(emit_source(confirmed, settings), want);
 }
 
 #[test]
@@ -360,9 +464,13 @@ fn a_matching_rule_needs_its_atoms_and_the_action_in_its_class() {
         n_eff: 100.0,
         lower: 0.85,
         reach: 0.1,
+        late10: 0.9,
+        late19: 0.5,
+        late: true,
         too_rare: false,
         settings_ok: true,
         fits_budget: true,
+        ships: true,
     };
     let k = know(&["T1", "T9", "Kh"], NO, HID, &[], Some("3d"));
     assert!(rule_matches(&r, &k, &Action::play(c("T9"))));

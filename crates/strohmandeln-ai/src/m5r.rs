@@ -103,38 +103,41 @@ macro_rules! atom {
 }
 
 /// The family of `docs/HINTS.md` 5.2, fixed before the first run. The suit's
-/// points left are "at most" (HINTS 5.2); thirds are `Card::thirds`.
+/// points left are "at most" (HINTS 5.2). Each text is a noun phrase that
+/// follows "With" (German: "Mit", dative), so atoms join with "and"; points
+/// are thirds / 3. "Still out" is the Cards-out tab's count
+/// ([`Knowledge::out_tarocks`]).
 pub const ATOMS: &[Atom] = &[
-    atom!("tu0", "tu", "no tarock is out", "kein Tarock draußen ist", |k, _| k.unseen_tarocks() == 0),
-    atom!("tu2", "tu", "2 or fewer tarocks are out", "höchstens 2 Tarock draußen sind", |k, _| k.unseen_tarocks() <= 2),
-    atom!("tu4", "tu", "4 or fewer tarocks are out", "höchstens 4 Tarock draußen sind", |k, _| k.unseen_tarocks() <= 4),
-    atom!("tu6", "tu", "6 or fewer tarocks are out", "höchstens 6 Tarock draußen sind", |k, _| k.unseen_tarocks() <= 6),
-    atom!("tu8", "tu", "8 or fewer tarocks are out", "höchstens 8 Tarock draußen sind", |k, _| k.unseen_tarocks() <= 8),
-    atom!("mt6", "mt", "you hold 6 or more tarocks", "Sie 6 oder mehr Tarock halten", |k, _| k.my_tarocks() >= 6),
-    atom!("mt8", "mt", "you hold 8 or more tarocks", "Sie 8 oder mehr Tarock halten", |k, _| k.my_tarocks() >= 8),
-    atom!("mt10", "mt", "you hold 10 or more tarocks", "Sie 10 oder mehr Tarock halten", |k, _| k.my_tarocks() >= 10),
-    atom!("mt12", "mt", "you hold 12 or more tarocks", "Sie 12 oder mehr Tarock halten", |k, _| k.my_tarocks() >= 12),
-    atom!("ml5", "ml", "you hold 5 or fewer tarocks", "Sie höchstens 5 Tarock halten", |k, _| k.my_tarocks() <= 5),
-    atom!("ml7", "ml", "you hold 7 or fewer tarocks", "Sie höchstens 7 Tarock halten", |k, _| k.my_tarocks() <= 7),
-    atom!("void", "void", "he lacks the suit", "ihm die Farbe fehlt", |k, f| f.is_some_and(|s| shown_void(k, s))),
-    atom!("notarock", "notarock", "he has shown no tarock", "er kein Tarock gezeigt hat", |k, _| shown_no_tarock(k)),
-    atom!("skus", "skus", "the Sküs is out and not yours", "der Sküs draußen und nicht Ihrer ist", |k, _| skus_out(k)),
-    atom!("mond", "mond", "you hold the Mond", "Sie den Mond halten", |k, _| k.playable().contains(Card::MOND)),
-    atom!("left13", "left", "the suit has 13 thirds or fewer left", "von der Farbe höchstens 13 Drittel übrig sind", |k, f| f.is_some_and(|s| left_thirds(k, s) <= 13)),
-    atom!("left26", "left", "the suit has 26 thirds or fewer left", "von der Farbe höchstens 26 Drittel übrig sind", |k, f| f.is_some_and(|s| left_thirds(k, s) <= 26)),
-    atom!("ph1", "ph", "it is trick 1 to 9", "es der 1. bis 9. Stich ist", |k, _| k.trick_number <= 9),
-    atom!("ph2", "ph", "it is trick 10 to 18", "es der 10. bis 18. Stich ist", |k, _| (10..=18).contains(&k.trick_number)),
-    atom!("ph3", "ph", "it is trick 19 to 27", "es der 19. bis 27. Stich ist", |k, _| k.trick_number >= 19),
-    atom!("cov1", "cov", "you have a cover", "Sie ein Paketblatt haben", |k, _| my_covers(k) >= 1),
-    atom!("cov2", "cov", "you have two covers", "Sie zwei Paketblätter haben", |k, _| my_covers(k) >= 2),
-    atom!("hc1", "hc", "he shows a cover of the suit", "er ein Paketblatt der Farbe zeigt", |k, f| f.is_some_and(|s| his_covers(k, s) >= 1)),
-    atom!("hc2", "hc", "he shows two covers of the suit", "er zwei Paketblätter der Farbe zeigt", |k, f| f.is_some_and(|s| his_covers(k, s) >= 2)),
-    atom!("led1", "led", "a card is led", "angespielt wurde", |k, _| led_at_least(k, 1)),
-    atom!("led4", "led", "he led 4 thirds or more", "er 4 Drittel oder mehr anspielte", |k, _| led_at_least(k, 4)),
-    atom!("led7", "led", "he led 7 thirds or more", "er 7 Drittel oder mehr anspielte", |k, _| led_at_least(k, 7)),
-    atom!("led10", "led", "he led 10 thirds or more", "er 10 Drittel oder mehr anspielte", |k, _| led_at_least(k, 10)),
-    atom!("led13", "led", "he led 13 thirds", "er 13 Drittel anspielte", |k, _| led_at_least(k, 13)),
-    atom!("master", "master", "you hold the top card of the suit", "Sie die höchste Karte der Farbe halten", |k, f| f.is_some_and(|s| holds_master(k, s))),
+    atom!("tu0", "tu", "no tarock still out", "keinem Tarock mehr draußen", |k, _| k.out_tarocks() == 0),
+    atom!("tu2", "tu", "2 or fewer tarocks still out", "höchstens 2 Tarock noch draußen", |k, _| k.out_tarocks() <= 2),
+    atom!("tu4", "tu", "4 or fewer tarocks still out", "höchstens 4 Tarock noch draußen", |k, _| k.out_tarocks() <= 4),
+    atom!("tu6", "tu", "6 or fewer tarocks still out", "höchstens 6 Tarock noch draußen", |k, _| k.out_tarocks() <= 6),
+    atom!("tu8", "tu", "8 or fewer tarocks still out", "höchstens 8 Tarock noch draußen", |k, _| k.out_tarocks() <= 8),
+    atom!("mt6", "mt", "6 or more tarocks of yours", "mindestens 6 eigenen Tarock", |k, _| k.my_tarocks() >= 6),
+    atom!("mt8", "mt", "8 or more tarocks of yours", "mindestens 8 eigenen Tarock", |k, _| k.my_tarocks() >= 8),
+    atom!("mt10", "mt", "10 or more tarocks of yours", "mindestens 10 eigenen Tarock", |k, _| k.my_tarocks() >= 10),
+    atom!("mt12", "mt", "12 or more tarocks of yours", "mindestens 12 eigenen Tarock", |k, _| k.my_tarocks() >= 12),
+    atom!("ml5", "ml", "5 or fewer tarocks of yours", "höchstens 5 eigenen Tarock", |k, _| k.my_tarocks() <= 5),
+    atom!("ml7", "ml", "7 or fewer tarocks of yours", "höchstens 7 eigenen Tarock", |k, _| k.my_tarocks() <= 7),
+    atom!("void", "void", "your opponent out of the suit", "Ihrem Gegner ohne die Farbe", |k, f| f.is_some_and(|s| shown_void(k, s))),
+    atom!("notarock", "notarock", "your opponent out of tarocks", "Ihrem Gegner ohne Tarock", |k, _| shown_no_tarock(k)),
+    atom!("skus", "skus", "the Sküs still out", "dem Sküs noch draußen", |k, _| skus_out(k)),
+    atom!("mond", "mond", "the Mond in your hand", "dem Mond in Ihrer Hand", |k, _| k.playable().contains(Card::MOND)),
+    atom!("left13", "left", "4⅓ points or fewer of the suit left", "höchstens 4⅓ Punkten der Farbe übrig", |k, f| f.is_some_and(|s| left_thirds(k, s) <= 13)),
+    atom!("left26", "left", "8⅔ points or fewer of the suit left", "höchstens 8⅔ Punkten der Farbe übrig", |k, f| f.is_some_and(|s| left_thirds(k, s) <= 26)),
+    atom!("ph1", "ph", "trick 1 to 9 under way", "dem 1. bis 9. Stich", |k, _| k.trick_number <= 9),
+    atom!("ph2", "ph", "trick 10 to 18 under way", "dem 10. bis 18. Stich", |k, _| (10..=18).contains(&k.trick_number)),
+    atom!("ph3", "ph", "trick 19 to 27 under way", "dem 19. bis 27. Stich", |k, _| k.trick_number >= 19),
+    atom!("cov1", "cov", "a cover of yours", "einem eigenen Paketblatt", |k, _| my_covers(k) >= 1),
+    atom!("cov2", "cov", "two covers of yours", "zwei eigenen Paketblättern", |k, _| my_covers(k) >= 2),
+    atom!("hc1", "hc", "your opponent showing a cover of the suit", "Ihrem Gegner mit einem Paketblatt der Farbe", |k, f| f.is_some_and(|s| his_covers(k, s) >= 1)),
+    atom!("hc2", "hc", "your opponent showing two covers of the suit", "Ihrem Gegner mit zwei Paketblättern der Farbe", |k, f| f.is_some_and(|s| his_covers(k, s) >= 2)),
+    atom!("led1", "led", "a card led", "einem Anspiel", |k, _| led_at_least(k, 1)),
+    atom!("led4", "led", "a card worth 1⅓ points or more led", "einem Anspiel von mindestens 1⅓ Punkten", |k, _| led_at_least(k, 4)),
+    atom!("led7", "led", "a card worth 2⅓ points or more led", "einem Anspiel von mindestens 2⅓ Punkten", |k, _| led_at_least(k, 7)),
+    atom!("led10", "led", "a card worth 3⅓ points or more led", "einem Anspiel von mindestens 3⅓ Punkten", |k, _| led_at_least(k, 10)),
+    atom!("led13", "led", "a card worth 4⅓ points led", "einem Anspiel von 4⅓ Punkten", |k, _| led_at_least(k, 13)),
+    atom!("master", "master", "the suit's top card in your hand", "der höchsten Karte der Farbe in Ihrer Hand", |k, f| f.is_some_and(|s| holds_master(k, s))),
 ];
 
 pub fn atom_index(id: &str) -> usize {
@@ -162,7 +165,12 @@ pub struct Class {
     pub id: &'static str,
     pub idea: &'static str,
     pub atoms: &'static [&'static str],
-    /// The action, English and German (infinitive).
+    /// What opens the sentence before the atoms: "With" (German "Mit"), or
+    /// the trigger when it fits ("Following with").
+    pub lead_en: &'static str,
+    pub lead_de: &'static str,
+    /// The action, English and German (infinitive), with the trigger where
+    /// it is not in the lead.
     pub en: &'static str,
     pub de: &'static str,
     pub focus: fn(&Knowledge) -> Option<Suit>,
@@ -233,11 +241,13 @@ fn lead_split(k: &Knowledge, a: &Action, tarock: bool) -> Option<bool> {
 }
 
 macro_rules! class {
-    ($id:expr, $idea:expr, $atoms:expr, $en:expr, $de:expr, $focus:expr, $check:expr) => {
+    ($id:expr, $idea:expr, $atoms:expr, $lead:expr, $en:expr, $de:expr, $focus:expr, $check:expr) => {
         Class {
             id: $id,
             idea: $idea,
             atoms: $atoms,
+            lead_en: $lead.0,
+            lead_de: $lead.1,
             en: $en,
             de: $de,
             focus: $focus,
@@ -246,24 +256,28 @@ macro_rules! class {
     };
 }
 
+const WITH: (&str, &str) = ("With", "Mit");
+const FOLLOWING: (&str, &str) = ("Following with", "Beim Bedienen mit");
+
 /// The ideas and their classes (`docs/HINTS.md` 5.2). The triggers are M5's
 /// (`rules::CANDIDATES`) without their numbers: the atoms say the numbers.
+/// Texts avoid the words the tutor's voice does not use (`m5r_tests`).
 pub const CLASSES: &[Class] = &[
-    class!("worth.poor/no-king", "worth.poor", A_POOR, "on a low lead, do not win with a king", "bei niedrigem Anspiel nicht mit einem König stechen", focus_led, |k, a| rules::poor_king(k, a, 4)),
-    class!("cheap/outcome", "cheap", A_CHEAP, "play the cheapest card that gives the same result", "die billigste Karte mit gleichem Ergebnis spielen", focus_led, |k, a| rules::cheapest(k, a, false)),
-    class!("cheap/winner", "cheap", A_CHEAP, "win with the cheapest card that wins", "mit der billigsten stechenden Karte stechen", focus_led, |k, a| rules::cheapest(k, a, true)),
-    class!("off/follow-cover", "off", A_OFF, "follow with a cover", "mit einem Paketblatt bedienen", focus_led, |k, a| rules::off_any(k, a, false)),
-    class!("off/lead-cover", "off", A_OFF, "lead a cover", "ein Paketblatt anspielen", focus_lead_cover, |k, a| rules::off_any(k, a, true)),
-    class!("off/figure-cover", "off", A_OFF, "play a Dame or Cavall cover", "ein Paketblatt Dame oder Cavall spielen", focus_figure, rules::figure_any),
-    class!("off/figure-higher", "off", A_OFF, "play the higher Dame or Cavall cover", "das höhere Paketblatt Dame oder Cavall spielen", focus_figure, |k, a| rules::figure_played(k, a, false)),
-    class!("run/top", "run", A_RUN, "lead the top of your neighbouring tarocks, else the lowest", "das höchste Ihrer benachbarten Tarock anspielen, sonst das niedrigste", focus_none, rules::run_top),
-    class!("run/any", "run", A_RUN, "lead one of your neighbouring tarocks, else the lowest", "eines Ihrer benachbarten Tarock anspielen, sonst das niedrigste", focus_none, rules::run_any),
-    class!("pagat/keep", "pagat", A_PAGAT, "keep the Pagat", "den Pagat behalten", focus_led, |k, a| rules::pagat_keep(k, a, 0)),
-    class!("pagat/cash", "pagat", A_PAGAT, "play the Pagat", "den Pagat spielen", focus_led, |k, a| rules::pagat_cash(k, a, 99)),
-    class!("void/avoid", "void", A_VOID, "do not lead the suit he lacks", "die Farbe, die ihm fehlt, nicht anspielen", focus_void, rules::void_lead),
-    class!("mond/mond", "mond", A_MOND, "answer his lead with the Mond", "sein Anspiel mit dem Mond beantworten", focus_led, mond_check),
-    class!("trumps/tarock", "trumps", A_TRUMPS, "lead a tarock", "ein Tarock anspielen", focus_none, |k, a| lead_split(k, a, true)),
-    class!("trumps/suit", "trumps", A_TRUMPS, "lead a suit card", "eine Farbkarte anspielen", focus_none, |k, a| lead_split(k, a, false)),
+    class!("worth.poor/no-king", "worth.poor", A_POOR, WITH, "if a king of yours would win, play another card", "würde ein König von Ihnen stechen, eine andere Karte spielen", focus_led, |k, a| rules::poor_king(k, a, 4)),
+    class!("cheap/outcome", "cheap", A_CHEAP, FOLLOWING, "win or lose with the fewest-points card", "stechen oder nicht, mit der punkteärmsten Karte", focus_led, |k, a| rules::cheapest(k, a, false)),
+    class!("cheap/winner", "cheap", A_CHEAP, FOLLOWING, "take the trick with the fewest-points card that wins", "den Stich mit der punkteärmsten stechenden Karte holen", focus_led, |k, a| rules::cheapest(k, a, true)),
+    class!("off/follow-cover", "off", A_OFF, FOLLOWING, "play a cover", "ein Paketblatt spielen", focus_led, |k, a| rules::off_any(k, a, false)),
+    class!("off/lead-cover", "off", A_OFF, WITH, "lead a cover", "ein Paketblatt anspielen", focus_lead_cover, |k, a| rules::off_any(k, a, true)),
+    class!("off/figure-cover", "off", A_OFF, WITH, "play a Dame or Cavall cover", "ein Paketblatt Dame oder Cavall spielen", focus_figure, rules::figure_any),
+    class!("off/figure-higher", "off", A_OFF, WITH, "play the higher Dame or Cavall cover", "das höhere Paketblatt Dame oder Cavall spielen", focus_figure, |k, a| rules::figure_played(k, a, false)),
+    class!("run/top", "run", A_RUN, WITH, "lead the top of your tarocks next in rank, else your lowest", "das höchste Ihrer im Rang aufeinanderfolgenden Tarock anspielen, sonst das niedrigste", focus_none, rules::run_top),
+    class!("run/any", "run", A_RUN, WITH, "lead a tarock next in rank to another of yours, else your lowest", "ein Tarock anspielen, das im Rang neben einem Ihrer Tarock steht, sonst das niedrigste", focus_none, rules::run_any),
+    class!("pagat/keep", "pagat", A_PAGAT, FOLLOWING, "keep the Pagat", "den Pagat behalten", focus_led, |k, a| rules::pagat_keep(k, a, 0)),
+    class!("pagat/cash", "pagat", A_PAGAT, FOLLOWING, "play the Pagat", "den Pagat spielen", focus_led, |k, a| rules::pagat_cash(k, a, 99)),
+    class!("void/avoid", "void", A_VOID, WITH, "do not lead the suit your opponent lacks", "die Farbe, die Ihrem Gegner fehlt, nicht anspielen", focus_void, rules::void_lead),
+    class!("mond/mond", "mond", A_MOND, FOLLOWING, "answer your opponent's lead with the Mond", "das Anspiel Ihres Gegners mit dem Mond beantworten", focus_led, mond_check),
+    class!("trumps/tarock", "trumps", A_TRUMPS, WITH, "when leading, choose a tarock over a suit card", "beim Anspielen ein Tarock einer Farbkarte vorziehen", focus_none, |k, a| lead_split(k, a, true)),
+    class!("trumps/suit", "trumps", A_TRUMPS, WITH, "when leading, choose a suit card over a tarock", "beim Anspielen eine Farbkarte einem Tarock vorziehen", focus_none, |k, a| lead_split(k, a, false)),
 ];
 
 pub fn class_index(id: &str) -> usize {
@@ -435,20 +449,42 @@ fn mask_of(atoms: &[usize]) -> u32 {
     atoms.iter().fold(0, |m, &a| m | (1 << a))
 }
 
+/// A candidate's precision and where it fires.
+#[derive(Clone, Copy, Debug)]
+pub struct Eval {
+    /// Precision clustered by deal.
+    pub prec: Precision,
+    /// The share of deals in which the candidate fires.
+    pub reach: f64,
+    /// The share of its firings in tricks 10 to 27, and in tricks 19 to 27.
+    pub late10: f64,
+    pub late19: f64,
+}
+
 /// A candidate's precision (clustered by deal) over the firings where its
-/// atoms hold, and its reach: the share of deals in which it fires.
-pub fn evaluate(log: &Log, class: usize, atoms: &[usize]) -> (Precision, f64) {
+/// atoms hold, its reach and its share of late firings.
+pub fn evaluate(log: &Log, class: usize, atoms: &[usize]) -> Eval {
     let need = mask_of(atoms);
+    let (ph1, ph3) = (1u32 << atom_index("ph1"), 1u32 << atom_index("ph3"));
     let mut fired = vec![0.0; log.ndeals];
     let mut sat = vec![0.0; log.ndeals];
+    let (mut n, mut l10, mut l19) = (0.0, 0.0, 0.0);
     for e in &log.by_class[class] {
         if e.mask & need == need {
             fired[e.deal as usize] += 1.0;
             sat[e.deal as usize] += f64::from(u8::from(e.ok));
+            n += 1.0;
+            l10 += f64::from(u8::from(e.mask & ph1 == 0));
+            l19 += f64::from(u8::from(e.mask & ph3 != 0));
         }
     }
-    let reach = fired.iter().filter(|&&f| f > 0.0).count() as f64 / log.ndeals.max(1) as f64;
-    (measure::precision(&sat, &fired), reach)
+    let share = |x: f64| if n > 0.0 { x / n } else { 0.0 };
+    Eval {
+        prec: measure::precision(&sat, &fired),
+        reach: fired.iter().filter(|&&f| f > 0.0).count() as f64 / log.ndeals.max(1) as f64,
+        late10: share(l10),
+        late19: share(l19),
+    }
 }
 
 /// The smallest effective sample a candidate may be fitted or pass on.
@@ -462,6 +498,8 @@ pub struct Cand {
     pub atoms: Vec<usize>,
     pub prec: Precision,
     pub reach: f64,
+    pub late10: f64,
+    pub late19: f64,
 }
 
 /// The fit of one class on the selection data.
@@ -487,7 +525,7 @@ pub fn select(log: &Log) -> Vec<Selected> {
             let always = log.by_class[class]
                 .iter()
                 .fold(u32::MAX, |m, e| m & e.mask);
-            let (base, _) = evaluate(log, class, &[]);
+            let base = evaluate(log, class, &[]).prec;
             let mut ncand = 0;
             let mut eligible = 0;
             let mut best: Option<Cand> = None;
@@ -497,14 +535,14 @@ pub fn select(log: &Log) -> Vec<Selected> {
                         continue;
                     }
                     ncand += 1;
-                    let (prec, reach) = evaluate(log, class, &atoms);
+                    let Eval { prec, reach, late10, late19 } = evaluate(log, class, &atoms);
                     if prec.n_eff >= MIN_N && prec.lower >= GATE {
                         eligible += 1;
                         let wider = best.as_ref().is_none_or(|b| {
                             (prec.fired, prec.lower) > (b.prec.fired, b.prec.lower)
                         });
                         if wider {
-                            best = Some(Cand { atoms, prec, reach });
+                            best = Some(Cand { atoms, prec, reach, late10, late19 });
                         }
                     }
                 }
@@ -522,11 +560,21 @@ pub fn select(log: &Log) -> Vec<Selected> {
 
 // ---- the sequential confirmation ---------------------------------------------------
 
-/// The one-sided boundaries at the four looks: the two-sided O'Brien-Fleming
-/// boundaries of `stats::Plan { looks: 4 }`, rounded as fixed in the plan.
+/// The boundaries of the first run (superseded): the two-sided O'Brien-
+/// Fleming boundaries of `stats::Plan { looks: 4 }` at 0.05, rounded, used
+/// one-sided.
 pub const BOUNDARIES: [f64; 4] = [4.05, 2.86, 2.34, 2.02];
 /// Futility from the second look.
 pub const FUTILITY_Z: f64 = -1.645;
+/// Looks of the confirmation.
+pub const LOOKS: usize = 4;
+
+/// The boundaries when `k` classes are confirmed: the Bonferroni level
+/// 0.05 / k (the two-sided level whose boundaries are used one-sided, as
+/// above), O'Brien-Fleming for four looks, from `stats.rs`, two decimals.
+pub fn family_boundaries(k: usize) -> Vec<f64> {
+    crate::stats::obf_boundaries(0.05 / k.max(1) as f64, LOOKS)
+}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Step {
@@ -540,16 +588,16 @@ pub fn z_of(p: &Precision) -> f64 {
     (p.p - GATE) / (GATE * (1.0 - GATE) / p.n_eff).sqrt()
 }
 
-/// The decision at `look` (1 to 4): pass at or above the boundary with an
-/// effective sample of at least 60; fail from the second look at z at most
-/// -1.645, and at the last look without a pass.
-pub fn step(look: usize, p: &Precision) -> Step {
-    let last = look >= BOUNDARIES.len();
+/// The decision at `look` (1 to 4) against `bounds`: pass at or above the
+/// boundary with an effective sample of at least 60; fail from the second
+/// look at z at most -1.645, and at the last look without a pass.
+pub fn step(look: usize, p: &Precision, bounds: &[f64]) -> Step {
+    let last = look >= bounds.len();
     if p.fired == 0 || p.n_eff <= 0.0 {
         return if last { Step::Fail } else { Step::Continue };
     }
     let z = z_of(p);
-    if z >= BOUNDARIES[look - 1] && p.n_eff >= MIN_N {
+    if z >= bounds[look - 1] && p.n_eff >= MIN_N {
         Step::Pass
     } else if (look >= 2 && z <= FUTILITY_Z) || last {
         Step::Fail
@@ -559,6 +607,10 @@ pub fn step(look: usize, p: &Precision) -> Step {
 }
 
 // ---- wording -------------------------------------------------------------------------
+
+/// Classes whose rules passed but are not told (the review of 17 Oct 2026:
+/// over the word budget as worded, or failing settings).
+pub const NOT_SHIPPED: [&str; 2] = ["run/any", "void/avoid"];
 
 /// A rule that passed M5r (`m5r_rules.rs`, generated).
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -572,22 +624,29 @@ pub struct PassedRule {
     pub lower: f64,
     /// The share of deals in which the rule fires.
     pub reach: f64,
+    /// The share of its firings in tricks 10 to 27, and in tricks 19 to 27.
+    pub late10: f64,
+    pub late19: f64,
+    /// At least 80% of the firings are after trick 9: the "Why?" says the
+    /// rule describes play late in the deal.
+    pub late: bool,
     /// Fires in fewer than one deal in 40: true, but not counted for reach.
     pub too_rare: bool,
     /// The lower bound is at least 0.80 under every other setting.
     pub settings_ok: bool,
     /// The sentence is within the budget: condition at most 8 words, action
-    /// at most 10 ([`word_counts`]). A rule that does not fit is true but
-    /// not told in these words.
+    /// at most 10 ([`word_counts`]).
     pub fits_budget: bool,
+    /// Told: fits the budget and is not in [`NOT_SHIPPED`].
+    pub ships: bool,
 }
 
-/// The "so" sentence of a rule: the atoms' clauses joined with "and", then
-/// the class's action. English: "When A and B, act."; German: "Wenn A und B:
-/// act."
+/// The "so" sentence of a rule: the class's lead, the atoms' phrases joined
+/// with "and", then the action. English: "With A and B, act."; German: "Mit A
+/// und B: act."
 pub fn sentence(atoms: &[&str], class: &str, de: bool) -> String {
     let cl = &CLASSES[class_index(class)];
-    let clauses: Vec<&str> = atoms
+    let phrases: Vec<&str> = atoms
         .iter()
         .map(|a| {
             let a = &ATOMS[atom_index(a)];
@@ -599,9 +658,9 @@ pub fn sentence(atoms: &[&str], class: &str, de: bool) -> String {
         })
         .collect();
     if de {
-        format!("Wenn {}: {}.", clauses.join(" und "), cl.de)
+        format!("{} {}: {}.", cl.lead_de, phrases.join(" und "), cl.de)
     } else {
-        format!("When {}, {}.", clauses.join(" and "), cl.en)
+        format!("{} {}, {}.", cl.lead_en, phrases.join(" and "), cl.en)
     }
 }
 
@@ -609,20 +668,20 @@ fn words(s: &str) -> usize {
     s.split_whitespace().count()
 }
 
-/// The words of the condition (the atoms' clauses, without "when" and "and")
-/// and of the action, in English.
+/// The words of the condition (the atoms' phrases) and of the action (with
+/// the trigger words of the lead beyond "With"), in English.
 pub fn word_counts(atoms: &[&str], class: &str) -> (usize, usize) {
+    let cl = &CLASSES[class_index(class)];
     let cond = atoms.iter().map(|a| words(ATOMS[atom_index(a)].en)).sum();
-    (cond, words(CLASSES[class_index(class)].en))
+    (cond, words(cl.en) + words(cl.lead_en) - 1)
 }
 
 /// As [`word_counts`], in German.
 pub fn word_counts_de(atoms: &[&str], class: &str) -> (usize, usize) {
+    let cl = &CLASSES[class_index(class)];
     let cond = atoms.iter().map(|a| words(ATOMS[atom_index(a)].de)).sum();
-    (cond, words(CLASSES[class_index(class)].de))
+    (cond, words(cl.de) + words(cl.lead_de) - 1)
 }
-
-// ---- what the hint reads ----------------------------------------------------------------
 
 /// Whether a passed rule holds at this decision and the action is in its
 /// class: its idea's trigger fires, every atom holds, the card is in the
@@ -637,13 +696,63 @@ pub fn rule_matches(r: &PassedRule, k: &Knowledge, action: &Action) -> bool {
     mask & need == need
 }
 
-/// The passed rules that hold at this decision for the card the hint
+/// The shipped rules that hold at this decision for the card the hint
 /// plays, widest first (most firings): the hint's "so" is the first.
 pub fn matching(k: &Knowledge, action: &Action) -> Vec<&'static PassedRule> {
     let mut v: Vec<&'static PassedRule> = PASSED
         .iter()
-        .filter(|r| rule_matches(r, k, action))
+        .filter(|r| r.ships && rule_matches(r, k, action))
         .collect();
     v.sort_by_key(|r| std::cmp::Reverse(r.fired));
     v
+}
+
+/// The text of `m5r_rules.rs` from the confirmation and settings lists
+/// (`docs/measurements/m5r-confirmed.tsv`, `m5r-settings.tsv`): the passed
+/// rows of the first, with the settings verdict, reach and word budget.
+pub fn emit_source(confirmed: &str, settings: &str) -> String {
+    let mut out = String::from(
+        "//! The rules that passed M5r (`docs/MEASUREMENTS.md`), generated by\n\
+         //! `m5r emit` from `docs/measurements/m5r-confirmed.tsv` and\n\
+         //! `m5r-settings.tsv` (a test checks it). Do not edit.\n\n\
+         use crate::m5r::PassedRule;\n\n\
+         pub const PASSED: &[PassedRule] = &[\n",
+    );
+    for line in confirmed.lines() {
+        let f: Vec<&str> = line.split('\t').collect();
+        if f[2] != "pass" {
+            continue;
+        }
+        let (class, atoms) = (f[0], f[1]);
+        let ids: Vec<&str> = atoms.split(',').filter(|a| !a.is_empty()).collect();
+        let ok = settings
+            .lines()
+            .find(|l| l.starts_with(&format!("{class}\t{atoms}\t")))
+            .is_some_and(|l| {
+                l.split('\t').skip(2).all(|c| {
+                    let v: Vec<&str> = c.split(':').collect();
+                    v[1] != "0" && v[4].parse::<f64>().is_ok_and(|x| x >= GATE)
+                })
+            });
+        let reach: f64 = f[8].parse().expect("reach");
+        let late10: f64 = f[9].parse().expect("late10");
+        let (cw, aw) = word_counts(&ids, class);
+        let fits = cw <= 8 && aw <= 10;
+        let list: Vec<String> = ids.iter().map(|a| format!("{a:?}")).collect();
+        out.push_str(&format!(
+            "    PassedRule {{\n        id: \"{class}:{}\",\n        class: \"{class}\",\n        atoms: &[{}],\n        fired: {},\n        precision: {},\n        n_eff: {},\n        lower: {},\n        reach: {reach},\n        late10: {late10},\n        late19: {},\n        late: {},\n        too_rare: {},\n        settings_ok: {ok},\n        fits_budget: {fits},\n        ships: {},\n    }},\n",
+            ids.join("+"),
+            list.join(", "),
+            f[4],
+            f[5],
+            f[6],
+            f[7],
+            f[10],
+            late10 >= 0.80,
+            reach < 1.0 / 40.0,
+            fits && !NOT_SHIPPED.contains(&class),
+        ));
+    }
+    out.push_str("];\n");
+    out
 }
