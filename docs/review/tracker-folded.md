@@ -51,3 +51,10 @@ Scope: branch `worktree-agent-af0ef1a423223724b` against main: `web3d/src/main.j
    tests with `Cannot find package 'three'` (from `kit/js/materials.js`) after
    `npm ci --prefix web3d`, because `node_modules` is under `web3d/`. Not caused by
    this change; resolved by a temporary `kit/node_modules` link.
+
+## Fixes
+
+- Finding 1 (high): `trackerUnfolded` reset in the `deal_start` case; `tracker_fold_and_settings` now plays to the next deal and checks the tab and panel are folded (it failed before the fix) (4fb0163).
+- Finding 3: the `tracker.test.js` loop and size argument dropped (4fb0163).
+- Finding 5: the TABLE3D 6.8 line rewrapped, and says the next deal starts folded (4fb0163).
+- Findings 2, 4, 6: no change.
