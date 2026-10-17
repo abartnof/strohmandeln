@@ -32,13 +32,13 @@ when both pass have one block for each value of `values`, `ultimo` and
 ## The tarocks
 
 - The tarocks are trumps: the Sküs is the highest, then XXI, XX down to II; I, the Pagat, is the lowest.
-- Rank is not value: the Pagat is lowest, yet worth 5 points, the most a card is worth, like the Sküs and XXI.
+- Rank is not value: the Pagat is lowest, yet worth 5 card points, the most, like the Sküs and XXI.
 - Tarot cards were made to play with, in Italy, by 1442. Fortune-telling is first heard of in 1781, in France.
 - Nothing here tells your fortune. Austrians still play Tarock, and Piatnik still sells Tarock packs.
 
 ## The suits
 
-- Each suit runs K, Q, C, J. The C is the Cavall, a knight, between queen and jack, worth 3 points.
+- Each suit runs K, Q, C, J. The C is the Cavall, a knight, between queen and jack, worth 3 card points.
 - The 52-card pack dropped him. Pips: 10 9 8 7 in clubs and spades.
 - In hearts and diamonds the pips run backwards: the 1 is highest, the 4 lowest.
 - Real courts carry pictures, not letters. These big letters are for a quick look.
@@ -63,7 +63,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 - **I take it up** (*Ich nehme auf*) means you will play for the win. You are the declarer.
 - **Pass** (*Weiter*) means you let it go.
 - Cards are worth: kings (K), Sküs, Mond and Pagat 5; queens (Q) 4; cavalls (C) 3; jacks (J) 2; every other card 1.
-- Counted in threes, the 54 cards make 70 points. A declarer needs 36 of them.
+- Counted in threes, the 54 cards make 70 card points. A declarer needs 36 of them.
 - [Card values and the count](#thirds)
 <!-- if values=2/3/4 -->
 - The declarer who wins gets 3 Points; one who loses pays 4.
@@ -170,17 +170,17 @@ when both pass have one block for each value of `values`, `ultimo` and
 
 ## The reckoning
 
-- A **Point** is what is paid. The count of 36 points only decides who wins the game.
+- To win you need 36 card points of the 70 in the pack. The winner is then paid in Points, marked on the slate.
 <!-- if values=2/3/4 -->
-- The declarer who wins gets 3 Points; one who loses pays 4.
+- The declarer who wins gets 3 Points, however many card points they took; one who loses pays 4.
 - With the Trull announced as well, a win pays 3 + 1 = 4.
 <!-- end -->
 <!-- if values=1/2/3 -->
-- The declarer who wins gets 2 Points; one who loses pays 3.
+- The declarer who wins gets 2 Points, however many card points they took; one who loses pays 3.
 - With the Trull announced as well, a win pays 2 + 1 = 3.
 <!-- end -->
 <!-- if values=1/2/4 -->
-- The declarer who wins gets 2 Points; one who loses pays 4.
+- The declarer who wins gets 2 Points, however many card points they took; one who loses pays 4.
 - With the Trull announced as well, a win pays 2 + 1 = 3.
 <!-- end -->
 <!-- if values=2/3/4 both_pass=play -->
@@ -258,7 +258,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 
 ## 36 of 70
 
-- The two takes always add up to 70 points, and 36 is more than half of 70.
+- The two takes always add up to 70 card points, and 36 is more than half of 70.
 - The count keeps thirds, so a take can be 35⅔. Rounded to the nearest whole number that is 36; 35⅓ would be 35. The rule: 35⅔ wins, 35⅓ does not.
 - When one take has 35⅔, the other has 34⅓.
 - In a declared game the declarer needs 35⅔ or more. With less he loses, even with 35⅓. There is no draw.
@@ -270,7 +270,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 
 - While you play, the line at the top gives the Tour, the deal and the trick, such as Trick 14 / 27.
 - The score runs as you take tricks. After each trick every line holds the cards won so far, counted as the count will count them.
-- The number beside the score line is the tally in exact thirds. The line fills one segment for each whole point, up to 36.
+- The number beside the score line is the tally in exact thirds. The line fills one segment for each whole card point, up to 36.
 - After the 27th trick the count begins again from nothing. Each take is turned up, three cards at a time, and over each group a figure rises: the group's count, such as +6 for the king, jack and seven.
 - It ends on the same numbers the tally had. A take that reaches 35⅔ lights the finish; one that ends on 35⅓ is marked "35⅓ is not 36".
 - Honours and ultimo come after the count, in Points. They have their own row, "Honours and ultimo", and are not added to the 36.
@@ -278,15 +278,15 @@ when both pass have one block for each value of `values`, `ultimo` and
 
 ## What the game is worth
 
-- The count decides who wins. The game is then paid between the two of you, in Points. A Point is a unit of payment, not a point of the count.
+- The count decides who wins. The game is then paid between the two of you, in Points. A Point is a unit of payment, not a card point.
 <!-- if values=2/3/4 -->
-- The declarer who wins gets 3 Points; one who loses pays 4. The size of the count does not matter: 36 points and 45 points pay the same.
+- The declarer who wins gets 3 Points; one who loses pays 4. The size of the count does not matter: 36 card points and 45 card points pay the same.
 <!-- end -->
 <!-- if values=1/2/3 -->
-- The declarer who wins gets 2 Points; one who loses pays 3. The size of the count does not matter: 36 points and 45 points pay the same.
+- The declarer who wins gets 2 Points; one who loses pays 3. The size of the count does not matter: 36 card points and 45 card points pay the same.
 <!-- end -->
 <!-- if values=1/2/4 -->
-- The declarer who wins gets 2 Points; one who loses pays 4. The size of the count does not matter: 36 points and 45 points pay the same.
+- The declarer who wins gets 2 Points; one who loses pays 4. The size of the count does not matter: 36 card points and 45 card points pay the same.
 <!-- end -->
 <!-- if values=2/3/4 both_pass=play -->
 - A plain game pays its winner 2. A draw pays nothing for the game.

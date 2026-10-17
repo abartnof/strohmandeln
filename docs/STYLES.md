@@ -51,7 +51,7 @@ ladder's logic, not a teachers' sequence):
 
 `burden` is the finesse half of `worth` (do not spend an honour on a poor
 trick); the rest are zero, so a lead is the cheapest card and a tarock costs
-`spend`. Bid: take up only with at least 60 sure thirds (20 points), any tarock
+`spend`. Bid: take up only with at least 60 sure thirds (20 card points), any tarock
 count (the `bid` skill presupposes `worth`, research/16 s2). `STRONG`, `WEAK`,
 `THREAT` are unused (every weight that reads them is zero). A test per level:
 a deterministic function of seed and view, as the `rung2` tests are.
@@ -112,7 +112,7 @@ from Normal only where the text does. Parameters are names in `rung2.rs`.
 
 | Writer | Parameter | Value | Text | Tag |
 |---|---|---|---|---|
-| Bermann | Bid | 60 sure thirds (20 points), queens counted as figures, no tarock minimum | Be 145-146 "20 bis 25 Points in Honneurs und höheren Figuren" "unbedenklich"; no tarock count is stated; "no minimum" from the tarocks' "Nebenrolle" (146) | T; I (the tarock minimum, one step) |
+| Bermann | Bid | 60 sure thirds (20 card points), queens counted as figures, no tarock minimum | Be 145-146 "20 bis 25 Points in Honneurs und höheren Figuren" "unbedenklich"; no tarock count is stated; "no minimum" from the tarocks' "Nebenrolle" (146) | T; I (the tarock minimum, one step) |
 | Bermann | Exposed figure | no `low_shown < 2` exception: play a lying Dame or Cavall always when the opponent's packets show blanks ("leere Blätter" read as blank pips, as Be 151 "leeren Karten") | Be 148 "so sind sie stets abzuspielen"; Normal keeps the exception (U 74, MS agree on it) | T; the reading stated |
 | Bermann | Mond reserve (`guard-mond`: `keep_tarocks` up when holding the Mond without the Sküs) | keep one or more small tarocks | Be 151-152 | T |
 | Bermann | Cash an unescorted Mond (`cash-mond`, new) | play it at a fitting chance | Be 151-152 "stets bei passender Gelegenheit einstechen" | T |

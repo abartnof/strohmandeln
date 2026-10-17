@@ -81,7 +81,7 @@ Definitions the table leans on:
   inference, so the tutor judges with what rung 3 knows).
 - **Split suit**: the counting cards of the suit not yet played are shared
   about evenly between the two known holdings. The share is measured (section 11,
-  M8); the engine's rung 2 uses 30-70% of the suit's 18 points, a design choice.
+  M8); the engine's rung 2 uses 30-70% of the suit's 18 card points, a design choice.
 - **Exact**: both players' face-down packet cards are all turned, so the
   opponent's hand follows from the log by elimination.
 - A card played from a packet is a **cover** played (`source` "packet n").
@@ -450,7 +450,7 @@ skill's entry.
 | | try.2 | Count first; sometimes a low card wins what the king would not. | Erst zählen; manchmal gewinnt eine kleine Karte, was der König nicht gewinnt. |
 | | nudge | The position is known now: count. | Die Lage ist jetzt bekannt: zählen. |
 | `bid` | name | taking up | das Aufnehmen |
-| | rule | Take up with 20 to 25 points of sure winners and 6 or 7 tarocks. | Aufnehmen mit 20 bis 25 Augen sicherer Stecher und 6 bis 7 Tarock. |
+| | rule | Take up with 20 to 25 card points of sure winners and 6 or 7 tarocks. | Aufnehmen mit 20 bis 25 Augen sicherer Stecher und 6 bis 7 Tarock. |
 | | fact | Sure winners: the Sküs, the Mond, kings, guarded queens. | Sichere Stecher: Sküs, Mond, Könige, besetzte Damen. |
 | | try.1 | Add up your sure winners: Sküs, Mond, kings, guarded queens. | Zählen Sie Ihre sicheren Stecher: Sküs, Mond, Könige, besetzte Damen. |
 | | try.2 | Count your tarocks too; few make the game risky. | Zählen Sie auch Ihre Tarock; wenige machen das Spiel riskant. |

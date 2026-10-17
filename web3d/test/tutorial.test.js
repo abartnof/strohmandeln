@@ -155,7 +155,7 @@ test("the cards page says what the tarocks and the C are, with the dates, in bot
   assert.match(en, /Nothing here tells your fortune/);
   assert.match(en, /Austrians still play Tarock, and Piatnik still sells Tarock packs/);
   assert.doesNotMatch(en, /Vienna|this pack|If I may/, "what research/15-S11 shows and no more");
-  assert.match(en, /C is the Cavall, a knight[^\n]*worth 3 points/);
+  assert.match(en, /C is the Cavall, a knight[^\n]*worth 3 card points/);
   assert.match(en, /52-card pack dropped him/);
   assert.match(en, /big letters are for a quick look/);
   const de = text("de", "the-cards");
