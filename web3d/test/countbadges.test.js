@@ -75,3 +75,10 @@ test("the badges of a take sum to the take's thirds, a badge a group, in the ord
   }
   assert.ok(checked >= 6, `${checked} counts checked`);
 });
+
+test("the badge and its tooltip use the page's font, not a stack of their own", () => {
+  const css = readFileSync(new URL("../src/style.css", import.meta.url), "utf8");
+  const block = css.slice(css.indexOf("the count's badges"));
+  assert.doesNotMatch(block, /font:[^;]*(system-ui|sans-serif)/);
+  assert.doesNotMatch(block, /-apple-system/);
+});
