@@ -274,3 +274,15 @@ test("every style id the engine can name has a name and a line in both languages
     for (const k of [`style.${id}.name`, `style.${id}.line`]) assert.ok(TABLE[k]?.en && TABLE[k]?.de, k);
   }
 });
+
+// Plain words (HINTS 7, which covers the tutor too): no jargon of price about cards.
+test("no tutor, review or style string says cheap, dear, costs or billig, teuer, kostet", () => {
+  const bad = { en: /\b(cheap|cheaper|cheapest|dear|dearer|dearest|costs?|costing|costly|costliest)\b/i, de: /billig|teuer|kostet|kostete|kosten/i };
+  for (const [key, v] of Object.entries(TABLE)) {
+    if (key.startsWith("hint.")) continue;
+    for (const lang of ["en", "de"]) {
+      const m = v[lang].match(bad[lang]);
+      assert.ok(!m, `${lang} ${key}: "${m && m[0]}" is a price word (HINTS 7)`);
+    }
+  }
+});

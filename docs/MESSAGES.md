@@ -285,7 +285,7 @@ in the Kibitzer's tab at the first clear chance at the focus
 | Key | Parameters | English | Deutsch | Basis |
 |---|---|---|---|---|
 | `tutor.name.worth` | none | judging a trick's worth | Den Wert eines Stichs abschätzen | Be 147; MS "Das Nach-hinten-Spielen" |
-| `tutor.name.cheap` | none | paying with the cheapest card | Mit der billigsten Karte zahlen | MS "Das Nach-hinten-Spielen"; U 75 |
+| `tutor.name.cheap` | none | paying with the lowest-value card | Mit der punkteärmsten Karte zahlen | MS "Das Nach-hinten-Spielen"; U 75 |
 | `tutor.name.off` | none | playing your covers off | Die eigenen Decken abspielen | W 134; U 71-75; Be 145, 148; MS |
 | `tutor.name.run` | none | leading tarocks from a run | Tarock aus einer Reihe anspielen | U 73-74; MS |
 | `tutor.name.pagat` | none | timing the Pagat | Den Pagat zur rechten Zeit spielen | U 74; MS; W 133 |
@@ -317,12 +317,12 @@ in the Kibitzer's tab at the first clear chance at the focus
 | Key | Parameters | English | Deutsch | Basis |
 |---|---|---|---|---|
 | `tutor.fact.worth` | none | A trick is worth the card points of its two cards. | Ein Stich ist so viel wert wie die Augen seiner beiden Karten. | RULES 8.1 |
-| `tutor.fact.cheap` | none | Two cards can win the same trick; the dearer one costs you card points. | Zwei Karten können denselben Stich gewinnen; die teurere kostet Sie Augen. | RULES 8.1 |
+| `tutor.fact.cheap` | none | Two cards can win one trick; the one worth more gives away card points. | Zwei Karten können denselben Stich gewinnen; die wertvollere gibt mehr Augen her. | RULES 8.1 |
 | `tutor.fact.off` | none | Hidden cards lie under a cover until it is played. | Verdeckte Karten liegen unter der Decke, bis sie gespielt wird. | RULES 5.2, 6.1 |
 | `tutor.fact.run` | none | Tarocks in an unbroken run win tricks one after another. | Tarock in geschlossener Reihe machen Stich um Stich. | U 73-74 |
 | `tutor.fact.pagat` | none | The Pagat is the lowest tarock; played last, it wins or loses a Point. | Der Pagat ist das niedrigste Tarock; im letzten Stich gewinnt oder verliert er einen Point. | RULES 1.4, 5.3, 12.2 |
 | `tutor.fact.void` | none | Out of the suit led, a player must play a tarock if able. | Fehlt die ausgespielte Farbe, muss ein Tarock gespielt werden, wenn eines da ist. | RULES 5.4 |
-| `tutor.fact.behind` | none | Opening a suit where your opponent holds more card points tends to cost you. | Eine Farbe zu eröffnen, in der der Gegner mehr Augen hält, kostet meist etwas. | W 134-135, MS (a suit the hands contest); M8: the cost of opening falls as your share of its points rises; against: Be 150-151 |
+| `tutor.fact.behind` | none | Opening a suit where your opponent holds more card points tends to lose card points. | Eine Farbe zu eröffnen, in der der Gegner mehr Augen hält, verliert meist Augen. | W 134-135, MS (a suit the hands contest); M8: the cost of opening falls as your share of its points rises; against: Be 150-151 |
 | `tutor.fact.endgame` | none | When every packet is turned, your opponent's cards can be worked out. | Sind alle Pakete aufgedeckt, lassen sich die Karten Ihres Gegners ausrechnen. | RULES 13.6 |
 | `tutor.fact.bid` | none | The sure winners are the Sküs, the Mond, kings and guarded queens. | Sichere Stecher sind Sküs, Mond, Könige und besetzte Damen. | W 131; MS |
 | `tutor.fact.announce` | none | An honour you hold but never announce is not paid. | Ein Honneur, den Sie halten, aber nicht ansagen, wird nicht bezahlt. | RULES 11.1, 11.5 |
@@ -333,8 +333,8 @@ in the Kibitzer's tab at the first clear chance at the focus
 |---|---|---|---|---|
 | `tutor.try.worth.1` | none | Before you follow, ask what the cards on the table are worth. | Fragen Sie vor dem Zugeben, was die ausliegenden Karten wert sind. | Be 147; MS "Das Nach-hinten-Spielen" |
 | `tutor.try.worth.2` | none | A king can wait for a queen or a cavall. | Ein König kann auf eine Dame oder einen Cavall warten. | Be 147; MS "Das Nach-hinten-Spielen" |
-| `tutor.try.cheap.1` | none | Compare your two cheapest winners before you pick. | Vergleichen Sie Ihre zwei billigsten Stecher, ehe Sie wählen. | MS "Das Nach-hinten-Spielen"; U 75 |
-| `tutor.try.cheap.2` | none | When nothing wins, give the card that costs least. | Gewinnt nichts, die Karte zugeben, die am wenigsten kostet. | MS "Das Nach-hinten-Spielen"; U 75 |
+| `tutor.try.cheap.1` | none | Compare your two lowest-value winners before you pick. | Vergleichen Sie Ihre zwei wertniedrigsten Stecher, ehe Sie wählen. | MS "Das Nach-hinten-Spielen"; U 75 |
+| `tutor.try.cheap.2` | none | When nothing wins, give the card worth least. | Gewinnt nichts, die wertniedrigste Karte zugeben. | MS "Das Nach-hinten-Spielen"; U 75 |
 | `tutor.try.off.1` | none | Look at your covers before your hand cards. | Sehen Sie zuerst Ihre Decken an, dann die Handkarten. | W 134; U 71-75; Be 145, 148; MS |
 | `tutor.try.off.2` | none | Keep a cover queen if your opponent shows two low cards of its suit. | Zeigt der Gegner zwei niedrige Karten dieser Farbe, bleibt die Dame liegen. | W 134; U 71-75; Be 145, 148; MS |
 | `tutor.try.run.1` | none | Look for your longest unbroken run before you lead a tarock. | Suchen Sie die längste geschlossene Reihe, ehe Sie Tarock anspielen. | U 73-74; MS |
@@ -357,7 +357,7 @@ in the Kibitzer's tab at the first clear chance at the focus
 | Key | Parameters | English | Deutsch | Basis |
 |---|---|---|---|---|
 | `tutor.nudge.worth` | none | This trick is worth a thought. | Dieser Stich ist eine Überlegung wert. | TUTOR 6; shown after `tutor.lead.rule` |
-| `tutor.nudge.cheap` | none | Think which card is cheapest here. | Überlegen Sie, welche Karte hier die billigste ist. | TUTOR 6; shown after `tutor.lead.rule` |
+| `tutor.nudge.cheap` | none | Think which card is worth least here. | Überlegen Sie, welche Karte hier am wenigsten wert ist. | TUTOR 6; shown after `tutor.lead.rule` |
 | `tutor.nudge.off` | none | A cover could be played here. | Hier ließe sich eine Decke spielen. | TUTOR 6; shown after `tutor.lead.rule` |
 | `tutor.nudge.run` | none | Think which tarock to lead. | Überlegen Sie, welches Tarock Sie anspielen. | TUTOR 6; shown after `tutor.lead.rule` |
 | `tutor.nudge.pagat` | none | Mind the Pagat here. | Achtung auf den Pagat. | TUTOR 6; shown after `tutor.lead.rule` |
