@@ -776,7 +776,7 @@ worth.rich.1,announce.1` and the same with `57000000 v124`, `58000000 throwin`,
 
 ## M5r Rule refinement
 
-### Plan (2026-10-17, before the selection run)
+### Plan v1 (2026-10-17, before the first selection run; superseded by v2 below)
 
 Specified in `docs/HINTS.md` 5.2; code in `crates/strohmandeln-ai/src/m5r.rs`
 (tests in `m5r_tests.rs`), binary `m5r`. Mirrored pairs are not used: no two
@@ -835,10 +835,10 @@ and "and"), action at most 10; tested for passed rules.
 confirm | settings | emit` (flags in the binary's header). Looks are logged
 to `confirm.log` in the output directory.
 
-### M5r result (2026-10-17)
+### M5r result v1 (2026-10-17; superseded by v2: the tarock count was `unseen`, not the table's `out`; no family correction)
 
 Constants in force: none (the atoms and classes read no tutor constant). Printed output: `docs/measurements/
-m5r-select.txt`, `m5r-confirm.txt`, `m5r-settings.txt`. The lists written to
+m5r-v1-select.txt`, `m5r-v1-confirm.txt`, `m5r-v1-settings.txt`. The lists written to
 disk by the run (`selection.tsv`, `confirmed.tsv`, `settings.tsv`) are
 reproduced in the tables below; `m5r emit` turns the confirmed and settings
 lists into `crates/strohmandeln-ai/src/m5r_rules.rs`.
@@ -949,6 +949,53 @@ are out or held (`tu4`, `tu6`, `tu8`, `ml5`, `ml7`). For `off`, the Mond and
 rung 4 does (keeps the Pagat 86% of the time with 5 or fewer tarocks), not a
 book's advice; M5's candidate `pagat.cash` (the Pagat with few tarocks) has
 0.185 here too.
+
+### Plan v2 (2026-10-17, before the selection run)
+
+Changes from v1, decided on the review (`docs/review/m5r.md`, "Fixes"); all
+else as v1.
+
+- **Tarocks out** (`tu` atoms) is `Knowledge::out_tarocks`: not mine and not
+  played, as the Cards-out tab's line 1 counts (unseen plus his face-up
+  tarocks); a test equals it to the tracker's count on sample views. v1 used
+  `unseen_tarocks` (differs from the table in 71% of decisions).
+- **Family correction.** The classes taken forward from the selection are
+  confirmed together: k = their number, fixed when the selection ends and
+  committed (with the boundaries from `m5r bounds --k K`) before the first
+  confirmation batch. The overall one-sided level is 0.025 / k (Bonferroni);
+  as in v1 the two-sided O'Brien-Fleming boundaries are used one-sided, so the
+  two-sided level is 0.05 / k and the four boundaries are
+  `stats::obf_boundaries(0.05 / k, 4)` (numerical integration of the joint
+  density of the partial sums, two decimals; at k = 1 it gives 4.05 / 2.86 /
+  2.34 / 2.02). A rule passes only under these. Minimum n_eff 60, futility from
+  look 2 at z <= -1.645, fail at look 4 without a pass, as v1.
+- **Seeds** (fresh): selection 71,000,000 (400 sittings); confirmation
+  76,000,000 (batches of 100); settings 77,000,000 (values 1/2/3),
+  78,000,000 (1/2/4), 79,000,000 (both pass: throw in), 80,000,000 (ultimo 2),
+  200 sittings each. The v1 blocks (60 to 69 million) are not reused; 60 and 65
+  million are also `measure`'s tune and fresh defaults, 80 million is also M8's
+  first seed (a different statistic, so no dependence).
+- **Wording.** Noun-phrase atoms after "With" ("Mit"); the class's lead names the
+  trigger where it fits ("Following with"); points, not thirds; the opponent is
+  "your opponent"; no "cheap", "neighbouring"; a test over every template
+  string fails a banned word. Budget as v1 (condition at most 8 words, action
+  at most 10, the lead's trigger words counted with the action); v1's
+  per-rule test was loosened after the first run to a `fits_budget` flag per
+  rule (the budget is a presentation limit, not a gate); `run/any` and
+  `void/avoid` are never shipped (`NOT_SHIPPED`).
+- **Late share.** Each rule's data carries the share of its firings in tricks
+  10 to 27 and 19 to 27 (`late10`, `late19`); `late` is set at 80% or more
+  after trick 9.
+- **Reproducibility.** The lists `selection.tsv`, `confirmed.tsv`,
+  `settings.tsv` are committed in `docs/measurements/` (`m5r-*.tsv`) and a test
+  checks that `m5r emit` over them is `m5r_rules.rs`. The selection log
+  (about 20 MB) is not committed: the selection table is reproduced by
+  running `select`.
+- **Commands**: `m5r select --out $D`; `m5r bounds --k K`;
+  `m5r confirm --k K --out $D`; `m5r settings --out $D`;
+  `m5r emit --confirmed $D/confirmed.tsv --settings $D/settings.tsv >
+  crates/strohmandeln-ai/src/m5r_rules.rs`. Wall seconds are printed; CPU
+  is `time`'s user time, recorded below.
 
 ## M6 Diagnosis
 
