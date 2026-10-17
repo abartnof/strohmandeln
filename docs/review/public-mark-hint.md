@@ -28,8 +28,7 @@ ok. No test, unit or browser, drives the dot or the note in the page (finding 7)
    `prefs.hints` and then the mute separately (to show the "Tips are off (§ 13)" line).
    Three copies of one rule (6.3.5 says "one condition"). Fix: export `hintsOn` from
    one place (tracker.js or tutor.js) and define `trackerVisible = hintsOn(p) && p.tracker`;
-   main.js:981-982 can read `if (!hintsOnly...)` as `prefs.hints` then the mute test as
-   now, since the chip needs to distinguish the muted case, but say so in a comment.
+   the chip must keep `prefs.hints` and the mute apart (it shows "Tips are off" when muted), so say so in a comment.
    Also `main.js:364` and :417 test `prefs.tutor && prefs.muted` inline.
 
 3. **Medium. The note can fire before any dot exists.** `publicNote` runs at the first
