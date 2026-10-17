@@ -60,7 +60,7 @@ fn rich(k: &Knowledge, a: &Action, least: u32) -> Option<bool> {
     (led.thirds() >= least && !win.is_empty()).then(|| win.contains(&card))
 }
 
-fn poor_king(k: &Knowledge, a: &Action, at_most: u32) -> Option<bool> {
+pub(crate) fn poor_king(k: &Knowledge, a: &Action, at_most: u32) -> Option<bool> {
     let led = k.lead?;
     let card = played(a)?;
     let king_wins = k.legal.iter().any(|&c| c.is_king() && !leader_wins(led, c));
@@ -70,7 +70,7 @@ fn poor_king(k: &Knowledge, a: &Action, at_most: u32) -> Option<bool> {
 
 /// The cheapest card of the class the card played is in (it wins, or it
 /// does not), by what it costs, then by strength.
-fn cheapest(k: &Knowledge, a: &Action, winners_only: bool) -> Option<bool> {
+pub(crate) fn cheapest(k: &Knowledge, a: &Action, winners_only: bool) -> Option<bool> {
     let led = k.lead?;
     let card = played(a)?;
     let wins = |c: Card| !leader_wins(led, c);
@@ -92,18 +92,18 @@ fn cheapest(k: &Knowledge, a: &Action, winners_only: bool) -> Option<bool> {
 }
 
 /// A cover and a hand card are both legal.
-fn cover_choice(k: &Knowledge) -> bool {
+pub(crate) fn cover_choice(k: &Knowledge) -> bool {
     k.legal.iter().any(|&c| k.is_cover(c)) && k.legal.iter().any(|&c| !k.is_cover(c))
 }
 
-fn off_any(k: &Knowledge, a: &Action, leading: bool) -> Option<bool> {
+pub(crate) fn off_any(k: &Knowledge, a: &Action, leading: bool) -> Option<bool> {
     let card = played(a)?;
     (k.lead.is_none() == leading && cover_choice(k)).then(|| k.is_cover(card))
 }
 
 /// The legal figure covers (Dame or Cavall of a suit) when a hand card is
 /// also legal.
-fn figures(k: &Knowledge) -> Vec<Card> {
+pub(crate) fn figures(k: &Knowledge) -> Vec<Card> {
     if !cover_choice(k) {
         return Vec::new();
     }
@@ -125,16 +125,16 @@ fn shows_two_low(k: &Knowledge, suit: Suit) -> bool {
 }
 
 /// Of the figures, the one the rule says to play: the higher.
-fn first_figure(figs: &[Card]) -> Option<Card> {
+pub(crate) fn first_figure(figs: &[Card]) -> Option<Card> {
     figs.iter().copied().max_by_key(|c| c.strength())
 }
 
-fn figure_any(k: &Knowledge, a: &Action) -> Option<bool> {
+pub(crate) fn figure_any(k: &Knowledge, a: &Action) -> Option<bool> {
     let card = played(a)?;
     (!figures(k).is_empty()).then(|| k.is_cover(card))
 }
 
-fn figure_played(k: &Knowledge, a: &Action, exception: bool) -> Option<bool> {
+pub(crate) fn figure_played(k: &Knowledge, a: &Action, exception: bool) -> Option<bool> {
     let card = played(a)?;
     let mut figs = figures(k);
     if exception {
@@ -180,7 +180,7 @@ fn lowest(cards: &[Card]) -> Option<Card> {
     cards.iter().copied().min_by_key(|c| c.strength())
 }
 
-fn run_top(k: &Knowledge, a: &Action) -> Option<bool> {
+pub(crate) fn run_top(k: &Knowledge, a: &Action) -> Option<bool> {
     let (card, mine, runs) = tarock_lead(k, a)?;
     Some(match runs.iter().max_by_key(|r| r.len()) {
         Some(longest) => longest.iter().max_by_key(|c| c.strength()) == Some(&card),
@@ -188,7 +188,7 @@ fn run_top(k: &Knowledge, a: &Action) -> Option<bool> {
     })
 }
 
-fn run_any(k: &Knowledge, a: &Action) -> Option<bool> {
+pub(crate) fn run_any(k: &Knowledge, a: &Action) -> Option<bool> {
     let (card, mine, runs) = tarock_lead(k, a)?;
     Some(if runs.is_empty() {
         lowest(&mine) == Some(card)
@@ -212,17 +212,17 @@ fn pagat_choice(k: &Knowledge) -> bool {
     k.lead.is_some() && k.legal.contains(&Card::PAGAT) && k.legal.len() >= 2
 }
 
-fn pagat_cash(k: &Knowledge, a: &Action, at_most: usize) -> Option<bool> {
+pub(crate) fn pagat_cash(k: &Knowledge, a: &Action, at_most: usize) -> Option<bool> {
     let card = played(a)?;
     (pagat_choice(k) && k.my_tarocks() <= at_most).then(|| card == Card::PAGAT)
 }
 
-fn pagat_keep(k: &Knowledge, a: &Action, at_least: usize) -> Option<bool> {
+pub(crate) fn pagat_keep(k: &Knowledge, a: &Action, at_least: usize) -> Option<bool> {
     let card = played(a)?;
     (pagat_choice(k) && k.my_tarocks() >= at_least).then(|| card != Card::PAGAT)
 }
 
-fn void_lead(k: &Knowledge, a: &Action) -> Option<bool> {
+pub(crate) fn void_lead(k: &Knowledge, a: &Action) -> Option<bool> {
     let card = played(a)?;
     let into = |c: Card| c.suit().is_some_and(|s| shown_void(k, s));
     (k.lead.is_none() && k.legal.iter().any(|&c| into(c)) && k.legal.iter().any(|&c| !into(c)))

@@ -180,6 +180,16 @@ impl Knowledge {
         self.playable().iter().filter(|c| c.is_tarock()).count()
     }
 
+    /// The tarocks still out, as the Cards-out tab counts them
+    /// (`tracker`, `Group::out`): not mine and not played, so the unseen ones
+    /// and those face up on his covers or known in his hand.
+    pub fn out_tarocks(&self) -> usize {
+        let mine = self.playable();
+        Card::all()
+            .filter(|c| c.is_tarock() && !self.played.contains(*c) && !mine.contains(*c))
+            .count()
+    }
+
     /// The tarocks I cannot place, the opponent's or in packets.
     pub fn unseen_tarocks(&self) -> usize {
         self.unseen.iter().filter(|c| c.is_tarock()).count()

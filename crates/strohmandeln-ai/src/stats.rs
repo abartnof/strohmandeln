@@ -29,6 +29,57 @@ pub fn obf_constant(looks: usize) -> f64 {
     C[looks - 1]
 }
 
+/// The O'Brien-Fleming constant for `looks` equally spaced looks at the
+/// overall two-sided level `alpha` (the boundary at look k is this times
+/// sqrt(looks / k)), by numerical integration of the joint density of the
+/// partial sums (Armitage, McPherson and Rowe's recursion): on the scale of
+/// the sums the O'Brien-Fleming boundary is one constant, c sqrt(looks).
+/// `obf_constant` is the table at 0.05; this gives any level, as the family
+/// correction of M5r needs.
+pub fn obf_constant_at(alpha: f64, looks: usize) -> f64 {
+    assert!(alpha > 0.0 && alpha < 1.0 && looks >= 1);
+    const N: usize = 600;
+    let phi = |x: f64| (-0.5 * x * x).exp() / (2.0 * std::f64::consts::PI).sqrt();
+    // The chance of staying inside the boundary at every look.
+    let stay = |c: f64| -> f64 {
+        let b = c * (looks as f64).sqrt();
+        let h = 2.0 * b / N as f64;
+        let grid: Vec<f64> = (0..N).map(|i| -b + (i as f64 + 0.5) * h).collect();
+        let mut f: Vec<f64> = grid.iter().map(|&s| phi(s)).collect();
+        for _ in 1..looks {
+            f = grid
+                .iter()
+                .map(|&t| {
+                    grid.iter()
+                        .zip(&f)
+                        .map(|(&s, &fs)| fs * phi(t - s) * h)
+                        .sum()
+                })
+                .collect();
+        }
+        f.iter().sum::<f64>() * h
+    };
+    let (mut lo, mut hi) = (1.0, 9.0);
+    for _ in 0..50 {
+        let mid = 0.5 * (lo + hi);
+        if 1.0 - stay(mid) > alpha {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    0.5 * (lo + hi)
+}
+
+/// The boundaries at each of `looks` looks for overall two-sided level
+/// `alpha`, rounded to two decimals.
+pub fn obf_boundaries(alpha: f64, looks: usize) -> Vec<f64> {
+    let c = obf_constant_at(alpha, looks);
+    (1..=looks)
+        .map(|k| ((c * (looks as f64 / k as f64).sqrt()) * 100.0).round() / 100.0)
+        .collect()
+}
+
 /// A sequential run's design, fixed before its first batch.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Plan {
@@ -164,6 +215,21 @@ pub fn run_sequential(
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn the_constant_at_any_level_matches_the_table() {
+        for looks in 1..=5 {
+            let c = obf_constant_at(0.05, looks);
+            assert!((c - obf_constant(looks)).abs() < 0.01, "{looks}: {c}");
+        }
+        assert_eq!(obf_boundaries(0.05, 4)[0], 4.05);
+        let strict = obf_boundaries(0.05 / 7.0, 4);
+        let plain = obf_boundaries(0.05, 4);
+        for (s, p) in strict.iter().zip(&plain) {
+            assert!(s > p);
+        }
+        assert!(strict[3] > 2.6 && strict[3] < 2.8, "{strict:?}");
+    }
+
     use super::*;
     use strohmandeln_core::rng::Rng;
 

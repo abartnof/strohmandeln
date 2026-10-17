@@ -1,0 +1,21 @@
+k = 6 classes, boundaries [5.34, 3.77, 3.08, 2.67], futility z <= -1.645
+look 1 (100 sittings, 97s wall) worth.poor/no-king [ml7] fired 266 p 0.838 n_eff 239 lower 0.786 z 1.48 (boundary 5.34) reach 0.315 late10 0.703: Continue
+look 1 (100 sittings, 97s wall) cheap/outcome [tu4] fired 1748 p 0.848 n_eff 1473 lower 0.829 z 4.64 (boundary 5.34) reach 0.957 late10 0.999: Continue
+look 1 (100 sittings, 97s wall) cheap/winner [tu8,ml7] fired 1594 p 0.816 n_eff 1502 lower 0.796 z 1.57 (boundary 5.34) reach 0.953 late10 0.981: Continue
+look 1 (100 sittings, 97s wall) run/any [tu8] fired 1864 p 0.817 n_eff 1809 lower 0.799 z 1.81 (boundary 5.34) reach 0.795 late10 0.943: Continue
+look 1 (100 sittings, 97s wall) pagat/keep [ml7] fired 506 p 0.800 n_eff 459 lower 0.761 z 0.02 (boundary 5.34) reach 0.343 late10 0.672: Continue
+look 1 (100 sittings, 97s wall) trumps/suit [skus] fired 3657 p 0.800 n_eff 2178 lower 0.783 z 0.04 (boundary 5.34) reach 0.612 late10 0.494: Continue
+look 2 (200 sittings, 176s wall) worth.poor/no-king [ml7] fired 541 p 0.826 n_eff 522 lower 0.791 z 1.50 (boundary 3.77) reach 0.315 late10 0.719: Continue
+look 2 (200 sittings, 176s wall) cheap/outcome [tu4] fired 3586 p 0.850 n_eff 3106 lower 0.837 z 6.96 (boundary 3.77) reach 0.967 late10 0.999: Pass
+look 2 (200 sittings, 176s wall) cheap/winner [tu8,ml7] fired 3194 p 0.821 n_eff 3098 lower 0.807 z 2.91 (boundary 3.77) reach 0.944 late10 0.977: Continue
+look 2 (200 sittings, 176s wall) run/any [tu8] fired 3712 p 0.817 n_eff 3712 lower 0.804 z 2.60 (boundary 3.77) reach 0.785 late10 0.936: Continue
+look 2 (200 sittings, 176s wall) pagat/keep [ml7] fired 1059 p 0.790 n_eff 888 lower 0.762 z -0.72 (boundary 3.77) reach 0.360 late10 0.712: Continue
+look 2 (200 sittings, 176s wall) trumps/suit [skus] fired 7188 p 0.800 n_eff 4058 lower 0.787 z -0.01 (boundary 3.77) reach 0.606 late10 0.489: Continue
+look 3 (300 sittings, 239s wall) worth.poor/no-king [ml7] fired 838 p 0.837 n_eff 825 lower 0.810 z 2.62 (boundary 3.08) reach 0.320 late10 0.730: Continue
+look 3 (300 sittings, 239s wall) cheap/winner [tu8,ml7] fired 4784 p 0.822 n_eff 4739 lower 0.811 z 3.73 (boundary 3.08) reach 0.934 late10 0.977: Pass
+look 3 (300 sittings, 239s wall) run/any [tu8] fired 5557 p 0.820 n_eff 5419 lower 0.809 z 3.66 (boundary 3.08) reach 0.786 late10 0.941: Pass
+look 3 (300 sittings, 239s wall) pagat/keep [ml7] fired 1604 p 0.798 n_eff 1381 lower 0.776 z -0.19 (boundary 3.08) reach 0.359 late10 0.693: Continue
+look 3 (300 sittings, 239s wall) trumps/suit [skus] fired 10938 p 0.799 n_eff 6200 lower 0.789 z -0.15 (boundary 3.08) reach 0.614 late10 0.491: Continue
+look 4 (400 sittings, 308s wall) worth.poor/no-king [ml7] fired 1156 p 0.841 n_eff 1156 lower 0.819 z 3.47 (boundary 2.67) reach 0.330 late10 0.737: Pass
+look 4 (400 sittings, 308s wall) pagat/keep [ml7] fired 2184 p 0.799 n_eff 1880 lower 0.781 z -0.06 (boundary 2.67) reach 0.360 late10 0.688: Fail
+look 4 (400 sittings, 308s wall) trumps/suit [skus] fired 14734 p 0.802 n_eff 8567 lower 0.793 z 0.42 (boundary 2.67) reach 0.615 late10 0.489: Fail
