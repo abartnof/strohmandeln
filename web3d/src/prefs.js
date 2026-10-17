@@ -17,12 +17,24 @@ export const VALUES = Object.freeze(["2/3/4", "1/2/3", "1/2/4"]);
 export const ULTIMO = Object.freeze([1, 2]);
 export const TOUREN = Object.freeze([3, 6]);
 export const SKILLS = Object.freeze([1, 2, 3, 3.5, 4]);
-// The styles the new-sitting screen offers after Normal and Random, in order: the single place to
-// edit when docs/STYLES.md's gates change the list (9: Werner fell out at stage 0; later stages
-// may drop more). The engine knows more ids than this (docs/PROTOCOL.md).
-// Stage 1 (STYLES 9): Ulmann fell out too, a twin of Normal; Hunter is provisional.
+// The styles the new-sitting screen offers after Normal and Random, in order (docs/STYLES.md 9:
+// Werner and Ulmann fell out; Hunter is provisional). The engine's `styles()` is the source
+// once it exists (offeredStyles); this list is the fallback until then, and is deleted with it.
 export const OFFERED_STYLES = Object.freeze(["bermann", "ms", "bold", "cautious", "hunter"]);
-export const STYLES = Object.freeze(["normal", "random", ...OFFERED_STYLES]);
+
+const styleId = (x) => typeof x === "string" && /^[a-z]{2,16}$/.test(x);
+
+// The offered styles: the engine's own list when it has one (a list of ids, or {styles: [...]}), else the fallback.
+export function offeredStyles(engine) {
+  let got = null;
+  try {
+    got = engine?.styles?.() ?? null;
+  } catch {
+    got = null;
+  }
+  if (got && !Array.isArray(got)) got = got.styles;
+  return Array.isArray(got) && got.length && got.every(styleId) ? got : OFFERED_STYLES;
+}
 export const SPEEDS = Object.freeze(["slow", "normal", "fast", "instant"]);
 export const TALKS = Object.freeze(["all", "calls", "none"]);
 export const FACES = Object.freeze(["auto", "classic", "jumbo"]);
@@ -70,7 +82,7 @@ const CHECKS = {
   ultimo: oneOf(ULTIMO),
   touren: oneOf(TOUREN),
   skill: oneOf(SKILLS),
-  style: oneOf(STYLES),
+  style: (x) => styleId(x) || x === "normal", // the offered list decides what the screen shows (newsitting.js)
   speed: oneOf(SPEEDS),
   talk: oneOf(TALKS),
   tutor: isBool,

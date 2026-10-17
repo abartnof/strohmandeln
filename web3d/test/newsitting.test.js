@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createNewSitting, NEW_KEYS, newSittingModel } from "../src/newsitting.js";
-import { DEFAULTS, STYLES, OFFERED_STYLES } from "../src/prefs.js";
+import { DEFAULTS, OFFERED_STYLES } from "../src/prefs.js";
 import { createStrings } from "../src/strings.js";
 import { fakeRoot } from "./support/fakedom.js";
 
@@ -77,7 +77,6 @@ test("the Style row is a native select: Normal, Random, then the offered styles,
   const style = newSittingModel(DEFAULTS).find((r) => r.key === "style");
   assert.equal(style.kind, "select");
   assert.deepEqual(style.options.map((o) => o.value), ["normal", "random", ...OFFERED_STYLES]);
-  assert.deepEqual(style.options.map((o) => o.value), STYLES);
   const s = createStrings(TABLE, "en");
   const ns = createNewSitting(fakeRoot().ownerDocument, { t: s.t, prefs: { ...DEFAULTS } });
   const sel = ns.node.findAll((e) => e.tagName === "SELECT" && e.getAttribute("data-key") === "style");
@@ -93,7 +92,7 @@ test("each style has a one-line description under the select, which follows the 
     const line = () => ns.node.findAll((e) => e.getAttribute("data-role") === "style-line")[0].textContent;
     assert.equal(line(), TABLE["style.normal.line"][lang]);
     const sel = ns.node.findAll((e) => e.tagName === "SELECT")[0];
-    for (const id of STYLES) {
+    for (const id of ["normal", "random", ...OFFERED_STYLES]) {
       sel.dispatch("change", { target: { value: id } });
       assert.equal(ns.values().style, id);
       assert.equal(line(), TABLE[`style.${id}.line`][lang], id);
@@ -126,4 +125,14 @@ test("the style starts from the sitting on the table, else from the prefs", () =
   const sitting = { touren: 3, both_pass: "play", values: "2/3/4", ultimo: 1, skill: 3, style: "random" };
   assert.deepEqual(sel(createNewSitting(doc, { t: s.t, prefs: { ...DEFAULTS, style: "bold" }, sitting })), ["random"]);
   assert.deepEqual(sel(createNewSitting(doc, { t: s.t, prefs: { ...DEFAULTS, style: "bold" } })), ["bold"]);
+});
+
+test("the Style row follows the list it is given; a kept style that is not in it is Normal", () => {
+  const model = newSittingModel({ ...DEFAULTS, style: "hunter" }, ["bold", "ms"]);
+  const style = model.find((r) => r.key === "style");
+  assert.deepEqual(style.options.map((o) => o.value), ["normal", "random", "bold", "ms"]);
+  assert.deepEqual(style.options.filter((o) => o.selected).map((o) => o.value), ["normal"]);
+  const s = createStrings(TABLE, "en");
+  const ns = createNewSitting(fakeRoot().ownerDocument, { t: s.t, prefs: { ...DEFAULTS, style: "hunter" }, styles: ["bold", "ms"] });
+  assert.equal(ns.values().style, "normal");
 });

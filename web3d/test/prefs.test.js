@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DEFAULTS, VERSION, KEY, loadPrefs, loadPrefsInfo, savePrefs, withUrl, urlOverrides, sittingConfig, speedScale, SKILLS, STYLES, OFFERED_STYLES } from "../src/prefs.js";
+import { DEFAULTS, VERSION, KEY, loadPrefs, loadPrefsInfo, savePrefs, withUrl, urlOverrides, sittingConfig, speedScale, SKILLS, OFFERED_STYLES, offeredStyles } from "../src/prefs.js";
 import { fakeStore } from "./support/fakedom.js";
 
 test("an empty store gives the defaults of the spec", () => {
@@ -83,11 +83,10 @@ test("the skill dial is 1, 2, 3, 3½, 4; a kept half level snaps as the engine d
 
 test("the style is kept; one that is not offered (any more) is Normal", () => {
   assert.equal(DEFAULTS.style, "normal");
-  assert.deepEqual(STYLES.slice(0, 2), ["normal", "random"]);
   assert.deepEqual(OFFERED_STYLES, ["bermann", "ms", "bold", "cautious", "hunter"], "Werner and Ulmann are not offered (STYLES 9)");
   const style = (v) => loadPrefs(fakeStore({ [KEY]: JSON.stringify({ v: 1, style: v }) })).style;
-  for (const id of STYLES) assert.equal(style(id), id);
-  assert.equal(style("werner"), "normal");
+  for (const id of ["normal", "random", ...OFFERED_STYLES]) assert.equal(style(id), id);
+  assert.equal(style("Not An Id!"), "normal");
   assert.equal(style(5), "normal");
   assert.equal(sittingConfig({ ...DEFAULTS, style: "random" }, {}).style, "random");
   assert.equal(sittingConfig({ ...DEFAULTS }, {}).style, "normal");
@@ -127,4 +126,14 @@ test("the tracker's setting is read field by field", () => {
   assert.equal(read({ tracker: false }).tracker, false);
   assert.equal(read({ tracker: "no" }).tracker, true);
   assert.equal("trackerFolded" in read({ trackerFolded: false }), false, "an old saved fold is dropped");
+});
+
+test("the offered styles come from the engine's styles() when it has one, else the fallback list", () => {
+  assert.deepEqual(offeredStyles({}), OFFERED_STYLES);
+  assert.deepEqual(offeredStyles(null), OFFERED_STYLES);
+  assert.deepEqual(offeredStyles({ styles: () => null }), OFFERED_STYLES);
+  assert.deepEqual(offeredStyles({ styles: () => [] }), OFFERED_STYLES);
+  assert.deepEqual(offeredStyles({ styles: () => ["bold", "ms"] }), ["bold", "ms"]);
+  assert.deepEqual(offeredStyles({ styles: () => ({ styles: ["bold"] }) }), ["bold"]);
+  assert.deepEqual(offeredStyles({ styles: () => ["bold", 5, "x y"] }), OFFERED_STYLES, "a malformed list is not trusted");
 });

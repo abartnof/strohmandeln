@@ -4,7 +4,7 @@
 // sitting back, 7.1). It starts from the sitting on the table, else from the
 // kept prefs. The page saves what was chosen when Deal is pressed (3.5.2).
 import { h } from "./dom.js";
-import { BOTH_PASS, VALUES, ULTIMO, TOUREN, SKILLS, STYLES } from "./prefs.js";
+import { BOTH_PASS, VALUES, ULTIMO, TOUREN, SKILLS, OFFERED_STYLES } from "./prefs.js";
 
 // "2/3/4" -> "v234" (a key's tail without slashes).
 const valuesKey = (v) => `v${v.replaceAll("/", "")}`;
@@ -25,36 +25,39 @@ const ROWS = [
 // In the order of 3.5.1.
 export const NEW_KEYS = Object.freeze(["touren", "both_pass", "values", "ultimo", "skill", "style"]);
 
-// The Style row: a native select (Normal, Random, the offered styles: prefs.js STYLES), a line under it for
+// The Style row: a native select (Normal, Random, the offered styles: prefs.js offeredStyles), a line under it for
 // the choice (docs/STYLES.md 5), and at skills 3.5 and 4 a note (STYLES 3).
-const STYLE_ROW = { key: "style", kind: "select", labelKey: "settings.style", options: STYLES.map((value) => ({ value, labelKey: `style.${value}.name`, lineKey: `style.${value}.line` })) };
+const styleRow = (offered) => ({ key: "style", kind: "select", labelKey: "settings.style", options: ["normal", "random", ...offered].map((value) => ({ value, labelKey: `style.${value}.name`, lineKey: `style.${value}.line` })) });
 const BIDDING_SKILLS = [3.5, 4];
 const showsInBidding = (chosen) => BIDDING_SKILLS.includes(chosen.skill) && chosen.style !== "normal";
 
 // The rows for these choices (the prefs' keys): { key, labelKey, options: [{ value, labelKey, selected }] }.
-export function newSittingModel(prefs) {
+export function newSittingModel(prefs, offered = OFFERED_STYLES) {
   return NEW_KEYS.map((key) => {
-    const row = key === "style" ? STYLE_ROW : ROWS.find((r) => r.key === key);
+    const row = key === "style" ? styleRow(offered) : ROWS.find((r) => r.key === key);
+    // a kept style that is not (or no longer) offered reads as Normal
+    const current = key === "style" && !row.options.some((o) => o.value === prefs.style) ? "normal" : prefs[key];
     const long = key === "touren"; // "3 Touren (6 deals)" here, "3 Touren" in the menu
     return {
       key,
       ...(row.kind ? { kind: row.kind } : {}),
       labelKey: long ? "ui.new.length" : row.labelKey,
-      options: row.options.map((o) => ({ value: o.value, labelKey: long ? `ui.new.length.${o.value}` : o.labelKey, ...(o.lineKey ? { lineKey: o.lineKey } : {}), selected: o.value === prefs[key] })),
+      options: row.options.map((o) => ({ value: o.value, labelKey: long ? `ui.new.length.${o.value}` : o.labelKey, ...(o.lineKey ? { lineKey: o.lineKey } : {}), selected: o.value === current })),
     };
   });
 }
 
 // Draws the body into a fresh element of `doc`; `values()` is what is chosen.
-export function createNewSitting(doc, { t, prefs, sitting = null }) {
-  const model = newSittingModel({ ...prefs, ...sitting });
+export function createNewSitting(doc, { t, prefs, sitting = null, styles = OFFERED_STYLES }) {
+  const model = newSittingModel({ ...prefs, ...sitting }, styles);
   const chosen = Object.fromEntries(model.map((r) => [r.key, r.options.find((o) => o.selected)?.value ?? r.options[0].value]));
+  const styleOptions = model.find((r) => r.key === "style").options;
   const buttons = [];
 
   const styleLine = h(doc, "p", { class: "new-note style-line", "data-role": "style-line" });
   const styleNote = h(doc, "p", { class: "new-note style-note", "data-role": "style-note" });
   const showStyle = () => {
-    const o = STYLE_ROW.options.find((x) => x.value === chosen.style);
+    const o = styleOptions.find((x) => x.value === chosen.style);
     styleLine.textContent = o ? t(o.lineKey) : "";
     styleNote.textContent = showsInBidding(chosen) ? t("style.note.bidding") : "";
   };

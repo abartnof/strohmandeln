@@ -29,6 +29,8 @@ export async function loadEngine(bytes, onTrap) {
       explain: () => call("explain"),
       tracker: () => call("tracker"),
       audit: () => call("audit"),
+      // The styles the engine offers (docs/PROTOCOL.md), or null while the module has no such export (prefs.js offeredStyles).
+      styles: () => (typeof ex.strohmandeln_styles === "function" ? call("styles") : null),
       // The tutor (docs/PROTOCOL.md "The tutor"); stateless but for the focus.
       ...tutorApi(call, callNumber),
     },
