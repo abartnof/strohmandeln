@@ -61,7 +61,7 @@ hint's; `ask.beat` is only in "Why?".
 |---|---|---|---|---|
 | `ask.beat` | Can I win it? / Kann ich ihn holen? | follow | research/16 `worth` (classes: beats the card led, does not); RULES 5.5 (no obligation to win) | `worth` |
 | `ask.worth` | Is the trick worth it? / Lohnt der Stich? | follow | Be p. 147 (a smaller trick, or wait for a higher count; research/16 `worth`); MS "den König schinden und ein Skartindel zugeben" (research/07 1.3) | `worth` |
-| `ask.cheap` | Which card costs least? / Welche Karte kostet am wenigsten? | follow | research/16 `cheap` (MS "Das Nach-hinten-Spielen", U p. 75) | `cheap` |
+| `ask.cheap` | Which card is worth least? / Welche Karte ist am wenigsten wert? | follow | research/16 `cheap` (MS "Das Nach-hinten-Spielen", U p. 75) | `cheap` |
 | `ask.keep` | Is {keep} safe to keep? / Ist {keep} sicher aufgehoben? | both | Pagat: MS keep it with more than 11 tarocks, cash it with 7 or fewer (research/07 1.4, 1.5), U p. 74; W p. 133 says only that it cannot be announced ultimo; Mond: U p. 74 and MS's Mondfang, the Mond-holder keeps one or two small tarocks so that he leads and the Mond answers (research/07 1.5, research/16 "Guarding the Mond"); packet kept against his Pagat ultimo: W p. 134 (research/07 1.2) | `pagat` |
 | `ask.beneath` | What lies beneath? / Was liegt darunter? | both | research/07 1.2 (MS: play the packets off, an exposed Dame or Cavall at once; W p. 134; U p. 71-75); RULES 6.1 (the card beneath is turned); research/16 `off` | `off` |
 | `ask.out` | What can still beat it? / Was kann sie noch schlagen? | lead | research/07 1.2 (W "genaues Tarokzählen", which card is major; MS counts of suits played and trumped), 1.3 (MS: a king trumped); research/16 `void`, `endgame` | `void`, `endgame` |
@@ -323,13 +323,13 @@ glosses it in the same hint.
 | follow suit, trump | `following` |
 | tarock, Sküs, Mond, Pagat | `the-cards` |
 | packet, cover, "beneath", turned up | `packets`, `from-a-packet` |
-| point(s), thirds | `thirds` |
+| card point(s), thirds, "worth", "worth least" (the card whose value is lowest: what is lost if the trick is lost) | `thirds` |
 | "still out", "master" (top card left) | Cards-out legend and line 2 (`TABLE3D.md` 6.6.4, 6.6.5) |
 | "showed no {suit}" | Cards-out line 3 |
 | "sampled deals" | the "Why?" first line: "I deal his hidden cards at random {w} times and play each out." |
 | "Mondfang" | glossed in "Why?" only: "answer his lead with the Mond, so the Sküs cannot catch it" |
 
-Not used: "key card", "draw his", "solid run" (a tarock "next in rank to another of
+Not used: "cheap", "cheapest", "dear", "dearer", "costs" and "billig", "teuer", "kostet" (a newcomer has not met them: say "worth least", "worth more", "the lowest-value card that wins", "you lose {n}"; a test fails them in any hint string unless this table lists them), "key card", "draw his", "solid run" (a tarock "next in rank to another of
 yours" instead), "open a suit" ("lead"), "ultimo" except after `pagat-ultimo`.
 
 ## 8. The quality bar
@@ -587,3 +587,8 @@ Changes after the review of package 1 (17 Oct 2026, `docs/review/hints-package-1
   lines dropped when 90 words are spent. `answers` stays empty; the anchors are on
   the lines (`data-anchor`) and nothing is highlighted yet.
 - `lead-draw`, `lead-exposed`, `lead-his-none` no longer say "lead {card}".
+
+Plain words (17 Oct 2026): hint strings say "worth least", "worth more" and "the
+lowest-value card that wins" where the notes said cheapest and dearer; in English
+the count's unit is "card point(s)" (`hint.unit.*`), in German Augen. Section 7
+lists the terms; `web3d/test/hinttext.test.js` fails any other price word.

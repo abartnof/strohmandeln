@@ -18,8 +18,8 @@ const words = (lang) => {
 
 test("a card parameter is named, a _thirds parameter is told in points, a count is told by the language", () => {
   const p = hintParams({ card: "T19", led: "Jh", trick_thirds: 14, given_thirds: 1, tarocks: 8 }, words("en"));
-  assert.deepEqual(p, { card: "tarock 19", led: "jack of hearts", trick_thirds: "4⅔ points", given_thirds: "⅓ point", tarocks: "8" });
-  assert.equal(hintParams({ n_thirds: 3 }, words("en")).n_thirds, "1 point");
+  assert.deepEqual(p, { card: "tarock 19", led: "jack of hearts", trick_thirds: "4⅔ card points", given_thirds: "⅓ card point", tarocks: "8" });
+  assert.equal(hintParams({ n_thirds: 3 }, words("en")).n_thirds, "1 card point");
   assert.equal(hintParams({ n_thirds: 6 }, words("de")).n_thirds, "2 Augen");
 });
 
@@ -33,10 +33,10 @@ test("a hint reads: the card, why, the rule, the odds", () => {
   };
   const en = hintLines(r, words("en"));
   assert.equal(en.lead, "Play tarock 19.");
-  assert.equal(en.reason, "Tarock 19 beats tarock 15 and takes ⅔ point; it is the cheapest winner, and Mond also wins but costs more to spend.");
+  assert.equal(en.reason, "Tarock 19 beats tarock 15 and takes ⅔ card point; it is the lowest-value card that wins, and Mond also wins but is worth more.");
   assert.equal(en.more.length, 2);
   assert.match(en.more[0], /^Rule: do not spend a king/);
-  assert.equal(en.more[1], "Against Mond: ahead in 7 of 10 sampled deals, by 1⅓ points on average.");
+  assert.equal(en.more[1], "Against Mond: ahead in 7 of 10 sampled deals, by 1⅓ card points on average.");
   assert.match(hintSpoken(en), /^Play tarock 19\. Tarock 19 beats/);
   const de = hintLines(r, words("de"));
   assert.equal(de.lead, "Tarock 19 spielen.");
@@ -47,7 +47,7 @@ test("a hint without a card to play has no lead, without rule or odds no more", 
   const r = { hint: { action: "take" }, reason: "bid-weak-hand", params: { sure_thirds: 40, tarocks: 4 }, rule: null, odds: null };
   const en = hintLines(r, words("en"));
   assert.equal(en.lead, "");
-  assert.equal(en.reason, "Cards sure to take a trick, worth only 13⅓ points (4 tarocks): too few to risk taking it up.");
+  assert.equal(en.reason, "Cards sure to take a trick, worth only 13⅓ card points (4 tarocks): too few to risk taking it up.");
   assert.deepEqual(en.more, []);
 });
 
@@ -94,7 +94,7 @@ test("shown tarocks use the faces' Roman numerals; Pagat, Mond, Sküs keep their
   const w = words("en");
   const name = w.romanName;
   assert.deepEqual(["T12", "T4", "T1", "T21", "SK", "Jh"].map(name), ["tarock XII", "tarock IIII", "Pagat", "Mond", "Sküs", "jack of hearts"]);
-  assert.equal(hintParams({ n_thirds: 0 }, w).n_thirds, "0 points");
+  assert.equal(hintParams({ n_thirds: 0 }, w).n_thirds, "0 card points");
   assert.equal(hintLines({ hint: { action: "play", card: "T12" }, reason: "only-card", params: { card: "T12" } }, { ...w, cardName: name }).lead, "Play tarock XII.");
 });
 
@@ -106,7 +106,7 @@ test("a count of a thousand or more is grouped as the language writes it", () =>
   assert.match(hintLines(part, words("en")).reason, /in 640 of 1,000 sampled deals\.$/);
   assert.match(hintLines(part, words("de")).reason, /in 640 von 1\.000 durchgespielten/);
   const odds = hintLines({ ...part, odds: { alt: "T21", better: 31, worlds: 50, gain_thirds: 4 } }, words("en"));
-  assert.equal(odds.more[0], "Against Mond: ahead in 31 of 50 sampled deals, by 1⅓ points on average.");
+  assert.equal(odds.more[0], "Against Mond: ahead in 31 of 50 sampled deals, by 1⅓ card points on average.");
   assert.equal(hintParams({ out: 999, wins: 10000 }, words("en")).wins, "10,000");
   assert.equal(hintParams({ out: 999 }, words("en")).out, "999");
   // A caller that passes no count gets the plain number.
@@ -180,14 +180,14 @@ test("the cover lead: the question about tarocks and the counts, no part repeats
 
 test("a rule (so) replaces the fact; without a question or sentence the plain reason stands", () => {
   const so = { ...mondCase, question: "ask.worth", keep: null, so: { key: "so.worth-rich", params: {} } };
-  assert.equal(hintLines(so, words("en")).text, "When he leads a card worth 2⅓ points or more, take the trick.");
+  assert.equal(hintLines(so, words("en")).text, "When he leads a card worth 2⅓ card points or more, take the trick.");
   const plain = { hint: play("Kh"), reason: "lead-cost", params: { card: "Kh", cost_thirds: 13 }, rule: null, odds: null };
   const en = hintLines(plain, words("en"));
   assert.equal(en.question, "");
   assert.equal(en.text, en.reason);
   const asReason = { ...plain, ans: { key: "reason.lead-cost", params: plain.params } };
-  assert.equal(hintLines(asReason, words("en")).text, "If he takes the trick, king of hearts costs only 4⅓ points.");
-  assert.equal(hintSpoken(hintLines(asReason, words("en"))), "Play king of hearts. If he takes the trick, king of hearts costs only 4⅓ points.");
+  assert.equal(hintLines(asReason, words("en")).text, "If he takes the trick, you lose only 4⅓ card points with king of hearts.");
+  assert.equal(hintSpoken(hintLines(asReason, words("en"))), "Play king of hearts. If he takes the trick, you lose only 4⅓ card points with king of hearts.");
 });
 
 test("a suit is named by the table, a kept packet by its card", () => {
@@ -195,7 +195,7 @@ test("a suit is named by the table, a kept packet by its card", () => {
   assert.equal(hintLines(out, words("en")).text, "He showed no hearts; 7 tarocks are out.");
   assert.equal(hintLines(out, words("de")).text, "Er zeigte kein Herz; 7 Tarock sind draußen.");
   const suit = { ...coverCase, question: "ask.suit", ans: { key: "ans.suit", params: { suit: "d", mine_thirds: 17, out_thirds: 12 } } };
-  assert.equal(hintLines(suit, words("en")).text, "Diamonds: yours 5⅔ points, out 4 points.");
+  assert.equal(hintLines(suit, words("en")).text, "Diamonds: yours 5⅔ card points, out 4 card points.");
   const packet = { ...mondCase, keep: "Jd", ans: { key: "reason.keep-packet", params: {} } };
   assert.equal(hintLines(packet, words("en")).question, "Is the packet showing jack of diamonds safe to keep?");
   assert.equal(hintLines(packet, words("de")).question, "Ist das Paket mit Karo-Bube sicher aufgehoben?");
@@ -203,7 +203,7 @@ test("a suit is named by the table, a kept packet by its card", () => {
 
 test("the Why? parts are told: the contrast, the facts with their anchors, null parts dropped", () => {
   const w = hintLines(coverCase, words("en")).why;
-  assert.equal(w.contrast, "Instead of tarock 19: it took the trick in 940 of 1,000 deals and cost ⅓ point when it did not; jack of diamonds took it in 130 and cost 1⅓ points.");
+  assert.equal(w.contrast, "Instead of tarock 19: it took the trick in 940 of 1,000 deals and lost ⅓ card point when it did not; jack of diamonds took it in 130 and lost 1⅓ card points.");
   assert.equal(w.trumped, null);
   assert.deepEqual(w.facts, []);
   const f = hintLines(mondCase, words("en")).why.facts;
@@ -293,7 +293,7 @@ test("the Why? lines: the intro with the number of deals, then the contrast, the
     "The Sküs has not been played.",
     "8 tarocks are still out; you hold 13.",
     "Rule: do not spend a king where a small card serves.",
-    "Against tarock 3: ahead in 41 of 50 sampled deals, by 1⅓ points on average.",
+    "Against tarock 3: ahead in 41 of 50 sampled deals, by 1⅓ card points on average.",
   ]);
   assert.deepEqual(w.lines.map((l) => l.anchor ?? null), [null, null, "row:trump", "line1", null, null]);
   assert.match(hintLines(r, words("de")).why.lines[0].text, /^Ich teile seine verdeckten Karten 50-mal/);
@@ -313,4 +313,25 @@ test("the Why? never runs over 90 words: the last lines are left out first", () 
   // the whole budget is cut, not a line: a tiny budget keeps the first lines only
   const tiny = hintLines(long, { ...words("en"), whyWords: 30 }).why;
   assert.ok(tiny.lines.reduce((n, l) => n + wordCount(l.text), 0) <= 30);
+});
+
+// ---- plain words (HINTS 7): no jargon of price in a hint ----
+
+test("no hint string says cheap, dear, costs or billig, teuer, kostet, unless HINTS 7 lists the term", () => {
+  const terms = readFileSync(new URL("../../docs/HINTS.md", import.meta.url), "utf8").split("## 7.")[1].split("## 8.")[0];
+  const listed = (w) => new RegExp(`^\\| [^|]*\\b${w}\\b[^|]* \\| [^|]+ \\|$`, "im").test(terms.split("Not used:")[0]);
+  const bad = { en: /\b(cheap|cheaper|cheapest|dear|dearer|costs?|costing)\b/i, de: /billig|teuer|kostet|kostete|kosten/i };
+  for (const [key, v] of Object.entries(TABLE)) {
+    if (!key.startsWith("hint.")) continue;
+    for (const lang of ["en", "de"]) {
+      const m = v[lang].match(bad[lang]);
+      if (m) assert.ok(listed(m[0].toLowerCase()), `${lang} ${key}: "${m[0]}" is not a listed term`);
+    }
+  }
+});
+
+test("the count's unit in English is the card point", () => {
+  assert.deepEqual(TABLE["hint.unit.one"], { en: "card point", de: "Auge" });
+  assert.deepEqual(TABLE["hint.unit.other"], { en: "card points", de: "Augen" });
+  for (const [key, v] of Object.entries(TABLE)) if (key.startsWith("hint.")) assert.doesNotMatch(v.en, /(?<!card )\bpoints?\b/, key);
 });
