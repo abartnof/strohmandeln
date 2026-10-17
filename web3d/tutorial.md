@@ -13,7 +13,7 @@ Tarot im Deutschen), 15-S9 und 15-S10 (die österreichischen Spiele; die Trümpf
 15-S11 (Piatnik verkauft Tarockblätter, geprüft am 15. Okt. 2026; die Seite nennt weder Wien noch das Muster), 15-S12 und 15-S14 (der Cavall, 3 Augen
 wert), 08-S9 und 08-S10 (ein echtes Blatt hat keine Indizes auf den Farbkarten),
 alle in research/15-the-pack-today.md.
-Klauseln (docs/RULES.md): the-cards 1.2 1.7; packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
+Klauseln (docs/RULES.md): the-cards 1.2 1.4 1.5 1.7; packets 2.3 2.4 4.4 4.8 5.2 13.1; bidding 3.1-3.4 8.1
 8.2 8.4 9.1 (Kartenwerte 1.7); the-pull 4.3 4.5 4.6 4.7; playing 5.1-5.3 5.5;
 following 5.2 5.4; from-a-packet 6.1 6.2; honours 11.1-11.5; thirds 1.7 8.1 8.2;
 pagat-ultimo 1.4 12.1-12.4; scoring 9.1-9.3 11 12.3 15.5 15.8; draw 8.4 9.2 11.7
@@ -33,15 +33,16 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 
 ## Die Tarocke
 
-- Die Tarocke sind schlicht Trümpfe: I bis XXI, und der Sküs über allen.
+- Die Tarocke sind Trümpfe. Der Sküs ist der höchste, dann XXI, XX und so hinunter bis II; I, der Pagat, ist der niedrigste.
+- Rang ist nicht Wert: Der Pagat ist der niedrigste, zählt aber 5, wie Sküs und XXI.
 - Tarockkarten wurden zum Spielen gemacht, in Italien, spätestens 1442. Vom Wahrsagen mit ihnen ist erst ab 1781 die Rede, in Frankreich.
-- Hier wird kein Schicksal gedeutet. In Österreich spielt man noch immer Tarock, und Piatnik verkauft heute noch Tarockblätter.
-- Im Deutschen heißt das Spiel Tarock und das Blatt zum Wahrsagen Tarot. Das Englische hat für beides ein Wort, daher die Verwechslung.
+- Hier wird kein Schicksal gedeutet. Man spielt noch Tarock, und Piatnik verkauft heute noch Tarockblätter.
 
-## Das C
+## Die Farben
 
-- Das C ist der Cavall, ein Reiter zu Pferd, 3 Augen wert. Tarockblätter haben ihn, das französische Blatt zu 52 Karten nicht.
-- Auf einem echten Blatt tragen die Hofkarten Bilder statt Buchstaben. Unsere großen Buchstaben und Eckzahlen sind für den raschen Blick.
+- Jede Farbe läuft K, D, C, B. Das C ist der Cavall, ein Reiter, zwischen Dame und Bube, 3 Augen wert.
+- Danach die Zahlkarten: 10 9 8 7 in Kreuz und Pik; 1 2 3 4 in Herz und Karo, dort ist die 1 die höchste.
+- Auf einem echten Blatt tragen die Hofkarten Bilder statt Buchstaben. Unsere großen Buchstaben sind für den raschen Blick.
 
 # Die Pakete
 
@@ -146,10 +147,12 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 
 ## So wird gezählt
 
-- Jede Karte zählt ihren Wert weniger zwei Drittel. Bei drei Karten zählen Sie die Summe weniger 2: dieselbe Regel, für drei zugleich.
+- Zählen Sie gewonnene Karten in Dreiern: drei Werte zusammen, 2 ab.
 - Beispiel: ein König, ein Bube und eine Sieben sind 5 + 2 + 1 = 8, weniger 2 = 6.
-- Bleiben eine oder zwei Karten übrig, verliert jede zwei Drittel.
-- Ihre gewonnenen Karten und die Ihres Gegners machen zusammen 70 Augen. Der Aufnehmer braucht 36: **35⅔** genügt, **35⅓** nicht.
+- Karte für Karte zählt jede ihren Wert weniger zwei Drittel: bei dreien die Summe weniger 2.
+- Bleiben eine oder zwei übrig, verliert jede zwei Drittel.
+- Beide Spieler zusammen machen 70 Augen.
+- Das Ziel ist 36, geschrieben **35⅔**, weil Drittel gezählt werden (gerundet 36). **35⅓** reicht nicht.
 - Der Stand oben läuft mit, während Sie Stiche machen.
 - [Mehr zur Abrechnung](#scoring-full)
 
@@ -239,15 +242,17 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - **2** je Karte: die vier Buben (B).
 - **1** je Karte: jede andere Karte, also die Tarocks II bis XX und die Zahlkarten der Farben.
 
-- Die Karten zeigen die Buchstaben K, D, C und B, die Tarocks in römischen Ziffern. Der Sküs ist das höchste Tarock, der Mond ist XXI, der Pagat ist I.
+- Der Rang ist etwas anderes. Die Tarocke laufen vom Sküs (höchste) über XXI, XX bis II, zuletzt I, der Pagat, das niedrigste Tarock.
+- Jede Farbe läuft K, D, C, B, der Cavall zwischen Dame und Bube, dann die Zahlkarten: 10 9 8 7 in Kreuz und Pik, 1 2 3 4 in Herz und Karo, die 1 die höchste.
+- Die Karten zeigen die Buchstaben K, D, C und B, die Tarocks in römischen Ziffern.
 - Alle 54 Karten mit diesen Werten zusammen ergeben 106. Die Zählung in Dreiergruppen macht daraus 70.
 
 ## Zählen in Dreiergruppen
 
-- Die gewonnenen Karten eines Spielers werden in Dreiergruppen gezählt. Zählen Sie die drei Werte zusammen und ziehen Sie 2 ab.
+- Zählen Sie Ihre gewonnenen Karten in Dreiergruppen: die drei Werte zusammen, dann ziehen Sie 2 ab.
 - Ein König, ein Bube und eine Sieben sind 5 + 2 + 1 = 8, weniger 2 = 6. Drei niedrige Karten sind 1 + 1 + 1 = 3, weniger 2 = 1.
 - Bleiben eine oder zwei Karten übrig, verliert jede zwei Drittel. Ein letzter König und Bube sind 5 + 2 = 7, weniger 1⅓ = 5⅔.
-- 2 von einer Dreiergruppe abzuziehen heißt, von jeder Karte zwei Drittel abzuziehen. So zählt jede Karte ihren Wert weniger zwei Drittel: ein König 4⅓, eine Dame 3⅓, ein Cavall 2⅓, ein Bube 1⅓, jede andere Karte ⅓. Darum ist hier von Dritteln die Rede.
+- Warum Drittel: 2 von einer Dreiergruppe abzuziehen heißt, von jeder Karte zwei Drittel abzuziehen. So zählt jede Karte ihren Wert weniger zwei Drittel: ein König 4⅓, eine Dame 3⅓, ein Cavall 2⅓, ein Bube 1⅓, jede andere Karte ⅓.
 - Das ist die überlieferte Zählung in Dreiergruppen, genau geführt: nichts wird gerundet.
 - Das Spiel hat 54 Karten, also 18 Dreiergruppen. Die Werte ergeben 106, und die 18 Gruppen verlieren je 2: 106 − 36 = 70.
 
