@@ -3,6 +3,7 @@ switch and the persistence (docs/TABLE3D.md 10.4, 10.5). The tutor's checks are
 the tutor's own. Imported by browser.py."""
 
 import json
+import os
 import re
 import tempfile
 from pathlib import Path
@@ -717,7 +718,7 @@ HUD_CLIPPED = """(popped) => {
   for (const e of document.querySelectorAll('.hud *')) {
     if (e.closest('.hud-pop') && !popped) continue;
     if (e.closest('.hud-score') && popped) continue;
-    if (!e.textContent.trim() || e.children.length) continue;
+    if (!e.textContent.trim() || (e.children.length && !e.classList.contains('hud-name'))) continue;
     const b = e.getBoundingClientRect();
     if (!b.width) continue;
     const spill = e.scrollWidth > e.clientWidth + 1;
@@ -740,6 +741,8 @@ def check_hud_not_clipped(browser, failures):
             page.goto(f"{PAGE.as_uri()}?seed=7&speed=instant&lowfx=1&level=1", wait_until="commit", timeout=120_000)
             page.wait_for_function("window.strohmandeln3d !== undefined", timeout=180_000)
             rest(page)
+            for side in ("you", "opp"):
+                page.evaluate("([side, spec]) => window.strohmandeln3d.hudMark(side, spec)", [side, {"text": STRINGS["hud.declarer.mark"][lang], "title": STRINGS["hud.declarer.tip"][lang]}])
             page.evaluate(
                 """(label) => {
                   document.querySelectorAll('.hud-num, .hud-pop-pts').forEach((n) => { n.textContent = '35\\u2154'; });
@@ -751,12 +754,74 @@ def check_hud_not_clipped(browser, failures):
             )
             page.wait_for_timeout(900)
             widths = page.evaluate("[...document.querySelectorAll('.hud-line .seg')].map((e) => e.getBoundingClientRect().width)")
+            names = page.evaluate("[...document.querySelectorAll('.hud-name')].map((n) => [n.textContent, n.getBoundingClientRect().height, n.querySelector('.hud-mark')?.getBoundingClientRect().right <= n.getBoundingClientRect().right + 0.5])")
+            fail_if(any(not ok for _, _, ok in names), failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']}: the (D) mark leaves its name cell {names}")
             print(f"hud segments {lang} {size['width']}: n={len(widths)} min={min(widths, default=0):.2f}")
             fail_if(not widths or min(widths) < 2, failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']}: a segment is {min(widths, default=0):.2f}px wide ({len(widths)} segments)")
             for popped in (False, True):
                 bad = page.evaluate(HUD_CLIPPED, popped)
                 fail_if(bool(bad), failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']} popped={popped}: {bad[:4]}")
             context.close()
+
+
+def declarer_state(page):
+    return page.evaluate(
+        """() => ({
+          marks: [...document.querySelectorAll('.hud-side')].map((r) => ({ side: r.classList.contains('you') ? 'you' : 'opp', name: r.querySelector('.hud-name').textContent, mark: r.querySelector('.hud-mark') ? { text: r.querySelector('.hud-mark').textContent, title: r.querySelector('.hud-mark').title, tab: r.querySelector('.hud-mark').tabIndex } : null })),
+          dealer: [...document.querySelectorAll('.tag.dealer')].map((n) => ({ text: n.textContent, title: n.title })),
+        })"""
+    )
+
+
+def check_declarer_mark(browser, failures):
+    """The declarer is marked "(D)" / "(A)" on the score HUD, on the declarer's own row, with a tooltip reachable
+    by hover and by focus; a simple game has none. The dealer's chip is the word, not a letter (2.5.8)."""
+    where = "declarer_mark: "
+    out = Path(os.environ.get("SHOT_DIR") or tempfile.gettempdir())
+    for lang in ("en", "de"):
+        context = browser.new_context(viewport={"width": 1280, "height": 720})
+        context.add_init_script(f"try {{ localStorage.setItem('strohmandeln.prefs', JSON.stringify({{ v: 1, lang: '{lang}' }})); }} catch (e) {{}}")
+        context.set_offline(True)
+        page = context.new_page()
+        goto(page, "seed=7&speed=instant&human=1")
+        rest(page)
+        before = declarer_state(page)
+        fail_if(any(r["mark"] for r in before["marks"]), failures, f"{where}{lang}: a mark before the bid {before['marks']}")
+        chip = before["dealer"]
+        fail_if(len(chip) != 1 or chip[0]["text"] != STRINGS["hud.dealer"][lang], failures, f"{where}{lang}: the dealer chip is not the word {chip}")
+        fail_if(chip and not chip[0]["title"], failures, f"{where}{lang}: the dealer chip has no tooltip")
+        page.locator("[data-act=take]").click()
+        rest(page)
+        after = declarer_state(page)
+        marked = [r for r in after["marks"] if r["mark"]]
+        fail_if(len(marked) != 1 or marked[0]["side"] != "you", failures, f"{where}{lang}: after my take-up the mark is {after['marks']}")
+        if marked:
+            m = marked[0]["mark"]
+            fail_if(m["text"] != f"({STRINGS['hud.declarer.mark'][lang]})", failures, f"{where}{lang}: the mark reads {m['text']}")
+            fail_if(m["title"] != STRINGS["hud.declarer.tip"][lang], failures, f"{where}{lang}: the tooltip reads {m['title']}")
+            fail_if(m["tab"] != 0, failures, f"{where}{lang}: the mark is not reachable by keyboard")
+            fail_if(marked[0]["name"] != f"{STRINGS['hud.you'][lang]} ({STRINGS['hud.declarer.mark'][lang]})", failures, f"{where}{lang}: the name cell reads {marked[0]['name']}")
+            page.keyboard.press("Shift")  # keyboard use, so the script focus counts as :focus-visible
+            page.locator(".hud-mark").focus()
+            tip = page.evaluate("getComputedStyle(document.querySelector('.hud-mark'), '::after').content")
+            fail_if(STRINGS["hud.declarer.tip"][lang][:20] not in tip, failures, f"{where}{lang}: focus shows no tooltip ({tip})")
+        page.screenshot(path=str(out / f"declarer-{lang}.png"))
+        # The mark and the tooltip follow the language switch.
+        page.evaluate("document.activeElement.blur()")
+        context.close()
+    # A simple game (both passed): no declarer, no mark, to the deal's end.
+    for seed in range(1, 9):
+        page = open_page(browser, f"seed={seed}&speed=instant&human=1")
+        if state(page)["phase"] != "bid":
+            continue
+        page.locator("[data-act=pass]").click()
+        rest(page)
+        if not any(e["type"] == "both_pass" for e in js(page, "log()")):
+            continue
+        marks = [r for r in declarer_state(page)["marks"] if r["mark"]]
+        fail_if(bool(marks), failures, f"{where}a mark in a simple game {marks}")
+        return
+    failures.append(f"{where}no simple game in seeds 1-8")
 
 
 # ---- persistence ------------------------------------------------------------------------------------------
@@ -1309,6 +1374,6 @@ def check_escape_dialogs(browser, failures):
 CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_settings_no_rules, check_new_sitting_from_table, check_skill_speed, check_new_sitting_style, check_random_style_hidden,
-    check_language_switch, check_language_switch_at_count, check_hud_not_clipped, check_prefs_storage, check_save_restore, check_export_import_file,
+    check_language_switch, check_language_switch_at_count, check_hud_not_clipped, check_declarer_mark, check_prefs_storage, check_save_restore, check_export_import_file,
     check_tutor_pages, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief,
 ]
