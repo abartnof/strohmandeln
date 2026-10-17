@@ -688,11 +688,15 @@ BOXES = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); re
     hand: window.strohmandeln3d.cardRects('your-hand') }; })()"""
 
 
-def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0"):
-    page = with_prefs(browser, {"hints": True, "slateAuto": False, "trackerFolded": False, **(prefs or {})}, query, viewport=size)
+def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0", unfold=True):
+    # The panel starts folded (6.6.2); unfold it by its tab, where the window shows one.
+    page = with_prefs(browser, {"hints": True, "slateAuto": False, **(prefs or {})}, query, viewport=size)
     take_if_bidding(page)
     drive(page, lambda s, log: sum(e["type"] == "trick_won" for e in log) >= 3 or s["prompt"] == "over")
     rest(page)
+    tab = page.locator("[data-act=tracker]:not([hidden])")
+    if unfold and tab.count() and tab.is_visible():
+        tab.click()
     return page
 
 
@@ -729,10 +733,13 @@ def check_tracker_fold_and_settings(browser, failures):
     where = "tracker_fold_and_settings: "
     page = tracker_page(browser, TRACKER_SIZES[0][1])
     tab = page.locator("[data-act=tracker]")
-    # A tap on the tab folds it, and is kept; another opens it.
+    # A tap on the tab folds it; another opens it. A fresh page starts folded, at this large window too.
+    fresh = tracker_page(browser, TRACKER_SIZES[0][1], unfold=False)
+    fail_if(fresh.locator(".tracker").count(), failures, f"{where}the panel starts open")
+    fail_if(fresh.locator("[data-act=tracker]").get_attribute("aria-expanded") != "false", failures, f"{where}the fresh tab says open")
+    fresh.close()
     tab.click()
     fail_if(page.locator(".tracker").count(), failures, f"{where}the tab did not fold the panel")
-    fail_if(js(page, "prefs()")["trackerFolded"] is not True, failures, f"{where}the fold was not kept")
     fail_if(tab.get_attribute("aria-expanded") != "false", failures, f"{where}the tab says open while folded")
     tab.click()
     fail_if(page.locator(".tracker").count() != 1, failures, f"{where}the tab did not open the panel")

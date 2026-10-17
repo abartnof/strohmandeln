@@ -121,6 +121,7 @@ async function main() {
   let hintCard = null;
   let trackerData = null; // the engine's tracker at the last rest (6.6)
   let trackerSig = "";
+  let trackerUnfolded = false; // folded at every deal and on load (6.6.2)
   let pending = 0; // scheduled moments not yet come
   let restModel = null; // the model at the last rest, for the tags
   let sittingOver = false;
@@ -271,7 +272,7 @@ async function main() {
   }
   function showTracker() {
     const on = Boolean(wasm?.deal) && trackerShown();
-    const open = on && trackerOpen(prefs, { width: window.innerWidth, height: window.innerHeight });
+    const open = on && trackerOpen({ unfolded: trackerUnfolded });
     if (on && !trackerData && !director.busy() && pending === 0) trackerData = engine.tracker()?.tracker ?? null;
     const sig = JSON.stringify([on, open, trackerData, getLang()]);
     if (sig === trackerSig) return placeTracker();
@@ -300,10 +301,9 @@ async function main() {
     root.style.setProperty("--tracker-top", `${Math.round(top)}px`);
     root.style.setProperty("--tracker-max", `${Math.max(120, Math.round(limit - top - 6))}px`);
   }
-  // The fold is the person's, and kept.
+  // The person's fold, for this deal only.
   function toggleTracker() {
-    const open = trackerOpen(prefs, { width: window.innerWidth, height: window.innerHeight });
-    save({ trackerFolded: open });
+    trackerUnfolded = !trackerUnfolded;
     showTracker();
   }
 
@@ -1112,6 +1112,7 @@ async function main() {
     log = [];
     restModel = null;
     trackerData = null;
+    trackerUnfolded = false;
     showTracker();
   }
 

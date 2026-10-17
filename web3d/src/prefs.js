@@ -36,10 +36,9 @@ export const DEFAULTS = Object.freeze({
   // nudge; the brief keeps its first line.
   tips: true,
   hints: false,
-  // The cards-out tracker (6.6): shown with Hints on; its fold is the person's
-  // choice, null until made (open on a large window).
+  // The cards-out tracker (6.6): shown with Hints on; it starts folded each
+  // deal and keeps no fold of its own.
   tracker: true,
-  trackerFolded: null,
   explain: false,
   announceAuto: false,
   slateAuto: true,
@@ -69,7 +68,6 @@ const CHECKS = {
   tips: isBool,
   hints: isBool,
   tracker: isBool,
-  trackerFolded: (x) => x === null || isBool(x),
   explain: isBool,
   announceAuto: isBool,
   slateAuto: isBool,
