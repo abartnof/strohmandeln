@@ -520,13 +520,13 @@ def phrase_groups():
         ('Say it by the first card played.', 'T', 'Spätestens mit der ersten Karte muß es angesagt sein.'),
         ('The honour is lost by silence.', 'T', 'Wer schweigt, verliert den Honneur.'))
     add('valat-mine', 'valat by the opponent (every trick)',
-        ('Matsch! Every last trick.', 'T', 'Matsch! Jeder Stich.'),
+        ('Every last trick is mine!', 'T', 'Matsch! Jeder Stich.'),
         ('Valat! The whole table is mine.', 'T', 'Valat! Der ganze Tisch gehört mir.'),
-        ('Not a trick for you. Quite matsch.', 'T', 'Kein Stich für Sie. Ganz matsch.'),
+        ('Not a trick for you. Swept clean.', 'T', 'Kein Stich für Sie. Ganz matsch.'),
         ('Valat: every trick of the twenty-seven.', 'T', 'Valat: alle siebenundzwanzig Stich.'))
     add('valat-yours', 'valat by the player (every trick)',
-        ('I am matsch: finished!', 'Ne2', 'Ich bin matsch!'),
-        ('Not one trick for me. Matsch!', 'Ne3', 'Ich bin Matsch worden.'),
+        ('Every trick gone: I am done for!', 'Ne2', 'Ich bin matsch!'),
+        ('Not one trick for me. Done for!', 'Ne3', 'Ich bin Matsch worden.'),
         ('Every trick yours. Well played.', 'T', 'Jeder Stich gehört Ihnen. Gut gespielt.'),
         ('Everyone plays against me tonight!', 'Ra', 'Alles spielt gegen mich!'))
     add('count-start', 'count: the tricks are counted',
@@ -645,7 +645,7 @@ def phrase_groups():
         ('It happens. Go on.', 'T', 'Das kommt vor. Weiter.'),
         ('A slip is forfeit, but we forgive it.', 'Ve', "Versehen ist verspielt, wir verzeih'ns."))
     add('luck-yours', 'luck talk: the player is lucky',
-        ('Luck beats good play.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
+        ('Luck is better than good play.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
         ('The luck is on your side tonight.', 'T', "Heut' Abend ist das Glück auf Ihrer Seite."),
         ('Good cards get used to you.', 'Wa', 'An einen geschickten Spieler gewöhnen sich gute Karten.', 'Spieler 3'),
         ('Such a fluke!', 'Ra', 'Na, so einen Dusel!'),
@@ -672,7 +672,6 @@ def phrase_groups():
     add('kibitz-mute', 'the kibitzer is muted',
         ('Paragraph thirteen it is.', 'Ki', 'Paragraph 13.'),
         ('Silence, then. The table is ours.', 'T', 'Stille also. Der Tisch gehört uns.'),
-        ("Kibitzer, shut your trap: quite so.", 'Ki', "Kiebitz, halt's Maul!"),
         ('Silent kibitzers are tolerated.', 'Wb', 'Schweigende Kiebitze werden geduldet.'))
     return out
 
@@ -681,7 +680,7 @@ def phrase_groups():
 # English text) and its Viennese table terms. Anything else German in an English
 # line is a bug; a period interjection is translated (the German line keeps it).
 ENGLISH_ALLOW = {"tarock", "tarocks", "touren", "tour", "strohmandeln", "strohmandl", "sküs", "mond", "mondfang",
-                 "pagat", "troule", "valat", "matsch", "tapper", "kreuzer", "ultimo", "ultimos", "conto", "contos"}
+                 "pagat", "troule", "valat", "tapper", "kreuzer", "ultimo", "ultimos", "conto", "contos"}
 # What German looks like when it is not a game term: any umlaut or ß, and these
 # common words (none of them an English word).
 GERMAN_WORDS = set("""weiter gut gute guten guter nacht abend gewonnen besser mitgenommen drumgekommen glück ist als

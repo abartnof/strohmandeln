@@ -629,9 +629,9 @@ valat by the opponent (every trick)
 
 | English | German | Source |
 |---|---|---|
-| Matsch! Every last trick. | Matsch! Jeder Stich. | T |
+| Every last trick is mine! | Matsch! Jeder Stich. | T |
 | Valat! The whole table is mine. | Valat! Der ganze Tisch gehört mir. | T |
-| Not a trick for you. Quite matsch. | Kein Stich für Sie. Ganz matsch. | T |
+| Not a trick for you. Swept clean. | Kein Stich für Sie. Ganz matsch. | T |
 | Valat: every trick of the twenty-seven. | Valat: alle siebenundzwanzig Stich. | T |
 
 ### `valat-yours`
@@ -640,8 +640,8 @@ valat by the player (every trick)
 
 | English | German | Source |
 |---|---|---|
-| I am matsch: finished! | Ich bin matsch! | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
-| Not one trick for me. Matsch! | Ich bin Matsch worden. | Ne3 [05-S7] |
+| Every trick gone: I am done for! | Ich bin matsch! | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
+| Not one trick for me. Done for! | Ich bin Matsch worden. | Ne3 [05-S7] |
 | Every trick yours. Well played. | Jeder Stich gehört Ihnen. Gut gespielt. | T |
 | Everyone plays against me tonight! | Alles spielt gegen mich! | Ra [05c LIT-S8] |
 
@@ -880,7 +880,7 @@ luck talk: the player is lucky
 
 | English | German | Source |
 |---|---|---|
-| Luck beats good play. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Luck is better than good play. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The luck is on your side tonight. | Heut' Abend ist das Glück auf Ihrer Seite. | T |
 | Good cards get used to you. | An einen geschickten Spieler gewöhnen sich gute Karten. | Wa, Spieler 3 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Such a fluke! | Na, so einen Dusel! | Ra [05c LIT-S8] |
@@ -931,5 +931,4 @@ the kibitzer is muted
 |---|---|---|
 | Paragraph thirteen it is. | Paragraph 13. | Ki [05c LIT-S11][05c headline 1 REVIEW RD] |
 | Silence, then. The table is ours. | Stille also. Der Tisch gehört uns. | T |
-| Kibitzer, shut your trap: quite so. | Kiebitz, halt's Maul! | Ki [05c LIT-S11][05c headline 1 REVIEW RD] |
 | Silent kibitzers are tolerated. | Schweigende Kiebitze werden geduldet. | Wb [05c LIT-S44] |
