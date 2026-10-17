@@ -36,7 +36,6 @@ const PAIRS = [
   [M + "on-error-container", M + "error-container"], // refusal
   ["cassino-on-you", "cassino-you"], // edge chip
   [M + "on-surface-variant", M + "surface-container-highest"], // muted tutor button
-  ["tracker-on-opp", "tracker-opp"], // cards out: a card your opponent played
 ];
 
 for (const [name, set] of [["light", light], ["dark", dark]]) {
@@ -65,28 +64,57 @@ test("the light tokens are cassino's", () => {
   assert.equal(light["cassino-them"], "#00696e");
 });
 
+// The cards-out panel is a dark card of the score HUD's neutral greys (kit/css/hud.css), in
+// either colour scheme, so the two panels at the left read as one set.
+const tcss = readFileSync(new URL("../src/tracker.css", import.meta.url), "utf8");
+const hcss = readFileSync(new URL("../../kit/css/hud.css", import.meta.url), "utf8");
+const trackerBlock = tcss.match(/\.tracker-root\s*\{[^}]*\}/)[0];
+const tracker = tokens(trackerBlock);
+
+test("the cards-out panel sets its own palette, whatever the colour scheme", () => {
+  assert.doesNotMatch(tcss, /prefers-color-scheme/);
+  const used = new Set([...tcss.slice(tcss.indexOf(".tracker-root")).matchAll(/var\(--(md-sys-color-[\w-]+|tracker-(?:on-)?opp)/g)].map((m) => m[1]));
+  for (const name of used) assert.ok(tracker[name], `--${name} is set on .tracker-root`);
+  assert.ok(!("tracker-opp" in light) && !("tracker-opp" in dark), "the page tokens leave the tracker's to it");
+});
+
+test("the cards-out panel's ground and text are the score HUD's", () => {
+  const hud = hcss.match(/\.hud\s*\{[^}]*\}/)[0];
+  assert.equal(tracker[M + "surface-container-lowest"], hud.match(/background:\s*(#[0-9a-f]{6})/i)[1]);
+  assert.equal(tracker[M + "on-surface"], hud.match(/\bcolor:\s*(#[0-9a-f]{6})/i)[1]);
+});
+
+test("the cards-out panel's text reaches AA on its ground", () => {
+  const T = [
+    [M + "on-surface", M + "surface-container-lowest"], // the panel
+    [M + "on-surface-variant", M + "surface-container-lowest"], // byline, legend
+    [M + "on-surface", M + "surface-container-high"], // the fold button
+    [M + "error", M + "surface-container-lowest"], // the red suits' marks
+    [M + "on-primary", M + "primary"], // a card in your hand
+    [M + "on-surface-variant", M + "surface-container-highest"], // a card played by you
+    ["tracker-on-opp", "tracker-opp"], // a card your opponent played
+  ];
+  for (const [fg, bg] of T) assert.ok(ratio(tracker[fg], tracker[bg]) >= 4.5, `${fg} on ${bg}: ${ratio(tracker[fg], tracker[bg]).toFixed(2)}`);
+});
+
 // The cards-out cell he played is a dull red, not the grey of the cards played by you or the teal the slate gives him.
 const hue = (hex) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
   return r > g * 1.3 && r > b * 1.3;
 };
-for (const [name, set] of [["light", light], ["dark", dark]]) {
-  test(`${name}: the opponent's played cell is red, apart from the grey one`, () => {
-    assert.ok(hue(set["tracker-opp"]), set["tracker-opp"]);
-    assert.notEqual(set["tracker-opp"], set["cassino-them"]);
-    assert.ok(ratio(set["tracker-opp"], set[M + "surface-container-highest"]) < 2, "a red tint, not a text-weight contrast");
-  });
-}
+test("the opponent's played cell is red, apart from the grey one", () => {
+  assert.ok(hue(tracker["tracker-opp"]), tracker["tracker-opp"]);
+  for (const set of [light, dark]) assert.notEqual(tracker["tracker-opp"], set["cassino-them"]);
+  assert.ok(ratio(tracker["tracker-opp"], tracker[M + "surface-container-highest"]) < 2, "a red tint, not a text-weight contrast");
+});
 
 test("the opponent's played cell keeps a second cue and the high-contrast rule", () => {
-  const tcss = readFileSync(new URL("../src/tracker.css", import.meta.url), "utf8");
   assert.match(tcss, /\[data-state="theirs"\][^{]*\{[^}]*(box-shadow|border-bottom)/, "a mark beyond colour");
   const more = tcss.slice(tcss.indexOf("prefers-contrast: more"));
   assert.match(more, /data-state="theirs"/);
 });
 
 test("the cell played by you is dashed against the solid outline of one still out; the panel's head stays in view", () => {
-  const tcss = readFileSync(new URL("../src/tracker.css", import.meta.url), "utf8");
   assert.match(tcss, /\[data-state="played"\][^{]*\{[^}]*border-style:\s*dashed/);
   assert.match(tcss, /\.tracker-head\s*\{[^}]*position:\s*sticky/);
 });

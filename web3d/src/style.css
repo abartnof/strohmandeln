@@ -36,8 +36,6 @@
   --cassino-them: #00696e;
   --cassino-on-them: #ffffff;
   /* end generated */
-  --tracker-opp: #dba7a1; /* cards out: a card he played, a dull red (the slate's teal is his colour elsewhere) */
-  --tracker-on-opp: #2e0b09;
   --gold: #e8b923; /* the public tag, the 107 tick: game marks, no token */
   --dark: rgba(27, 31, 36, 0.9); /* the pills over the table: cassino's score bug ground */
   --target: 48px;
@@ -77,8 +75,6 @@
     --cassino-on-you: #4e2600;
     --cassino-them: #4cd9e2;
     --cassino-on-them: #003739;
-    --tracker-opp: #7a3a37;
-    --tracker-on-opp: #ffdad6;
   }
 }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #edeef0; color: #1d2433; }

@@ -5,7 +5,22 @@
 
 .tracker-tab[aria-expanded="true"] { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
 
+/* The panel is a dark card of the score HUD's neutral greys (kit/css/hud.css) in
+   either colour scheme, so the two panels at the left read as one set. */
 .tracker-root {
+  --md-sys-color-surface-container-lowest: #1b1f24; /* the HUD's ground */
+  --md-sys-color-surface-container-high: #2b3138; /* the HUD's buttons */
+  --md-sys-color-surface-container-highest: #2f363d; /* the HUD's unlit segment */
+  --md-sys-color-on-surface: #f2f4f6;
+  --md-sys-color-on-surface-variant: #9aa3ad;
+  --md-sys-color-outline: #8b95a0;
+  --md-sys-color-outline-variant: #646d77;
+  --md-sys-color-primary: #e8ebef; /* the HUD's chosen button */
+  --md-sys-color-on-primary: #121417;
+  --md-sys-color-tertiary: #646d77;
+  --md-sys-color-error: #ffb4ab;
+  --tracker-opp: #7a3a37; /* a card he played: a dull red (the slate's teal is his colour elsewhere) */
+  --tracker-on-opp: #ffdad6;
   position: absolute;
   left: 8px;
   top: var(--tracker-top, 160px);
