@@ -48,7 +48,7 @@ test("the Kibitzer's tab and mute say what they do, and § 13 is only the flavou
 });
 
 test("keys are namespaced", () => {
-  const ok = /^(ui|chip|banner|hud|slate|refusal|hint|explain|review|sr|card|settings|error|tutor|tracker|keys)\./;
+  const ok = /^(ui|chip|banner|hud|slate|refusal|hint|explain|review|sr|card|settings|error|tutor|tracker|keys|style)\./;
   for (const key of Object.keys(TABLE)) assert.match(key, ok, key);
 });
 
