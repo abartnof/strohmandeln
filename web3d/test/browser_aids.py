@@ -311,14 +311,6 @@ def open_settings(page):
 def check_settings_rows(browser, failures):
     page = open_page(browser, "seed=7&speed=instant&human=1")
     open_settings(page)
-    # The rule rows are greyed mid-sitting and say so; touching one changes nothing.
-    for key in ("both_pass", "values", "ultimo", "touren"):
-        row = page.locator(f"[data-row={key}]")
-        fail_if("settings-locked" not in (row.get_attribute("class") or ""), failures, f"settings_rules: {key} is not greyed mid-sitting")
-        fail_if(row.locator(".settings-when").count() != 1, failures, f"settings_rules: {key} does not say when it applies")
-        before = js(page, "prefs()")[key]
-        row.locator("button:not([aria-checked=true])").first.click(force=True)
-        fail_if(js(page, "prefs()")[key] != before, failures, f"settings_rules: {key} changed mid-sitting")
     # Every row that applies now changes the prefs, and is kept.
     now_rows = {"speed": "fast", "faces": "jumbo", "reducedMotion": "off", "talk": "calls", "lang": "de"}
     for key, value in now_rows.items():
@@ -333,8 +325,16 @@ def check_settings_rows(browser, failures):
     stored = page.evaluate("JSON.parse(localStorage.getItem('strohmandeln.prefs'))")
     for key, value in now_rows.items():
         fail_if(stored.get(key) != value, failures, f"settings_rows: {key} was not kept ({stored.get(key)!r})")
-    surfaces = page.locator("[data-row=surface] button").count()
-    fail_if(surfaces < 2, failures, "settings_rows: the table top offers no choice")
+    # The table top is a native select: Random and the kit's 18, and a pick is applied and kept.
+    surface = page.locator("[data-row=surface] select")
+    fail_if(surface.count() != 1, failures, "settings_rows: the table top is not one select")
+    fail_if(surface.locator("option").count() != 19, failures, f"settings_rows: the table top offers {surface.locator('option').count()} options, not 19")
+    fail_if(surface.locator("option").first.get_attribute("value") != "random", failures, "settings_rows: Random is not first")
+    fail_if(page.locator("[data-row=surface] button").count() != 0, failures, "settings_rows: the table top still has buttons")
+    surface.select_option("dot-grid")
+    fail_if(js(page, "prefs()")["surface"] != "dot-grid", failures, f"settings_rows: the table top gave {js(page, 'prefs()')['surface']!r}")
+    fail_if(surface.evaluate("(e) => parseFloat(getComputedStyle(e).fontSize)") < 16, failures, "settings_rows: the select's font is under 16px")
+    fail_if(surface.bounding_box()["height"] < 40, failures, "settings_rows: the select is not touch-sized")
     check_offline(page, failures, "settings_rows: ")
 
 
@@ -358,6 +358,66 @@ def check_settings_next_sitting(browser, failures):
     fail_if("1/2/3" not in rules or "Ultimo 2" not in rules, failures, f"settings_rules: the slate header says {rules!r}")
 
 
+def check_settings_no_rules(browser, failures):
+    prefs = json.dumps({"v": 1, "values": "1/2/3", "ultimo": 2, "both_pass": "throw_in", "touren": 6})
+    context = browser.new_context(viewport=FAST)
+    context.set_offline(True)
+    context.add_init_script(NO_DRAW)
+    context.add_init_script(f"try {{ if (!localStorage.getItem('strohmandeln.sitting')) localStorage.setItem('strohmandeln.prefs', JSON.stringify({prefs})); }} catch (e) {{}}")
+    page = context.new_page()
+    page.errors = []
+    page.on("pageerror", lambda e: page.errors.append(str(e)))
+    want = "This sitting: 6 Touren, 1/2/3, ultimo 2, throw-in, opponent level 1"
+
+    def check_menu(label):
+        open_settings(page)
+        for key in ("both_pass", "values", "ultimo", "touren", "skill"):
+            fail_if(page.locator(f"[data-row={key}]").count() != 0, failures, f"settings_no_rules: {key} is in the menu {label}")
+        fail_if(page.locator(".settings-when, .settings-locked").count() != 0, failures, f"settings_no_rules: an applies tag is in the menu {label}")
+        line = page.locator("[data-row=this-sitting]")
+        fail_if(line.count() != 1, failures, f"settings_no_rules: no This-sitting line {label}")
+        text = line.inner_text() if line.count() else ""
+        fail_if(want not in text, failures, f"settings_no_rules: the line says {text!r} {label}")
+        page.locator(".settings-close").dispatch_event("click")
+
+    goto(page, "seed=7&speed=instant&human=1&keep=1")
+    rest(page)
+    check_menu("at the deal")
+    # After Continue the line still reads the record, not the prefs (reset here to the defaults).
+    page.evaluate("localStorage.setItem('strohmandeln.prefs', JSON.stringify({v: 1}))")
+    goto(page, "human=1&hook=1")
+    page.wait_for_selector("[data-dialog=welcome]", timeout=60_000)
+    page.locator("[data-dialog-act=continue]").click()
+    rest(page)
+    check_menu("after Continue")
+    fail_if(page.errors, failures, f"settings_no_rules: errors {page.errors[:3]}")
+
+
+def check_new_sitting_from_table(browser, failures):
+    prefs = json.dumps({"v": 1, "values": "1/2/3", "ultimo": 2, "both_pass": "throw_in", "touren": 6})
+    context = browser.new_context(viewport=FAST)
+    context.set_offline(True)
+    context.add_init_script(NO_DRAW)
+    context.add_init_script(f"try {{ if (!localStorage.getItem('strohmandeln.sitting')) localStorage.setItem('strohmandeln.prefs', JSON.stringify({prefs})); }} catch (e) {{}}")
+    page = context.new_page()
+    page.errors = []
+    page.on("pageerror", lambda e: page.errors.append(str(e)))
+    goto(page, "seed=7&speed=instant&human=1&keep=1")
+    rest(page)
+    # The prefs go back to the defaults; the sitting on the table keeps its rules.
+    page.evaluate("localStorage.setItem('strohmandeln.prefs', JSON.stringify({v: 1}))")
+    goto(page, "human=1&hook=1")
+    page.wait_for_selector("[data-dialog=welcome]", timeout=60_000)
+    page.locator("[data-dialog-act=continue]").click()
+    rest(page)
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    on = {k: page.locator(f"[data-dialog=new] [data-row={k}] [aria-checked=true]").get_attribute("data-value") for k in ("touren", "both_pass", "values", "ultimo", "skill")}
+    fail_if(on != {"touren": "6", "both_pass": "throw_in", "values": "1/2/3", "ultimo": "2", "skill": "1"}, failures, f"new_sitting_from_table: the screen starts from {on}")
+    fail_if(page.locator("[data-dialog=new] details").count() != 0, failures, "new_sitting_from_table: the rules are behind a disclosure")
+    fail_if(page.errors, failures, f"new_sitting_from_table: errors {page.errors[:3]}")
+
+
 def check_skill_speed(browser, failures):
     context = browser.new_context(viewport=FAST)
     context.set_offline(True)
@@ -370,11 +430,7 @@ def check_skill_speed(browser, failures):
     open_settings(page)
     page.locator("[data-row=speed] [data-value=fast]").click()
     fail_if(js(page, "prefs()")["speed"] != "fast", failures, "skill_speed: the speed did not apply")
-    skill = page.locator("[data-row=skill]")
-    fail_if(skill.count() != 1, failures, "skill_speed: no skill dial")
-    options = skill.locator("button").all_inner_texts()
-    fail_if(options != ["1", "1½", "2", "2½", "3", "3½", "4"], failures, f"skill_speed: the dial offers {options}")
-    # The dial is a next-sitting setting: locked here, so it is set and read before the sitting.
+    fail_if(page.locator("[data-row=skill]").count() != 0, failures, "skill_speed: the opponent's level is in the menu")
     goto(page, "seed=7&human=1")
     page.wait_for_function("window.strohmandeln3d.prefs().speed === 'fast'", timeout=30_000)
     fail_if(js(page, "prefs()")["speed"] != "fast", failures, "skill_speed: the speed was not kept across a reload")
@@ -389,9 +445,17 @@ def check_skill_speed(browser, failures):
     page.on("pageerror", lambda e: page.errors.append(str(e)))
     goto(page, "seed=7&human=1&speed=instant")
     rest(page)
+    # The level is the new-sitting screen's, fixed for the sitting: the menu only reads it (the page's level=1 is the engine's rung).
     open_settings(page)
-    selected = page.locator("[data-row=skill] [aria-checked=true]").all_inner_texts()
-    fail_if(selected != ["2"], failures, f"skill_speed: the stored skill shows as {selected}")
+    line = page.locator("[data-row=this-sitting]").inner_text()
+    fail_if("opponent level 1" not in line, failures, f"skill_speed: the line says {line!r}")
+    page.locator(".settings-close").click()
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    options = page.locator("[data-dialog=new] [data-row=skill] button").all_inner_texts()
+    fail_if(options != ["1", "1½", "2", "2½", "3", "3½", "4"], failures, f"skill_speed: the dial offers {options}")
+    selected = page.locator("[data-dialog=new] [data-row=skill] [aria-checked=true]").all_inner_texts()
+    fail_if(selected != ["1"], failures, f"skill_speed: the dial starts at {selected}")
 
 
 # ---- language -------------------------------------------------------------------------------------------
@@ -884,7 +948,7 @@ def check_deal_brief(browser, failures):
 
 CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
-    check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_skill_speed,
+    check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_settings_no_rules, check_new_sitting_from_table, check_skill_speed,
     check_language_switch, check_language_switch_at_count, check_prefs_storage, check_save_restore, check_export_import_file,
     check_tutor_pages, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_deal_brief,
 ]

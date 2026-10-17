@@ -1,56 +1,43 @@
 // The settings menu (docs/TABLE3D.md 7.1 to 7.6). The menu is described as
 // data (settingsModel), then drawn (createSettings), so the arrangement is
-// testable without a DOM. It holds the person's choices and reports each one
-// to the page through onChange(key, value); the page saves them (prefs.js)
-// and acts on them. It adds no variants: the rules offered are the three of
-// docs/RULES.md and nothing else (CLAUDE.md).
+// testable without a DOM. It holds the aids and the appearance, each taking
+// effect at once, and reports each choice to the page through onChange(key,
+// value); the page saves them (prefs.js) and acts on them. The sitting's own
+// choices (the length, the three rules, the opponent's level) are the
+// new-sitting screen's (newsitting.js); here a read-only line says what the
+// sitting on the table is (3.5.2, 7.1).
 import { h } from "./dom.js";
-import { BOTH_PASS, VALUES, ULTIMO, TOUREN, SKILLS, SPEEDS, TALKS, FACES, MOTIONS, LANGS } from "./prefs.js";
+import { SPEEDS, TALKS, FACES, MOTIONS, LANGS, DEFAULTS } from "./prefs.js";
 import { onLang as sharedOnLang } from "./strings.js";
 
-// "2/3/4" -> "v234" (a key's tail without slashes).
-const valuesKey = (v) => `v${v.replaceAll("/", "")}`;
-
-const choice = (key, applies, list, label = (v) => String(v), extra = {}) => ({
+const choice = (key, list, label = (v) => String(v), extra = {}) => ({
   key,
   kind: "choice",
-  applies,
   labelKey: `settings.${key}`,
   options: list.map((value) => ({ value, labelKey: `settings.${key}.${label(value)}` })),
   ...extra,
 });
-const toggle = (key, extra = {}) => ({ key, kind: "toggle", applies: "now", labelKey: `settings.${key}`, ...extra });
+const toggle = (key, extra = {}) => ({ key, kind: "toggle", labelKey: `settings.${key}`, ...extra });
 
 // Every setting of 7.1, in the sections it is shown in.
 export const SECTIONS = [
   {
-    id: "rules",
-    titleKey: "settings.section.rules",
-    rows: [
-      choice("both_pass", "next", BOTH_PASS, (v) => v, { noteKey: "settings.both_pass.note" }),
-      choice("values", "next", VALUES, valuesKey, { noteKey: "settings.values.note" }),
-      choice("ultimo", "next", ULTIMO, (v) => v, { noteKey: "settings.ultimo.note" }),
-      choice("touren", "next", TOUREN),
-    ],
-  },
-  { id: "opponent", titleKey: "settings.section.opponent", rows: [choice("skill", "next", SKILLS)] },
-  {
     id: "table",
     titleKey: "settings.section.table",
     rows: [
-      choice("speed", "now", SPEEDS),
-      choice("faces", "now", FACES),
+      choice("speed", SPEEDS),
+      choice("faces", FACES),
       toggle("leftHanded"),
-      choice("reducedMotion", "now", MOTIONS),
-      // The kit's table tops: "random" and whatever the page lists.
-      { key: "surface", kind: "choice", applies: "now", labelKey: "settings.surface", options: [{ value: "random", labelKey: "settings.surface.random" }], surfaces: true },
+      choice("reducedMotion", MOTIONS),
+      // The kit's table tops, a dropdown: "random" first, then whatever the page lists.
+      { key: "surface", kind: "select", labelKey: "settings.surface", options: [{ value: "random", labelKey: "settings.surface.random" }], surfaces: true },
     ],
   },
   {
     id: "aids",
     titleKey: "settings.section.aids",
     rows: [
-      choice("talk", "now", TALKS),
+      choice("talk", TALKS),
       toggle("tutor", { noteKey: "settings.tutor.note" }),
       toggle("tips", { noteKey: "settings.tips.note" }),
       toggle("hints"),
@@ -60,7 +47,7 @@ export const SECTIONS = [
       toggle("slateAuto"),
     ],
   },
-  { id: "page", titleKey: "settings.section.page", rows: [choice("lang", "now", LANGS)] },
+  { id: "page", titleKey: "settings.section.page", rows: [choice("lang", LANGS)] },
   {
     id: "sitting",
     titleKey: "settings.section.sitting",
@@ -77,16 +64,34 @@ export const SECTIONS = [
 
 export const ROWS = SECTIONS.flatMap((s) => s.rows);
 
-// The menu for these preferences: `inSitting` locks the rows that apply from
-// the next sitting (7.1); `surfaces` is [{value, label}] from the kit.
-export function settingsModel(prefs, { inSitting = false, surfaces = [] } = {}) {
+// The sitting on the table, in the prefs' own keys, and the engine's level;
+// null when there is none. `source` is the reply's events (the sitting_start
+// among them, a new sitting) or the export's record ({touren, settings}, a
+// restored one: the state's events hold only the deal in progress).
+export function sittingFrom(source, level) {
+  const begun = Array.isArray(source) ? source.find((e) => e.type === "sitting_start") : source;
+  if (!begun || !begun.touren) return null;
+  const rule = begun.settings ?? {};
+  return {
+    touren: begun.touren,
+    both_pass: rule.both_pass ?? DEFAULTS.both_pass,
+    values: rule.values ?? DEFAULTS.values,
+    ultimo: rule.ultimo ?? DEFAULTS.ultimo,
+    skill: level ?? DEFAULTS.skill,
+  };
+}
+
+// The menu for these preferences; `surfaces` is [{value, label}] from the kit
+// (the strings name them, the label is the fallback); `sitting` is sittingFrom's.
+export function settingsModel(prefs, { sitting = null, surfaces = [] } = {}) {
   return {
     titleKey: "settings.title",
+    sitting,
     sections: SECTIONS.map((s) => ({
       ...s,
       rows: s.rows.map((r) => {
-        const options = (r.surfaces ? [...r.options, ...surfaces.map((x) => ({ value: x.value, label: x.label }))] : r.options ?? []).map((o) => ({ ...o, selected: o.value === prefs[r.key] }));
-        return { ...r, options, value: prefs[r.key], locked: inSitting && r.applies === "next" };
+        const list = r.surfaces ? [...r.options, ...surfaces.map((x) => ({ value: x.value, label: x.label, labelKey: `settings.surface.${x.value}` }))] : r.options ?? [];
+        return { ...r, options: list.map((o) => ({ ...o, selected: o.value === prefs[r.key] })), value: prefs[r.key] };
       }),
     })),
   };
@@ -98,7 +103,7 @@ export function settingsModel(prefs, { inSitting = false, surfaces = [] } = {}) 
 export function createSettings(rootEl, { t, prefs, onChange = () => {}, onAction = () => {}, onLang = sharedOnLang, surfaces = [] }) {
   const doc = rootEl.ownerDocument;
   let current = { ...prefs };
-  let inSitting = false;
+  let sitting = null;
   let surfaceList = surfaces;
 
   rootEl.classList.add("settings");
@@ -107,7 +112,7 @@ export function createSettings(rootEl, { t, prefs, onChange = () => {}, onAction
   rootEl.setAttribute("role", "dialog");
 
   function choose(row, value) {
-    if (row.locked || current[row.key] === value) return;
+    if (current[row.key] === value) return;
     current = { ...current, [row.key]: value };
     onChange(row.key, value);
     render();
@@ -116,7 +121,6 @@ export function createSettings(rootEl, { t, prefs, onChange = () => {}, onAction
   function drawRow(row) {
     const id = `settings-${row.key}`;
     const labelText = t(row.labelKey);
-    const when = row.locked ? t("settings.applies.next") : null;
     let control;
     if (row.kind === "toggle") {
       control = h(doc, "button", {
@@ -129,6 +133,10 @@ export function createSettings(rootEl, { t, prefs, onChange = () => {}, onAction
         "aria-labelledby": id,
         onclick: () => choose(row, !row.value),
       }, row.value ? t("settings.on") : t("settings.off"));
+    } else if (row.kind === "select") {
+      const named = (o) => (o.label && t(o.labelKey) === o.labelKey ? o.label : t(o.labelKey));
+      control = h(doc, "select", { class: "settings-select", "data-key": row.key, "aria-labelledby": id, onchange: (ev) => choose(row, ev.target.value) },
+        row.options.map((o) => h(doc, "option", { value: String(o.value), selected: o.selected ? true : null }, named(o))));
     } else {
       control = h(doc, "div", { class: "settings-options", role: "radiogroup", "data-key": row.key, "aria-labelledby": id },
         row.options.map((o) =>
@@ -139,24 +147,30 @@ export function createSettings(rootEl, { t, prefs, onChange = () => {}, onAction
             "data-key": row.key,
             "data-value": String(o.value),
             "aria-checked": o.selected ? "true" : "false",
-            disabled: row.locked ? true : null,
             onclick: () => choose(row, o.value),
           }, o.label ?? t(o.labelKey))));
     }
-    return h(doc, "div", { class: `settings-row${row.locked ? " settings-locked" : ""}`, "data-row": row.key },
+    return h(doc, "div", { class: "settings-row", "data-row": row.key },
       h(doc, "span", { class: "settings-label", id }, labelText),
       control,
-      row.noteKey ? h(doc, "span", { class: "settings-note" }, t(row.noteKey)) : null,
-      when ? h(doc, "span", { class: "settings-when" }, when) : null);
+      row.noteKey ? h(doc, "span", { class: "settings-note" }, t(row.noteKey)) : null);
+  }
+
+  // "This sitting: 3 Touren, 2/3/4, ultimo 1, simple game, opponent level 3", from the record.
+  function thisSitting(x) {
+    return h(doc, "div", { class: "settings-this", "data-row": "this-sitting" },
+      h(doc, "p", {}, t("settings.sitting", { touren: t(`settings.touren.${x.touren}`), values: x.values, ultimo: x.ultimo, both_pass: t(`settings.sitting.${x.both_pass}`), level: t(`settings.skill.${x.skill}`) })),
+      h(doc, "p", { class: "settings-note" }, t("settings.sitting.next")));
   }
 
   function render() {
-    const m = settingsModel(current, { inSitting, surfaces: surfaceList });
+    const m = settingsModel(current, { sitting, surfaces: surfaceList });
     rootEl.replaceChildren(
       h(doc, "div", { class: "settings-sheet" },
         h(doc, "div", { class: "settings-head" },
           h(doc, "h2", {}, t(m.titleKey)),
           h(doc, "button", { class: "settings-close", type: "button", "aria-label": t("ui.close"), onclick: () => close() }, "×")),
+        m.sitting ? thisSitting(m.sitting) : null,
         m.sections.map((s) =>
           h(doc, "section", { class: "settings-section", "data-section": s.id },
             h(doc, "h3", {}, t(s.titleKey)),
@@ -190,10 +204,9 @@ export function createSettings(rootEl, { t, prefs, onChange = () => {}, onAction
       current = { ...current, [key]: value };
       render();
     },
-    // Whether a sitting is under way: the rules and the length are then shown
-    // greyed, "from the next sitting" (3.5.2, 7.1).
-    setSitting(on) {
-      inSitting = Boolean(on);
+    // The sitting on the table (sittingFrom's), or null: the read-only line (3.5.2, 7.1).
+    setSitting(info) {
+      sitting = info ?? null;
       render();
     },
     setSurfaces(list) {
