@@ -612,7 +612,7 @@
   "tracker.fold.title": {"en": "Fold the count away", "de": "Die Zählung einklappen"},
   "tracker.legend.mine": {"en": "Yours", "de": "Ihre"},
   "tracker.legend.played": {"en": "Played by you", "de": "Von Ihnen gespielt"},
-  "tracker.legend.theirs": {"en": "Played by your opponent", "de": "Von Ihrem Gegner gespielt"},
+  "tracker.legend.theirs": {"en": "Red: played by your opponent", "de": "Rot: von Ihrem Gegner gespielt"},
   "tracker.legend.out": {"en": "Still out, with your face-down packet cards", "de": "Noch draußen, auch Ihre verdeckten Paketkarten"},
   "tracker.state.hand": {"en": "yours, in your hand", "de": "Ihre, in der Hand"},
   "tracker.state.cover": {"en": "yours, a packet cover", "de": "Ihre, Decke eines Pakets"},

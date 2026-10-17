@@ -113,8 +113,8 @@ test("a cell's state is yours, played or still out; who played it and when are i
 test("the legend names the four states, and says still out holds your face-down packet cards", () => {
   const m = trackerModel(payload(), words("en"));
   assert.deepEqual(m.legend.map((l) => l.state), ["mine", "played", "theirs", "out"]);
-  assert.deepEqual(m.legend.map((l) => l.text), ["Yours", "Played by you", "Played by your opponent", "Still out, with your face-down packet cards"]);
-  assert.deepEqual(trackerModel(payload(), words("de")).legend.map((l) => l.text), ["Ihre", "Von Ihnen gespielt", "Von Ihrem Gegner gespielt", "Noch draußen, auch Ihre verdeckten Paketkarten"]);
+  assert.deepEqual(m.legend.map((l) => l.text), ["Yours", "Played by you", "Red: played by your opponent", "Still out, with your face-down packet cards"]);
+  assert.deepEqual(trackerModel(payload(), words("de")).legend.map((l) => l.text), ["Ihre", "Von Ihnen gespielt", "Rot: von Ihrem Gegner gespielt", "Noch draußen, auch Ihre verdeckten Paketkarten"]);
 });
 
 test("tarocks out: the count and the highest four, then an ellipsis", () => {
