@@ -12,6 +12,10 @@ mod golden_tests;
 pub mod hint;
 pub mod know;
 pub mod lessons;
+pub mod m5r;
+#[cfg(test)]
+mod m5r_tests;
+pub mod m5r_rules;
 pub mod measure;
 pub mod opponent;
 pub mod probe;
