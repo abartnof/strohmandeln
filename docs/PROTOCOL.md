@@ -428,7 +428,11 @@ history is summaries, oldest first, a line `--` between (each summary is the tex
 decides whether "try the next opponent up" can be said. Optional lines may follow,
 in any order: `style <id>` (default `normal`), `drawn <id>` (what a `random`
 style drew; a style the code plays, and only with `style random`) and `reveal`
-(the sitting is over). The brief's `style` is `{"id", "drawn"}`; `drawn` is
+(the sitting is over), and, for `brief_of_record`, `earlier <record>` (the
+sitting's kept earlier deals, a line each, oldest first; a bad one is `bad-input`).
+For a style other than Normal the brief then ends with a "Their style" bullet
+(`tutor.lead.style`, `docs/TUTOR.md` 6) counted from the bids of those deals and
+this one, when it stands out; it names no style. The brief's `style` is `{"id", "drawn"}`; `drawn` is
 `null` unless `reveal` is given, so the engine, not the table, withholds it.
 An unknown style, or a bad `drawn`, is `bad-input`. The sitting's deals are
 not records but what was kept of each when it was scored, its `detail`: `deal N`

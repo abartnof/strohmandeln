@@ -908,8 +908,8 @@ if there is one. Pressed on a Help page, it opens the linked page in its place
 leisure. It is exempt from the pop-ups' limits, by name, in
 `web3d/test/tutorial.test.js` (at most 1500 words a page, 45 a line); the
 exemption is checked as used. It takes, in order, with worked examples: what
-every card is worth (RULES 1.7; the 54 cards add up to 106) and the letters the
-faces show; counting in threes and why it comes to thirds (8.1; 106 less 18
+every card is worth (RULES 1.7; the 54 cards add up to 106), the letters the
+faces show and the red pips' reversed order (1.5); counting in threes and why it comes to thirds (8.1; 106 less 18
 groups of 2 is 70); 36 of 70 and the 35⅔ boundary (8.2 to 8.4); what the score
 at the top shows, during play and at the count (2.5); what the game is worth,
 by `values` and `both_pass` (9.1, 9.2; the Valat, 10); the honours (11); the
@@ -922,6 +922,21 @@ the pages is held by a test: the value table against the table's card values
 for all 54 cards, the game values against the engine's credits for each
 `values` setting, the worked deal and evening against core tests
 (`web3d/test/scoring_pages.test.js`).
+
+6.2.5 **The red pips' note.** The first time a trick is won by a red pip over a
+higher-numbered pip of its suit (the 1 over the 4, the 2 over the 3; RULES 1.5),
+the Kibitzer says once, in his note by the tab (6.5): "The 1 of hearts beats the
+4 of hearts: in hearts and diamonds the low numbers rank high." / "Herz 1 sticht
+Herz 4: in Herz und Karo ist die 1 die höchste Zahl, die 4 die niedrigste." with
+the cards named. It is a rule, not a hint, so it does not depend on "Hints"
+(7.1); it is the Kibitzer's, so it is not said with the tutor off or muted. It
+comes at rest after the trick, never over a dialog (a page, the count): it waits
+for the next rest. Once only: `red-pips` in `seen` (7.7), beside the pages' keys
+(it is not a page, and not in the Help list). The note rather than a page or a
+dialog, because the table states a rule in the Kibitzer's note (the nudge, 6.4.5)
+and a page is read at a rest the player did not ask for. The trigger is
+`redPipBeat` (`web3d/src/cardinfo.js`), held by Node tests. The maintainer asked
+for it, 2026-10-17.
 
 ### 6.3 Hints and explanations
 
@@ -967,7 +982,7 @@ person reads after a scored deal and at the sitting's end, a few bullets at most
 small "Review" chip appears at the tutor's tab and stays until the next deal is
 scored (and for a sitting, until the farewell). It opens a dialog, **"How the
 deal went"**: the **count** as the header line (`review.say.count`, the result,
-not advice), then **at most three bullets** with a bold lead, from the engine's
+not advice), then **at most three bullets** (and, for a styled opponent, the fourth line of 7.3) with a bold lead, from the engine's
 brief (message keys with parameters, `docs/MESSAGES.md` "Tutor keys"):
 
 1. *Went well:* a skill just mastered, else the deal's best strength (all
@@ -1077,10 +1092,13 @@ switch redraws it. A restored sitting shows it at the first rest.
 red suits and 10 9 8 7 in black, as printed); then the 22 tarocks from the Sküs down
 to I in rows of 8, 8 and 6. Labels follow the faces (`tarockfaces.js`): K Q C J in
 English, K D C B in German; Roman numerals with IIII; "Sküs". A cell's state is
-carried by more than colour: **yours** (hand or cover) is filled; **played** is
-dimmed on a grey field, and under `prefers-contrast: more` struck through; **still
-out** (unseen, or face up in his hand or on his cover) is outlined. A legend names
-the three; its "Still out" says it holds your own face-down packet cards ("Still
+carried by more than colour: **yours** (hand or cover) is filled; **played by
+you** is dimmed on a grey field; **played by your opponent** is a dull red field
+(`--tracker-opp`, 8.6:1 light, 6.5:1 dark for its label; not the slate's teal) with a
+bar under the label; under `prefers-contrast: more` both are struck through, his
+dashed (17 Oct 2026, the maintainer: the cards he played should differ from the
+grey of "not seen yet"); **still out** (unseen, or face up in his hand or on his
+cover) is outlined. A legend names the four; its "Still out" says it holds your own face-down packet cards ("Still
 out, with your face-down packet cards"), which a beginner would otherwise take for
 his. Who played a card, and in which trick, is in the cell's title (the faces'
 numerals: "tarock V: played by your opponent, trick 3") and in the screen reader's
@@ -1113,12 +1131,15 @@ mit" (6.5).
 
 6.6.6 **Where it lies.** It must not cover the hand, the move bar, the prompt, the
 HUD or the Kibitzer's tabs, and it lies under the dialogs and the slate (z-order). A
-card of 300 px at the left, under the HUD, scrolling inside if it is taller;
+card of 300 px at the left, under the HUD, scrolling inside if it is taller. Its top
+follows the HUD's actual bottom (the tour line and the "not 36" chips included) and
+slides down when the by-deal list opens and back when it folds (17 Oct 2026, the
+maintainer: the two should be on screen together, not colliding);
 mirrored at the right in left-handed mode. Held upright, or in a window under
 700 px wide, it is not shown at all: **the phone layout is deferred** until the
 maintainer has played the game on a phone and decided what the table should carry
 there. Nothing in the tracker is phone-specific. Browser checks hold the rectangles
-apart at 1280 × 720 and 1024 × 768 (`tracker_clear`, 10.4).
+apart at 1280 × 720, 1024 × 768, 1440 × 900 and 1920 × 1080, in English and German, the HUD's list closed and open (`tracker_clear`, 10.4).
 
 6.6.7 **Accessibility.** The panel is a labelled region; the lines are a list; the grid
 is hidden from the screen reader and replaced by one visually hidden sentence per
@@ -1197,9 +1218,13 @@ but Normal, a note says the style shows mostly in the bidding
 **Random** the menu's line says "Random (shown at the end)" and, once the sitting is
 over, "Random: After Bermann"; the end-of-sitting dialog and brief name the drawn
 style in quotes (`style.reveal`), the engine withholding it until the brief's
-`reveal` flag. Open: the after-deal brief's "Their style" bullet (`docs/STYLES.md`
-5) waits on the engine; a Random sitting left by a new sitting reveals nothing yet;
-the end dialog's reveal does not follow a language switch made at the end.
+`reveal` flag. The after-deal brief has a fourth line, "Their style:", for any style
+but Normal and under Random too (`docs/STYLES.md` 5, `docs/TUTOR.md` 6): the
+opponent's take-ups so far in the sitting ("your opponent has taken up 4 of 6
+bids so far"), a fact in the Kibitzer's voice, never a counter and never a style's
+name; the table sends the sitting's earlier records and shows the line as given.
+Open: a Random sitting left by a new sitting reveals nothing yet; the end dialog's
+reveal does not follow a language switch made at the end.
 
 ### 7.4 Speed
 
@@ -1445,6 +1470,10 @@ motion are saved to `web3d/test/out/`.
 - `tutor_pages`: in a seeded sitting each page opens at its first occurrence, once
   (`the-cards` and `packets` at the deal, and `bidding` at the first bid turn, which in the check's seed is the same rest: one at a time, in that order, each Not now bringing the next; `the-pull` at the reveal, ... `extension`); not when
   muted or the tutor is off; each page is in the current language.
+- `red_pips_note`: seed 1 at level 1, hints off: at rest after the first trick a red pip
+  beats a higher-numbered one (trick 3, the 1 of hearts over the 2), the Kibitzer's note
+  names both cards and `red-pips` is in `seen` once, no dialog open; muted, no note and
+  no mark (6.2.5).
 - `tutor_mute`: "§ 13" mutes (one line, then silence); no page, hint or review chip;
   unmute restores them.
 - `hint_and_explain`: the hint chip lights a card and shows a rendered key; explanations
@@ -1467,7 +1496,7 @@ motion are saved to `web3d/test/out/`.
   note to its closing) the dots appear with a tooltip, the note once and kept as seen; off, or
   the Kibitzer muted, takes the dots away at once, and back on returns them (1.5.7).
 - `deal_brief`: after a scored deal the chip opens "How the deal went": the count as
-  the header, at most three bullets with a bold lead each, the method folded; none
+  the header, at most three bullets (and, for a styled opponent, the fourth line of 7.3) with a bold lead each, the method folded; none
   after a void deal or a throw-in; in German in German; muted it shows nothing; with the
   tips off one bullet at most and no "Next:"; a hint shown marks its decision assisted,
   and so does the nudge, which comes once a deal in the Kibitzer's tab.

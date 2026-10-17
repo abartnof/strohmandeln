@@ -42,7 +42,8 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 
 - Jede Farbe läuft K, D, C, B. Das C ist der Cavall, ein Reiter, zwischen Dame und Bube, 3 Augen wert.
 - Das Blatt zu 52 Karten hat ihn nicht. Echte Hofkarten tragen Bilder statt Buchstaben. Unsere großen Buchstaben sind für den raschen Blick.
-- Zahlkarten: 10 9 8 7 in Kreuz und Pik; 1 2 3 4 in Herz und Karo, dort die 1 die höchste.
+- Zahlkarten: 10 9 8 7 in Kreuz und Pik.
+- In Herz und Karo laufen die Zahlen rückwärts: die 1 ist die höchste, die 4 die niedrigste.
 
 # Die Pakete
 
@@ -244,7 +245,7 @@ und `both_pass` (RULES 3.4, 9.1, 12.3, 14.6).
 - **1** je Karte: jede andere Karte, also die Tarocks II bis XX und die Zahlkarten der Farben.
 
 - Der Rang ist etwas anderes. Die Tarocks laufen vom Sküs (höchste) über XXI, XX bis II, zuletzt I, der Pagat, das niedrigste Tarock.
-- Jede Farbe läuft K, D, C, B, der Cavall zwischen Dame und Bube, dann die Zahlkarten: 10 9 8 7 in Kreuz und Pik, 1 2 3 4 in Herz und Karo, die 1 die höchste.
+- Jede Farbe läuft K, D, C, B, der Cavall zwischen Dame und Bube, dann die Zahlkarten: 10 9 8 7 in Kreuz und Pik. In Herz und Karo laufen die Zahlen rückwärts: die 1 ist die höchste, die 4 die niedrigste.
 - Die Karten zeigen die Buchstaben K, D, C und B, die Tarocks in römischen Ziffern.
 - Alle 54 Karten mit diesen Werten zusammen ergeben 106. Die Zählung in Dreiergruppen macht daraus 70.
 

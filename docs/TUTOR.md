@@ -269,6 +269,17 @@ a link, never in the bullets. Each bullet is `{lead, key, params}` (section 9).
    Where the consequence is in the log (a figure lost to a higher card of its
    suit) the clause says so; after the last trick every card is public.
 
+4. **Their style** (after-deal brief only, at most 14 words, after the three):
+   when the opponent's style is not Normal (Random included), what the sitting's
+   record so far shows of its bids, as a fact: "Your opponent has taken up 4 of
+   6 bids so far" (`tutor.style.took`, `-once`, `-none`). Said when at least 3
+   bids stand more than one standard deviation from Normal's 19% take-up rate
+   (`docs/STYLES.md` 9, stage 0); the bid is the one tell that separates the
+   offered styles from Normal in the counts, so it is the one counted. Never a
+   counter (none passed stage 2) and never a style's name, so under Random it is
+   the same line before and after the end. Not counted in the three bullets or
+   the 45 words; hidden with the tips off, as the other advice (`tell.rs`).
+
 No focus: bullet 2 says that nothing stood out (and to try the next opponent up,
 below the top of the dial), or that it is too early to say; bullet 3 is dropped.
 A skill is never praised and worked on in the same brief. A deal with fewer than
@@ -631,7 +642,7 @@ Test first (`CLAUDE.md`). Engine (`cargo test`, deterministic):
 - **Purity.** The same record and assisted list give the same summary and brief;
   the evidence never reads a hidden card (twin deals, `testutil::blind_check`).
 - **Assisted.** An assisted decision is no evidence.
-- **Brief.** At most three bullets, at most 45 words of body (62 with the leads), every key present in English
+- **Brief.** At most three bullets (and, for a styled opponent, the fourth line of item 4), at most 45 words of body (62 with the leads), every key present in English
   and German, rules at most 15 words, no focus and mastery never in one brief, a
   short deal says so, every parameter named in a template is supplied, the
   kindness test passes. The keys of the code equal the keys of
@@ -645,7 +656,7 @@ Test first (`CLAUDE.md`). Engine (`cargo test`, deterministic):
 Node: the store round trip with injected storage; a newer store read as empty and
 not overwritten; import caps; no storage works; the brief rendered in both
 languages; the Worker and the main-thread fallback agree. Browser: the dialog
-opens after a scored deal, once, with the header line and at most three bullets;
+opens after a scored deal, once, with the header line and at most three bullets (and, for a styled opponent, the fourth line of item 4);
 muted shows nothing; a hint sets the decision's number in the assisted list.
 
 ## 13. Shared code: `kit/learner`
@@ -664,7 +675,7 @@ crate back; a test makes that safe.
 - focus selection over a prerequisite graph (`cleared`, `short`, `costly`, gain
   = cost less `top_cost`);
 - the summary's text form and versioning, `stale`;
-- the brief's shape: a bullet with a lead, at most three bullets, the order well /
+- the brief's shape: a bullet with a lead, at most three bullets (and, for a styled opponent, the fourth line of item 4), the order well /
   next / none, the "mastery only after the second game" and "enough skills seen"
   guards.
 
@@ -777,7 +788,7 @@ script inlined by `build.py`). Until then Strohmandeln copies them as patterns.
 ## 14. The table (desktop)
 
 The brief replaces the bullets of the dialog "How the deal went" (`docs/TABLE3D.md`
-6.4.1): the header line is the count (kept), then up to three bullets with bold
+6.4.1): the header line is the count (kept), then up to three bullets (and the style line for a styled opponent) with bold
 leads, then the folded "How is this worked out?" (`tutor.how`, `tutor.method`).
 The chip, the sitting review and the mute are as in 6.4 and 6.1; the tips shown
 by the nudge go in the Kibitzer's tab. `TABLE3D.md` 6.4 is written to this document

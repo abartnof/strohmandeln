@@ -159,8 +159,9 @@ of the suit, which is why the texts say "in hand or showing".
 ## Tutor keys
 
 The tutor's brief (`strohmandeln_brief_of_record`, `strohmandeln_brief_sitting`,
-`docs/PROTOCOL.md`, `docs/TUTOR.md` 6 and 9) is at most three bullets
-`{lead, key, params}`: `lead` and `key` are both keys of this table (`lead` may be
+`docs/PROTOCOL.md`, `docs/TUTOR.md` 6 and 9) is at most three bullets, and a
+fourth, "Their style" (`tutor.lead.style`, `tutor.style.*`: `n` and `of` counts),
+each `{lead, key, params}`: `lead` and `key` are both keys of this table (`lead` may be
 empty). Cards in `params` are codes, `thirds` and `sure` integer thirds (the
 table writes them as points, 107 is "35⅔"), `skill` and `skill2` a skill's slug
 (the table says `tutor.name.<slug>`), `honour` is `trull` or `kings`, `suit` a
@@ -197,6 +198,10 @@ in the Kibitzer's tab at the first clear chance at the focus
 | `tutor.lead.deal` | none | This deal: | In dieser Partie: | TUTOR 6 |
 | `tutor.lead.deal-n` | `deal` (the deal's number in the sitting) | Deal {deal}: | Partie {deal}: | TUTOR 6; the sitting's example |
 | `tutor.lead.try` | none | To try: | Zum Versuchen: | TUTOR 6 |
+| `tutor.lead.style` | none | Their style: | Spielweise des Gegners: | STYLES 5; TUTOR 6 |
+| `tutor.style.took` | `n`, `of` | Your opponent has taken up {n} of {of} bids so far. | Ihr Gegner hat bisher {n} von {of} Geboten aufgenommen. | STYLES 5, 9 |
+| `tutor.style.took-once` | `of` | Your opponent has taken up only once in {of} bids so far. | Ihr Gegner hat bisher in {of} Geboten nur einmal aufgenommen. | STYLES 5, 9 |
+| `tutor.style.took-none` | `of` | Your opponent has not taken up in {of} bids so far. | Ihr Gegner hat bisher in {of} Geboten nie aufgenommen. | STYLES 5, 9 |
 | `tutor.lead.rule` | none | If I may: | Wenn ich mir erlauben darf: | TABLE3D 6.5; shown before every `tutor.rule.*` and `tutor.nudge.*` text, not counted in its words |
 | `tutor.well.mastered` | `skill` | {skill} – mastered. | {skill} – gemeistert. | TUTOR 5, 6 |
 | `tutor.well.mastered-two` | `skill`, `skill2` | {skill} and {skill2} – mastered. | {skill} und {skill2} – gemeistert. | TUTOR 5, 6 |
@@ -297,6 +302,12 @@ in the Kibitzer's tab at the first clear chance at the focus
 | `tutor.nudge.endgame` | none | Count now; the position is known. | Zählen Sie jetzt; die Lage ist bekannt. | TUTOR 6; shown after `tutor.lead.rule` |
 | `tutor.nudge.bid` | none | Look at your sure winners before you speak. | Prüfen Sie Ihre sicheren Stecher, ehe Sie sprechen. | TUTOR 6; shown after `tutor.lead.rule` |
 | `tutor.nudge.announce` | none | You hold an honour; announce it. | Sie halten einen Honneur; sagen Sie ihn an. | TUTOR 6; shown after `tutor.lead.rule` |
+
+### Rule notes
+
+| Key | Parameters | English | Deutsch | Basis |
+|---|---|---|---|---|
+| `tutor.note.redpips` | `win`, `lose` (card names) | The {win} beats the {lose}: in hearts and diamonds the low numbers rank high. | {win} sticht {lose}: in Herz und Karo ist die 1 die höchste Zahl, die 4 die niedrigste. | RULES 1.5; TABLE3D 6.2.5; said once, without a lead |
 
 ### Examples
 
