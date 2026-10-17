@@ -65,6 +65,13 @@
   background-color: var(--dark);
   transition: height 460ms var(--sp-fast), background-color 200ms var(--sp-fx);
 }
+/* A game with many segments sets --seg-gap / --seg-gap-group on .hud. */
+.seg + .seg {
+  margin-left: var(--seg-gap, 3px);
+}
+.seg.grp {
+  margin-left: var(--seg-gap-group, 8px);
+}
 .seg.reached {
   height: 6px;
   background-color: var(--fill);
