@@ -391,7 +391,11 @@ answers to the other questions (empty for now); `contrast` and `trumped` the
 sampled deals of the hinted card against A (`vs.*`), or `null`; `facts` at most
 two `{key, params, anchor}` (`fact.*`; `anchor` is `line1` to `line4` or
 `row:<kind>`, a cell of the Cards-out tab); `rule` the measure of a shown `so`
-(`null` until M5r); `odds` as above. `params.card` is always the hinted card.
+`{id, p, n, late}` when `so` is a rule of M5r (it plays so in `p` percent of `n`
+positions; `late` when it describes play late in the deal), else `null`; `odds` as
+above. A rule of M5r is `so` with key `so.m5r` and `text` `{en, de}`, the
+engine's wording (`m5r::sentence`); it is told only if it passed under the
+sitting's settings. `params.card` is always the hinted card.
 
 ## The review
 

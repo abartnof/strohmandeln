@@ -118,7 +118,9 @@ of headline, question and sentence: 25 in English, 30 in German, a placeholder o
 (`web3d/test/hinttext.test.js`). A reason key (`reason.<key>`) may stand as the
 sentence where the sample has not been drawn. The sentence for a yes/no question
 (`ask.worth`, `ask.keep`, `ask.trumps`) opens with its verdict (Yes, No, Not yet).
-The "Why?" control is `hint.why.label`; its first line is `hint.why.intro`
+A rule of M5r is the sentence `so.m5r`, worded by the engine in both languages
+(`text`); its measure in the "Why?" is `hint.why.rule` ("it plays so in {p}% of {n}
+positions") and, for late play, `hint.why.late`. The "Why?" control is `hint.why.label`; its first line is `hint.why.intro`
 ("I deal his hidden cards at random {w} times and play each out.") over the
 contrast, the facts, the rule clause and the odds, at most 90 words.
 

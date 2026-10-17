@@ -35,9 +35,10 @@ const keepName = (code, { t, cardName }) => (["T1", "T21", "SK"].includes(code) 
 //  - `reason` and `more` are the older shape: the reason's sentence and the rule
 //    and odds clauses after it.
 // The words come from `t`.
-export function hintLines(r, { t, cardName, thirds, count, whyWords = WHY_WORDS }) {
+export function hintLines(r, { t, cardName, thirds, count, lang = "en", whyWords = WHY_WORDS }) {
   const words = { t, cardName, thirds, count };
-  const say = (l) => (l ? cap(t(`hint.${l.key}`, hintParams(l.params, words))) : "");
+  // A sentence the engine worded itself (`text`, a rule of M5r) comes in both languages.
+  const say = (l) => (l ? cap(l.text ? l.text[lang] : t(`hint.${l.key}`, hintParams(l.params, words))) : "");
   const play = r.hint?.action === "play" ? r.hint.card : null;
   const lead = play ? cap(t("hint.play", { card: cardName(play) })) : "";
   const reason = cap(t(`hint.reason.${r.reason}`, hintParams(r.params, words)));
@@ -62,6 +63,7 @@ export function hintLines(r, { t, cardName, thirds, count, whyWords = WHY_WORDS 
             say(r.why.contrast),
             say(r.why.trumped),
             ...facts.map((f) => f.text && f),
+            ...ruleMeasure(r.why.rule, words),
             r.rule ? t(`hint.rule.${r.rule}`) : "",
             oddsText,
           ],
@@ -89,6 +91,14 @@ function whyLines(parts, limit) {
     lines.push(line.anchor ? line : { text: line.text });
   }
   return lines;
+}
+
+// What the measure says of an M5r rule: how often the strongest player plays so, and
+// that it describes late play when most firings are late.
+function ruleMeasure(rule, { t, count }) {
+  if (!rule) return [];
+  const line = cap(t("hint.why.rule", { p: rule.p, n: count ? count(rule.n) : rule.n }));
+  return rule.late ? [line, cap(t("hint.why.late"))] : [line];
 }
 
 // "I deal his hidden cards at random {w} times and play each out." when there is

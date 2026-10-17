@@ -587,6 +587,8 @@
   "hint.ans.trumps-no": {"en": "Not yet: you hold {mine} of the {total} still out.", "de": "Noch nicht: Sie halten {mine} der {total} Tarock im Spiel."},
   "hint.ans.trumps-yes": {"en": "Yes: you hold {mine} of the {total} still out.", "de": "Ja: Sie halten {mine} der {total} Tarock im Spiel."},
   "hint.why.label": {"en": "Why?", "de": "Warum?"},
+  "hint.why.rule": {"en": "It is a rule measured against the strongest player: it plays so in {p}% of {n} positions like this.", "de": "Eine Regel, gegen den stärksten Spieler gemessen: er spielt so in {p} % von {n} solchen Stellungen."},
+  "hint.why.late": {"en": "The rule describes play late in the deal.", "de": "Die Regel beschreibt das Spiel spät in der Partie."},
   "hint.why.intro": {"en": "I deal his hidden cards at random {w} times and play each out.", "de": "Ich teile seine verdeckten Karten {w}-mal zufällig aus und spiele jede durch."},
   "hint.play": {"en": "Play {card}.", "de": "{card} spielen."},
   "hint.unit.one": {"en": "card point", "de": "Auge"},

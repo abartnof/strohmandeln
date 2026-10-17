@@ -15,7 +15,7 @@
 //! The keys and parameters are tabled in `docs/MESSAGES.md`, "Hint reasons";
 //! [`KEYS`] and [`RULES`] list them and a test holds the table to them.
 
-use crate::ask::{alternative, compose, Evidence, Fact, Line};
+use crate::ask::{alternative, compose_in, Evidence, Fact, Line, RuleMeta, PASSED};
 use crate::explain::{explain_play, Maxim, Param, Reason, Sampled};
 use crate::know::Knowledge;
 use crate::opponent::{Config, Level, Opponent};
@@ -25,7 +25,7 @@ use crate::rung4;
 use crate::seed::view_seed;
 use strohmandeln_core::cards::Card;
 use strohmandeln_core::rng::Rng;
-use strohmandeln_core::types::Action;
+use strohmandeln_core::types::{Action, Settings};
 use strohmandeln_core::view::View;
 
 /// How the search ranks the hinted card against the best other legal card,
@@ -71,6 +71,8 @@ pub struct Why {
     pub contrast: Option<Line>,
     pub trumped: Option<Line>,
     pub facts: Vec<Fact>,
+    /// The M5r rule the `so` states and how it measured.
+    pub rule: Option<RuleMeta>,
 }
 
 impl Hint {
@@ -127,6 +129,7 @@ fn sentence(key: &str, params: &[(&'static str, Param)]) -> Line {
     Line {
         key: key.to_string(),
         params: params.to_vec(),
+        text: None,
     }
 }
 
@@ -194,6 +197,12 @@ pub fn odds_config(config: Config, worlds: usize) -> Config {
 
 /// The best move for the seat to move in `view`, at `level`, with a reason.
 pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
+    hint_in(view, seed, level, config, &Settings::default())
+}
+
+/// [`hint`] in a sitting with these settings: a rule that did not pass under
+/// them is not told.
+pub fn hint_in(view: &View, seed: u64, level: Level, config: Config, settings: &Settings) -> Hint {
     let opponent = Opponent::new(level, seed).with_config(config);
     let action = opponent.decide(view);
     if matches!(action, Action::Extend { .. }) {
@@ -276,13 +285,14 @@ pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
         // Solved, and the search sees less than a third of a point between them.
         even: follow.is_some() && odds.is_none(),
     };
-    let comp = compose(&k, card, &evidence);
+    let comp = compose_in(&k, card, &evidence, PASSED, settings);
     // A hint always has a "because": the plain local reason stands where the
     // question has no sentence of its own.
     let ans = comp.ans.or_else(|| {
         Some(Line {
             key: format!("reason.{key}"),
             params: params.clone(),
+            text: None,
         })
     });
     let (contrast, trumped) = match (alt, k.lead) {
@@ -347,6 +357,7 @@ pub fn hint(view: &View, seed: u64, level: Level, config: Config) -> Hint {
             contrast,
             trumped,
             facts: comp.facts,
+            rule: comp.rule,
         },
     }
 }
@@ -633,7 +644,10 @@ mod tests {
                 for l in lines {
                     let known = match l.key.split_once('.') {
                         Some(("reason", r)) => KEYS.contains(&r),
-                        _ => SENTENCES.contains(&l.key.as_str()),
+                        _ => {
+                            SENTENCES.contains(&l.key.as_str())
+                                || (l.key == "so.m5r" && l.text.is_some())
+                        }
                     };
                     assert!(known, "{}", l.key);
                 }

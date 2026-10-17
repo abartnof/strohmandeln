@@ -14,7 +14,7 @@ use serde::Deserialize;
 use serde_json::{json, Map, Value};
 use strohmandeln_ai::cardset::Kind;
 use strohmandeln_ai::explain::Param as HintParam;
-use strohmandeln_ai::hint::hint as ai_hint;
+use strohmandeln_ai::hint::hint_in as ai_hint;
 use strohmandeln_ai::opponent::{Config as AiConfig, Level, Opponent};
 use strohmandeln_ai::review::{explain_last, review_last, review_sitting, Bullet, Param, Review};
 use strohmandeln_ai::style::Style;
@@ -71,7 +71,11 @@ fn hint_params(params: &[(&'static str, HintParam)]) -> Map<String, Value> {
 
 /// A sentence of the hint: `{key, params}` (`docs/PROTOCOL.md`, "The hint").
 fn hint_line(l: &strohmandeln_ai::ask::Line) -> Value {
-    json!({"key": l.key, "params": hint_params(&l.params)})
+    let mut v = json!({"key": l.key, "params": hint_params(&l.params)});
+    if let Some((en, de)) = &l.text {
+        v["text"] = json!({"en": en, "de": de});
+    }
+    v
 }
 
 /// The level of the tutor's hint: always the top rung, whole.
@@ -483,7 +487,13 @@ impl Table {
         };
         let v = self.my_view();
         let seed = self.sitting.seed() ^ 0x7417_0000_0000_0001;
-        let h = ai_hint(&v, seed, Level::from_f64(HINT_LEVEL), AiConfig::default());
+        let h = ai_hint(
+            &v,
+            seed,
+            Level::from_f64(HINT_LEVEL),
+            AiConfig::default(),
+            &self.sitting.settings(),
+        );
         let action = match &h.action {
             Action::Play { card, .. } => legal
                 .iter()
@@ -518,7 +528,7 @@ impl Table {
                     v["anchor"] = json!(f.anchor);
                     v
                 }).collect::<Vec<_>>(),
-                "rule": null,
+                "rule": h.why.rule.as_ref().map(|r| json!({"id": r.id, "p": r.p, "n": r.n, "late": r.late})),
                 "odds": odds,
             },
         })
@@ -1493,7 +1503,7 @@ mod tests {
                 assert_eq!(q == Some("ask.keep"), r["keep"].is_string(), "{r}");
                 let why = &r["why"];
                 assert!(why["answers"].is_array() && why["facts"].is_array());
-                assert!(why["rule"].is_null());
+                assert!(why["rule"].is_null() || why["rule"]["id"].is_string());
                 assert_eq!(why["odds"], r["odds"]);
                 for f in why["facts"].as_array().unwrap() {
                     assert!(line(f) && f["anchor"].is_string(), "{f}");

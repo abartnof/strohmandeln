@@ -5,11 +5,12 @@
 use crate::cardset::{leader_wins, CardSet, Kind};
 use crate::explain::Param;
 use crate::know::Knowledge;
+use crate::m5r::{self, PassedRule};
 use crate::rules::CANDIDATES;
 use crate::rung2::{reserved_packet, STRONG_TAROCKS};
 use crate::tutor::{suit_share, SPLIT_MIN_POINTS, SPLIT_SHARE};
 use strohmandeln_core::cards::{Card, Suit};
-use strohmandeln_core::types::Action;
+use strohmandeln_core::types::{Action, BothPass, Settings, Values};
 
 /// A sentence of the hint: a namespaced key (`ans.*`, `so.*`, `reason.*`,
 /// `fact.*`, `vs.*`) and its parameters.
@@ -17,6 +18,19 @@ use strohmandeln_core::types::Action;
 pub struct Line {
     pub key: String,
     pub params: Vec<(&'static str, Param)>,
+    /// The sentence in English and German where the engine words it (a rule
+    /// of M5r, `m5r::sentence`); the key is then `so.m5r`.
+    pub text: Option<(String, String)>,
+}
+
+/// The figures of the M5r rule a `so` states, for the "Why?": it plays so in
+/// `p` percent of `n` positions; `late` when the rule describes late play.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RuleMeta {
+    pub id: String,
+    pub p: u32,
+    pub n: u32,
+    pub late: bool,
 }
 
 /// A fact of the "Why?" and where the Cards-out tab shows it.
@@ -49,6 +63,8 @@ pub struct Composition {
     /// the plain local reason.
     pub ans: Option<Line>,
     pub facts: Vec<Fact>,
+    /// The M5r rule behind `so`, if it is one.
+    pub rule: Option<RuleMeta>,
 }
 
 pub const QUESTIONS: [&str; 8] = [
@@ -232,30 +248,130 @@ pub fn decisive(k: &Knowledge, x: Card, a: Card) -> Vec<&'static str> {
         .collect()
 }
 
-/// The `so` sentence of a passed rule for X on question `q`, with the rule's
-/// precision; `None` unless the rule fires and X does what it prescribes.
-fn so_for(k: &Knowledge, x: Card, q: &str, passed: &[Passed]) -> Option<(Line, f64)> {
-    passed.iter().filter(|p| p.question == q).find_map(|p| {
+/// The question an M5r class answers.
+pub fn question_of_class(class: &str) -> &'static str {
+    match class.split('/').next().unwrap_or("") {
+        "cheap" => "ask.cheap",
+        "worth.poor" => "ask.worth",
+        "off" => "ask.beneath",
+        "run" => "ask.trumps",
+        "pagat" => "ask.keep",
+        "void" => "ask.out",
+        _ => "",
+    }
+}
+
+/// `docs/measurements/m5r-settings.tsv`: per rule, its figures under each
+/// setting (`name:fired:p:n_eff:lower`).
+const SETTINGS_TSV: &str = include_str!("../../../docs/measurements/m5r-settings.tsv");
+
+/// The settings that differ from the default, by the names of the table.
+fn deviations(s: &Settings) -> Vec<&'static str> {
+    let mut v = Vec::new();
+    match s.values {
+        Values::V234 => {}
+        Values::V123 => v.push("v123"),
+        Values::V124 => v.push("v124"),
+    }
+    if s.both_pass == BothPass::ThrowIn {
+        v.push("throwin");
+    }
+    if s.ultimo == 2 {
+        v.push("ult2");
+    }
+    v
+}
+
+/// Whether the rule's lower bound held at the gate under each setting the
+/// sitting changes (the default setting is the main result).
+pub fn passes_under(r: &PassedRule, s: &Settings) -> bool {
+    let names = deviations(s);
+    if names.is_empty() {
+        return true;
+    }
+    let atoms = r.atoms.join(",");
+    let Some(row) = SETTINGS_TSV.lines().find(|l| {
+        let mut f = l.split('\t');
+        f.next() == Some(r.class) && f.next() == Some(atoms.as_str())
+    }) else {
+        return false;
+    };
+    names.iter().all(|name| {
+        row.split('\t')
+            .skip(2)
+            .filter_map(|c| c.strip_prefix(&format!("{name}:")))
+            .any(|c| {
+                let f: Vec<f64> = c.split(':').filter_map(|x| x.parse().ok()).collect();
+                f.len() == 4 && f[2] >= m5r::MIN_N && f[3] >= m5r::GATE
+            })
+    })
+}
+
+/// The `so` sentence for X on question `q` and the figures it rests on:
+/// a rule of M5 (`passed`) or the widest shipped rule of M5r that holds here
+/// and passed under the sitting's settings. The precision is the lower bound.
+fn so_for(
+    k: &Knowledge,
+    x: Card,
+    q: &str,
+    passed: &[Passed],
+    settings: &Settings,
+) -> Option<(Line, f64, Option<RuleMeta>)> {
+    let old = passed.iter().filter(|p| p.question == q).find_map(|p| {
         let rule = CANDIDATES.iter().find(|r| r.id == p.rule)?;
         ((rule.check)(k, &Action::play(x)) == Some(true)).then(|| {
             (
                 Line {
                     key: p.so.to_string(),
                     params: Vec::new(),
+                    text: None,
                 },
                 p.precision,
+                None,
             )
         })
-    })
+    });
+    let new = m5r::matching(k, &Action::play(x))
+        .into_iter()
+        .find(|r| question_of_class(r.class) == q && passes_under(r, settings))
+        .map(|r| {
+            (
+                Line {
+                    key: "so.m5r".to_string(),
+                    params: Vec::new(),
+                    text: Some((
+                        m5r::sentence(r.atoms, r.class, false),
+                        m5r::sentence(r.atoms, r.class, true),
+                    )),
+                },
+                r.lower,
+                Some(RuleMeta {
+                    id: r.id.to_string(),
+                    p: (r.precision * 100.0).round() as u32,
+                    n: r.fired,
+                    late: r.late,
+                }),
+            )
+        });
+    match (old, new) {
+        (Some(o), Some(n)) => Some(if o.1 >= n.1 { o } else { n }),
+        (o, n) => o.or(n),
+    }
 }
 
 /// The decisive question to ask (3.3): among those whose `so` rule applies
 /// here, the highest measured precision; else the first in teaching order.
-pub fn choose(k: &Knowledge, x: Card, a: Card, passed: &[Passed]) -> Option<&'static str> {
+pub fn choose(
+    k: &Knowledge,
+    x: Card,
+    a: Card,
+    passed: &[Passed],
+    settings: &Settings,
+) -> Option<&'static str> {
     let qs = decisive(k, x, a);
     let best = qs
         .iter()
-        .filter_map(|&q| so_for(k, x, q, passed).map(|(_, p)| (q, p)))
+        .filter_map(|&q| so_for(k, x, q, passed, settings).map(|(_, p, _)| (q, p)))
         .max_by(|l, r| l.1.total_cmp(&r.1))
         .map(|(q, _)| q);
     best.or_else(|| qs.first().copied())
@@ -273,6 +389,7 @@ fn line(key: &str, params: &[(&'static str, Param)]) -> Line {
     Line {
         key: key.to_string(),
         params: params.to_vec(),
+        text: None,
     }
 }
 
@@ -285,7 +402,7 @@ fn fact(key: &str, params: &[(&'static str, Param)], anchor: &str) -> Fact {
 
 /// Tarocks neither mine nor played (the Cards-out tab's line 1).
 fn tarocks_out(k: &Knowledge) -> usize {
-    k.opp_possible().iter().filter(|c| c.is_tarock()).count()
+    k.out_tarocks()
 }
 
 fn skus_out(k: &Knowledge) -> bool {
@@ -498,31 +615,47 @@ fn answer(k: &Knowledge, x: Card, a: Card, q: &str, ev: &Evidence) -> Answer {
     }
 }
 
-/// The default hint after the headline for the hinted card `x`.
+/// The default hint after the headline for the hinted card `x`, under the
+/// default settings.
 pub fn compose(k: &Knowledge, x: Card, ev: &Evidence) -> Composition {
     compose_with(k, x, ev, PASSED)
 }
 
 /// [`compose`] with the passed rules given (tests choose their own).
 pub fn compose_with(k: &Knowledge, x: Card, ev: &Evidence, passed: &[Passed]) -> Composition {
+    compose_in(k, x, ev, passed, &Settings::default())
+}
+
+/// [`compose_with`] in a sitting with these settings: a rule of M5r is told
+/// only if it passed under them.
+pub fn compose_in(
+    k: &Knowledge,
+    x: Card,
+    ev: &Evidence,
+    passed: &[Passed],
+    settings: &Settings,
+) -> Composition {
     let plain = |ans| Composition {
         question: None,
         keep: None,
         so: None,
         ans,
         facts: Vec::new(),
+        rule: None,
     };
     let Some(a) = alternative(k, x).filter(|_| k.legal.len() > 1) else {
         return plain(None);
     };
-    let Some(q) = choose(k, x, a, passed) else {
+    let Some(q) = choose(k, x, a, passed, settings) else {
         return plain(none_line(ev));
     };
     let (ans, keep, facts) = answer(k, x, a, q, ev);
+    let so = so_for(k, x, q, passed, settings);
     Composition {
         question: Some(q),
         keep,
-        so: so_for(k, x, q, passed).map(|(l, _)| l),
+        rule: so.as_ref().and_then(|s| s.2.clone()),
+        so: so.map(|s| s.0),
         ans,
         facts,
     }
@@ -532,6 +665,7 @@ pub fn compose_with(k: &Knowledge, x: Card, ev: &Evidence, passed: &[Passed]) ->
 mod tests {
     use super::*;
     use crate::testutil::{c, know};
+    use strohmandeln_core::types::{BothPass, Values};
 
     const NO: [&str; 3] = ["", "", ""];
 
@@ -644,7 +778,10 @@ mod tests {
         let x = c("T8");
         let a = alternative(&k, x).unwrap();
         assert_eq!(a, c("T1"));
-        assert_eq!(choose(&k, x, a, &[]), Some("ask.keep"));
+        assert_eq!(
+            choose(&k, x, a, &[], &Settings::default()),
+            Some("ask.keep")
+        );
         // The same with a rule for ask.cheap that fires and has no bearing:
         // only a rule that fires counts.
         let fake = [Passed {
@@ -653,11 +790,17 @@ mod tests {
             so: "so.worth-rich",
             precision: 0.9,
         }];
-        assert_eq!(choose(&k, x, a, &fake), Some("ask.keep"));
+        assert_eq!(
+            choose(&k, x, a, &fake, &Settings::default()),
+            Some("ask.keep")
+        );
         // Mond led-over: X = Kh sole winner of a queen, A = 4h: worth, with
         // the rule firing.
         let k = know(&["Kh", "4h", "T1"], NO, NO, &[], Some("Qh"));
-        assert_eq!(choose(&k, c("Kh"), c("4h"), &fake), Some("ask.worth"));
+        assert_eq!(
+            choose(&k, c("Kh"), c("4h"), &fake, &Settings::default()),
+            Some("ask.worth")
+        );
     }
 
     #[test]
@@ -894,6 +1037,130 @@ mod tests {
             .unwrap()
             .params
             .contains(&("out", Param::Int(tarocks_out(&k) as i64))));
+    }
+
+    fn settings(values: Values, both_pass: BothPass, ultimo: u32) -> Settings {
+        Settings {
+            values,
+            both_pass,
+            ultimo,
+        }
+    }
+
+    #[test]
+    fn a_shipped_rule_is_told_only_under_the_settings_it_passed() {
+        let d = Settings::default();
+        let by = |id: &str| {
+            crate::m5r_rules::PASSED
+                .iter()
+                .find(|r| r.id == id)
+                .unwrap()
+        };
+        let cheap = by("cheap/outcome:tu4");
+        let poor = by("worth.poor/no-king:ml7");
+        for s in [
+            d,
+            settings(Values::V123, BothPass::Play, 1),
+            settings(Values::V124, BothPass::Play, 1),
+            settings(Values::V234, BothPass::ThrowIn, 1),
+            settings(Values::V234, BothPass::Play, 2),
+        ] {
+            assert!(passes_under(cheap, &s), "{s:?}");
+        }
+        assert!(passes_under(poor, &d));
+        assert!(passes_under(
+            poor,
+            &settings(Values::V234, BothPass::Play, 2)
+        ));
+        assert!(!passes_under(
+            poor,
+            &settings(Values::V123, BothPass::Play, 1)
+        ));
+        assert!(!passes_under(
+            poor,
+            &settings(Values::V124, BothPass::Play, 1)
+        ));
+        assert!(!passes_under(
+            poor,
+            &settings(Values::V234, BothPass::ThrowIn, 1)
+        ));
+        // Two deviations: each must pass.
+        assert!(!passes_under(
+            poor,
+            &settings(Values::V234, BothPass::ThrowIn, 2)
+        ));
+    }
+
+    #[test]
+    fn an_m5r_rule_fills_so_where_it_matches_and_its_settings_hold() {
+        let d = Settings::default();
+        let v123 = settings(Values::V123, BothPass::Play, 1);
+        let (mut cheap, mut poor, mut poor_blocked) = (0, 0, 0);
+        for seed in 0..40 {
+            crate::testutil::walk(seed, |sit, seat| {
+                let v = strohmandeln_core::view::view(sit, seat);
+                let Some(k) = Knowledge::from_view(&v) else {
+                    return;
+                };
+                if k.legal.len() < 2 {
+                    return;
+                }
+                for &x in &k.legal {
+                    let comp = compose_in(&k, x, &Evidence::default(), PASSED, &d);
+                    let Some(so) = &comp.so else { continue };
+                    if so.key != "so.m5r" {
+                        continue;
+                    }
+                    let meta = comp.rule.as_ref().expect("the rule's figures");
+                    let rule = crate::m5r_rules::PASSED
+                        .iter()
+                        .find(|r| r.id == meta.id)
+                        .unwrap();
+                    assert!(rule.ships && m5r::rule_matches(rule, &k, &Action::play(x)));
+                    let (en, de) = so.text.clone().expect("the sentence");
+                    assert_eq!(en, m5r::sentence(rule.atoms, rule.class, false));
+                    assert_eq!(de, m5r::sentence(rule.atoms, rule.class, true));
+                    assert_eq!(meta.p, (rule.precision * 100.0).round() as u32);
+                    assert_eq!(meta.late, rule.late);
+                    assert_eq!(comp.question, Some(question_of_class(rule.class)));
+                    if rule.class.starts_with("cheap") {
+                        cheap += 1;
+                    } else {
+                        poor += 1;
+                        // Failing under 1/2/3, the poor-trick rule is not told there.
+                        let other = compose_in(&k, x, &Evidence::default(), PASSED, &v123);
+                        if other.so.as_ref().is_none_or(|l| l.key != "so.m5r") {
+                            poor_blocked += 1;
+                        }
+                    }
+                }
+            });
+        }
+        assert!(cheap > 0 && poor > 0, "cheap {cheap}, poor {poor}");
+        assert_eq!(poor, poor_blocked);
+    }
+
+    #[test]
+    fn a_shipped_sentence_fits_the_budget_with_the_headline_and_question() {
+        // Headline 2 words, the question 5 (en) / 6 and 3 (de); 25 and 30.
+        for r in crate::m5r_rules::PASSED.iter().filter(|r| r.ships) {
+            let q_en = 5;
+            let q_de = if r.class.starts_with("cheap") { 6 } else { 3 };
+            let en = m5r::sentence(r.atoms, r.class, false)
+                .split_whitespace()
+                .count();
+            let de = m5r::sentence(r.atoms, r.class, true)
+                .split_whitespace()
+                .count();
+            assert!(2 + q_en + en <= 25, "{} en {}", r.id, 2 + q_en + en);
+            assert!(2 + q_de + de <= 30, "{} de {}", r.id, 2 + q_de + de);
+        }
+    }
+
+    #[test]
+    fn the_tarock_count_is_the_cards_out_tab_s() {
+        let k = know(&["T3", "T7"], NO, NO, &["T20"], None);
+        assert_eq!(tarocks_out(&k), k.out_tarocks());
     }
 
     #[test]

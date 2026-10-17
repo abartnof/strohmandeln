@@ -13,7 +13,7 @@ const slots = (s) => [...new Set([...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]))
 
 const words = (lang) => {
   const s = createStrings(TABLE, lang);
-  return { t: s.t, cardName: s.cardName, romanName: s.romanName, thirds, count: s.count };
+  return { t: s.t, cardName: s.cardName, romanName: s.romanName, thirds, count: s.count, lang };
 };
 
 test("a card parameter is named, a _thirds parameter is told in points, a count is told by the language", () => {
@@ -334,4 +334,29 @@ test("the count's unit in English is the card point", () => {
   assert.deepEqual(TABLE["hint.unit.one"], { en: "card point", de: "Auge" });
   assert.deepEqual(TABLE["hint.unit.other"], { en: "card points", de: "Augen" });
   for (const [key, v] of Object.entries(TABLE)) if (key.startsWith("hint.")) assert.doesNotMatch(v.en, /(?<!card )\bpoints?\b/, key);
+});
+
+// ---- a rule of M5r in the sentence slot, its measure in the Why? ----
+
+const m5rCase = {
+  ...coverCase,
+  question: "ask.cheap",
+  so: { key: "so.m5r", params: {}, text: { en: "With few tarocks out, play the card worth least.", de: "Mit wenig Tarock draußen: die wertniedrigste Karte spielen." } },
+  why: { ...coverCase.why, rule: { id: "cheap/outcome:tu4", p: 85, n: 3586, late: true } },
+};
+
+test("an M5r sentence is the engine's own words in the language shown", () => {
+  assert.equal(hintLines(m5rCase, words("en")).text, "With few tarocks out, play the card worth least.");
+  assert.equal(hintLines(m5rCase, words("de")).text, "Mit wenig Tarock draußen: die wertniedrigste Karte spielen.");
+});
+
+test("the Why? tells the measure of the rule, and that it describes late play when it does", () => {
+  const en = hintLines(m5rCase, words("en")).why.lines.map((l) => l.text);
+  assert.ok(en.includes("It is a rule measured against the strongest player: it plays so in 85% of 3,586 positions like this."), en.join("|"));
+  assert.ok(en.includes("The rule describes play late in the deal."));
+  const de = hintLines(m5rCase, words("de")).why.lines.map((l) => l.text);
+  assert.ok(de.includes("Eine Regel, gegen den stärksten Spieler gemessen: er spielt so in 85 % von 3.586 solchen Stellungen."), de.join("|"));
+  const early = hintLines({ ...m5rCase, why: { ...m5rCase.why, rule: { id: "worth.poor/no-king:ml7", p: 84, n: 1156, late: false } } }, words("en")).why.lines.map((l) => l.text);
+  assert.ok(early.some((l) => l.includes("84% of 1,156")));
+  assert.ok(!early.includes("The rule describes play late in the deal."));
 });

@@ -1040,9 +1040,9 @@ async function main() {
       persist({ state: wasm }); // a reload must not take the mark back
     }
     hintCard = r.hint.action === "play" ? r.hint.card : null;
-    const lines = hintLines(r, { t, cardName: romanName, thirds, count });
+    const lines = hintLines(r, { t, cardName: romanName, thirds, count, lang: getLang() });
     ui.setAid([lines.lead, lines.question, lines.text].filter(Boolean).join(" "), [], lines.why?.lines.length ? { label: t("hint.why.label"), lines: lines.why.lines } : null);
-    ui.live(hintSpoken(hintLines(r, { t, cardName, thirds, count })));
+    ui.live(hintSpoken(hintLines(r, { t, cardName, thirds, count, lang: getLang() })));
     director.redecorate();
   }
 
