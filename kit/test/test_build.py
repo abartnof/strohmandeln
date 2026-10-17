@@ -256,7 +256,7 @@ class EndToEnd(unittest.TestCase):
             code, text = run(["--config", str(cfg), "--root", tmp])
             self.assertEqual(code, 0, text)
             html = (Path(tmp) / "web3d" / "tiny.html").read_text()
-            self.assertIn(".hud{", html.replace(" ", "").replace("\n", ""), "the kit's HUD stylesheet was inlined")
+            self.assertIn(".hud,.hud-card{", html.replace(" ", "").replace("\n", ""), "the kit's HUD stylesheet was inlined")
             self.assertLess(html.index(".hud"), html.index("body{margin:0}"), "the game's style can override the kit's")
 
     def test_a_missing_kit_stylesheet_is_said_by_the_dry_run(self):

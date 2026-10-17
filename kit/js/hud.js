@@ -26,6 +26,8 @@ export const TICK_FROM = 90; // the first tick, once the popup is in
 export const POP_AT = 1900; // the score pops as the row is back
 export const POPUP_BUSY = 1960; // a side's popup, the return included, before its next (count.js HUD_TIMING.busy)
 
+// The chevron's drawing, for any card that opens like the HUD's ledger (hud.css `.hud-card`).
+export const CHEVRON_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>';
 export const WORDS = Object.freeze({
   score: "The score",
   hand: "Hand",
@@ -98,7 +100,7 @@ export function createHud(root, game, { later = (ms, fn) => setTimeout(fn, ms), 
   const blocks = { you: block("you", game.names.you), opp: block("opp", game.names.opp) };
   const linesNode = el("div", { class: "hud-lines", role: "img" }, blocks.opp.row, blocks.you.row);
   const chevron = el("button", { class: "hud-chev", type: "button", "aria-expanded": "false", "aria-label": words.show });
-  chevron.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>';
+  chevron.innerHTML = CHEVRON_SVG;
   const headYou = el("div", { class: "hud-head-you" }, game.names.you);
   const headOpp = el("div", { class: "hud-head-opp" }, game.names.opp);
   const list = el("div", { class: "hud-list" });
