@@ -18,6 +18,7 @@ use strohmandeln_ai::brief::{
 };
 use strohmandeln_ai::lessons::lesson;
 use strohmandeln_ai::rung4::Budget;
+use strohmandeln_ai::style::Style;
 use strohmandeln_ai::tutor::{self, Skill, EVIDENCE_VERSION, LADDER, PARAMS};
 use strohmandeln_core::dealrec::DealRecord;
 use strohmandeln_core::types::Seat;
@@ -134,17 +135,60 @@ fn split_history(text: &str) -> (String, String) {
     (before.join("\n"), lines.collect::<Vec<_>>().join("\n"))
 }
 
-/// The opponent's level from the first line, `level <n>`, 1 to 4, and the
-/// rest.
-fn parse_level(text: &str) -> Result<(f64, &str), Value> {
-    let (first, rest) = text.split_once('\n').unwrap_or((text, ""));
-    first
+/// What the first lines of a brief call say about the opponent: the level, 1
+/// to 4, and optionally the style (`style <id>`, default `normal`), what a
+/// Random sitting drew (`drawn <id>`, a member of the pool, Random only) and
+/// whether the sitting is over (`reveal`). The drawn id is not echoed without
+/// `reveal`: the engine withholds it, not the table.
+struct Header {
+    level: f64,
+    style: Style,
+    drawn: Option<Style>,
+    reveal: bool,
+}
+
+impl Header {
+    /// The reply's `style`: its id, and what Random drew once revealed.
+    fn style_json(&self) -> Value {
+        let drawn = self.drawn.filter(|_| self.reveal).map(Style::id);
+        json!({"id": self.style.id(), "drawn": drawn})
+    }
+}
+
+/// The header lines of `text` (the first is `level <n>`) and the rest.
+fn parse_header(text: &str) -> Result<(Header, &str), Value> {
+    let (first, mut rest) = text.split_once('\n').unwrap_or((text, ""));
+    let level = first
         .trim()
         .strip_prefix("level ")
         .and_then(|n| n.trim().parse::<f64>().ok())
         .filter(|n| (1.0..=4.0).contains(n))
-        .map(|n| (n, rest))
-        .ok_or_else(|| bad("level"))
+        .ok_or_else(|| bad("level"))?;
+    let mut h = Header {
+        level,
+        style: Style::Normal,
+        drawn: None,
+        reveal: false,
+    };
+    loop {
+        let (line, after) = rest.split_once('\n').unwrap_or((rest, ""));
+        let line = line.trim();
+        if let Some(id) = line.strip_prefix("style ") {
+            h.style = Style::parse(id.trim()).ok_or_else(|| bad("style"))?;
+        } else if let Some(id) = line.strip_prefix("drawn ") {
+            let drawn = Style::parse(id.trim()).filter(|d| Style::POOL.contains(d));
+            h.drawn = Some(drawn.ok_or_else(|| bad("drawn"))?);
+        } else if line == "reveal" {
+            h.reveal = true;
+        } else {
+            break;
+        }
+        rest = after;
+    }
+    if h.drawn.is_some() && h.style != Style::Random {
+        return Err(bad("drawn"));
+    }
+    Ok((h, rest))
 }
 
 fn param_json(p: &Param) -> Value {
@@ -229,9 +273,13 @@ pub fn learner_of(input: &str) -> Value {
     })
 }
 
-fn brief_reply(r: Result<Brief, impl Serialize>) -> Value {
+fn brief_reply(r: Result<Brief, impl Serialize>, header: &Header) -> Value {
     match r {
-        Ok(b) => json!({"protocol": PROTOCOL, "brief": brief_json(&b)}),
+        Ok(b) => {
+            let mut brief = brief_json(&b);
+            brief["style"] = header.style_json();
+            json!({"protocol": PROTOCOL, "brief": brief})
+        }
         Err(e) => {
             let mut v = replay_error(&e);
             if let Value::Object(m) = &mut v {
@@ -254,7 +302,7 @@ pub fn brief_of_record(input: &str) -> Value {
     if let Err(e) = constants() {
         return e;
     }
-    let (level, rest) = match parse_level(input) {
+    let (header, rest) = match parse_header(input) {
         Ok(x) => x,
         Err(e) => return e,
     };
@@ -263,14 +311,17 @@ pub fn brief_of_record(input: &str) -> Value {
         Ok(d) => d,
         Err(e) => return e,
     };
-    brief_reply(brief_of_deal(
-        &d.record,
-        d.human,
-        &d.assisted,
-        &history_of(&history),
-        level,
-        Budget::default(),
-    ))
+    brief_reply(
+        brief_of_deal(
+            &d.record,
+            d.human,
+            &d.assisted,
+            &history_of(&history),
+            header.level,
+            Budget::default(),
+        ),
+        &header,
+    )
 }
 
 /// A sitting's deal: `deal N` (1 or more, the number the table shows), then
@@ -301,7 +352,7 @@ pub fn brief_sitting(input: &str) -> Value {
     if let Err(e) = constants() {
         return e;
     }
-    let (level, rest) = match parse_level(input) {
+    let (header, rest) = match parse_header(input) {
         Ok(x) => x,
         Err(e) => return e,
     };
@@ -329,8 +380,12 @@ pub fn brief_sitting(input: &str) -> Value {
             detail,
         })
         .collect();
-    match brief_of_sitting(&deals, &history_of(&history), level) {
-        Some(b) => json!({"protocol": PROTOCOL, "brief": brief_json(&b)}),
+    match brief_of_sitting(&deals, &history_of(&history), header.level) {
+        Some(b) => {
+            let mut brief = brief_json(&b);
+            brief["style"] = header.style_json();
+            json!({"protocol": PROTOCOL, "brief": brief})
+        }
         None => bad("no deals"),
     }
 }
@@ -656,6 +711,92 @@ mod tests {
                     .is_object()
             );
         }
+    }
+
+    #[test]
+    fn a_brief_names_the_style_and_withholds_what_random_drew_until_reveal() {
+        let mut h = host(CONFIG);
+        let text = play_to_deal(&mut h, 1);
+        let style = |header: &str| {
+            let v = brief_of_record(&format!("level 3\n{header}{}", input(&text, "")));
+            assert!(v["brief"].is_object(), "{header:?}: {v}");
+            v["brief"]["style"].clone()
+        };
+        assert_eq!(style(""), json!({"id": "normal", "drawn": null}));
+        assert_eq!(
+            style("style bermann\n"),
+            json!({"id": "bermann", "drawn": null})
+        );
+        // Random: the drawn id never leaves before the sitting's end.
+        assert_eq!(
+            style("style random\ndrawn ms\n"),
+            json!({"id": "random", "drawn": null})
+        );
+        assert_eq!(
+            style("style random\n"),
+            json!({"id": "random", "drawn": null})
+        );
+        assert_eq!(
+            style("style random\ndrawn ms\nreveal\n"),
+            json!({"id": "random", "drawn": "ms"})
+        );
+        // Whatever the order of the lines.
+        assert_eq!(
+            style("reveal\ndrawn ulmann\nstyle random\n"),
+            json!({"id": "random", "drawn": "ulmann"})
+        );
+        // The same text under the same input: no leak by another route.
+        let hidden = brief_of_record(&format!(
+            "level 3\nstyle random\ndrawn werner\n{}",
+            input(&text, "")
+        ));
+        assert!(!hidden.to_string().contains("werner"), "{hidden}");
+    }
+
+    #[test]
+    fn a_brief_header_with_a_bad_style_or_drawn_is_bad_input() {
+        let mut h = host(CONFIG);
+        let text = play_to_deal(&mut h, 1);
+        for header in [
+            "style nope\n",
+            "style Normal\n",
+            "style \n",
+            "drawn ms\n",
+            "style bermann\ndrawn ms\n",
+            "style random\ndrawn normal\n",
+            "style random\ndrawn random\n",
+            "style random\ndrawn zzz\n",
+        ] {
+            let v = brief_of_record(&format!("level 3\n{header}{}", input(&text, "")));
+            assert_eq!(v["error"], "bad-input", "{header:?}: {v}");
+        }
+    }
+
+    #[test]
+    fn the_sitting_brief_carries_the_style_too() {
+        let mut h = host(CONFIG);
+        let one = play_to_deal(&mut h, 1);
+        let e = evidence_of(&input(&one, ""));
+        let d = &e["detail"];
+        let body = format!("deal 1\n{d}\n--\n");
+        let v = brief_sitting(&format!("level 2\nstyle random\ndrawn ms\n{body}"));
+        assert_eq!(
+            v["brief"]["style"],
+            json!({"id": "random", "drawn": null}),
+            "{v}"
+        );
+        let v = brief_sitting(&format!("level 2\nstyle random\ndrawn ms\nreveal\n{body}"));
+        assert_eq!(
+            v["brief"]["style"],
+            json!({"id": "random", "drawn": "ms"}),
+            "{v}"
+        );
+        let v = brief_sitting(&format!("level 2\n{body}"));
+        assert_eq!(
+            v["brief"]["style"],
+            json!({"id": "normal", "drawn": null}),
+            "{v}"
+        );
     }
 
     #[test]

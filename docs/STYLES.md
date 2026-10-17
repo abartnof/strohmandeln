@@ -117,7 +117,7 @@ from Normal only where the text does. Parameters are names in `rung2.rs`.
 | Bermann | Mond reserve (`guard-mond`: `keep_tarocks` up when holding the Mond without the Sküs) | keep one or more small tarocks | Be 151-152 | T |
 | Bermann | Cash an unescorted Mond (`cash-mond`, new) | play it at a fitting chance | Be 151-152 "stets bei passender Gelegenheit einstechen" | T |
 | Bermann | Contested suit (`spare-lead`, new) | open a suit wholly split, a fork each (king and cavall against queen and jack), holding spare low cards | Be 150-151: this position only | T, narrow |
-| Ulmann | Bid | 4 or more honours (Troule cards and kings): bid at once, any tarocks; 3 weak honours and no queen: not as dealer (the Rückhand: U 70, W 130, RULES 3.2 make it the dealer) | U 77-78 | T |
+| Ulmann | Bid | 4 or more honours (Troule cards and kings; the Pagat only with 6 tarocks, U 78): bid at once, any tarocks. "3 weak honours and no queen, especially as dealer" is not modelled: such a hand is at most 39 thirds and Normal refuses it already | U 77-78 | T |
 | Ulmann | Pagat hunt (`draw_from`, the tarock count at which `draw_trumps` fires) | 10 (Normal 7 in rung 2, 6 in rung 3) | U 74: no Pagat, 10-12 tarocks, a closed run: hunt | T |
 | Ulmann | Pagat cash | with 7-8 tarocks, at the first chance | U 74; equals Normal at 8 | T |
 | Ulmann | Cash an unescorted Mond | as Bermann | U 74 "suche man rechtzeitig heimzubringen" | T |
@@ -309,7 +309,7 @@ sitting.
   removed; the "2 vs 1" row replaced; the speed table rows re-measured; a
   Styles section pointing here.
 - `docs/PROTOCOL.md`: `new` takes `style` (default `normal`; an unknown value is
-  `bad-input`). State and export carry `style` and, for Random, `drawn`
+  `bad-config`, field `style`). State and export carry `style` and, for Random, `drawn`
   (`null` in state until `sitting_over`). Import: an unknown `style`, a
   `drawn` outside the pool, or `drawn` with a non-random style is `bad-record`.
   A record or a brief header without `style` is `normal`. `protocol: 1` and
@@ -359,3 +359,45 @@ sitting.
 5. Writer bids literal (proposed; stage 0 reports the rates) or anchored to
    Normal's bid rate?
 6. Compute approval for stages 3 and 4 (4.1) after the idle-machine timings.
+
+## 9. Results
+
+### Stage 0, 17 Oct 2026 (binary before the review fixes of `docs/review/styles-engine.md`)
+
+`stage0 --deals 1000 --seed 5000000 --skills 3,4 --calib-hands 1000 --out run-a.csv`
+(19 min 25 s wall, 1 169 deals in 167 sittings, a style in both seats), and the
+null replication `stage0 --deals 1000 --seed 5100000 --skills 3 --calib-hands 0
+--out run-null.csv`.
+
+| Style | Skill 3 divergence | Skill 3 bid rate | Replication (seed 5100000) | Rule bids, 1 000 hands |
+|---|---|---|---|---|
+| normal | 0.00% | 18.9% | 20.4% | 16.9% |
+| bermann | 5.85% | 5.9% | 6.36%, 6.0% | 5.7% |
+| ulmann | 3.97% | 20.9% | 3.96%, 21.6% | 18.3% |
+| ms | 11.30% | 3.5% | 11.56%, 3.3% | 3.3% |
+| werner | 0.35% | 9.6% | 0.38%, 9.9% | 9.3% |
+| bold | 8.28% | 46.8% | 8.19%, 49.6% | 41.3% |
+| cautious | 6.80% | 3.5% | 7.02%, 3.3% | 3.3% |
+| hunter | 3.92% | 17.4% | 4.15%, 18.2% | 15.9% |
+
+- Gate (divergence under about 1%): **Werner drops** (0.35%, 0.38%). It stays in
+  the code and is not offered. Every other style passes at skill 3, replicated on
+  fresh seeds within 0.4 points.
+- MS and Cautious both bid 3.5%: candidate twins for stage 1 (STYLES 2.2 keeps
+  Cautious if the gate merges them).
+- **Skill 4 rows are void**: the rung-4 margins were 0 and every style shared the
+  2.0 band (divergence 11-13%, bid rate 21% for all). Rerun after the fixes and
+  the margins below.
+- The honour count changed after the run (the Pagat only with six tarocks, for
+  Ulmann and Werner), so their bid figures are slightly stale; rerun skill 3
+  with the margins.
+
+### Rung-4 bid margins
+
+Calibrated (Points; the advantage at which Normal's rung-4 sample bids the share
+the style's rule bids, 1 000 first-bidder hands, 40 worlds): normal +0.100,
+bermann +0.462, ulmann +0.025, ms +0.550, werner +0.288, bold -0.475, cautious
++0.550, hunter +0.100. Normal's rung 4 bids at margin 0 and must stay so (the
+golden), so `style::MARGINS` holds each figure less Normal's 0.100 (STYLES 3
+defines no other anchor): bermann +0.362, ulmann -0.075, ms +0.450, werner
++0.188, bold -0.575, cautious +0.450, hunter 0.000.
