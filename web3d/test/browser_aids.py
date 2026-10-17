@@ -493,9 +493,88 @@ def check_skill_speed(browser, failures):
     js(page, "askNew()")
     page.wait_for_selector("[data-dialog=new]", timeout=10_000)
     options = page.locator("[data-dialog=new] [data-row=skill] button").all_inner_texts()
-    fail_if(options != ["1", "1½", "2", "2½", "3", "3½", "4"], failures, f"skill_speed: the dial offers {options}")
+    fail_if(options != ["1", "2", "3", "3½", "4"], failures, f"skill_speed: the dial offers {options}")
     selected = page.locator("[data-dialog=new] [data-row=skill] [aria-checked=true]").all_inner_texts()
     fail_if(selected != ["1"], failures, f"skill_speed: the dial starts at {selected}")
+
+
+def choose_style(page, style):
+    page.locator("[data-dialog=new] [data-row=style] select").select_option(style)
+
+
+def deal_new_sitting(page):
+    page.locator("[data-dialog=new] [data-dialog-act=deal]").click()
+    page.wait_for_selector("[data-dialog=new]", state="detached", timeout=10_000)
+    rest(page)
+
+
+def sitting_line(page):
+    open_settings(page)
+    line = page.locator("[data-row=this-sitting] p").first.inner_text()
+    page.locator(".settings-close").dispatch_event("click")  # a dialog may cover it
+    return line
+
+
+def check_new_sitting_style(browser, failures):
+    page = open_page(browser, "seed=7&speed=instant&human=1&hook=1", FAST)
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    select = page.locator("[data-dialog=new] [data-row=style] select")
+    values = select.locator("option").evaluate_all("(os) => os.map((o) => o.value)")
+    fail_if(values != ["normal", "random", "bermann", "ms", "bold", "cautious", "hunter"], failures, f"new_sitting_style: the select offers {values}")
+    fail_if(select.input_value() != "normal", failures, f"new_sitting_style: it starts at {select.input_value()!r}")
+    fail_if(select.evaluate("(e) => parseFloat(getComputedStyle(e).fontSize)") < 16, failures, "new_sitting_style: the select's font is under 16px")
+    choose_style(page, "bermann")
+    line = page.locator("[data-dialog=new] [data-role=style-line]").inner_text()
+    fail_if(line != t("style.bermann.line"), failures, f"new_sitting_style: the line under the select is {line!r}")
+    note = page.locator("[data-dialog=new] [data-role=style-note]")
+    fail_if(note.inner_text() != "", failures, "new_sitting_style: a note shows at skill 3")
+    page.locator("[data-dialog=new] [data-row=skill] [data-value='3.5']").click()
+    fail_if(note.inner_text() != t("style.note.bidding"), failures, f"new_sitting_style: the note at skill 3.5 is {note.inner_text()!r}")
+    page.locator("[data-dialog=new] [data-row=skill] [data-value='3']").click()
+    fail_if(note.inner_text() != "", failures, "new_sitting_style: the note stayed at skill 3")
+    deal_new_sitting(page)
+    fail_if(js(page, "prefs()")["style"] != "bermann", failures, "new_sitting_style: the style was not kept as the next default")
+    fail_if(js(page, "state()")["style"] != "bermann", failures, f"new_sitting_style: the engine has {js(page, 'state()')['style']!r}")
+    fail_if(js(page, "engine.export()")["style"] != "bermann", failures, "new_sitting_style: the exported record does not carry the style")
+    line = sitting_line(page)
+    fail_if("style After Bermann" not in line, failures, f"new_sitting_style: the This-sitting line is {line!r}")
+    # the screen starts from the sitting on the table; German names the school
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    fail_if(page.locator("[data-dialog=new] [data-row=style] select").input_value() != "bermann", failures, "new_sitting_style: the screen does not start from the sitting's style")
+    options = page.locator("[data-dialog=new] [data-row=skill] button").all_inner_texts()
+    fail_if(options != ["1", "2", "3", "3½", "4"], failures, f"new_sitting_style: the dial offers {options}")
+    page.locator("[data-dialog-act=cancel]").click()
+    fail_if(page.errors if hasattr(page, "errors") else [], failures, "new_sitting_style: page errors")
+    check_offline(page, failures, "new_sitting_style: ")
+
+
+def check_random_style_hidden(browser, failures):
+    page = open_page(browser, "seed=7&speed=instant&human=1&hook=1", FAST)
+    js(page, "askNew()")
+    page.wait_for_selector("[data-dialog=new]", timeout=10_000)
+    fail_if(page.locator("[data-dialog=new] [data-role=style-line]").inner_text() != t("style.normal.line"), failures, "random_style_hidden: the Normal line is not shown first")
+    choose_style(page, "random")
+    fail_if(page.locator("[data-dialog=new] [data-role=style-line]").inner_text() != t("style.random.line"), failures, "random_style_hidden: the Random line is not shown")
+    deal_new_sitting(page)
+    s = state(page)
+    fail_if(s["style"] != "random" or s["drawn"] is not None, failures, f"random_style_hidden: the state says {s['style']!r}, {s['drawn']!r}")
+    line = sitting_line(page)
+    fail_if("style Random (shown at the end)" not in line, failures, f"random_style_hidden: the line is {line!r}")
+    drive(page, until_over())
+    page.wait_for_selector("[data-dialog=over]", timeout=30_000)
+    drawn = js(page, "state()")["drawn"]
+    fail_if(drawn not in ("bermann", "ms", "bold", "cautious", "hunter"), failures, f"random_style_hidden: the sitting's end gave drawn {drawn!r}")
+    name = t(f"style.{drawn}.name") if drawn else "?"
+    fail_if(name not in page.locator("[data-dialog=over]").inner_text(), failures, f"random_style_hidden: the end dialog does not name {name!r}")
+    line = sitting_line(page)
+    fail_if(f"style Random: {name}" not in line, failures, f"random_style_hidden: the line after the end is {line!r}")
+    js(page, "openReview()")
+    page.wait_for_selector("[data-dialog=review]", timeout=10_000)
+    reveal = page.locator("[data-dialog=review] .tutor-reveal").inner_text() if page.locator("[data-dialog=review] .tutor-reveal").count() else ""
+    fail_if(name not in reveal, failures, f"random_style_hidden: the sitting's brief reveals {reveal!r}, not {name!r}")
+    check_offline(page, failures, "random_style_hidden: ")
 
 
 # ---- language -------------------------------------------------------------------------------------------
@@ -1199,7 +1278,7 @@ def check_escape_dialogs(browser, failures):
 
 CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
-    check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_settings_no_rules, check_new_sitting_from_table, check_skill_speed,
+    check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_settings_no_rules, check_new_sitting_from_table, check_skill_speed, check_new_sitting_style, check_random_style_hidden,
     check_language_switch, check_language_switch_at_count, check_hud_not_clipped, check_prefs_storage, check_save_restore, check_export_import_file,
     check_tutor_pages, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief,
 ]
