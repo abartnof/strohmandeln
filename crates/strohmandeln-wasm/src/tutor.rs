@@ -19,6 +19,7 @@ use strohmandeln_ai::brief::{
 use strohmandeln_ai::lessons::lesson;
 use strohmandeln_ai::rung4::Budget;
 use strohmandeln_ai::style::Style;
+use strohmandeln_ai::tell::{self, Tells};
 use strohmandeln_ai::tutor::{self, Skill, EVIDENCE_VERSION, LADDER, PARAMS};
 use strohmandeln_core::dealrec::DealRecord;
 use strohmandeln_core::types::Seat;
@@ -138,13 +139,16 @@ fn split_history(text: &str) -> (String, String) {
 /// What the first lines of a brief call say about the opponent: the level, 1
 /// to 4, and optionally the style (`style <id>`, default `normal`), what a
 /// Random sitting drew (`drawn <id>`, a member of the pool, Random only) and
-/// whether the sitting is over (`reveal`). The drawn id is not echoed without
-/// `reveal`: the engine withholds it, not the table.
+/// whether the sitting is over (`reveal`), and the sitting's earlier deals
+/// (`earlier <record>`, a line each, oldest first: their bids are what "Their
+/// style" counts). The drawn id is not echoed without `reveal`: the engine
+/// withholds it, not the table.
 struct Header {
     level: f64,
     style: Style,
     drawn: Option<Style>,
     reveal: bool,
+    earlier: Vec<Stored>,
 }
 
 impl Header {
@@ -169,6 +173,7 @@ fn parse_header(text: &str) -> Result<(Header, &str), Value> {
         style: Style::Normal,
         drawn: None,
         reveal: false,
+        earlier: Vec::new(),
     };
     loop {
         let (line, after) = rest.split_once('\n').unwrap_or((rest, ""));
@@ -180,6 +185,12 @@ fn parse_header(text: &str) -> Result<(Header, &str), Value> {
             h.drawn = Some(drawn.ok_or_else(|| bad("drawn"))?);
         } else if line == "reveal" {
             h.reveal = true;
+        } else if let Some(record) = line.strip_prefix("earlier ") {
+            let stored: Stored = serde_json::from_str(record).map_err(|_| bad("earlier"))?;
+            if stored.v != 1 {
+                return Err(bad("earlier"));
+            }
+            h.earlier.push(stored);
         } else {
             break;
         }
@@ -311,7 +322,7 @@ pub fn brief_of_record(input: &str) -> Value {
         Ok(d) => d,
         Err(e) => return e,
     };
-    brief_reply(
+    let mut reply = brief_reply(
         brief_of_deal(
             &d.record,
             d.human,
@@ -321,7 +332,22 @@ pub fn brief_of_record(input: &str) -> Value {
             Budget::default(),
         ),
         &header,
-    )
+    );
+    // "Their style" (`docs/STYLES.md` 5): what the opponent has done at its
+    // bids over the sitting so far, this deal included. A fact, whatever the
+    // style, and never its name.
+    let mut tells = Tells::default();
+    for s in &header.earlier {
+        tells.add(&s.deal, s.human.other());
+    }
+    tells.add(&d.record, d.human.other());
+    if let (Some(line), Some(Value::Array(bullets))) = (
+        tell::bullet(header.style, &tells),
+        reply.get_mut("brief").and_then(|b| b.get_mut("bullets")),
+    ) {
+        bullets.push(bullet_json(&line));
+    }
+    reply
 }
 
 /// A sitting's deal: `deal N` (1 or more, the number the table shows), then
@@ -751,6 +777,68 @@ mod tests {
             input(&text, "")
         ));
         assert!(!hidden.to_string().contains("werner"), "{hidden}");
+    }
+
+    /// The brief of the deal of `text` after `n` earlier deals of the same
+    /// record, under the header lines `style`.
+    fn brief_after(text: &str, n: usize, style: &str) -> Value {
+        let earlier: String = (0..n).map(|_| format!("earlier {text}\n")).collect();
+        brief_of_record(&format!("level 3\n{style}{earlier}{}", input(text, "")))
+    }
+
+    fn style_line(v: &Value) -> Option<&Value> {
+        v["brief"]["bullets"]
+            .as_array()
+            .unwrap_or_else(|| panic!("{v}"))
+            .iter()
+            .find(|b| b["lead"] == "tutor.lead.style")
+    }
+
+    #[test]
+    fn their_style_counts_the_sitting_so_far_for_a_styled_opponent_only() {
+        let mut h = host(CONFIG);
+        let text = play_to_deal(&mut h, 1);
+        let stored: Stored = serde_json::from_str(&text).unwrap();
+        let mut tells = Tells::default();
+        for _ in 0..6 {
+            tells.add(&stored.deal, stored.human.other());
+        }
+        let want = tell::bullet(Style::Bold, &tells).expect("six alike bids stand out");
+        // Bold, five earlier deals and this one: the line, after the three bullets
+        let v = brief_after(&text, 5, "style bold\n");
+        let got = style_line(&v).unwrap_or_else(|| panic!("{v}"));
+        assert_eq!(*got, bullet_json(&want), "{v}");
+        assert!(v["brief"]["bullets"].as_array().unwrap().len() <= 4);
+        assert_eq!(v["brief"]["bullets"].as_array().unwrap().last(), Some(got));
+        // Normal, and a header without a style: none
+        assert!(style_line(&brief_after(&text, 5, "")).is_none());
+        assert!(style_line(&brief_after(&text, 5, "style normal\n")).is_none());
+        // a first deal has too few bids to say
+        assert!(style_line(&brief_after(&text, 0, "style bold\n")).is_none());
+        // an earlier record that is not one is bad input
+        let v = brief_of_record(&format!(
+            "level 3\nstyle bold\nearlier nonsense\n{}",
+            input(&text, "")
+        ));
+        assert_eq!(v["error"], "bad-input", "{v}");
+    }
+
+    #[test]
+    fn their_style_under_random_is_the_same_line_before_and_after_the_end() {
+        let mut h = host(CONFIG);
+        let text = play_to_deal(&mut h, 1);
+        let bold = brief_after(&text, 5, "style bold\n");
+        let hidden = brief_after(&text, 5, "style random\ndrawn ms\n");
+        let shown = brief_after(&text, 5, "style random\ndrawn ms\nreveal\n");
+        assert_eq!(style_line(&hidden), style_line(&bold));
+        assert_eq!(style_line(&shown), style_line(&bold));
+        let line = style_line(&hidden).unwrap().to_string();
+        for id in [
+            "bermann", "ulmann", "werner", "bold", "cautious", "hunter", "random",
+        ] {
+            assert!(!line.contains(id), "{line}");
+        }
+        assert!(!hidden.to_string().contains("\"ms\""), "{hidden}");
     }
 
     #[test]

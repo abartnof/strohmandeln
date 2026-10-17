@@ -173,11 +173,11 @@ pass: the opponent passes
 
 | English | German | Source |
 |---|---|---|
-| Weiter: I pass. | Weiter! | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| On, then: I pass. | Weiter! | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | I pass. | Ich passe! | Wn [05-S3][03-S12][13-S2][05 headline 1] |
-| Weiter, if you please. | Weiter, bitte. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| Pass, if you please. | Weiter, bitte. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | I pass, and keep my peace. | Ich passe und halt' Ruh'. | T |
-| Not this time. Weiter. | Diesmal nicht. Weiter. | T |
+| Not this time. On we go. | Diesmal nicht. Weiter. | T |
 
 ### `bid-take-yours`
 
@@ -188,7 +188,7 @@ bid: the player takes up
 | Taken up! Good. | Aufgenommen! Gut. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | Taken up. Let us see the straw. | Aufgenommen. Schauen wir den Strohmann an. | T |
 | Then it is a game in earnest. | Dann ist's ein Spiel im Ernst. | T |
-| Gut. Let it stand. | Gut. Es bleibt. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| Good. Let it stand. | Gut. Es bleibt. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | You take it up. The luck will tell. | Sie nehmen auf. Das Glück wird's zeigen. | T |
 
 ### `bid-pass-yours`
@@ -197,11 +197,11 @@ pass: the player passes
 
 | English | German | Source |
 |---|---|---|
-| Weiter, you say. Noted. | Weiter, sagen Sie. Gut. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| Pass, you say. Noted. | Weiter, sagen Sie. Gut. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | A quiet start. | Mäuserlstill. | Mo [05-S11] |
 | You pass; then I speak. | Sie passen; dann spreche ich. | T |
 | Passed. We shall see. | Gepasst. Wir werden sehen. | T |
-| Weiter: quite so. | Weiter: sehr wohl. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
+| Pass: quite so. | Weiter: sehr wohl. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 
 ### `both-pass`
 
@@ -211,7 +211,7 @@ both_pass, play: both pass and a simple game is played
 |---|---|---|
 | Both pass: a simple game, then. | Beide passen: eine einfache Partie. | T |
 | Nobody takes it up. A plain game. | Keiner nimmt auf. Eine einfache Partie. | T |
-| Both weiter. Plain play, then. | Beide weiter. Dann einfach gespielt. | T |
+| Neither takes it. Plain play, then. | Beide weiter. Dann einfach gespielt. | T |
 | No one risks a game. On we go. | Keiner riskiert ein Spiel. Weiter geht's. | T |
 
 ### `thrown-in`
@@ -275,7 +275,7 @@ card_pulled: a tarock pulled into the opponent's hand
 |---|---|---|
 | A tarock! Gladly taken. | Ein Tarok! Gern genommen. | T |
 | Tarock from the straw. | Tarok aus dem Stroh. | T |
-| Besser mitgenommen als drumgekommen. | Besser mitgenommen als drumgekommen. | Wa, Mitnehmen 1 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Better taken than missed. | Besser mitgenommen als drumgekommen. | Wa, Mitnehmen 1 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | One more trump. That helps. | Noch ein Tarok. Das hilft. | T |
 | To play, one must know what is trump. | Wer spielen will, muss wissen, was Trumpf ist. | Wa, Spielen 72 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Without trumps there is no game. | Ohne Tarok is kein Spiel. | Jö [05c LIT-S27] |
@@ -349,7 +349,7 @@ card_pulled, long chain: a lucky run for the opponent
 | English | German | Source |
 |---|---|---|
 | Three in a row! The straw is kind. | Drei hintereinander! Das Stroh ist gut. | T |
-| Glück ist besser als gut Spielen. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Luck is better than good play. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | What a run from the straw! | Was für eine Serie aus dem Stroh! | T |
 | Luck on lease, everywhere. | Der hat halt überall 's Glück in Pacht. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
 | Lucky folk play weak cards well. | Wer Glück hat, spielt mit schlechten Karten gut. | Wa, Glück 850 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
@@ -571,10 +571,10 @@ announcement trull by the opponent
 | English | German | Source |
 |---|---|---|
 | I announce the Troule. | Ich sage die Troule an. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
-| Tous les trois! | Tous les trois! | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
+| All three! | Tous les trois! | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
 | The Troule: Sküs, Mond, Pagat. | Die Troule: Sküs, Mond, Pagat. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | The Troule, announced aloud, one Point. | Die Troule, laut angesagt: ein Point. | T |
-| Tous les trois, if you please. | Tous les trois, wenn ich bitten darf. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
+| All three, if you please. | Tous les trois, wenn ich bitten darf. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
 
 ### `trull-yours`
 
@@ -582,10 +582,10 @@ announcement trull by the player
 
 | English | German | Source |
 |---|---|---|
-| Tous les trois! One Point to you. | Tous les trois! Ein Point für Sie. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
+| All three! One Point to you. | Tous les trois! Ein Point für Sie. | Ne1 [05-S6][05c LIT-S1][05 REVIEW NOTE on headline 3] |
 | The Troule is announced. Noted. | Die Troule ist angesagt. Gut. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 | The Troule: I shall mind the Sküs. | Die Troule: ich pass' auf den Sküs auf. | T |
-| Tous les trois: the evening pays. | Tous les trois: der Abend zahlt sich aus. | T |
+| All three: the evening pays. | Tous les trois: der Abend zahlt sich aus. | T |
 | A Troule, and said in time. | Eine Troule, und rechtzeitig angesagt. | Wn [05-S3][03-S12][13-S2][05 headline 1] |
 
 ### `kings-mine`
@@ -629,9 +629,9 @@ valat by the opponent (every trick)
 
 | English | German | Source |
 |---|---|---|
-| Matsch! Every last trick. | Matsch! Jeder Stich. | T |
+| Every last trick is mine! | Matsch! Jeder Stich. | T |
 | Valat! The whole table is mine. | Valat! Der ganze Tisch gehört mir. | T |
-| Not a trick for you. Quite matsch. | Kein Stich für Sie. Ganz matsch. | T |
+| Not a trick for you. Swept clean. | Kein Stich für Sie. Ganz matsch. | T |
 | Valat: every trick of the twenty-seven. | Valat: alle siebenundzwanzig Stich. | T |
 
 ### `valat-yours`
@@ -640,8 +640,8 @@ valat by the player (every trick)
 
 | English | German | Source |
 |---|---|---|
-| I am matsch: finished! | Ich bin matsch! | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
-| Not one trick for me. Matsch! | Ich bin Matsch worden. | Ne3 [05-S7] |
+| Every trick gone: I am done for! | Ich bin matsch! | Ne2 [05-S10][05c LIT-S4][05 REVIEW NOTE on headline 3] |
+| Not one trick for me. Done for! | Ich bin Matsch worden. | Ne3 [05-S7] |
 | Every trick yours. Well played. | Jeder Stich gehört Ihnen. Gut gespielt. | T |
 | Everyone plays against me tonight! | Alles spielt gegen mich! | Ra [05c LIT-S8] |
 
@@ -675,7 +675,7 @@ game_scored: the opponent wins the deal
 
 | English | German | Source |
 |---|---|---|
-| Gewonnen, and fairly, I hope. | Gewonnen, und ehrlich, hoff' ich. | T |
+| Won, and fairly, I hope. | Gewonnen, und ehrlich, hoff' ich. | T |
 | Taken up and won. The straw obliged. | Aufgenommen und gewonnen. Das Stroh war willig. | T |
 | Hearts are trumps: boldness wins. | Herz ist Trumpf. | Wa, Herz 197 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Lucky folk play weak cards well. | Wer Glück hat, spielt mit schlechten Karten gut. | Wa, Glück 850 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
@@ -845,7 +845,7 @@ after sitting_end: the farewell
 | Tomorrow, the honour of another game? | Darf ich morgen wieder um die Ehre einer Partie bitten? | Bl [05b LEX-S32] |
 | Thank you for the game. | Ich danke für das Spiel. | T |
 | A good evening. Until the next. | Ein guter Abend. Bis zum nächsten Mal. | T |
-| Gut' Nacht, and good cards. | Gute Nacht, und gute Karten. | T |
+| Good night, and good cards. | Gute Nacht, und gute Karten. | T |
 | A little play is allowed, they say. | Ein wenig Spielen bleibt erlaubt. | Ba [05-S12][05d POLY-S1] |
 | That is all for tonight. Do come again. | Schluß für heut'. Kommen S' wieder. | T |
 | All afternoon we played Tarock! | Den ganzen Nachmittag haben wir Tarock gespielt! | Bt [05c LIT-S62] |
@@ -880,7 +880,7 @@ luck talk: the player is lucky
 
 | English | German | Source |
 |---|---|---|
-| Luck beats good play. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
+| Luck is better than good play. | Glück ist besser als gut Spielen. | Wa, Glück 360 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | The luck is on your side tonight. | Heut' Abend ist das Glück auf Ihrer Seite. | T |
 | Good cards get used to you. | An einen geschickten Spieler gewöhnen sich gute Karten. | Wa, Spieler 3 [05b LEX-S10][05b LEX-S13][05b LEX-S17][05b LEX-S19][05b LEX-S20][05b LEX-S21] |
 | Such a fluke! | Na, so einen Dusel! | Ra [05c LIT-S8] |
@@ -931,5 +931,4 @@ the kibitzer is muted
 |---|---|---|
 | Paragraph thirteen it is. | Paragraph 13. | Ki [05c LIT-S11][05c headline 1 REVIEW RD] |
 | Silence, then. The table is ours. | Stille also. Der Tisch gehört uns. | T |
-| Kiebitz, halt's Maul: quite so. | Kiebitz, halt's Maul! | Ki [05c LIT-S11][05c headline 1 REVIEW RD] |
 | Silent kibitzers are tolerated. | Schweigende Kiebitze werden geduldet. | Wb [05c LIT-S44] |

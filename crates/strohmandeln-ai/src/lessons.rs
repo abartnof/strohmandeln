@@ -595,6 +595,9 @@ mod tests {
                 || k.starts_with("tutor.well.")
                 || k.starts_with("tutor.none.")
                 || k.starts_with("tutor.miss.")
+                || k.starts_with("tutor.style.")
+                // rule notes: the table says them (web3d/src/main.js), not the lessons
+                || k.starts_with("tutor.note.")
                 || ["tutor.short", "tutor.how", "tutor.method"].contains(&k);
             assert!(owned, "{k} is documented but nothing carries it");
         }

@@ -268,27 +268,27 @@ def phrase_groups():
         ("I'll take it up, and trust the straw.", 'T', 'Ich nehme auf und vertraue dem Stroh.'),
         ('Taken up: a game, then.', 'T', 'Aufgenommen: ein Spiel also.'))
     add('bid-pass-mine', 'pass: the opponent passes',
-        ('Weiter: I pass.', 'Wn', 'Weiter!'),
+        ('On, then: I pass.', 'Wn', 'Weiter!'),
         ('I pass.', 'Wn', 'Ich passe!'),
-        ('Weiter, if you please.', 'Wn', 'Weiter, bitte.'),
+        ('Pass, if you please.', 'Wn', 'Weiter, bitte.'),
         ('I pass, and keep my peace.', 'T', "Ich passe und halt' Ruh'."),
-        ('Not this time. Weiter.', 'T', 'Diesmal nicht. Weiter.'))
+        ('Not this time. On we go.', 'T', 'Diesmal nicht. Weiter.'))
     add('bid-take-yours', 'bid: the player takes up',
         ('Taken up! Good.', 'Wn', 'Aufgenommen! Gut.'),
         ('Taken up. Let us see the straw.', 'T', 'Aufgenommen. Schauen wir den Strohmann an.'),
         ('Then it is a game in earnest.', 'T', "Dann ist's ein Spiel im Ernst."),
-        ('Gut. Let it stand.', 'Wn', 'Gut. Es bleibt.'),
+        ('Good. Let it stand.', 'Wn', 'Gut. Es bleibt.'),
         ('You take it up. The luck will tell.', 'T', "Sie nehmen auf. Das Glück wird's zeigen."))
     add('bid-pass-yours', 'pass: the player passes',
-        ('Weiter, you say. Noted.', 'Wn', 'Weiter, sagen Sie. Gut.'),
+        ('Pass, you say. Noted.', 'Wn', 'Weiter, sagen Sie. Gut.'),
         ('A quiet start.', 'Mo', 'Mäuserlstill.'),
         ('You pass; then I speak.', 'T', 'Sie passen; dann spreche ich.'),
         ('Passed. We shall see.', 'T', 'Gepasst. Wir werden sehen.'),
-        ('Weiter: quite so.', 'Wn', 'Weiter: sehr wohl.'))
+        ('Pass: quite so.', 'Wn', 'Weiter: sehr wohl.'))
     add('both-pass', 'both_pass, play: both pass and a simple game is played',
         ('Both pass: a simple game, then.', 'T', 'Beide passen: eine einfache Partie.'),
         ('Nobody takes it up. A plain game.', 'T', 'Keiner nimmt auf. Eine einfache Partie.'),
-        ('Both weiter. Plain play, then.', 'T', 'Beide weiter. Dann einfach gespielt.'),
+        ('Neither takes it. Plain play, then.', 'T', 'Beide weiter. Dann einfach gespielt.'),
         ('No one risks a game. On we go.', 'T', "Keiner riskiert ein Spiel. Weiter geht's."))
     add('thrown-in', 'thrown_in: both_pass = throw_in, nothing played',
         ('Thrown in. The other deals next.', 'T', 'Hingeworfen. Der andere gibt als Nächster.'),
@@ -322,7 +322,7 @@ def phrase_groups():
     add('pull-tarock-mine', "card_pulled: a tarock pulled into the opponent's hand",
         ('A tarock! Gladly taken.', 'T', 'Ein Tarok! Gern genommen.'),
         ('Tarock from the straw.', 'T', 'Tarok aus dem Stroh.'),
-        ('Besser mitgenommen als drumgekommen.', 'Wa', 'Besser mitgenommen als drumgekommen.', 'Mitnehmen 1'),
+        ('Better taken than missed.', 'Wa', 'Besser mitgenommen als drumgekommen.', 'Mitnehmen 1'),
         ('One more trump. That helps.', 'T', 'Noch ein Tarok. Das hilft.'),
         ('To play, one must know what is trump.', 'Wa', 'Wer spielen will, muss wissen, was Trumpf ist.', 'Spielen 72'),
         ('Without trumps there is no game.', 'Jö', 'Ohne Tarok is kein Spiel.'),
@@ -366,7 +366,7 @@ def phrase_groups():
         ('Now the little sparrow goes under the knife!', 'Ra', 'Jetzt kommt der Spatz unters Messer!'))
     add('run-mine', 'card_pulled, long chain: a lucky run for the opponent',
         ('Three in a row! The straw is kind.', 'T', 'Drei hintereinander! Das Stroh ist gut.'),
-        ('Glück ist besser als gut Spielen.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
+        ('Luck is better than good play.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
         ('What a run from the straw!', 'T', 'Was für eine Serie aus dem Stroh!'),
         ('Luck on lease, everywhere.', 'Ne1', "Der hat halt überall 's Glück in Pacht."),
         ('Lucky folk play weak cards well.', 'Wa', 'Wer Glück hat, spielt mit schlechten Karten gut.', 'Glück 850'),
@@ -492,15 +492,15 @@ def phrase_groups():
         ('Now the little sparrow goes under the knife!', 'Ra', 'Jetzt kommt der Spatz unters Messer!'))
     add('trull-mine', 'announcement trull by the opponent',
         ('I announce the Troule.', 'Wn', 'Ich sage die Troule an.'),
-        ('Tous les trois!', 'Ne1', 'Tous les trois!'),
+        ('All three!', 'Ne1', 'Tous les trois!'),
         ('The Troule: Sküs, Mond, Pagat.', 'Wn', 'Die Troule: Sküs, Mond, Pagat.'),
         ('The Troule, announced aloud, one Point.', 'T', 'Die Troule, laut angesagt: ein Point.'),
-        ('Tous les trois, if you please.', 'Ne1', 'Tous les trois, wenn ich bitten darf.'))
+        ('All three, if you please.', 'Ne1', 'Tous les trois, wenn ich bitten darf.'))
     add('trull-yours', 'announcement trull by the player',
-        ('Tous les trois! One Point to you.', 'Ne1', 'Tous les trois! Ein Point für Sie.'),
+        ('All three! One Point to you.', 'Ne1', 'Tous les trois! Ein Point für Sie.'),
         ('The Troule is announced. Noted.', 'Wn', 'Die Troule ist angesagt. Gut.'),
         ('The Troule: I shall mind the Sküs.', 'T', "Die Troule: ich pass' auf den Sküs auf."),
-        ('Tous les trois: the evening pays.', 'T', 'Tous les trois: der Abend zahlt sich aus.'),
+        ('All three: the evening pays.', 'T', 'Tous les trois: der Abend zahlt sich aus.'),
         ('A Troule, and said in time.', 'Wn', 'Eine Troule, und rechtzeitig angesagt.'))
     add('kings-mine', 'announcement kings by the opponent',
         ('Four kings!', 'Ne1', 'Vier Könige!'),
@@ -520,13 +520,13 @@ def phrase_groups():
         ('Say it by the first card played.', 'T', 'Spätestens mit der ersten Karte muß es angesagt sein.'),
         ('The honour is lost by silence.', 'T', 'Wer schweigt, verliert den Honneur.'))
     add('valat-mine', 'valat by the opponent (every trick)',
-        ('Matsch! Every last trick.', 'T', 'Matsch! Jeder Stich.'),
+        ('Every last trick is mine!', 'T', 'Matsch! Jeder Stich.'),
         ('Valat! The whole table is mine.', 'T', 'Valat! Der ganze Tisch gehört mir.'),
-        ('Not a trick for you. Quite matsch.', 'T', 'Kein Stich für Sie. Ganz matsch.'),
+        ('Not a trick for you. Swept clean.', 'T', 'Kein Stich für Sie. Ganz matsch.'),
         ('Valat: every trick of the twenty-seven.', 'T', 'Valat: alle siebenundzwanzig Stich.'))
     add('valat-yours', 'valat by the player (every trick)',
-        ('I am matsch: finished!', 'Ne2', 'Ich bin matsch!'),
-        ('Not one trick for me. Matsch!', 'Ne3', 'Ich bin Matsch worden.'),
+        ('Every trick gone: I am done for!', 'Ne2', 'Ich bin matsch!'),
+        ('Not one trick for me. Done for!', 'Ne3', 'Ich bin Matsch worden.'),
         ('Every trick yours. Well played.', 'T', 'Jeder Stich gehört Ihnen. Gut gespielt.'),
         ('Everyone plays against me tonight!', 'Ra', 'Alles spielt gegen mich!'))
     add('count-start', 'count: the tricks are counted',
@@ -542,7 +542,7 @@ def phrase_groups():
         ('By a single third!', 'T', 'Um ein einziges Drittel!'),
         ('Thirty-five and two thirds: the proudest win.', 'Kg', 'Fünfunddreißig und zwei Blatt: der stolzeste Sieg.'))
     add('result-won-mine', 'game_scored: the opponent wins the deal',
-        ('Gewonnen, and fairly, I hope.', 'T', "Gewonnen, und ehrlich, hoff' ich."),
+        ('Won, and fairly, I hope.', 'T', "Gewonnen, und ehrlich, hoff' ich."),
         ('Taken up and won. The straw obliged.', 'T', 'Aufgenommen und gewonnen. Das Stroh war willig.'),
         ('Hearts are trumps: boldness wins.', 'Wa', 'Herz ist Trumpf.', 'Herz 197'),
         ('Lucky folk play weak cards well.', 'Wa', 'Wer Glück hat, spielt mit schlechten Karten gut.', 'Glück 850'),
@@ -628,7 +628,7 @@ def phrase_groups():
         ('Tomorrow, the honour of another game?', 'Bl', 'Darf ich morgen wieder um die Ehre einer Partie bitten?'),
         ('Thank you for the game.', 'T', 'Ich danke für das Spiel.'),
         ('A good evening. Until the next.', 'T', 'Ein guter Abend. Bis zum nächsten Mal.'),
-        ("Gut' Nacht, and good cards.", 'T', 'Gute Nacht, und gute Karten.'),
+        ('Good night, and good cards.', 'T', 'Gute Nacht, und gute Karten.'),
         ('A little play is allowed, they say.', 'Ba', 'Ein wenig Spielen bleibt erlaubt.'),
         ('That is all for tonight. Do come again.', 'T', "Schluß für heut'. Kommen S' wieder."),
         ('All afternoon we played Tarock!', 'Bt', 'Den ganzen Nachmittag haben wir Tarock gespielt!'))
@@ -645,7 +645,7 @@ def phrase_groups():
         ('It happens. Go on.', 'T', 'Das kommt vor. Weiter.'),
         ('A slip is forfeit, but we forgive it.', 'Ve', "Versehen ist verspielt, wir verzeih'ns."))
     add('luck-yours', 'luck talk: the player is lucky',
-        ('Luck beats good play.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
+        ('Luck is better than good play.', 'Wa', 'Glück ist besser als gut Spielen.', 'Glück 360'),
         ('The luck is on your side tonight.', 'T', "Heut' Abend ist das Glück auf Ihrer Seite."),
         ('Good cards get used to you.', 'Wa', 'An einen geschickten Spieler gewöhnen sich gute Karten.', 'Spieler 3'),
         ('Such a fluke!', 'Ra', 'Na, so einen Dusel!'),
@@ -672,8 +672,33 @@ def phrase_groups():
     add('kibitz-mute', 'the kibitzer is muted',
         ('Paragraph thirteen it is.', 'Ki', 'Paragraph 13.'),
         ('Silence, then. The table is ours.', 'T', 'Stille also. Der Tisch gehört uns.'),
-        ("Kiebitz, halt's Maul: quite so.", 'Ki', "Kiebitz, halt's Maul!"),
         ('Silent kibitzers are tolerated.', 'Wb', 'Schweigende Kiebitze werden geduldet.'))
+    return out
+
+# German must not reach the English talk. The terms below stay German in English
+# by design: the game's own names (docs/RULES.md, strings.json keep them in the
+# English text) and its Viennese table terms. Anything else German in an English
+# line is a bug; a period interjection is translated (the German line keeps it).
+ENGLISH_ALLOW = {"tarock", "tarocks", "touren", "tour", "strohmandeln", "strohmandl", "sküs", "mond", "mondfang",
+                 "pagat", "troule", "valat", "tapper", "kreuzer", "ultimo", "ultimos", "conto", "contos"}
+# What German looks like when it is not a game term: any umlaut or ß, and these
+# common words (none of them an English word).
+GERMAN_WORDS = set("""weiter gut gute guten guter nacht abend gewonnen besser mitgenommen drumgekommen glück ist als
+    und der die das nicht ich sie ein eine mit für auf ja nein schon noch mal partie spiel herr herrn aber wie wir es zu
+    den dem im bei auch dann doch na also stich karte bitte danke servus gnä frau prost mein jetzt nun halt's maul
+    kiebitz spielen tous les trois wenn sehr wohl bleibt beide diesmal keiner riskiert geht's""".split())
+
+
+def german_in(text):
+    """The German tokens of an English line, game terms (ENGLISH_ALLOW) excepted."""
+    import re
+    out = []
+    for tok in re.findall(r"[\wÄÖÜäöüß']+", text):
+        low = tok.lower().strip("'")
+        if low in ENGLISH_ALLOW:
+            continue
+        if re.search("[äöüßÄÖÜ]", tok) or low in GERMAN_WORDS or tok.lower() in GERMAN_WORDS:
+            out.append(tok)
     return out
 
 

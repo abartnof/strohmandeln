@@ -3,9 +3,15 @@ switch and the persistence (docs/TABLE3D.md 10.4, 10.5). The tutor's checks are
 the tutor's own. Imported by browser.py."""
 
 import json
+import os
 import re
 import tempfile
 from pathlib import Path
+
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+from phrases import german_in  # noqa: E402
 
 from browser import LANDSCAPE, NO_DRAW, PAGE, ROOT, WORDS, STRINGS, check_offline, close_all, fail_if, intersects, js, rest, state, still
 from browser_scenarios import (
@@ -113,8 +119,9 @@ def check_slate_open_close(browser, failures):
 
 
 def check_slate_rows(browser, failures):
-    # A draw doubles the next deal.
-    page = open_page(browser, "seed=2&speed=instant&human=1")
+    # A draw doubles the next deal. Seeds depend on the opponent at ?level=1, which is deterministic:
+    # rescan with web3d/test/seed_scan.mjs after an opponent change.
+    page = open_page(browser, "seed=5&speed=instant&human=1")
     ok = drive(page, has("doubling_applied"), policy="weiter")
     fail_if(not ok, failures, "slate_rows: no doubled deal in the seeded sitting")
     if ok:
@@ -161,6 +168,63 @@ def check_slate_rows(browser, failures):
     if ok:
         rest(page)
         fail_if(page.locator(".slate-thrown_in .slate-note").count() < 1 or page.locator(".slate-thrown_in .slate-note").first.inner_text() != t("slate.thrown-in", "de"), failures, "slate_rows: the thrown-in row does not say eingeworfen")
+
+
+def check_slate_tips(browser, failures):
+    # Every figure has a tooltip, one reads from the record, and the keyboard has one tab stop.
+    page = open_page(browser, "seed=2&speed=instant&human=1")
+    ok = drive(page, has("game_scored"), policy="weiter")
+    fail_if(not ok, failures, "slate_tips: no deal scored")
+    if ok:
+        rest(page)
+        page.locator(".slate-tab").click()
+        tips = page.locator(".slate .slate-tip")
+        n = tips.count()
+        fail_if(n < 10, failures, f"slate_tips: only {n} tips on the slate")
+        bad = page.evaluate("[...document.querySelectorAll('.slate .slate-tip')].filter((e) => !e.title.trim() || e.title !== e.getAttribute('aria-description') || /[{}]/.test(e.title)).map((e) => e.className)")
+        fail_if(bad, failures, f"slate_tips: tips with no text, no description or an unfilled slot: {bad[:3]}")
+        figures = page.evaluate("[...document.querySelectorAll('.slate .slate-credit, .slate .slate-total, .slate .slate-conto, .slate .slate-balance, .slate .slate-direction, .slate .slate-no, .slate .slate-dealer, .slate .slate-double, .slate .slate-col')].filter((e) => !e.classList.contains('slate-tip')).length")
+        fail_if(figures, failures, f"slate_tips: {figures} figures without a tip")
+        # One tip read against the record: the first credit of the first scored deal.
+        e = next(e for e in js(page, "log()") if e["type"] == "game_scored")
+        human = state(page)["human"]
+        c = e["credits"][0]
+        who = "you" if c["seat"] == human else "opp"
+        kind = f"game.{e['result'] if e['result'] in ('declarer_win', 'declarer_loss') else 'simple_win'}.{who}" if c["cause"] == "game" else f"{c['cause']}.{who}"
+        base = c["points"] // e["multiplier"]
+        pts = t("slate.tip.pt.one" if base == 1 else "slate.tip.pt.other").format(n=base)
+        x2 = t("slate.tip.doubled").format(n=c["points"]) if e["multiplier"] == 2 else ""
+        want = t(f"slate.tip.{kind}").format(pts=pts, x2=x2)
+        got = page.locator(".slate [data-deal]").first.locator(".slate-credit").first.get_attribute("title")
+        fail_if(got != want, failures, f"slate_tips: the first credit says {got!r}, the record gives {want!r}")
+        # One tab stop; the arrows move; the caption follows.
+        stops = page.evaluate("document.querySelectorAll('.slate .slate-tip[tabindex=\"0\"]').length")
+        fail_if(stops != 1, failures, f"slate_tips: {stops} tab stops among the figures")
+        page.evaluate("document.querySelector('.slate .slate-tip[tabindex=\"0\"]').focus()")
+        page.keyboard.press("ArrowRight")
+        page.keyboard.press("ArrowDown")
+        at = page.evaluate("({ tip: document.activeElement.dataset.tip || null, title: document.activeElement.title, caption: document.querySelector('.slate-tip-caption').textContent })")
+        fail_if(not at["tip"] or at["caption"] != at["title"], failures, f"slate_tips: the arrows left focus at {at}")
+        page.keyboard.press("Escape")
+        fail_if(slate_open(page), failures, "slate_tips: Esc did not fold the slate from a figure")
+    close_all(browser)
+    # In German, the tips are German.
+    page = open_page(browser, "seed=2&speed=instant&human=1&lang=de")
+    ok = drive(page, has("game_scored"), policy="weiter")
+    if ok:
+        rest(page)
+        got = page.locator(".slate .slate-credit").first.get_attribute("title") or ""
+        e = next(e for e in js(page, "log()") if e["type"] == "game_scored")
+        c = e["credits"][0]
+        human = state(page)["human"]
+        who = "you" if c["seat"] == human else "opp"
+        kind = f"game.{e['result'] if e['result'] in ('declarer_win', 'declarer_loss') else 'simple_win'}.{who}" if c["cause"] == "game" else f"{c['cause']}.{who}"
+        base = c["points"] // e["multiplier"]
+        pts = t("slate.tip.pt.one" if base == 1 else "slate.tip.pt.other", "de").format(n=base)
+        x2 = t("slate.tip.doubled", "de").format(n=c["points"]) if e["multiplier"] == 2 else ""
+        want = t(f"slate.tip.{kind}", "de").format(pts=pts, x2=x2)
+        fail_if(got != want, failures, f"slate_tips: the German tip is {got!r}, the record gives {want!r}")
+    close_all(browser)
 
 
 def check_slate_points_and_settlement_note(browser, failures):
@@ -218,6 +282,37 @@ def check_talk_events(browser, failures):
         if any(e["type"] == event for e in log):
             fail_if(not seen_groups & set(groups), failures, f"talk_events: {event} occurred but none of {groups} was said (heard {sorted(seen_groups)[:12]}; last lines {[(l['deals'], l['text'][:20]) for l in lines[-4:]]})")
     fail_if(not (seen_groups - CALLS), failures, "talk_events: a whole sitting at All said no chatter")
+
+
+def check_talk_english(browser, failures):
+    """No bubble in English holds German outside the game's own terms (tools/phrases.py ENGLISH_ALLOW):
+    a whole sitting in English, then one begun in German and switched to English mid-sitting."""
+    page = talk_page(browser, "&lang=en")
+    ok = drive(page, until_over(), manual=True, step=400)
+    fail_if(not ok, failures, "talk_english: the sitting did not end")
+    run_ticks(page, 10_000)
+    lines = heard(page)
+    fail_if(len(lines) < 10, failures, f"talk_english: only {len(lines)} lines heard")
+    for line in lines:
+        fail_if(not groups_of(line["text"], "en"), failures, f"talk_english: {line['text']!r} is no English line of the bank")
+        fail_if(german_in(line["text"]), failures, f"talk_english: German {german_in(line['text'])} in {line['text']!r}")
+    close_all(browser)
+    page = talk_page(browser, "&lang=de")
+    ok = drive(page, has("game_scored"), manual=True, step=400)
+    fail_if(not ok, failures, "talk_english: no deal scored in German")
+    run_ticks(page, 6_000)
+    german = heard(page)
+    fail_if(not german or any(groups_of(l["text"], "de") == [] for l in german), failures, "talk_english: the German lines are not all the bank's")
+    set_lang(page, "en")
+    run_ticks(page, 500)
+    seen = len(heard(page))
+    drive(page, until_over(), manual=True, step=400)
+    run_ticks(page, 10_000)
+    after = heard(page)[seen:]
+    fail_if(len(after) < 3, failures, f"talk_english: only {len(after)} lines after the switch")
+    for line in after:
+        fail_if(not groups_of(line["text"], "en"), failures, f"talk_english: after the switch to English, {line['text']!r} is no English line")
+        fail_if(german_in(line["text"]), failures, f"talk_english: after the switch, German in {line['text']!r}")
 
 
 def said_in(page, goal, **kw):
@@ -717,7 +812,7 @@ HUD_CLIPPED = """(popped) => {
   for (const e of document.querySelectorAll('.hud *')) {
     if (e.closest('.hud-pop') && !popped) continue;
     if (e.closest('.hud-score') && popped) continue;
-    if (!e.textContent.trim() || e.children.length) continue;
+    if (!e.textContent.trim() || (e.children.length && !e.classList.contains('hud-name'))) continue;
     const b = e.getBoundingClientRect();
     if (!b.width) continue;
     const spill = e.scrollWidth > e.clientWidth + 1;
@@ -740,6 +835,8 @@ def check_hud_not_clipped(browser, failures):
             page.goto(f"{PAGE.as_uri()}?seed=7&speed=instant&lowfx=1&level=1", wait_until="commit", timeout=120_000)
             page.wait_for_function("window.strohmandeln3d !== undefined", timeout=180_000)
             rest(page)
+            for side in ("you", "opp"):
+                page.evaluate("([side, spec]) => window.strohmandeln3d.hudMark(side, spec)", [side, {"text": STRINGS["hud.declarer.mark"][lang], "title": STRINGS["hud.declarer.tip"][lang]}])
             page.evaluate(
                 """(label) => {
                   document.querySelectorAll('.hud-num, .hud-pop-pts').forEach((n) => { n.textContent = '35\\u2154'; });
@@ -751,12 +848,105 @@ def check_hud_not_clipped(browser, failures):
             )
             page.wait_for_timeout(900)
             widths = page.evaluate("[...document.querySelectorAll('.hud-line .seg')].map((e) => e.getBoundingClientRect().width)")
+            names = page.evaluate("[...document.querySelectorAll('.hud-name')].map((n) => [n.textContent, n.getBoundingClientRect().height, n.querySelector('.hud-mark')?.getBoundingClientRect().right <= n.getBoundingClientRect().right + 0.5])")
+            fail_if(any(h > 36 for _, h, _ in names), failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']}: a name takes more than two lines {names}")
+            fail_if(any(not ok for _, _, ok in names), failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']}: the (D) mark leaves its name cell {names}")
             print(f"hud segments {lang} {size['width']}: n={len(widths)} min={min(widths, default=0):.2f}")
             fail_if(not widths or min(widths) < 2, failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']}: a segment is {min(widths, default=0):.2f}px wide ({len(widths)} segments)")
             for popped in (False, True):
                 bad = page.evaluate(HUD_CLIPPED, popped)
                 fail_if(bool(bad), failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']} popped={popped}: {bad[:4]}")
             context.close()
+
+
+def declarer_state(page):
+    return page.evaluate(
+        """() => ({
+          marks: [...document.querySelectorAll('.hud-side')].map((r) => ({ side: r.classList.contains('you') ? 'you' : 'opp', name: r.querySelector('.hud-name').textContent, mark: r.querySelector('.hud-mark') ? { text: r.querySelector('.hud-mark').textContent, tip: r.querySelector('.hud-mark').dataset.tip, title: r.querySelector('.hud-mark').getAttribute('title'), tab: r.querySelector('.hud-mark').tabIndex } : null })),
+          dealer: [...document.querySelectorAll('.tag.dealer')].map((n) => ({ text: n.textContent, tip: n.dataset.tip, tab: n.tabIndex, label: n.getAttribute('aria-label') })),
+        })"""
+    )
+
+
+def check_declarer_mark(browser, failures):
+    """The declarer is marked "(D)" / "(A)" on the score HUD, on the declarer's own row, with a tooltip reachable
+    by hover and by focus; a simple game has none. The dealer's chip is the word, not a letter (2.5.8)."""
+    where = "declarer_mark: "
+    out = Path(os.environ.get("SHOT_DIR") or tempfile.gettempdir())
+    for lang in ("en", "de"):
+        context = browser.new_context(viewport={"width": 1280, "height": 720})
+        context.add_init_script(f"try {{ localStorage.setItem('strohmandeln.prefs', JSON.stringify({{ v: 1, lang: '{lang}' }})); }} catch (e) {{}}")
+        context.set_offline(True)
+        page = context.new_page()
+        goto(page, "seed=7&speed=instant&human=1")
+        rest(page)
+        before = declarer_state(page)
+        fail_if(any(r["mark"] for r in before["marks"]), failures, f"{where}{lang}: a mark before the bid {before['marks']}")
+        chip = before["dealer"]
+        fail_if(len(chip) != 1 or chip[0]["text"] != STRINGS["hud.dealer"][lang], failures, f"{where}{lang}: the dealer chip is not the word {chip}")
+        fail_if(chip and (not chip[0]["tip"] or chip[0]["tab"] != 0 or not chip[0]["label"]), failures, f"{where}{lang}: the dealer chip's tooltip is not reachable by keyboard {chip}")
+        bubble = lambda sel: page.evaluate("(sel) => getComputedStyle(document.querySelector(sel), '::after').content", sel)
+        page.keyboard.press("Shift")
+        page.locator(".tag.dealer").focus()
+        fail_if(chip and chip[0]["tip"][:12] not in bubble(".tag.dealer"), failures, f"{where}{lang}: focus shows no tooltip on the dealer chip")
+        page.locator("[data-act=take]").click()
+        rest(page)
+        after = declarer_state(page)
+        marked = [r for r in after["marks"] if r["mark"]]
+        fail_if(len(marked) != 1 or marked[0]["side"] != "you", failures, f"{where}{lang}: after my take-up the mark is {after['marks']}")
+        if marked:
+            m = marked[0]["mark"]
+            fail_if(m["text"] != f"({STRINGS['hud.declarer.mark'][lang]})", failures, f"{where}{lang}: the mark reads {m['text']}")
+            fail_if(m["tip"] != STRINGS["hud.declarer.tip"][lang] or m["title"] is not None, failures, f"{where}{lang}: the tooltip reads {m}")
+            fail_if(m["tab"] != 0, failures, f"{where}{lang}: the mark is not reachable by keyboard")
+            fail_if(marked[0]["name"] != f"{STRINGS['hud.you'][lang]} ({STRINGS['hud.declarer.mark'][lang]})", failures, f"{where}{lang}: the name cell reads {marked[0]['name']}")
+            page.keyboard.press("Shift")  # keyboard use, so the script focus counts as :focus-visible
+            page.locator(".hud-mark").focus()
+            fail_if(STRINGS["hud.declarer.tip"][lang][:20] not in bubble(".hud-mark"), failures, f"{where}{lang}: focus shows no tooltip")
+            page.evaluate("document.activeElement.blur()")
+            fail_if("Declarer" in bubble(".hud-mark") or "Aufnehmer" in bubble(".hud-mark"), failures, f"{where}{lang}: the tooltip stays after focus leaves")
+            page.locator(".hud-mark").hover()
+            fail_if(STRINGS["hud.declarer.tip"][lang][:20] not in bubble(".hud-mark"), failures, f"{where}{lang}: hover shows no tooltip")
+        page.screenshot(path=str(out / f"declarer-{lang}.png"))
+        if lang == "en":
+            # The mark and its tooltip follow the language switch, and back.
+            for to in ("de", "en"):
+                open_settings(page)
+                page.locator(f"[data-row=lang] [data-value={to}]").click()
+                page.locator(".settings-close").click()
+                page.wait_for_timeout(300)
+                got = [r for r in declarer_state(page)["marks"] if r["mark"]]
+                fail_if(len(got) != 1 or got[0]["mark"]["text"] != f"({STRINGS['hud.declarer.mark'][to]})" or got[0]["mark"]["tip"] != STRINGS["hud.declarer.tip"][to], failures, f"{where}after switching to {to} the mark is {got}")
+        context.close()
+    # A sitting restored mid-deal brings the mark back.
+    context = browser.new_context(viewport=FAST)
+    context.set_offline(True)
+    context.add_init_script(NO_DRAW)
+    page = context.new_page()
+    goto(page, "seed=7&human=1&speed=instant&keep=1")
+    rest(page)
+    page.locator("[data-act=take]").click()
+    rest(page)
+    goto(page, "human=1&hook=1")
+    page.wait_for_selector("[data-dialog=welcome]", timeout=60_000)
+    page.locator("[data-dialog-act=continue]").click()
+    rest(page)
+    got = [r for r in declarer_state(page)["marks"] if r["mark"]]
+    fail_if(len(got) != 1 or got[0]["side"] != "you", failures, f"{where}after a restore the mark is {got}")
+    context.close()
+    # A simple game (both passed): no declarer, no mark, to the deal's end.
+    for seed in range(1, 9):
+        page = open_page(browser, f"seed={seed}&speed=instant&human=1")
+        if state(page)["phase"] != "bid":
+            continue
+        page.locator("[data-act=pass]").click()
+        rest(page)
+        if not any(e["type"] == "both_pass" for e in js(page, "log()")):
+            continue
+        marks = [r for r in declarer_state(page)["marks"] if r["mark"]]
+        fail_if(bool(marks), failures, f"{where}a mark in a simple game {marks}")
+        return
+    failures.append(f"{where}no simple game in seeds 1-8")
 
 
 # ---- persistence ------------------------------------------------------------------------------------------
@@ -940,9 +1130,46 @@ def check_tutor_pages(browser, failures):
     check_offline(page, failures, "tutor_pages: ")
 
 
+RED_PIP_TRICK = re.compile(r"^[1-4][hd]$")
+ALL_PAGES = ["the-cards", "packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension", "scoring-full"]
+
+
+def red_pip_trick(log):
+    for e in log:
+        c = e["cards"] if e["type"] == "trick_won" else []
+        if len(c) == 2 and all(RED_PIP_TRICK.match(x) for x in c) and c[0][1] == c[1][1]:
+            return e
+
+
+def check_red_pips_note(browser, failures):
+    # The first trick a red pip beats a higher-numbered one (seed 1, level 1: the 1 of hearts takes the 2, trick 3):
+    # the Kibitzer says it once at rest, with the cards named, hints off (TABLE3D 6.2.5); not when muted.
+    prefs = {"tutor": True, "hints": False, "seen": ALL_PAGES, "slateAuto": False}
+    page = with_prefs(browser, prefs, "seed=1&speed=instant&human=1&tutor=1")
+    take_if_bidding(page)
+    drive(page, lambda s, log: red_pip_trick(log) is not None or s["prompt"] == "over")
+    e = red_pip_trick(js(page, "log()"))
+    fail_if(e is None, failures, "red_pips_note: seed 1 did not reach a red pip trick")
+    if e:
+        rest(page)
+        want = t("tutor.note.redpips").replace("{win}", "1 of hearts").replace("{lose}", "2 of hearts") if e["cards"] == ["1h", "2h"] or e["cards"] == ["2h", "1h"] else None
+        note = js(page, "tutor()")["note"]
+        fail_if(want is not None and note != want, failures, f"red_pips_note: the note is {note!r}, not {want!r}")
+        fail_if(not note.startswith("The ") or " beats the " not in note, failures, f"red_pips_note: the note does not name the cards: {note!r}")
+        fail_if(js(page, "prefs()")["seen"].count("red-pips") != 1, failures, "red_pips_note: red-pips not kept once in seen")
+        fail_if(page.locator("[data-dialog]").count(), failures, "red_pips_note: a dialog was open with the note")
+    check_offline(page, failures, "red_pips_note: ")
+    page = with_prefs(browser, {**prefs, "muted": True}, "seed=1&speed=instant&human=1&tutor=1")
+    take_if_bidding(page)
+    drive(page, lambda s, log: red_pip_trick(log) is not None or s["prompt"] == "over")
+    rest(page)
+    fail_if(js(page, "tutor()")["note"] != "", failures, "red_pips_note: the muted Kibitzer spoke")
+    fail_if("red-pips" in js(page, "prefs()")["seen"], failures, "red_pips_note: a muted note was marked seen")
+
+
 # ---- 10.4 the cards-out tracker (6.6) ----------------------------------------------------------------
 
-TRACKER_SIZES = [("1280x720", {"width": 1280, "height": 720}), ("1024x768", {"width": 1024, "height": 768})]  # a phone layout is deferred (6.6.6)
+TRACKER_SIZES = [("1280x720", {"width": 1280, "height": 720}), ("1024x768", {"width": 1024, "height": 768}), ("1440x900", {"width": 1440, "height": 900}), ("1920x1080", {"width": 1920, "height": 1080})]  # a phone layout is deferred (6.6.6)
 BOXES = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; };
   const shown = (sel) => [...document.querySelectorAll(sel)].filter((e) => !e.hidden && e.getBoundingClientRect().width > 0).map(box);
   const panel = document.querySelector('.tracker');
@@ -960,6 +1187,27 @@ def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0"
     if unfold and tab.count() and tab.is_visible():
         tab.click()
     return page
+
+
+HUD_AND_PANEL = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; };
+  const hud = document.querySelector('.info .hud'), panel = document.querySelector('.tracker'), tour = document.querySelector('.info .tour-line');
+  const tabs = [...document.querySelectorAll('.tutor-row > button')].filter((e) => !e.hidden && e.getBoundingClientRect().width > 0).map(box);
+  return { tabs, tour: tour && tour.textContent ? box(tour) : null, hud: hud ? box(hud) : null, panel: panel ? box(panel) : null }; })()"""
+
+
+def check_hud_clear(page, failures, where):
+    # The score HUD's rectangle and the panel's never meet, the by-deal list closed and open (6.6.6).
+    for step in ("closed", "open"):
+        if step == "open":
+            page.locator(".hud-chev").click()
+            page.wait_for_timeout(1500)
+        boxes = page.evaluate(HUD_AND_PANEL)
+        fail_if(not boxes["hud"] or not boxes["panel"], failures, f"{where}list {step}: no HUD or no panel")
+        if boxes["hud"] and boxes["panel"]:
+            fail_if(intersects(boxes["hud"], boxes["panel"]), failures, f"{where}list {step}: the HUD {boxes['hud']} meets the panel {boxes['panel']}")
+            for tab in boxes["tabs"]:
+                fail_if(intersects(tab, boxes["panel"]), failures, f"{where}list {step}: the panel {boxes['panel']} covers the Kibitzer's tab {tab}")
+            fail_if(boxes["tour"] and intersects(boxes["tour"], boxes["panel"]), failures, f"{where}list {step}: the tour line {boxes['tour']} meets the panel {boxes['panel']}")
 
 
 def check_tracker_clear(browser, failures):
@@ -989,6 +1237,10 @@ def check_tracker_clear(browser, failures):
             fail_if(scroll > 1, failures, f"{where}the panel scrolls by {scroll} px: the legend is cut off")
         check_offline(page, failures, where)
         close_all(browser)
+        for lang in ("en", "de"):
+            page = tracker_page(browser, size, {"lang": lang})
+            check_hud_clear(page, failures, f"tracker_clear {name} {lang}: ")
+            close_all(browser)
 
 
 def check_tracker_fold_and_settings(browser, failures):
@@ -1049,7 +1301,7 @@ def check_tracker_languages(browser, failures):
     fail_if(labels != ["K", "D", "C", "B"], failures, f"{where}the German court labels are {labels}")
     scroll = page.evaluate("(() => { const p = document.querySelector('.tracker'); return p.scrollHeight - p.clientHeight; })()")
     fail_if(scroll > 1, failures, f"{where}the German panel scrolls by {scroll} px: the legend is cut off at 1280x720")
-    fail_if(page.locator(".tracker-legend li").count() != 3, failures, f"{where}the legend has not three entries")
+    fail_if(page.locator(".tracker-legend li").count() != 4, failures, f"{where}the legend has not four entries")
     close_all(browser)
     # Upright, the tracker is not there at all (deferred, 6.6.6): it cannot break the page.
     upright = tracker_page(browser, {"width": 390, "height": 844})
@@ -1063,7 +1315,7 @@ def check_tracker_languages(browser, failures):
 BRIEF_KEPT = "(() => { const b = window.strohmandeln3d.briefing(); return b.kept.length >= 1 && b.kept.every((d) => d.summary) && b.owed === 0; })()"
 
 
-def brief_page(browser, prefs, query="seed=7&speed=instant&human=1"):
+def brief_page(browser, prefs, query="seed=1&speed=instant&human=1"):
     page = with_prefs(browser, {"hints": True, "seen": ["public-mark"], "slateAuto": False, **prefs}, query)
     return page
 
@@ -1155,7 +1407,7 @@ def check_deal_brief(browser, failures):
     # that decision then counts as assisted
     page.keyboard.press("m")
     focus = js(page, "briefing()")["focus"]
-    fail_if(focus is None, failures, "deal_brief: the first deal named no focus (the seed is chosen for one)")
+    fail_if(focus is None, failures, "deal_brief: the first deal named no focus (the seed is chosen for one; level 1 is deterministic since the styles engine, so re-scan after an opponent change)")
     if focus:
         before = len(js(page, "briefing()")["kept"])
         drive(page, lambda st, log: bool(js(page, "briefing()")["assisted"]) or sum(e["type"] == "game_scored" for e in log) > before or st["prompt"] == "over")
@@ -1344,8 +1596,8 @@ def check_hint_why(browser, failures):
 
 
 CHECKS_104 = [
-    check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
+    check_slate_open_close, check_slate_rows, check_slate_tips, check_slate_points_and_settlement_note, check_talk_events, check_talk_english, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_settings_no_rules, check_new_sitting_from_table, check_skill_speed, check_new_sitting_style, check_random_style_hidden,
-    check_language_switch, check_language_switch_at_count, check_hud_not_clipped, check_prefs_storage, check_save_restore, check_export_import_file,
-    check_tutor_pages, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief, check_hint_why,
+    check_language_switch, check_language_switch_at_count, check_hud_not_clipped, check_declarer_mark, check_prefs_storage, check_save_restore, check_export_import_file,
+    check_tutor_pages, check_red_pips_note, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief, check_hint_why,
 ]

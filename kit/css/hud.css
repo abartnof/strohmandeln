@@ -386,3 +386,36 @@
     transition-delay: 0s !important;
   }
 }
+/* A mark after a name ("(D)"), with its tooltip from data-tip: one styled bubble, on hover and on focus
+   (a tap focuses it). Added to cassino's sheet with hud.mark. */
+.hud-mark {
+  position: relative;
+  white-space: nowrap;
+  cursor: help;
+  margin-left: 2px;
+  color: #f7f8fa;
+  border-radius: 3px;
+}
+.hud-mark:focus-visible {
+  outline: 2px solid #f7f8fa;
+  outline-offset: 1px;
+}
+.hud-mark:hover::after,
+.hud-mark:focus::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 5;
+  width: 15em;
+  margin-top: 4px;
+  padding: 6px 8px;
+  border: 1px solid #5b6472;
+  border-radius: 6px;
+  background: #1d2433;
+  color: #fff;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: normal;
+  pointer-events: none;
+}

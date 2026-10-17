@@ -29,6 +29,7 @@ import { bonusLines, countGame, countLines, edgeOf, liveTally, runningTally } fr
 import { loadEngine } from "./engine.js";
 import { createMirror } from "./mirror.js";
 import { createNewSitting } from "./newsitting.js";
+import { dealerTag, declarerMark } from "./declarer.js";
 import { momentsOf } from "./moments.js";
 import { check, emptyModel, fromState, reduce } from "./model.js";
 import { clearSitting, fileText, loadSitting, parseFile, saveSitting } from "./persist.js";
@@ -47,7 +48,7 @@ import { trackerPanel } from "./trackerview.js";
 import { createBriefing } from "./briefing.js";
 import { explainText, briefBlocks, nudgeText } from "./review.js";
 import { MAX_IMPORT, clearTutor, exportText, importText, loadDeals, refreshOne } from "./tutorstore.js";
-import { createTutor, extendPromptDue, hintsOn, PAGE_KEYS, publicSlots, takePublicNote, tutorialPages } from "./tutor.js";
+import { createTutor, extendPromptDue, hintsOn, PAGE_KEYS, publicSlots, RED_PIPS, redPipsNote, takePublicNote, tutorialPages } from "./tutor.js";
 import { helpBody, pageBody, reviewBody } from "./tutorview.js";
 import TUTORIAL_DE from "../tutorial.md";
 import TUTORIAL_EN from "../tutorial.en.md";
@@ -214,10 +215,12 @@ async function main() {
 
   // The opponent has one voice: lines wait their turn, and chatter yields to the calls (5.2.2).
   const boxes = new Map();
+  // A line is said in the language of the moment it is heard, not of the moment it was chosen (a switch may fall between).
+  const lineText = (line) => (line.key && WORDS.texts[line.key]?.[getLang()]) || line.text;
   const speaker = createSpeaker({
     clock: () => director.clock(),
     later: (ms, fn, kind) => director.at(ms, fn, kind),
-    show: (line) => boxes.set(line, showLine(line.text)),
+    show: (line) => boxes.set(line, showLine(lineText(line))),
     hide: (line) => {
       boxes.get(line)?.remove();
       boxes.delete(line);
@@ -227,7 +230,7 @@ async function main() {
     words: WORDS,
     getLang,
     rng: Math.random,
-    say: ({ text, call, who }) => (who === "kibitz" ? kibitzNote(text) : speaker.offer({ text, call })),
+    say: ({ key, text, call, who }) => (who === "kibitz" ? kibitzNote(text, key) : speaker.offer({ key, text, call })),
   });
   talk.setMode(prefs.talk);
 
@@ -298,7 +301,11 @@ async function main() {
   function placeTracker() {
     const root = ui.trackerRoot;
     if (!root.firstChild) return;
-    const top = document.querySelector(".info").getBoundingClientRect().bottom + 6;
+    // Below the HUD as it is now (its by-deal list open or folded) and the "not 36" chips under it.
+    let below = 0;
+    for (const e of document.querySelectorAll(".info .hud, .info .tour-line")) below = Math.max(below, e.getBoundingClientRect().bottom);
+    for (const c of document.querySelectorAll(".floats .chip.edge")) below = Math.max(below, c.getBoundingClientRect().bottom);
+    const top = below + 6;
     let limit = ui.root.querySelector(".tutor-row").getBoundingClientRect().top;
     // The fan's outer cards reach up beside the panel on a narrower window.
     const lane = root.getBoundingClientRect();
@@ -313,9 +320,16 @@ async function main() {
   }
 
   // The Kibitzer's note, in his tab and not in the opponent's box (6.5).
-  function kibitzNote(text) {
+  // The line is kept by key while it is up, so a language switch re-letters it.
+  let kibitzKey = null;
+  function kibitzNote(text, key) {
     ui.kibitzNote(text);
-    director.at(Math.max(4000, 250 + 70 * text.length), () => ui.kibitzNote(null), "linger");
+    kibitzKey = key ?? null;
+    director.at(Math.max(4000, 250 + 70 * text.length), () => {
+      if (kibitzKey !== (key ?? null)) return; // a later note is up
+      kibitzKey = null;
+      ui.kibitzNote(null);
+    }, "linger");
   }
 
   // The pages, for the sitting's rules: both-pass, game values and ultimo (6.2.2).
@@ -459,7 +473,24 @@ async function main() {
     const events = tutorBuf;
     tutorBuf = [];
     if (tutorAuto && wasm) tutor.rest(wasm, events, { human, blocked: ui.dialogOpen() });
+    redPipsStep(events);
     publicNote();
+  }
+  // The backwards red pips, said once in the Kibitzer's note (6.2.5): a rule, so hints on or off;
+  // not while the tutor is off or muted, nor with a dialog (a page, the count) open: it waits for the next rest.
+  let redPipsOwed = null;
+  function redPipsStep(events) {
+    if (events.some((e) => e.type === "deal_start")) redPipsOwed = null;
+    redPipsOwed = redPipsNote(events, prefs.seen) ?? redPipsOwed;
+    if (!redPipsOwed || !tutorAuto || events.some((e) => e.type === "count")) return;
+    if (!prefs.tutor || prefs.muted) {
+      redPipsOwed = null;
+      return;
+    }
+    if (ui.dialogOpen() || !ui.settingsRoot.hidden) return;
+    kibitzNote(t("tutor.note.redpips", { win: cardName(redPipsOwed.win), lose: cardName(redPipsOwed.lose) }));
+    redPipsOwed = null;
+    save({ seen: [...prefs.seen, RED_PIPS] });
   }
   // The Kibitzer's note on the gold dot, once, the first time hints are on (TABLE3D 1.5.7).
   function publicNote() {
@@ -516,6 +547,16 @@ async function main() {
     return out;
   }
 
+  // The declarer's "(D)" on the score HUD, set when it changes (the model, the language).
+  let declarerShown = null;
+  function markDeclarer(mark) {
+    const key = mark ? `${mark.side}:${mark.title}` : "";
+    if (key === declarerShown) return;
+    declarerShown = key;
+    hud.mark("you", mark?.side === "you" ? mark : null);
+    hud.mark("opp", mark?.side === "opp" ? mark : null);
+  }
+
   // ---- tags that follow cards -----------------------------------------------------
   function placeTags() {
     if (!S || !restModel) return ui.tags([]);
@@ -538,13 +579,15 @@ async function main() {
       }
     }
     // The dealer's marker and the declarer's badge, by their hands.
-    for (const [key, seat, text] of [["dealer", m.dealer, t("hud.dealer.short")], ["declarer", m.declarer, t("ui.take")]]) {
+    const dealer = dealerTag(m, t);
+    for (const [key, seat, text, title] of [["dealer", m.dealer, dealer?.text, dealer?.title], ["declarer", m.declarer, t("ui.take")]]) {
       if (seat === null || seat === undefined || (key === "declarer" && !wasm?.deal?.playing && m.declarer === null)) continue;
       const who = seat === m.human ? "you" : "them";
       const edge = director.handEdge(who);
       const dx = key === "dealer" ? -1 : 1;
-      list.push({ id: key, text, x: edge.x + dx * (key === "dealer" ? 150 : 100), y: edge.y + (who === "you" ? -14 : 14), kind: key });
+      list.push({ id: key, text, x: edge.x + dx * (key === "dealer" ? 150 : 100), y: edge.y + (who === "you" ? -14 : 14), kind: key, tip: title });
     }
+    markDeclarer(declarerMark(m, t));
     // The public mark on a hand card the other player has seen.
     // A hint (TABLE3D 1.5.7): drawn only while hints are on.
     for (const slot of publicSlots(placement, prefs)) {
@@ -635,8 +678,11 @@ async function main() {
       hud.node.classList.toggle("edge", edge.tick);
       for (const side of edge.short) ui.chip(t("chip.not-36", { a: thirds(hud.totals()[side]) }), { x: 120, y: side === "you" ? 150 : 100, kind: "edge", ms: 3000 });
     });
-    const paid = bonusLines(scored?.credits ?? [], human, (cause) => t(`slate.cause.${cause}`));
-    for (const ev of countEvents(game, paid, { at, hand: 1 })) if (!ev.end) later(count.end + 700, () => hud.score(ev));
+    // The labels are read when the bonuses land, so a language switched during the count is the language shown.
+    later(count.end + 700, () => {
+      const paid = bonusLines(scored?.credits ?? [], human, (cause) => t(`slate.cause.${cause}`));
+      for (const ev of countEvents(game, paid, { at, hand: 1 })) if (!ev.end) hud.score(ev);
+    });
   }
 
   // The running tally (2.5.3): the HUD's lines hold the take so far, counted as the count
@@ -1111,6 +1157,7 @@ async function main() {
     ui.closeDialog("over");
     for (const id of ["page", "help", "review"]) ui.closeDialog(id);
     ui.kibitzNote(null);
+    kibitzKey = null;
     tutor.reset();
     tutorBuf = [];
     reviewChip = null;
@@ -1333,6 +1380,11 @@ async function main() {
     document.title = t("ui.title");
     canvas.setAttribute("aria-label", t("ui.stage"));
     ui.relabel();
+    if (kibitzKey && WORDS.texts[kibitzKey]?.[lang]) ui.kibitzNote(WORDS.texts[kibitzKey][lang]);
+    boxes.forEach((box, line) => {
+      box.dataset.text = lineText(line);
+      box.textContent = box.dataset.text;
+    });
     mirror.relabel();
     redrawFaces(COURT_CODES);
     const totals = hud.totals();
@@ -1554,6 +1606,9 @@ async function main() {
     showTracker(); // a window that no longer fits it, or now does
   }).observe(document.getElementById("overlay"));
   fitStrips();
+  // The cards-out panel follows the HUD's bottom as the by-deal list opens and folds, and the edge chips that come and go (6.6.6).
+  new ResizeObserver(placeTracker).observe(document.querySelector(".info .hud"));
+  new MutationObserver(placeTracker).observe(ui.root.querySelector(".floats"), { childList: true });
   stage.onReframe = () => S && director.relayout();
 
   stopped = () => ui.dialog({ id: "error", title: t("error.opponent-refused"), body: "", buttons: [{ label: t("ui.close"), act: "close", focus: true }] });
@@ -1601,6 +1656,7 @@ async function main() {
     openReview,
     live: () => ui.lived(),
     hud: () => ({ totals: hud.totals(), shown: hud.shown(), idle: hud.idle() }),
+    hudMark: (side, spec) => hud.mark(side, spec), // the checks put a mark on a side to measure the name column
     zoneRects,
     cardRects: cardRectsOf,
     placement: () => director.placement().map((m) => ({ zone: m.zone, key: m.key, code: m.code, index: m.index, packet: m.packet })),

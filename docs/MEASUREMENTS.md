@@ -774,6 +774,327 @@ chances in which the trigger fires) was not measured.
 worth.rich.1,announce.1` and the same with `57000000 v124`, `58000000 throwin`,
 `59000000 ult2`.
 
+## M5r Rule refinement
+
+### Plan v1 (2026-10-17, before the first selection run; superseded by v2 below)
+
+Specified in `docs/HINTS.md` 5.2; code in `crates/strohmandeln-ai/src/m5r.rs`
+(tests in `m5r_tests.rs`), binary `m5r`. Mirrored pairs are not used: no two
+players are compared; the measure counts how often rung 4's own move is in a
+class (as M5).
+
+**Data.** Rung 4 against rung 3, seats alternating by sitting, 3 Touren, every
+decision of rung 4 logged with the atoms that hold and, per class whose trigger
+fires, whether the card played is in the class. Seeds: selection 60,000,000
+(400 sittings), confirmation 65,000,000 (batches of 100 sittings), settings
+66,000,000 (values 1/2/3), 67,000,000 (1/2/4), 68,000,000 (both pass: throw
+in), 69,000,000 (ultimo 2), 200 sittings each.
+
+**Ideas and classes (15).** Triggers are M5's without their numbers
+(`rules.rs`, helpers made `pub(crate)`): `worth.poor/no-king` (a card of 4
+thirds or less led, a king wins, another card legal); `cheap/outcome`,
+`cheap/winner`; `off/follow-cover`, `off/lead-cover`, `off/figure-cover`,
+`off/figure-higher`; `run/top`, `run/any`; `pagat/keep`, `pagat/cash` (following
+with the Pagat and another card legal, no tarock count); `void/avoid`;
+`mond/mond` (following, the Mond legal and winning, another card legal: the
+Mond); `trumps/tarock`, `trumps/suit` (leading with a tarock and a suit card
+legal). Excluded as in HINTS 5.2: `behind`, `worth.rich`, `announce`,
+`endgame`.
+
+**Family (31 atoms, `m5r::ATOMS`; visible state only).** Tarocks unseen at most
+0, 2, 4, 6, 8; my tarocks at least 6, 8, 10, 12 or at most 5, 7; he shows the
+suit void; he has shown no tarock; the Sküs unplayed and not mine; the Mond
+mine; the suit's thirds left at most 13, 26 (HINTS 5.2 says "at most"); trick
+1-9, 10-18, 19-27; my covers at least 1, 2; his shown covers of the suit at
+least 1, 2; the card led worth at least 1, 4, 7, 10, 13 thirds; I hold the
+suit's master. The "suit" is the suit led when following, else the suit the
+class is about (the void suit, the highest cover's, the figure's) or none (the
+suit atoms are then false). Each class lists 12 of the atoms (`m5r.rs`
+`A_*`); a candidate is one atom or two atoms of different groups (thresholds of
+one quantity are one group): at most 78 per class. An atom true at every firing
+of a class is not tried.
+
+**Fitting.** Per class, eligible if the effective sample (clustered by deal,
+as M5) is at least 60 and the Wilson lower bound at least 0.80; the widest
+(most firings, ties by lower bound) is taken forward.
+
+**Confirmation.** Per taken-forward candidate, looks at 100, 200, 300, 400
+sittings; z = (p - 0.80) / sqrt(0.8 x 0.2 / n_eff); pass at the first look
+with z at or above 4.05, 2.86, 2.34, 2.02 (one-sided use of the two-sided
+O'Brien-Fleming boundaries) and n_eff at least 60; fail from look 2 at z at
+most -1.645, and at look 4 without a pass; interval of the last look reported.
+A passed rule is told under a setting where its lower bound there is at least
+0.80. Reach: the share of deals with a firing; below 1 in 40 the rule is
+recorded as too rare to count.
+
+**Wording.** `m5r::sentence`: the atoms' templates joined with "and" and the
+class's action; condition at most 8 words (the atoms' words, without "when"
+and "and"), action at most 10; tested for passed rules.
+
+**Commands.** `cargo run --release -p strohmandeln-ai --bin m5r -- select |
+confirm | settings | emit` (flags in the binary's header). Looks are logged
+to `confirm.log` in the output directory.
+
+### M5r result v1 (2026-10-17; superseded by v2: the tarock count was `unseen`, not the table's `out`; no family correction)
+
+Constants in force: none (the atoms and classes read no tutor constant). Printed output: `docs/measurements/
+m5r-v1-select.txt`, `m5r-v1-confirm.txt`, `m5r-v1-settings.txt`. The lists written to
+disk by the run (`selection.tsv`, `confirmed.tsv`, `settings.tsv`) are
+reproduced in the tables below; `m5r emit` turns the confirmed and settings
+lists into `crates/strohmandeln-ai/src/m5r_rules.rs`.
+
+**Commands** (output directory `$D`, any):
+`m5r select --out $D` (seed 60,000,000, 400 sittings);
+`m5r confirm --out $D` (seed 65,000,000, batches of 100);
+`m5r settings --out $D` (seeds 66 to 69 million, 200 sittings each);
+`m5r emit --out $D > crates/strohmandeln-ai/src/m5r_rules.rs`.
+CPU (user time, the machine was shared, wall time is 2 to 5 times that):
+confirmation 2 min 20 s, settings 4 min 04 s, selection about 2 min 20 s (400
+sittings, as the confirmation's 400; wall time 608 s): about 8.7 minutes, under
+the 10 minute cap.
+
+**Selection** (2,400 deals). `base` is the class with no atom; `cand` the
+candidates tried (an atom true at every firing is not), `elig` those with
+n_eff at least 60 and lower bound at least 0.80; the widest eligible is taken
+forward.
+
+| Class | Fired | Base p | Base lower | Cand | Elig | Taken forward: atoms, fired, p, n_eff, lower, reach |
+|---|---|---|---|---|---|---|
+| worth.poor/no-king | 2,073 | 0.814 | 0.796 | 63 | 17 | tu8, 1,372, 0.851, 1,359, 0.831, 0.375 |
+| cheap/outcome | 20,596 | 0.731 | 0.725 | 74 | 31 | tu4, 9,568, 0.837, 7,961, 0.829, 0.991 |
+| cheap/winner | 14,641 | 0.714 | 0.707 | 74 | 31 | tu4, 6,162, 0.843, 5,846, 0.833, 0.900 |
+| off/follow-cover | 4,703 | 0.526 | 0.511 | 62 | 0 | none |
+| off/lead-cover | 24,885 | 0.273 | 0.268 | 62 | 0 | none |
+| off/figure-cover | 11,799 | 0.325 | 0.316 | 62 | 0 | none |
+| off/figure-higher | 11,799 | 0.203 | 0.196 | 62 | 0 | none |
+| run/top | 9,526 | 0.042 | 0.039 | 66 | 0 | none |
+| run/any | 9,526 | 0.772 | 0.763 | 66 | 40 | tu6, 7,430, 0.822, 7,156, 0.813, 0.790 |
+| pagat/keep | 3,659 | 0.815 | 0.802 | 71 | 13 | ml5, 1,291, 0.864, 1,291, 0.844, 0.229 |
+| pagat/cash | 3,659 | 0.185 | 0.173 | 71 | 0 | none |
+| void/avoid | 13,205 | 0.618 | 0.610 | 73 | 1 | left13+ph1, 1,077, 0.836, 1,016, 0.812, 0.228 |
+| mond/mond | 2,457 | 0.245 | 0.228 | 69 | 0 | none |
+| trumps/tarock | 29,967 | 0.257 | 0.251 | 69 | 1 | mt8+ph3, 61, 0.902, 61, 0.802, 0.025 |
+| trumps/suit | 29,967 | 0.743 | 0.736 | 69 | 1 | ml7+skus, 10,158, 0.820, 6,342, 0.811, 0.572 |
+
+**Confirmation** (seeds from 65,000,000, looks at 100 / 200 / 300 / 400
+sittings; boundaries 4.05 / 2.86 / 2.34 / 2.02). Fired, p, n_eff and Wilson
+lower bound at the look the rule stopped at (the interval of the last look);
+reach is the share of deals with a firing.
+
+| Class | Atoms | Verdict | Look | Fired | p | n_eff | Lower | z at look | Reach |
+|---|---|---|---|---|---|---|---|---|---|
+| trumps/suit | ml7+skus | pass | 1 | 2,523 | 0.847 | 1,807 | 0.830 | 5.00 | 0.540 |
+| cheap/outcome | tu4 | pass | 2 | 4,768 | 0.843 | 3,883 | 0.831 | 6.65 | 0.993 |
+| cheap/winner | tu4 | pass | 2 | 3,012 | 0.846 | 2,939 | 0.833 | 6.27 | 0.882 |
+| pagat/keep | ml5 | pass | 2 | 693 | 0.863 | 693 | 0.835 | 4.14 | 0.246 |
+| run/any | tu6 | pass | 3 | 5,515 | 0.817 | 5,068 | 0.806 | 2.94 | 0.781 |
+| void/avoid | left13+ph1 | pass | 3 | 790 | 0.837 | 749 | 0.809 | 2.51 | 0.234 |
+| worth.poor/no-king | tu8 | pass | 4 | 1,355 | 0.830 | 1,350 | 0.809 | 2.71 | 0.370 |
+| trumps/tarock | mt8+ph3 | fail | 4 | 61 | 0.820 | 61 | 0.705 | 0.38 | 0.025 |
+
+No rule stopped for futility; `trumps/tarock` failed at the last look without a
+pass (its reach, 1 deal in 40, is also at the limit). All seven passed rules
+fire in more than 1 deal in 40.
+
+**Under each other setting** (200 sittings each; lower bound, `*` below 0.80):
+
+| Rule | Values 1/2/3 | Values 1/2/4 | Both pass: throw in | Ultimo 2 | Told under |
+|---|---|---|---|---|---|
+| trumps/suit ml7+skus | 0.837 | 0.807 | 0.788 `*` | 0.814 | not throw in |
+| cheap/outcome tu4 | 0.806 | 0.810 | 0.829 | 0.808 | every setting |
+| cheap/winner tu4 | 0.813 | 0.804 | 0.833 | 0.818 | every setting |
+| pagat/keep ml5 | 0.820 | 0.827 | 0.829 | 0.791 `*` | not ultimo 2 |
+| run/any tu6 | 0.795 `*` | 0.802 | 0.802 | 0.815 | not values 1/2/3 |
+| void/avoid left13+ph1 | 0.798 `*` | 0.775 `*` | 0.736 `*` | 0.780 `*` | default only |
+| worth.poor/no-king tu8 | 0.807 | 0.816 | 0.797 `*` | 0.814 | not throw in |
+
+**Verdicts by idea.** Rules (a rule is told where its row says; elsewhere its
+fact):
+
+| Idea | Verdict | Rule |
+|---|---|---|
+| cheap | passed, both classes, every setting | `cheap/outcome:tu4`, `cheap/winner:tu4` |
+| worth.poor | passed (look 4), not under throw in | `worth.poor/no-king:tu8` |
+| run | `run/any` passed, not under values 1/2/3; `run/top` failed (no eligible candidate) | `run/any:tu6` |
+| pagat | `keep` passed, not under ultimo 2; `cash` failed | `pagat/keep:ml5` |
+| void | passed, default setting only; over the word budget | `void/avoid:left13+ph1` |
+| trumps | `suit` passed, not under throw in; over the word budget; `tarock` failed | `trumps/suit:ml7+skus` |
+| off | failed, all four classes (no eligible candidate; the best base is 0.53) | none |
+| mond | failed (no eligible candidate; base 0.245: rung 4 plays the Mond in a quarter of the cases where it wins) | none |
+
+**Wording drafts** (`m5r::sentence`, the atoms' templates joined to the
+class's action; budgets of HINTS 5.2: condition at most 8 words, action at most
+10, counted as in `m5r::word_counts`). Here "words" are condition + action.
+
+| Rule | en | de | words |
+|---|---|---|---|
+| cheap/outcome:tu4 | When 4 or fewer tarocks are out, play the cheapest card that gives the same result. | Wenn höchstens 4 Tarock draußen sind: die billigste Karte mit gleichem Ergebnis spielen. | 5 + 9 |
+| cheap/winner:tu4 | When 4 or fewer tarocks are out, win with the cheapest card that wins. | Wenn höchstens 4 Tarock draußen sind: mit der billigsten stechenden Karte stechen. | 5 + 7 |
+| worth.poor/no-king:tu8 | When 8 or fewer tarocks are out, on a low lead, do not win with a king. | Wenn höchstens 8 Tarock draußen sind: bei niedrigem Anspiel nicht mit einem König stechen. | 5 + 9 |
+| run/any:tu6 | When 6 or fewer tarocks are out, lead one of your neighbouring tarocks, else the lowest. | Wenn höchstens 6 Tarock draußen sind: eines Ihrer benachbarten Tarock anspielen, sonst das niedrigste. | 5 + 9 |
+| pagat/keep:ml5 | When you hold 5 or fewer tarocks, keep the Pagat. | Wenn Sie höchstens 5 Tarock halten: den Pagat behalten. | 6 + 3 |
+| trumps/suit:ml7+skus | When you hold 7 or fewer tarocks and the Sküs is out and not yours, lead a suit card. | Wenn Sie höchstens 7 Tarock halten und der Sküs draußen und nicht Ihrer ist: eine Farbkarte anspielen. | 13 + 4, over |
+| void/avoid:left13+ph1 | When the suit has 13 thirds or fewer left and it is trick 1 to 9, do not lead the suit he lacks. | Wenn von der Farbe höchstens 13 Drittel übrig sind und es der 1. bis 9. Stich ist: die Farbe, die ihm fehlt, nicht anspielen. | 13 + 7, over |
+
+The two that exceed the budget are true but not told in these words;
+shortened drafts that fit if the maintainer accepts a noun-phrase condition
+("With ..."): "With 7 tarocks or fewer and the Sküs still out, lead a suit
+card." / "Mit höchstens 7 Tarock und dem Sküs noch draußen: eine Farbkarte
+anspielen."; the void rule has no short form (a suit-points condition and a
+phase). `m5r_rules.rs` carries `fits_budget` for each.
+
+**Reading.** Five of the seven conditions are one quantity: how many tarocks
+are out or held (`tu4`, `tu6`, `tu8`, `ml5`, `ml7`). For `off`, the Mond and
+`run/top` no condition of the family reaches 0.80. `pagat/keep:ml5` states what
+rung 4 does (keeps the Pagat 86% of the time with 5 or fewer tarocks), not a
+book's advice; M5's candidate `pagat.cash` (the Pagat with few tarocks) has
+0.185 here too.
+
+### Plan v2 (2026-10-17, before the selection run)
+
+Changes from v1, decided on the review (`docs/review/m5r.md`, "Fixes"); all
+else as v1.
+
+- **Tarocks out** (`tu` atoms) is `Knowledge::out_tarocks`: not mine and not
+  played, as the Cards-out tab's line 1 counts (unseen plus his face-up
+  tarocks); a test equals it to the tracker's count on sample views. v1 used
+  `unseen_tarocks` (differs from the table in 71% of decisions).
+- **Family correction.** The classes taken forward from the selection are
+  confirmed together: k = their number, fixed when the selection ends and
+  committed (with the boundaries from `m5r bounds --k K`) before the first
+  confirmation batch. The overall one-sided level is 0.025 / k (Bonferroni);
+  as in v1 the two-sided O'Brien-Fleming boundaries are used one-sided, so the
+  two-sided level is 0.05 / k and the four boundaries are
+  `stats::obf_boundaries(0.05 / k, 4)` (numerical integration of the joint
+  density of the partial sums, two decimals; at k = 1 it gives 4.05 / 2.86 /
+  2.34 / 2.02). A rule passes only under these. Minimum n_eff 60, futility from
+  look 2 at z <= -1.645, fail at look 4 without a pass, as v1.
+- **Seeds** (fresh): selection 71,000,000 (400 sittings); confirmation
+  76,000,000 (batches of 100); settings 77,000,000 (values 1/2/3),
+  78,000,000 (1/2/4), 79,000,000 (both pass: throw in), 80,000,000 (ultimo 2),
+  200 sittings each. The v1 blocks (60 to 69 million) are not reused; 60 and 65
+  million are also `measure`'s tune and fresh defaults, 80 million is also M8's
+  first seed (a different statistic, so no dependence).
+- **Wording.** Noun-phrase atoms after "With" ("Mit"); the class's lead names the
+  trigger where it fits ("Following with"); points, not thirds; the opponent is
+  "your opponent"; no "cheap", "neighbouring"; a test over every template
+  string fails a banned word. Budget as v1 (condition at most 8 words, action
+  at most 10, the lead's trigger words counted with the action); v1's
+  per-rule test was loosened after the first run to a `fits_budget` flag per
+  rule (the budget is a presentation limit, not a gate); `run/any` and
+  `void/avoid` are never shipped (`NOT_SHIPPED`).
+- **Late share.** Each rule's data carries the share of its firings in tricks
+  10 to 27 and 19 to 27 (`late10`, `late19`); `late` is set at 80% or more
+  after trick 9.
+- **Reproducibility.** The lists `selection.tsv`, `confirmed.tsv`,
+  `settings.tsv` are committed in `docs/measurements/` (`m5r-*.tsv`) and a test
+  checks that `m5r emit` over them is `m5r_rules.rs`. The selection log
+  (about 5 MB) is not committed: the selection table is reproduced by
+  running `select`.
+- **Commands**: `m5r select --out $D`; `m5r bounds --k K`;
+  `m5r confirm --k K --out $D`; `m5r settings --out $D`;
+  `m5r emit --confirmed $D/confirmed.tsv --settings $D/settings.tsv >
+  crates/strohmandeln-ai/src/m5r_rules.rs`. Wall seconds are printed; CPU
+  is `time`'s user time, recorded below.
+
+**Plan v2, fixed after the selection and before the first confirmation
+batch.** The selection (`docs/measurements/m5r-select.txt`,
+`m5r-selection.tsv`) took six classes forward: `worth.poor/no-king` (ml7),
+`cheap/outcome` (tu4), `cheap/winner` (tu8 + ml7), `run/any` (tu8),
+`pagat/keep` (ml7), `trumps/suit` (skus). So **k = 6**, the two-sided level
+0.05 / 6 = 0.0083 (one-sided overall 0.025 / 6 = 0.0042), and the boundaries
+at the four looks (`m5r bounds --k 6`) are **5.34 / 3.77 / 3.08 / 2.67**.
+Confirmation: `m5r confirm --k 6`.
+
+### M5r result v2 (2026-10-17)
+
+Constants in force: none (the atoms and classes read no tutor constant).
+Printed outputs: `docs/measurements/m5r-select.txt`, `m5r-confirm.txt`,
+`m5r-settings.txt`; the lists `m5r-selection.tsv`, `m5r-confirmed.tsv`,
+`m5r-settings.tsv` produce `crates/strohmandeln-ai/src/m5r_rules.rs`
+(`emit_reproduces_the_rules_file`). CPU (`time`, user): selection 2 min 20 s
+(wall 278 s), confirmation 2 min 20 s (wall 308 s), settings 4 min 04 s (wall
+351 s): 8.7 minutes, under the 10 minute cap; the machine was shared.
+
+**Selection** (seeds from 71,000,000, 2,400 deals; `base` the class with no
+atom, `cand` tried, `elig` eligible: n_eff at least 60 and Wilson lower at
+least 0.80):
+
+| Class | Fired | Base p | Base lower | Cand | Elig | Taken forward: atoms, fired, p, n_eff, lower, reach, share after trick 9 |
+|---|---|---|---|---|---|---|
+| worth.poor/no-king | 2,018 | 0.817 | 0.799 | 63 | 19 | ml7, 1,147, 0.841, 1,147, 0.819, 0.332, 0.754 |
+| cheap/outcome | 20,437 | 0.730 | 0.724 | 74 | 34 | tu4, 6,979, 0.853, 5,632, 0.843, 0.971, 0.998 |
+| cheap/winner | 14,392 | 0.712 | 0.704 | 74 | 33 | tu8+ml7, 6,303, 0.819, 5,878, 0.809, 0.927, 0.982 |
+| off/follow-cover | 4,639 | 0.533 | 0.518 | 62 | 0 | none |
+| off/lead-cover | 24,885 | 0.269 | 0.263 | 62 | 0 | none |
+| off/figure-cover | 11,399 | 0.320 | 0.311 | 62 | 0 | none |
+| off/figure-higher | 11,399 | 0.202 | 0.195 | 62 | 0 | none |
+| run/top | 9,471 | 0.047 | 0.043 | 66 | 0 | none |
+| run/any | 9,471 | 0.756 | 0.747 | 66 | 39 | tu8, 7,253, 0.816, 7,220, 0.807, 0.772, 0.942 |
+| pagat/keep | 3,761 | 0.827 | 0.814 | 71 | 19 | ml7, 2,352, 0.825, 2,074, 0.808, 0.366, 0.690 |
+| pagat/cash | 3,761 | 0.173 | 0.161 | 71 | 0 | none |
+| void/avoid | 12,716 | 0.613 | 0.604 | 73 | 0 | none |
+| mond/mond | 2,357 | 0.245 | 0.228 | 69 | 0 | none |
+| trumps/tarock | 29,893 | 0.257 | 0.251 | 69 | 0 | none |
+| trumps/suit | 29,893 | 0.743 | 0.736 | 69 | 2 | skus, 14,628, 0.809, 8,312, 0.800, 0.613, 0.488 |
+
+**Confirmation** (seeds from 76,000,000, k = 6, boundaries 5.34 / 3.77 /
+3.08 / 2.67, futility z <= -1.645). Fired, p, n_eff and lower bound at the
+look the rule stopped at (the interval of the last look); reach is the share of
+deals with a firing; "after 9" and "after 18" the shares of firings in tricks
+10 to 27 and 19 to 27.
+
+| Class | Atoms | Verdict | Look | Fired | p | n_eff | Lower | z | Reach | After 9 | After 18 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| cheap/outcome | tu4 | pass | 2 | 3,586 | 0.850 | 3,106 | 0.837 | 6.96 | 0.967 | 0.999 | 0.782 |
+| cheap/winner | tu8+ml7 | pass | 3 | 4,784 | 0.822 | 4,740 | 0.811 | 3.73 | 0.934 | 0.977 | 0.556 |
+| run/any | tu8 | pass | 3 | 5,557 | 0.820 | 5,419 | 0.809 | 3.66 | 0.786 | 0.941 | 0.534 |
+| worth.poor/no-king | ml7 | pass | 4 | 1,156 | 0.841 | 1,156 | 0.819 | 3.47 | 0.330 | 0.737 | 0.305 |
+| pagat/keep | ml7 | fail | 4 | 2,184 | 0.800 | 1,880 | 0.781 | -0.06 | 0.360 | 0.688 | 0.326 |
+| trumps/suit | skus | fail | 4 | 14,734 | 0.802 | 8,567 | 0.793 | 0.42 | 0.615 | 0.489 | 0.135 |
+
+`pagat/keep` and `trumps/suit` sat at p = 0.80 from the first look (z near 0
+at every look): the selection's 0.825 and 0.809 were the winner's curse, as
+`trumps/tarock` was in v1. No rule stopped for futility. All passed rules fire
+in more than 1 deal in 40.
+
+**Under each other setting** (200 sittings each; lower bound, `*` below 0.80):
+
+| Rule | Values 1/2/3 | Values 1/2/4 | Both pass: throw in | Ultimo 2 | Told under |
+|---|---|---|---|---|---|
+| cheap/outcome tu4 | 0.844 | 0.832 | 0.848 | 0.832 | every setting |
+| cheap/winner tu8+ml7 | 0.790 `*` | 0.798 `*` | 0.806 | 0.785 `*` | default, throw in |
+| run/any tu8 | 0.818 | 0.811 | 0.810 | 0.819 | every setting |
+| worth.poor/no-king ml7 | 0.797 `*` | 0.757 `*` | 0.777 `*` | 0.800 | default, ultimo 2 |
+
+(The `settings_ok` flag is "every other setting", so only `cheap/outcome` and
+`run/any` carry it.)
+
+**Wording** (`m5r::sentence`; condition = the atoms' words, action = the
+class's words plus the trigger words of the lead beyond "With"; budget 8 and
+10):
+
+| Rule | en | de | words | ships |
+|---|---|---|---|---|
+| cheap/outcome:tu4 | Following with 4 or fewer tarocks still out, win or lose with the fewest-points card. | Beim Bedienen mit höchstens 4 Tarock noch draußen: stechen oder nicht, mit der punkteärmsten Karte. | 5 + 8 | yes, every setting; after trick 9 in 99.9% of firings (`late`) |
+| worth.poor/no-king:ml7 | With 7 or fewer tarocks of yours, if a king of yours would win, play another card. | Mit höchstens 7 eigenen Tarock: würde ein König von Ihnen stechen, eine andere Karte spielen. | 6 + 10 | yes, default and ultimo 2 only; 74% after trick 9 (not `late`) |
+| cheap/winner:tu8+ml7 | With 8 or fewer tarocks still out and 7 or fewer tarocks of yours, take the trick with the fewest-points card that wins. | Mit höchstens 8 Tarock noch draußen und höchstens 7 eigenen Tarock: den Stich mit der punkteärmsten stechenden Karte holen. | 11 + 9 | no: over the condition budget; default and throw in only |
+| run/any:tu8 | With 8 or fewer tarocks still out, lead a tarock next in rank to another of yours, else your lowest. | Mit höchstens 8 Tarock noch draußen: ein Tarock anspielen, das im Rang neben einem Ihrer Tarock steht, sonst das niedrigste. | 5 + 13 | no: `NOT_SHIPPED` |
+
+**Verdicts by idea.** cheap: `outcome` passed under every setting; `winner`
+passed only with a two-atom condition over the budget. worth.poor: passed,
+three settings fail. run: `any` passed (not shipped), `top` no eligible
+candidate. pagat: `keep` failed at the corrected boundaries, `cash` no
+candidate. trumps: `suit` failed at the corrected boundaries, `tarock` no
+candidate. void, mond, off (four classes): no eligible candidate. Against v1
+the corrected run lost `pagat/keep`, `trumps/suit` and `void/avoid` (the last
+now with no eligible candidate once `tu` means "still out").
+
+**Reading.** Of the six candidates, five use a tarock count (`tu4`, `tu8`,
+`ml7`). The tarock count is largely the phase of the deal: 99.9% of the
+`cheap/outcome` firings are after trick 9, so its "Why?" says it describes
+play late in the deal (`late`).
+
 ## M6 Diagnosis
 
 ### Plan (2026-10-15, before the run)

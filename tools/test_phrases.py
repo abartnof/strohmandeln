@@ -298,6 +298,34 @@ class Citations(unittest.TestCase):
             self.assertIn("interessiert", t)
 
 
+class EnglishIsEnglish(unittest.TestCase):
+    """The English text of the bank holds no German outside the game's own terms."""
+
+    def test_no_german_in_the_english_text(self):
+        bad = [(f"{gid}.{k}", w[0], phrases.german_in(w[0]))
+               for gid, _, ways in GROUPS for k, w in enumerate(ways) if phrases.german_in(w[0])]
+        self.assertEqual(bad, [])
+
+    def test_no_german_in_the_screen_reader_strings(self):
+        import json
+        strings = json.loads((phrases.ROOT / "web3d" / "strings.json").read_text())
+        bad = {k: phrases.german_in(v["en"]) for k, v in strings.items() if k.startswith("sr.") and phrases.german_in(v["en"])}
+        self.assertEqual(bad, {})
+
+    def test_matsch_is_not_left_in_the_english(self):
+        self.assertEqual([w[0] for _, _, ways in GROUPS for w in ways if "matsch" in w[0].lower()], [])
+
+    def test_the_luck_proverb_has_one_english_wording(self):
+        ens = {w[0] for gid, _, ways in GROUPS for w in ways if len(w) > 3 and w[3] == "Glück 360"}
+        self.assertEqual(len(ens), 1, ens)
+
+    def test_the_detector_finds_german(self):
+        for s in ("Weiter: I pass.", "Gut. Let it stand.", "Glück ist besser als gut Spielen.", "Tous les trois!"):
+            self.assertTrue(phrases.german_in(s), s)
+        for s in ("The Sküs takes the Mond.", "Two kreuzer a Point.", "Three Touren, then."):
+            self.assertFalse(phrases.german_in(s), s)
+
+
 class Generated(unittest.TestCase):
     def test_generated_files_are_current(self):
         for path, text in ((phrases.DOC, phrases.document()), (phrases.WORDS, phrases.words_json())):
