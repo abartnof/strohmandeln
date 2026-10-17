@@ -147,7 +147,10 @@ mod tests {
     #[test]
     fn a_bold_sitting_of_many_take_ups_says_how_many() {
         let b = bullet(Style::Bold, &tells(6, 4)).expect("a line");
-        assert_eq!((b.lead.as_str(), b.key.as_str()), (LEAD, "tutor.style.took"));
+        assert_eq!(
+            (b.lead.as_str(), b.key.as_str()),
+            (LEAD, "tutor.style.took")
+        );
         assert_eq!((n(&b, "n"), n(&b, "of")), (4, 6));
     }
 
@@ -173,7 +176,11 @@ mod tests {
     #[test]
     fn random_has_a_line_that_names_no_style() {
         let b = bullet(Style::Random, &tells(6, 4)).expect("a line");
-        assert_eq!(b, bullet(Style::Bold, &tells(6, 4)).unwrap(), "the same line");
+        assert_eq!(
+            b,
+            bullet(Style::Bold, &tells(6, 4)).unwrap(),
+            "the same line"
+        );
         assert!(b.params.iter().all(|(_, v)| matches!(v, Param::Int(_))));
         for k in KEYS {
             for s in Style::CANDIDATES {
