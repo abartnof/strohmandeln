@@ -84,3 +84,9 @@ test("the opponent's played cell keeps a second cue and the high-contrast rule",
   const more = tcss.slice(tcss.indexOf("prefers-contrast: more"));
   assert.match(more, /data-state="theirs"/);
 });
+
+test("the cell played by you is dashed against the solid outline of one still out; the panel's head stays in view", () => {
+  const tcss = readFileSync(new URL("../src/tracker.css", import.meta.url), "utf8");
+  assert.match(tcss, /\[data-state="played"\][^{]*\{[^}]*border-style:\s*dashed/);
+  assert.match(tcss, /\.tracker-head\s*\{[^}]*position:\s*sticky/);
+});

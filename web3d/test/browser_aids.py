@@ -964,7 +964,8 @@ def tracker_page(browser, size, prefs=None, query="seed=7&speed=instant&human=0"
 
 HUD_AND_PANEL = """(() => { const box = (e) => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; };
   const hud = document.querySelector('.info .hud'), panel = document.querySelector('.tracker'), tour = document.querySelector('.info .tour-line');
-  return { tour: tour && tour.textContent ? box(tour) : null, hud: hud ? box(hud) : null, panel: panel ? box(panel) : null }; })()"""
+  const tabs = [...document.querySelectorAll('.tutor-row > button')].filter((e) => !e.hidden && e.getBoundingClientRect().width > 0).map(box);
+  return { tabs, tour: tour && tour.textContent ? box(tour) : null, hud: hud ? box(hud) : null, panel: panel ? box(panel) : null }; })()"""
 
 
 def check_hud_clear(page, failures, where):
@@ -977,6 +978,8 @@ def check_hud_clear(page, failures, where):
         fail_if(not boxes["hud"] or not boxes["panel"], failures, f"{where}list {step}: no HUD or no panel")
         if boxes["hud"] and boxes["panel"]:
             fail_if(intersects(boxes["hud"], boxes["panel"]), failures, f"{where}list {step}: the HUD {boxes['hud']} meets the panel {boxes['panel']}")
+            for tab in boxes["tabs"]:
+                fail_if(intersects(tab, boxes["panel"]), failures, f"{where}list {step}: the panel {boxes['panel']} covers the Kibitzer's tab {tab}")
             fail_if(boxes["tour"] and intersects(boxes["tour"], boxes["panel"]), failures, f"{where}list {step}: the tour line {boxes['tour']} meets the panel {boxes['panel']}")
 
 

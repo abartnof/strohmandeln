@@ -67,3 +67,13 @@ score HUD both on screen, not colliding.
    readable.
 
 No blocking findings. Fix 4 and 5 (small) or record them open.
+
+## Fixes (17 Oct 2026)
+
+- 2: the cell played by you has a dashed border (grey kept), apart from the solid outline
+  of a card still out; `colour.test.js` checks the rule.
+- 4: `.tracker-head` is sticky (`top: 0`, `background: inherit`): Fold stays in view
+  while the panel scrolls; `colour.test.js` checks the rule.
+- 5: `check_hud_clear` (in `tracker_clear`) asserts the panel clear of the Kibitzer's
+  tabs as well, list closed and open, at all four sizes in en and de.
+- 1, 3, 6-9: no change.
