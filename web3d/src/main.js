@@ -1656,7 +1656,7 @@ async function main() {
   fitStrips();
   // The cards-out panel follows the HUD's bottom as the by-deal list opens and folds, and the edge chips that come and go (6.6.6).
   for (const e of document.querySelectorAll(".info .hud, .info .tour-line")) new ResizeObserver(sizeTracker).observe(e);
-  
+
   stage.onReframe = () => S && director.relayout();
 
   stopped = () => ui.dialog({ id: "error", title: t("error.opponent-refused"), body: "", buttons: [{ label: t("ui.close"), act: "close", focus: true }] });

@@ -236,7 +236,8 @@ test("the card: a labelled region with a chevron; closed it is the head alone, o
   const words2 = { title: w.t("tracker.title"), showLabel: w.t("tracker.show"), hideLabel: w.t("tracker.hide") };
   const closed = trackerPanel(doc, null, { ...words2, open: false });
   assert.equal(closed.getAttribute("role"), "region");
-  assert.equal(closed.getAttribute("aria-label"), "Cards out");
+  assert.equal(closed.getAttribute("aria-labelledby"), "tracker-title");
+  assert.equal(closed.byClass("tracker-title")[0].getAttribute("id"), "tracker-title", "the visible title names the region");
   assert.equal(closed.byClass("tracker").length, 0, "no body while closed");
   const chev0 = closed.byClass("hud-chev")[0];
   assert.equal(chev0.getAttribute("data-act"), "tracker");

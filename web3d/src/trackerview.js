@@ -13,9 +13,9 @@ export function trackerPanel(doc, model, { title, showLabel, hideLabel, open }) 
   const chevron = h(doc, "button", { class: "hud-chev", type: "button", "data-act": "tracker", "aria-expanded": String(open), "aria-label": name, title: name });
   chevron.innerHTML = CHEVRON_SVG;
   // Closed, the head is the title and the chevron; open, the Kibitzer's byline sits under the title.
-  const titles = h(doc, "div", { class: "tracker-titles" }, h(doc, "h2", { class: "tracker-title" }, title), open && model ? h(doc, "p", { class: "tracker-byline" }, model.byline) : null);
+  const titles = h(doc, "div", { class: "tracker-titles" }, h(doc, "h2", { class: "tracker-title", id: "tracker-title" }, title), open && model ? h(doc, "p", { class: "tracker-byline" }, model.byline) : null);
   const head = h(doc, "div", { class: "tracker-head", "data-act": "tracker" }, titles, chevron);
-  const card = h(doc, "section", { class: open ? "hud-card tracker-card open" : "hud-card tracker-card", role: "region", "aria-label": title, "data-trick": model ? String(model.trick) : null }, head);
+  const card = h(doc, "section", { class: open ? "hud-card tracker-card open" : "hud-card tracker-card", role: "region", "aria-labelledby": "tracker-title", "data-trick": model ? String(model.trick) : null }, head);
   if (open && model) card.append(trackerBody(doc, model));
   return card;
 }
