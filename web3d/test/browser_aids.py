@@ -497,6 +497,51 @@ def check_language_switch_at_count(browser, failures):
     check_offline(page, failures, "language_switch_count: ")
 
 
+HUD_CLIPPED = """(popped) => {
+  const hud = document.querySelector('.hud').getBoundingClientRect();
+  document.querySelectorAll('.hud-block').forEach((b) => b.classList.toggle('popped', popped));
+  const bad = [];
+  for (const e of document.querySelectorAll('.hud *')) {
+    if (e.closest('.hud-pop') && !popped) continue;
+    if (e.closest('.hud-score') && popped) continue;
+    if (!e.textContent.trim() || e.children.length) continue;
+    const b = e.getBoundingClientRect();
+    if (!b.width) continue;
+    const spill = e.scrollWidth > e.clientWidth + 1;
+    const out = b.left < hud.left - 0.5 || b.right > hud.right + 0.5 || b.left < 0 || b.right > innerWidth;
+    if (spill || out) bad.push(e.className + ' "' + e.textContent.slice(0, 24) + '" ' + e.scrollWidth + '/' + e.clientWidth + ' ' + Math.round(b.left) + '..' + Math.round(b.right));
+  }
+  return bad;
+}"""
+
+
+def check_hud_not_clipped(browser, failures):
+    """The widest realistic numbers (35 2/3 a side, 135 2/3 in the ledger, a bonus label's popup) fit the HUD."""
+    for lang in ("en", "de"):
+        for size in ({"width": 1280, "height": 720}, {"width": 1440, "height": 900}, {"width": 1920, "height": 1080}, {"width": 1024, "height": 768}):
+            context = browser.new_context(viewport=size)
+            context.add_init_script(f"try {{ localStorage.setItem('strohmandeln.prefs', JSON.stringify({{ v: 1, lang: '{lang}' }})); }} catch (e) {{}}")
+            context.set_offline(True)
+            page = context.new_page()
+            page.goto(f"{PAGE.as_uri()}?seed=7&speed=instant&lowfx=1&level=1", wait_until="commit", timeout=120_000)
+            page.wait_for_function("window.strohmandeln3d !== undefined", timeout=180_000)
+            rest(page)
+            page.evaluate(
+                """(label) => {
+                  document.querySelectorAll('.hud-num, .hud-pop-pts').forEach((n) => { n.textContent = '35\\u2154'; });
+                  document.querySelectorAll('.hud-pop-label').forEach((n) => { n.textContent = label; });
+                  document.querySelectorAll('.hud-v, .hud-sv, .hud-tot-you, .hud-tot-opp').forEach((n) => { n.textContent = '135\\u2154'; });
+                  document.querySelector('.hud-chev').click();
+                }""",
+                STRINGS["hud.bonus"][lang],
+            )
+            page.wait_for_timeout(900)
+            for popped in (False, True):
+                bad = page.evaluate(HUD_CLIPPED, popped)
+                fail_if(bool(bad), failures, f"hud_not_clipped: {lang} {size['width']}x{size['height']} popped={popped}: {bad[:4]}")
+            context.close()
+
+
 # ---- persistence ------------------------------------------------------------------------------------------
 
 
@@ -885,6 +930,6 @@ def check_deal_brief(browser, failures):
 CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_skill_speed,
-    check_language_switch, check_language_switch_at_count, check_prefs_storage, check_save_restore, check_export_import_file,
+    check_language_switch, check_language_switch_at_count, check_hud_not_clipped, check_prefs_storage, check_save_restore, check_export_import_file,
     check_tutor_pages, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_deal_brief,
 ]

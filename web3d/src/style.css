@@ -84,8 +84,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #edeef0; col
 .loading { position: fixed; inset: 0; display: grid; place-items: center; margin: 0; color: #444; }
 button { font: inherit; }
 
-.info { z-index: 13; /* an opened HUD lies over the cards-out panel (z 12), not under it */ position: absolute; top: 8px; left: 8px; width: min(340px, calc(100vw - 150px)); pointer-events: none; }
+.info { z-index: 13; /* an opened HUD lies over the cards-out panel (z 12), not under it */ position: absolute; top: 8px; left: 8px; width: min(384px, calc(100vw - 150px)); pointer-events: none; }
 .info .hud { pointer-events: auto; }
+/* The score reaches "35⅔": room for it beside the line, and for "opponent" in the name column. */
+.info .hud-side { grid-template-columns: 3.9em 1fr; }
 .tour-line { margin: 4px 2px 0; font-size: 13px; color: #44474f; text-shadow: 0 0 3px #fff; }
 .top-right { position: absolute; top: 8px; right: 8px; display: flex; gap: 8px; pointer-events: auto; z-index: 30; }
 .left .top-right { right: auto; left: 8px; flex-direction: row-reverse; }
@@ -153,7 +155,7 @@ button { font: inherit; }
 .upright .controls { padding-bottom: 8px; }
 @media (max-width: 520px) {
   .big { min-width: 96px; padding: 0 14px; font-size: 16px; }
-  .info { top: 58px; width: min(340px, calc(100vw - 16px)); }
+  .info { top: 58px; width: min(384px, calc(100vw - 16px)); }
 }
 @media (prefers-reduced-motion: reduce) {
   .chip { animation: none; transition: none; }

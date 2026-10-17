@@ -40,6 +40,7 @@
 }
 .hud-line {
   flex: 1;
+  min-width: 0; /* a grid item: without it the line keeps its margins' width and squeezes the score */
   display: flex;
   align-items: center;
   height: 22px;
