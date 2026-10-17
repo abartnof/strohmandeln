@@ -269,6 +269,17 @@ a link, never in the bullets. Each bullet is `{lead, key, params}` (section 9).
    Where the consequence is in the log (a figure lost to a higher card of its
    suit) the clause says so; after the last trick every card is public.
 
+4. **Their style** (after-deal brief only, at most 14 words, after the three):
+   when the opponent's style is not Normal (Random included), what the sitting's
+   record so far shows of its bids, as a fact: "Your opponent has taken up 4 of
+   6 bids so far" (`tutor.style.took`, `-once`, `-none`). Said when at least 3
+   bids stand more than one standard deviation from Normal's 19% take-up rate
+   (`docs/STYLES.md` 9, stage 0); the bid is the one tell that separates the
+   offered styles from Normal in the counts, so it is the one counted. Never a
+   counter (none passed stage 2) and never a style's name, so under Random it is
+   the same line before and after the end. Not counted in the three bullets or
+   the 45 words; hidden with the tips off, as the other advice (`tell.rs`).
+
 No focus: bullet 2 says that nothing stood out (and to try the next opponent up,
 below the top of the dial), or that it is too early to say; bullet 3 is dropped.
 A skill is never praised and worked on in the same brief. A deal with fewer than

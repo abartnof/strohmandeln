@@ -1197,9 +1197,13 @@ but Normal, a note says the style shows mostly in the bidding
 **Random** the menu's line says "Random (shown at the end)" and, once the sitting is
 over, "Random: After Bermann"; the end-of-sitting dialog and brief name the drawn
 style in quotes (`style.reveal`), the engine withholding it until the brief's
-`reveal` flag. Open: the after-deal brief's "Their style" bullet (`docs/STYLES.md`
-5) waits on the engine; a Random sitting left by a new sitting reveals nothing yet;
-the end dialog's reveal does not follow a language switch made at the end.
+`reveal` flag. The after-deal brief has a fourth line, "Their style:", for any style
+but Normal and under Random too (`docs/STYLES.md` 5, `docs/TUTOR.md` 6): the
+opponent's take-ups so far in the sitting ("your opponent has taken up 4 of 6
+bids so far"), a fact in the Kibitzer's voice, never a counter and never a style's
+name; the table sends the sitting's earlier records and shows the line as given.
+Open: a Random sitting left by a new sitting reveals nothing yet; the end dialog's
+reveal does not follow a language switch made at the end.
 
 ### 7.4 Speed
 
