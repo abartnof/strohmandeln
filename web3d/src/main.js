@@ -248,7 +248,7 @@ async function main() {
   let pageLinked = false; // ... and it was reached by a link from a page that was due
   // The brief (docs/TUTOR.md 6, 8): the deals' records and summaries are kept, the evidence is
   // worked out once the deal has settled, on this thread (a tenth of a second in the module).
-  const briefing = createBriefing({ store: tutorStore(), engine, level: () => wasm?.level ?? prefs.skill });
+  const briefing = createBriefing({ store: tutorStore(), engine, level: () => wasm?.level ?? prefs.skill, head: () => ({ style: wasm?.style, drawn: wasm?.drawn, over: sittingOver }) });
   let assisted = []; // the actions of the deal in progress a hint or a nudge was shown for (TUTOR 3)
   let scored = null; // the deal just scored: its kept entry, briefed when the cards are still
   let owed = []; // entries whose evidence is not yet worked out
@@ -776,6 +776,8 @@ async function main() {
 
   function endSitting(e, { live = true } = {}) {
     sittingOver = true;
+    // Random names its style now (STYLES 2.3): the menu's line, and the dialog below.
+    if (sittingOnTable?.style === "random") onTable({ ...sittingOnTable, drawn: wasm?.drawn ?? null });
     slate.settle(e);
     clearSitting();
     // The sitting's review, offered by the chip; its tally is kept for trends (6.4.2, 6.4.4).
@@ -785,7 +787,7 @@ async function main() {
     ui.dialog({
       id: "over",
       title: t("ui.prompt.over"),
-      body: "",
+      body: sittingOnTable?.drawn ? t("style.reveal", { drawn: t(`style.${sittingOnTable.drawn}.name`) }) : "",
       buttons: [{ label: t("ui.new.plus"), act: "new", primary: true, focus: true }],
     });
   }
@@ -1142,7 +1144,7 @@ async function main() {
       return;
     }
     human = r.state.human;
-    onTable(sittingFrom(r.events, r.state.level));
+    onTable(sittingFrom(r.events, r.state.level, r.state.style, r.state.drawn));
     ui.root.classList.toggle("left", prefs.leftHanded);
     talk.restore({});
     settleFocus();
@@ -1159,7 +1161,7 @@ async function main() {
   // The new-sitting screen (3.5.1): what is chosen is kept as the next default (3.5.2).
   let newScreen = null;
   function askNew() {
-    newScreen = createNewSitting(document, { t, prefs, sitting: sittingOnTable });
+    newScreen = createNewSitting(document, { t, prefs, sitting: sittingOnTable, styles: engine.styles() });
     ui.dialog({ id: "new", title: t("ui.new.title"), body: newScreen.node, buttons: [{ label: t("ui.new.deal"), act: "deal", primary: true, focus: true }, ...(wasm && !sittingOver ? [{ label: t("ui.new.cancel"), act: "cancel" }] : [])] });
   }
 
@@ -1201,7 +1203,7 @@ async function main() {
     else sittingLength = log.find((e) => e.type === "sitting_start")?.touren ?? r.state.touren_total;
     if (ex.slate) slate.restore(ex.slate);
     if (ex.talk) talk.restore(ex.talk);
-    onTable(sittingFrom(exported.record, r.state.level));
+    onTable(sittingFrom(exported.record, r.state.level, r.state.style, r.state.drawn));
     director.restart(S, { dealt: false });
     restModel = model;
     trickShown = r.state.deal?.playing ? r.state.deal.trick_number : 0;

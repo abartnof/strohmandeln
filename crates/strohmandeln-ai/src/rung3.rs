@@ -17,7 +17,7 @@
 use crate::cardset::{leader_wins, Kind};
 use crate::know::Knowledge;
 use crate::rung2::{
-    common, cover_index, play_card, spend, BidRule, Choice, Tally, Weights, STRONG_TAROCKS,
+    common, cover_index, play_card, spare_lead, spend, BidRule, Choice, Tally, Weights,
 };
 use crate::sampler::sample;
 use strohmandeln_core::cards::Card;
@@ -172,7 +172,7 @@ fn lead(k: &Knowledge, c: Card, sims: &[crate::sim::Sim], wt: &Weights) -> Tally
         None => {
             t.add(-spend(c), "keep-tarocks");
             let edge = trump_edge(k);
-            if edge >= 2.0 && k.my_tarocks() >= STRONG_TAROCKS - 2 {
+            if edge >= 2.0 && k.my_tarocks() >= wt.draw_from.unwrap_or(wt.strong_tarocks - 2) {
                 t.add(wt.draw_trumps, "draw-trumps");
                 let neighbour = |d: i32| {
                     let s = i32::from(c.strength()) + d;
@@ -190,6 +190,7 @@ fn lead(k: &Knowledge, c: Card, sims: &[crate::sim::Sim], wt: &Weights) -> Tally
             }
         }
         Some(_) => {
+            spare_lead(k, c, &mut t, wt);
             let (mine, share) = suit_share(k, Kind::of(c));
             if mine >= 3 && (0.35..=0.65).contains(&share) {
                 t.add(-wt.split_suit, "dont-lead-split-suit");

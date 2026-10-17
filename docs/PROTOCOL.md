@@ -46,8 +46,9 @@ Text goes in and out through linear memory, as in Cassino. `kit/js/engine.js`
 | `strohmandeln_deal_record()` | | | `{protocol, record}`: the record text of the deal that last ended, or `record: null` before one has. See "The tutor" |
 | `strohmandeln_evidence_of(len)` | a record, a line `==`, the assisted action numbers | | `{protocol, summary, detail}` or an error. Stateless |
 | `strohmandeln_learner(len)` | summaries, oldest first, a line `--` between | | `{protocol, deals, focus, mastered, just_mastered, stale, version}`. Stateless |
-| `strohmandeln_brief_of_record(len)` | `level n`, a record, `==`, the assisted numbers, `--`, the history | | `{protocol, brief}`. Stateless |
-| `strohmandeln_brief_sitting(len)` | `level n`, the sitting's kept details, each with its number, `--`, the history | | the same, over the sitting. Runs no advisor. Stateless |
+| `strohmandeln_styles()` | | | `{protocol, styles}`: the ids the dialog offers besides `normal` and `random`, in the dialog's order; Random draws from these. A record's `drawn` may still name any style the code plays (`ulmann`, `werner`, `hunter` too). Stateless |
+| `strohmandeln_brief_of_record(len)` | `level n`, optional `style`, `drawn`, `reveal` lines, a record, `==`, the assisted numbers, `--`, the history | | `{protocol, brief}`. Stateless |
+| `strohmandeln_brief_sitting(len)` | `level n`, the same optional lines, the sitting's kept details, each with its number, `--`, the history | | the same, over the sitting. Runs no advisor. Stateless |
 | `strohmandeln_set_focus(len)` | a skill's slug (empty: none) | 1 set, 0 not a skill | none |
 | `strohmandeln_nudge()` | | | `{protocol, deal_action, nudge}`; `{error: "no-sitting"}` with no sitting. Does not move the game |
 | `strohmandeln_tracker()` | | | `{protocol, tracker}`: where each of the 54 cards is from the human's view, and what is still out; `tracker: null` with no deal in progress. Does not move the game. See "The tracker" |
@@ -69,7 +70,7 @@ alphabetical order.
 `strohmandeln_new`:
 
 ```json
-{"seed": 7, "touren": 3, "human": 1, "level": 1,
+{"seed": 7, "touren": 3, "human": 1, "level": 1, "style": "normal",
  "settings": {"both_pass": "play", "values": "2/3/4", "ultimo": 1}}
 ```
 
@@ -78,11 +79,12 @@ alphabetical order.
 | `seed` | integer 0 to 2^53 (a u64 in the module); the deals and the first dealer follow from it |
 | `touren` | `3` or `6` (15.2) |
 | `human` | the seat the human takes, `0` (default) or `1` |
-| `level` | the opponent's level, 1 to 4 in half steps (default 1; outside the range is clamped, a fraction rounds to the nearest half). `docs/OPPONENT.md`; the module carries it through export and import |
+| `level` | the opponent's skill, on the dial 1, 2, 3, 3.5, 4 (default 1; outside the range is clamped, any other number snaps to the nearest position, ties down: 1.5 is 1, 2.5 is 2). `docs/OPPONENT.md`; the module carries it through export and import |
+| `style` | the opponent's style, an id of `docs/STYLES.md`: `normal` (default), `random`, `bermann`, `ulmann`, `ms`, `werner`, `bold`, `cautious`, `hunter`. `random` is drawn at the start from a hash of the seed. Anything else is `bad-config` with `field: "style"` |
 | `settings` | optional; any of `both_pass` (`"play"`, `"throw_in"`), `values` (`"2/3/4"`, `"1/2/3"`, `"1/2/4"`), `ultimo` (`1`, `2`); missing keys take the defaults of RULES 0 |
 
 Errors (return 0; output `{"ok":false,"error":"bad-config", ...}` with either
-`"field"` (`config` unparsable, `human` not 0 or 1, `settings` bad) or
+`"field"` (`config` unparsable, `human` not 0 or 1, `style` unknown, `settings` bad) or
 `"setup"`, the core's `SetupError` as a key with parameters, e.g.
 `{"key":"bad-touren","touren":4}`; keys in `docs/MESSAGES.md`). No error
 carries prose.
@@ -120,7 +122,7 @@ parts are shown in the next section):
 
 ```json
 {
-  "protocol": 1, "human": 1, "seat": 1, "level": 1,
+  "protocol": 1, "human": 1, "seat": 1, "level": 1, "style": "normal", "drawn": null,
   "prompt": "you", "phase": "bid", "to_move": 1, "over": false,
   "contos": [0, 0], "balance": 0, "touren_total": 3, "deals_counted": 0,
   "pending_doubling": false,
@@ -146,7 +148,9 @@ parts are shown in the next section):
 | `deal` | the deal in progress, or `null` when there is none |
 | `events` | the events of the deal in progress, filtered; lets a client rebuild after a reload |
 | `deal_actions` | the actions made so far in the deal in progress, both seats' (0 before the first bid): the number the next action will have in the deal's record. The tutor's assisted list holds such numbers (`docs/TUTOR.md` 3) |
-| `level` | the opponent's level after clamping to half steps (a number, e.g. `2.5`) |
+| `level` | the opponent's skill after snapping to the dial (a number: 1, 2, 3, 3.5 or 4) |
+| `style` | the style chosen at `new` (an id; `random` stays `random`) |
+| `drawn` | what a `random` style drew, an id, once the sitting is over; `null` before, and always for any other style |
 
 ### `deal`
 
@@ -299,7 +303,7 @@ Notes:
 `strohmandeln_export()`:
 
 ```json
-{"protocol": 1, "human": 1, "level": 1,
+{"protocol": 1, "human": 1, "level": 1, "style": "random", "drawn": "ulmann",
  "record": {"version": 1, "seed": 7, "settings": {"both_pass":"play","ultimo":1,"values":"2/3/4"}, "touren": 3,
             "moves": [{"seat": 1, "action": {"action":"take"}},
                       {"seat": 1, "action": {"action":"play","card":"1d","announce":[]}},
@@ -311,8 +315,14 @@ seed, settings, Touren and every move by either seat, in order. The sitting is
 rebuilt move by move; it is exact for any sitting. `strohmandeln_import`
 replays it and answers the opening shape (`ok`, `state`, and `events: []`:
 the client rebuilds from `state`, whose `events` hold the deal in progress).
-Errors: `bad-record` (unparsable, wrong `protocol`, record `version` other
-than 1, or a move refused on replay). The opponent's own moves are recorded;
+`style` and `drawn` are the style chosen and, for `random` only, the style it
+drew (`null` for any other). `drawn` is authoritative: the hash of the seed
+decides only when it is absent, since the pool of styles may change. A record
+without `style` is `normal`. Errors: `bad-record` (unparsable, wrong
+`protocol`, record `version` other than 1, a move refused on replay, an unknown
+`style`, or a `drawn` that is not a style the code plays or that comes with a
+style other than `random`; `field` says which). `protocol` and `record.version`
+stay 1: the opponent's own moves are recorded;
 what it would do next is not (an imported sitting continues with a freshly
 seeded opponent).
 
@@ -435,7 +445,12 @@ the evidence is of one seat's decisions. Actions are numbered from 0 over both s
 history is summaries, oldest first, a line `--` between (each summary is the text
 `evidence_of` gave, `docs/TUTOR.md` 3). The brief calls begin with a line
 `level n`, the opponent's level, 1 to 4 (anything else is `bad-input`): it
-decides whether "try the next opponent up" can be said. The sitting's deals are
+decides whether "try the next opponent up" can be said. Optional lines may follow,
+in any order: `style <id>` (default `normal`), `drawn <id>` (what a `random`
+style drew; a style the code plays, and only with `style random`) and `reveal`
+(the sitting is over). The brief's `style` is `{"id", "drawn"}`; `drawn` is
+`null` unless `reveal` is given, so the engine, not the table, withholds it.
+An unknown style, or a bad `drawn`, is `bad-input`. The sitting's deals are
 not records but what was kept of each when it was scored, its `detail`: `deal N`
 (the number the table shows, 1 or more; none is `bad-input`), then the detail on
 one line of JSON, the deals separated by a line `++`.

@@ -8,11 +8,14 @@ pub mod ask;
 pub mod brief;
 pub mod cardset;
 pub mod explain;
+#[cfg(test)]
+mod golden_tests;
 pub mod hint;
 pub mod know;
 pub mod lessons;
 pub mod measure;
 pub mod opponent;
+pub mod probe;
 pub mod review;
 pub mod rules;
 pub mod rung1;
@@ -25,6 +28,7 @@ pub mod sim;
 pub mod solver;
 pub mod stats;
 pub mod students;
+pub mod style;
 #[cfg(test)]
 mod testutil;
 pub mod tournament;

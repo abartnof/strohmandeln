@@ -23,6 +23,7 @@ const create = (config) => {
 };
 const send = (action) => w.strohmandeln_send(write(JSON.stringify(action))) === 1;
 const audit = () => (w.strohmandeln_audit(), out().hidden);
+w.strohmandeln_styles(), assert.deepEqual(out().styles, ["bermann", "ms", "bold", "cautious"]); // the dialog's list, which Random draws from
 
 // FNV-1a, 64 bits, as strohmandeln_wasm::fnv, on 32-bit halves (BigInt is far
 // too slow for tens of megabytes). The prime is 2^40 + 0x1b3.

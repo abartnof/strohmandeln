@@ -54,6 +54,7 @@ export function reviewBody(doc, blocks) {
     "div",
     { class: "tutor-review-body" },
     blocks.header ? h(doc, "p", { class: "tutor-count" }, blocks.header) : null,
+    blocks.reveal ? h(doc, "p", { class: "tutor-reveal" }, blocks.reveal) : null,
     blocks.bullets.length ? h(doc, "ul", {}, blocks.bullets.map((b) => h(doc, "li", {}, b.lead ? h(doc, "b", {}, b.lead) : null, b.lead ? " " : null, b.text))) : null,
     h(doc, "details", {}, h(doc, "summary", {}, blocks.how), h(doc, "p", {}, blocks.method)),
   );

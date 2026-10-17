@@ -8,14 +8,19 @@
 // Cassino's prefs.js is the pattern (its keys and defaults are its own).
 
 export const KEY = "strohmandeln.prefs";
-// Version 1: the first.
-export const VERSION = 1;
+// Version 1: the first. Version 2: the style (docs/TABLE3D.md 7.3); the half levels 1.5 and 2.5
+// are gone from the dial.
+export const VERSION = 2;
 
 export const BOTH_PASS = Object.freeze(["play", "throw_in"]);
 export const VALUES = Object.freeze(["2/3/4", "1/2/3", "1/2/4"]);
 export const ULTIMO = Object.freeze([1, 2]);
 export const TOUREN = Object.freeze([3, 6]);
-export const SKILLS = Object.freeze([1, 1.5, 2, 2.5, 3, 3.5, 4]);
+export const SKILLS = Object.freeze([1, 2, 3, 3.5, 4]);
+// The styles the new-sitting screen offers come from the engine (engine.styles(), docs/PROTOCOL.md);
+// the prefs keep any id-shaped one and the screen reads one that is not offered as Normal.
+const styleId = (x) => typeof x === "string" && /^[a-z]{2,16}$/.test(x);
+
 export const SPEEDS = Object.freeze(["slow", "normal", "fast", "instant"]);
 export const TALKS = Object.freeze(["all", "calls", "none"]);
 export const FACES = Object.freeze(["auto", "classic", "jumbo"]);
@@ -29,6 +34,7 @@ export const DEFAULTS = Object.freeze({
   ultimo: 1,
   touren: 3,
   skill: 3,
+  style: "normal",
   speed: "normal",
   talk: "all",
   tutor: true,
@@ -62,6 +68,7 @@ const CHECKS = {
   ultimo: oneOf(ULTIMO),
   touren: oneOf(TOUREN),
   skill: oneOf(SKILLS),
+  style: (x) => styleId(x) || x === "normal", // the offered list decides what the screen shows (newsitting.js)
   speed: oneOf(SPEEDS),
   talk: oneOf(TALKS),
   tutor: isBool,
@@ -78,6 +85,9 @@ const CHECKS = {
   surface: (x) => typeof x === "string" && x.length > 0 && x.length < 40,
   muted: isBool,
 };
+
+// A kept half level snaps as the engine does (Level::from_f64, ties down): 1.5 is 1, 2.5 is 2.
+const snapSkill = (x) => (x === 1.5 ? 1 : x === 2.5 ? 2 : x);
 
 const fresh = () => ({ ...DEFAULTS, seen: [] });
 
@@ -113,6 +123,7 @@ export function loadPrefsInfo(store = defaultStore()) {
   if (!kept || typeof kept !== "object" || Array.isArray(kept)) return { prefs: fresh(), notice: null };
   if (Number.isInteger(kept.v) && kept.v > VERSION) return { prefs: fresh(), notice: "newer" };
   const prefs = fresh();
+  kept.skill = snapSkill(kept.skill);
   for (const [field, ok] of Object.entries(CHECKS)) if (ok(kept[field])) prefs[field] = kept[field];
   if (Array.isArray(kept.seen)) prefs.seen = kept.seen.filter((k) => typeof k === "string");
   return { prefs, notice: null };
@@ -165,13 +176,14 @@ export function urlOverrides(params) {
 }
 
 // The argument of strohmandeln_new (docs/PROTOCOL.md). `level` is the skill dial as it
-// is, 1 to 4 in half steps (docs/OPPONENT.md). The seed is drawn if none is given.
+// is (1, 2, 3, 3.5, 4) and `style` an id of docs/STYLES.md. The seed is drawn if none is given.
 export function sittingConfig(prefs, { seed, human } = {}) {
   const cfg = {
     seed: Number.isInteger(seed) ? seed : Math.floor(Math.random() * 2 ** 32),
     touren: prefs.touren,
     ...(human === 0 || human === 1 ? { human } : {}),
     level: prefs.skill,
+    style: prefs.style,
     settings: { both_pass: prefs.both_pass, values: prefs.values, ultimo: prefs.ultimo },
   };
   return cfg;
