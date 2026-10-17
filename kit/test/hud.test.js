@@ -3,7 +3,7 @@
 // at a time on the table's clock, the ledger per hand, reduced motion.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createHud, POPUP_MS } from "../js/hud.js";
+import { CHEVRON_SVG, createHud, POPUP_MS } from "../js/hud.js";
 import { blank, defineGame } from "../js/scoring.js";
 import { counting, fake } from "./fixtures/games.js";
 
@@ -45,7 +45,9 @@ class FakeElement {
     this.append(...nodes);
   }
   addEventListener() {}
-  set innerHTML(_) {}
+  set innerHTML(html) {
+    this.html = html;
+  }
   get offsetWidth() {
     return 0;
   }
@@ -253,6 +255,13 @@ test("the ledger sized to its hands and the room, and the HUD tall by its game's
   room.v = 140;
   hud.fit();
   assert.equal(list.style.height, `${140 - 90}px`);
+  done();
+});
+
+test("the chevron is the shared CHEVRON_SVG, which the game's own HUD cards reuse", () => {
+  const { hud } = setup();
+  const [chev] = all(hud.node, "hud-chev");
+  assert.equal(chev.html, CHEVRON_SVG);
   done();
 });
 
