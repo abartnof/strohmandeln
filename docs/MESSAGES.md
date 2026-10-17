@@ -298,6 +298,12 @@ in the Kibitzer's tab at the first clear chance at the focus
 | `tutor.nudge.bid` | none | Look at your sure winners before you speak. | Prüfen Sie Ihre sicheren Stecher, ehe Sie sprechen. | TUTOR 6; shown after `tutor.lead.rule` |
 | `tutor.nudge.announce` | none | You hold an honour; announce it. | Sie halten einen Honneur; sagen Sie ihn an. | TUTOR 6; shown after `tutor.lead.rule` |
 
+### Rule notes
+
+| Key | Parameters | English | Deutsch | Basis |
+|---|---|---|---|---|
+| `tutor.note.redpips` | `win`, `lose` (card names) | The {win} beats the {lose}: in hearts and diamonds the low numbers rank high. | {win} sticht {lose}: in Herz und Karo ist die 1 die höchste Zahl, die 4 die niedrigste. | RULES 1.5; TABLE3D 6.2.5; said once, without a lead |
+
 ### Examples
 
 | Key | Parameters | English | Deutsch | Basis |

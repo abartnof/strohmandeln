@@ -7,6 +7,7 @@
 // Cassino's tutorial.js (pageDue, the seen list) is the pattern.
 
 import { parseTutorial } from "../../kit/js/tutorial.js";
+import { redPipBeat } from "./cardinfo.js";
 
 // The page keys, in the order they are due when more than one could be
 // (the table of TABLE3D 6.2.2; web3d/test/tutorial.test.js holds them to it).
@@ -28,6 +29,20 @@ export function tutorialPages(markdown, keys, settings = {}) {
     else if (keep) lines.push(line);
   }
   return parseTutorial(lines.join("\n"), keys);
+}
+
+// The Kibitzer's one-time note on the backwards red pips (RULES 1.5, TABLE3D 6.2.5).
+// It is kept in `seen` beside the pages' keys; it is not a page, so it is not in PAGE_KEYS.
+export const RED_PIPS = "red-pips";
+// The cards of the first trick in these events a red pip took from a higher-numbered one,
+// `{ win, lose }`, unless the note was already given.
+export function redPipsNote(events, seen = []) {
+  if (seen.includes(RED_PIPS)) return null;
+  for (const e of events) {
+    const beat = e.type === "trick_won" ? redPipBeat(e.cards) : null;
+    if (beat) return beat;
+  }
+  return null;
 }
 
 const has = (events, type, ok = () => true) => events.some((e) => e.type === type && ok(e));

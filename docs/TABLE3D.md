@@ -884,6 +884,21 @@ for all 54 cards, the game values against the engine's credits for each
 `values` setting, the worked deal and evening against core tests
 (`web3d/test/scoring_pages.test.js`).
 
+6.2.5 **The red pips' note.** The first time a trick is won by a red pip over a
+higher-numbered pip of its suit (the 1 over the 4, the 2 over the 3; RULES 1.5),
+the Kibitzer says once, in his note by the tab (6.5): "The 1 of hearts beats the
+4 of hearts: in hearts and diamonds the low numbers rank high." / "Herz 1 sticht
+Herz 4: in Herz und Karo ist die 1 die höchste Zahl, die 4 die niedrigste." with
+the cards named. It is a rule, not a hint, so it does not depend on "Hints"
+(7.1); it is the Kibitzer's, so it is not said with the tutor off or muted. It
+comes at rest after the trick, never over a dialog (a page, the count): it waits
+for the next rest. Once only: `red-pips` in `seen` (7.7), beside the pages' keys
+(it is not a page, and not in the Help list). The note rather than a page or a
+dialog, because the table states a rule in the Kibitzer's note (the nudge, 6.4.5)
+and a page is read at a rest the player did not ask for. The trigger is
+`redPipBeat` (`web3d/src/cardinfo.js`), held by Node tests. The maintainer asked
+for it, 2026-10-17.
+
 ### 6.3 Hints and explanations
 
 6.3.1 The tutor's hint is the engine's `strohmandeln_hint()`: `{hint, reason}`
@@ -1374,6 +1389,10 @@ motion are saved to `web3d/test/out/`.
 - `tutor_pages`: in a seeded sitting each page opens at its first occurrence, once
   (`the-cards` and `packets` at the deal, and `bidding` at the first bid turn, which in the check's seed is the same rest: one at a time, in that order, each Not now bringing the next; `the-pull` at the reveal, ... `extension`); not when
   muted or the tutor is off; each page is in the current language.
+- `red_pips_note`: seed 1 at level 1, hints off: at rest after the first trick a red pip
+  beats a higher-numbered one (trick 3, the 1 of hearts over the 2), the Kibitzer's note
+  names both cards and `red-pips` is in `seen` once, no dialog open; muted, no note and
+  no mark (6.2.5).
 - `tutor_mute`: "§ 13" mutes (one line, then silence); no page, hint or review chip;
   unmute restores them.
 - `hint_and_explain`: the hint chip lights a card and shows a rendered key; explanations

@@ -3,7 +3,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { createTutor, pagesDue, extendPromptDue, PAGE_KEYS } from "../src/tutor.js";
+import { createTutor, pagesDue, extendPromptDue, redPipsNote, PAGE_KEYS, RED_PIPS } from "../src/tutor.js";
 
 const spec = readFileSync(new URL("../../docs/TABLE3D.md", import.meta.url), "utf8");
 
@@ -244,4 +244,19 @@ test("pacing: the extension prompt waits for every due page, then is asked", () 
   off.tutor.rest(extend, [ev("extension_offered")], { human: 1 });
   assert.equal(extendPromptDue({ mine: true, busy: false, phase: "extend", extendOpen: false, pageOpen: Boolean(off.tutor.current()) }), true, "tutor off: never held back");
   assert.equal(extendPromptDue({ mine: true, busy: true, phase: "extend", extendOpen: false, pageOpen: false }), false, "not while cards move");
+});
+
+// The red pips' note (TABLE3D 6.2.5): once, the first time a red pip takes a higher-numbered one.
+test("redPipsNote: the first trick a red pip beat a higher-numbered one, and never again once seen", () => {
+  const events = [ev("card_played", { card: "4h" }), ev("trick_won", { winner: 1, cards: ["4h", "1h"], trick: 3 })];
+  assert.deepEqual(redPipsNote(events, []), { win: "1h", lose: "4h" });
+  assert.equal(RED_PIPS, "red-pips");
+  assert.equal(redPipsNote(events, [RED_PIPS]), null);
+  assert.equal(redPipsNote(events, ["the-cards"])?.win, "1h", "a page seen is another key");
+});
+
+test("redPipsNote: tricks that show no such beat say nothing", () => {
+  assert.equal(redPipsNote([ev("trick_won", { winner: 0, cards: ["10c", "7c"] })], []), null);
+  assert.equal(redPipsNote([ev("trick_won", { winner: 0, cards: ["1h", "Jh"] })], []), null);
+  assert.equal(redPipsNote([], []), null);
 });
