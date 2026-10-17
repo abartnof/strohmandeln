@@ -166,8 +166,8 @@ def check_slate_rows(browser, failures):
 def check_slate_tips(browser, failures):
     # Every figure has a tooltip, one reads from the record, and the keyboard has one tab stop.
     page = open_page(browser, "seed=2&speed=instant&human=1")
-    ok = drive(page, has("doubling_applied"), policy="weiter")
-    fail_if(not ok, failures, "slate_tips: no doubled deal in the seeded sitting")
+    ok = drive(page, has("game_scored"), policy="weiter")
+    fail_if(not ok, failures, "slate_tips: no deal scored")
     if ok:
         rest(page)
         page.locator(".slate-tab").click()
