@@ -267,3 +267,10 @@ test("a scrolled or resized hand forgets where the first click fell", () => {
   assert.equal((main.match(/scroll: clampScroll\([^;]*\), at: null/g) ?? []).length, 2, "drag-scroll and wheel");
   assert.match(main, /sel = \{ \.\.\.sel, at: null \}; \/\/ cards move on a resize/);
 });
+
+// The ids the engine can name (docs/PROTOCOL.md `style`), offered or not: an imported record can carry any.
+test("every style id the engine can name has a name and a line in both languages", () => {
+  for (const id of ["normal", "random", "bermann", "ulmann", "ms", "werner", "bold", "cautious", "hunter"]) {
+    for (const k of [`style.${id}.name`, `style.${id}.line`]) assert.ok(TABLE[k]?.en && TABLE[k]?.de, k);
+  }
+});

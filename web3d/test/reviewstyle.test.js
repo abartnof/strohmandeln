@@ -14,8 +14,8 @@ const brief = { method: "tutor.method", bullets: [] };
 
 test("the end-of-sitting brief reveals the drawn style; the deal's brief and a chosen style never do", () => {
   const drawn = { ...brief, style: { id: "random", drawn: "ulmann" } };
-  assert.equal(briefBlocks(drawn, review, fmt("en"), { whole: true }).reveal, "Your opponent's style was drawn at random: After Ulmann.");
-  assert.equal(briefBlocks(drawn, review, fmt("de"), { whole: true }).reveal, "Der Stil Ihres Gegners wurde gelost: Nach Ulmann.");
+  assert.equal(briefBlocks(drawn, review, fmt("en"), { whole: true }).reveal, "Your opponent's style was drawn at random: \"After Ulmann\".");
+  assert.equal(briefBlocks(drawn, review, fmt("de"), { whole: true }).reveal, "Der Stil Ihres Gegners wurde gelost: „Nach Ulmann“.");
   assert.equal(briefBlocks({ ...brief, style: { id: "random", drawn: null } }, review, fmt("en"), { whole: true }).reveal, null, "hidden: the engine withholds it");
   assert.equal(briefBlocks({ ...brief, style: { id: "bold", drawn: null } }, review, fmt("en"), { whole: true }).reveal, null);
   assert.equal(briefBlocks(drawn, review, fmt("en"), { whole: false }).reveal, null);
