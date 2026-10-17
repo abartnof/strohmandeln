@@ -380,7 +380,7 @@ holds.
 | `beneath` | {card} lies on a packet; {n} cards are beneath it. | {cond}: play the packet card, so the card beneath is turned up. | {cond}: das Paketblatt spielen, dann wird das darunter aufgedeckt. | 15/14, 22/19 |
 | `worth-poor` | {led} is a poor trick: {trick_thirds}. | When he leads a card worth {t} or less, do not win it with a king. | Spielt er eine Karte von {t} oder weniger an, nicht mit einem König stechen. | 13/11, 23/19 |
 | `worth-rich` | He led {led}, worth {led_thirds}. | When he leads a card worth 7 thirds or more, take the trick. | Spielt er eine Karte von 7 Dritteln oder mehr an, den Stich holen. | 12/11, 20/18 |
-| `cheap` | {card} wins for less than {alt}. | When two cards win, play the one that costs less. | Stechen zwei Karten, die billigere spielen. | 12/12, 16/13 |
+| `cheap` | {card} wins for less than {alt}. | Following, win or lose with the fewest-points card (the lowest-value card that wins, when you take the trick). | Beim Bedienen mit der punkteärmsten Karte stechen oder abgeben (mit der punkteärmsten stechenden Karte, wenn Sie den Stich holen). | per M5r class wording, `m5r.rs` |
 | `out-void` | He showed no {suit}; {out} tarocks are out. | A suit he lacks, he trumps while a tarock is out: lead another. | Eine Farbe, die ihm fehlt, sticht er, solange ein Tarock draußen ist: eine andere anspielen. | 15/16, 20/22 |
 | `out-master` | Only a tarock can beat {card}. | When he has shown no tarock, your top card of a suit cannot be beaten: lead it. | Hat er kein Tarock gezeigt, ist Ihre höchste Karte einer Farbe nicht zu schlagen: anspielen. | 13/13, 24/22 |
 | `suit` (fact only: contested, 2) | {suit}: {mine} of its points are yours, {out} are out. | none | none | 16/15, none |
