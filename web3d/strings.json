@@ -523,6 +523,7 @@
   "tutor.lead.deal": {"en": "This deal:", "de": "In dieser Partie:"},
   "tutor.lead.deal-n": {"en": "Deal {deal}:", "de": "Partie {deal}:"},
   "tutor.lead.try": {"en": "To try:", "de": "Zum Versuchen:"},
+  "tutor.note.redpips": {"en": "The {win} beats the {lose}: in hearts and diamonds the low numbers rank high.", "de": "{win} sticht {lose}: in Herz und Karo ist die 1 die höchste Zahl, die 4 die niedrigste."},
   "tutor.lead.rule": {"en": "If I may:", "de": "Wenn ich mir erlauben darf:"},
   "tutor.lead.style": {"en": "Their style:", "de": "Spielweise des Gegners:"},
   "tutor.style.took": {"en": "Your opponent has taken up {n} of {of} bids so far.", "de": "Ihr Gegner hat bisher {n} von {of} Geboten aufgenommen."},

@@ -32,14 +32,15 @@ when both pass have one block for each value of `values`, `ultimo` and
 ## The tarocks
 
 - The tarocks are trumps: the Sküs is the highest, then XXI, XX down to II; I, the Pagat, is the lowest.
-- Rank is not value: the Pagat is lowest, yet worth 5 card points, the most a card is worth, like the Sküs and XXI.
+- Rank is not value: the Pagat is lowest, yet worth 5 card points, the most, like the Sküs and XXI.
 - Tarot cards were made to play with, in Italy, by 1442. Fortune-telling is first heard of in 1781, in France.
 - Nothing here tells your fortune. Austrians still play Tarock, and Piatnik still sells Tarock packs.
 
 ## The suits
 
 - Each suit runs K, Q, C, J. The C is the Cavall, a knight, between queen and jack, worth 3 card points.
-- The 52-card pack dropped him. Pips: 10 9 8 7 in clubs and spades; 1 2 3 4 in hearts and diamonds, the 1 highest.
+- The 52-card pack dropped him. Pips: 10 9 8 7 in clubs and spades.
+- In hearts and diamonds the pips run backwards: the 1 is highest, the 4 lowest.
 - Real courts carry pictures, not letters. These big letters are for a quick look.
 
 # The packets
@@ -242,7 +243,7 @@ when both pass have one block for each value of `values`, `ultimo` and
 - **1** each: every other card, that is the tarocks II to XX and the numbered suit cards.
 
 - Rank is another matter. Tarocks run Sküs (highest), XXI, XX down to II, then I, the Pagat, the lowest tarock.
-- Each suit runs K, Q, C, J, the Cavall between queen and jack, then the pips: 10 9 8 7 in clubs and spades, 1 2 3 4 in hearts and diamonds, the 1 highest.
+- Each suit runs K, Q, C, J, the Cavall between queen and jack, then the pips: 10 9 8 7 in clubs and spades. In hearts and diamonds the pips run backwards: the 1 is highest, the 4 lowest.
 - The faces show the letters K, Q, C and J, and the tarocks in Roman numerals.
 - Add all 54 cards at these values and you get 106. The count in threes brings that down to 70.
 

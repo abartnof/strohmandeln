@@ -940,6 +940,43 @@ def check_tutor_pages(browser, failures):
     check_offline(page, failures, "tutor_pages: ")
 
 
+RED_PIP_TRICK = re.compile(r"^[1-4][hd]$")
+ALL_PAGES = ["the-cards", "packets", "bidding", "the-pull", "playing", "following", "from-a-packet", "honours", "thirds", "pagat-ultimo", "scoring", "draw", "touren-slate", "extension", "scoring-full"]
+
+
+def red_pip_trick(log):
+    for e in log:
+        c = e["cards"] if e["type"] == "trick_won" else []
+        if len(c) == 2 and all(RED_PIP_TRICK.match(x) for x in c) and c[0][1] == c[1][1]:
+            return e
+
+
+def check_red_pips_note(browser, failures):
+    # The first trick a red pip beats a higher-numbered one (seed 1, level 1: the 1 of hearts takes the 2, trick 3):
+    # the Kibitzer says it once at rest, with the cards named, hints off (TABLE3D 6.2.5); not when muted.
+    prefs = {"tutor": True, "hints": False, "seen": ALL_PAGES, "slateAuto": False}
+    page = with_prefs(browser, prefs, "seed=1&speed=instant&human=1&tutor=1")
+    take_if_bidding(page)
+    drive(page, lambda s, log: red_pip_trick(log) is not None or s["prompt"] == "over")
+    e = red_pip_trick(js(page, "log()"))
+    fail_if(e is None, failures, "red_pips_note: seed 1 did not reach a red pip trick")
+    if e:
+        rest(page)
+        want = t("tutor.note.redpips").replace("{win}", "1 of hearts").replace("{lose}", "2 of hearts") if e["cards"] == ["1h", "2h"] or e["cards"] == ["2h", "1h"] else None
+        note = js(page, "tutor()")["note"]
+        fail_if(want is not None and note != want, failures, f"red_pips_note: the note is {note!r}, not {want!r}")
+        fail_if(not note.startswith("The ") or " beats the " not in note, failures, f"red_pips_note: the note does not name the cards: {note!r}")
+        fail_if(js(page, "prefs()")["seen"].count("red-pips") != 1, failures, "red_pips_note: red-pips not kept once in seen")
+        fail_if(page.locator("[data-dialog]").count(), failures, "red_pips_note: a dialog was open with the note")
+    check_offline(page, failures, "red_pips_note: ")
+    page = with_prefs(browser, {**prefs, "muted": True}, "seed=1&speed=instant&human=1&tutor=1")
+    take_if_bidding(page)
+    drive(page, lambda s, log: red_pip_trick(log) is not None or s["prompt"] == "over")
+    rest(page)
+    fail_if(js(page, "tutor()")["note"] != "", failures, "red_pips_note: the muted Kibitzer spoke")
+    fail_if("red-pips" in js(page, "prefs()")["seen"], failures, "red_pips_note: a muted note was marked seen")
+
+
 # ---- 10.4 the cards-out tracker (6.6) ----------------------------------------------------------------
 
 TRACKER_SIZES = [("1280x720", {"width": 1280, "height": 720}), ("1024x768", {"width": 1024, "height": 768})]  # a phone layout is deferred (6.6.6)
@@ -1310,5 +1347,5 @@ CHECKS_104 = [
     check_slate_open_close, check_slate_rows, check_slate_points_and_settlement_note, check_talk_events, check_talk_setting,
     check_talk_result_after_count, check_talk_repeat, check_settings_rows, check_settings_next_sitting, check_settings_no_rules, check_new_sitting_from_table, check_skill_speed, check_new_sitting_style, check_random_style_hidden,
     check_language_switch, check_language_switch_at_count, check_hud_not_clipped, check_prefs_storage, check_save_restore, check_export_import_file,
-    check_tutor_pages, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief,
+    check_tutor_pages, check_red_pips_note, check_escape_closes, check_escape_dialogs, check_tracker_clear, check_tracker_fold_and_settings, check_tracker_languages, check_public_mark, check_deal_brief,
 ]
