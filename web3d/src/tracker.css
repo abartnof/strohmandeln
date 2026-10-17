@@ -63,7 +63,10 @@
 
 /* The grid: a mark, eight cells, then the row's three counts. A state is never colour alone. */
 .tracker-row { display: grid; grid-template-columns: 16px repeat(8, 1fr) repeat(3, 26px); gap: 2px; margin-bottom: 2px; align-items: center; }
-.tracker-heads .tracker-count-head:first-child { grid-column: 10; }
+/* The counts keep their columns whatever the row holds (the last tarock row has six cells). */
+:is(.tracker-count, .tracker-count-head)[data-count="you"] { grid-column: 10; }
+:is(.tracker-count, .tracker-count-head)[data-count="opp"] { grid-column: 11; }
+:is(.tracker-count, .tracker-count-head)[data-count="seen"] { grid-column: 12; }
 .tracker-count-head { font-size: 10px; line-height: 1.1; text-align: center; color: var(--md-sys-color-on-surface-variant); white-space: nowrap; overflow: hidden; }
 .tracker-count { text-align: center; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--md-sys-color-on-surface-variant); }
 .tracker-count[data-count="seen"] { color: var(--md-sys-color-on-surface); font-weight: 600; }
@@ -101,7 +104,7 @@
 
 @media (prefers-contrast: more) {
   .tracker { border: 2px solid var(--md-sys-color-on-surface); box-shadow: none; background: var(--md-sys-color-surface-container-lowest); }
-  .tracker-byline, .tracker-legend { color: var(--md-sys-color-on-surface); }
+  .tracker-byline, .tracker-legend, .tracker-count, .tracker-count-head { color: var(--md-sys-color-on-surface); }
   .tracker-cell { border-color: var(--md-sys-color-on-surface); }
   .tracker-cell[data-state="theirs"] { border-color: var(--md-sys-color-on-surface); border-style: dashed; color: var(--md-sys-color-on-surface); background: transparent; text-decoration: line-through 2px; }
   .tracker-cell[data-state="played"] { border-color: var(--md-sys-color-on-surface); color: var(--md-sys-color-on-surface); opacity: 1; background: transparent; text-decoration: line-through 2px; }

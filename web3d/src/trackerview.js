@@ -22,7 +22,7 @@ export function trackerPanel(doc, model, { foldLabel, foldTitle }) {
       doc,
       "div",
       { class: "tracker-grid", "aria-hidden": "true" },
-      // The counts' heads sit over the last three columns of the rows below.
+      // The counts' heads sit over the counts' columns (tracker.css places both).
       h(
         doc,
         "div",
@@ -36,8 +36,6 @@ export function trackerPanel(doc, model, { foldLabel, foldTitle }) {
           { class: "tracker-row", "data-row": r.id },
           h(doc, "span", { class: `tracker-mark tracker-mark-${r.id[0]}` }, r.mark),
           r.cells.map((c) => h(doc, "span", { class: "tracker-cell", "data-code": c.code, "data-state": c.state, title: c.title }, c.label)),
-          // A short tarock row leaves its missing cells empty, so the counts line up.
-          Array.from({ length: 8 - r.cells.length }, () => h(doc, "span", {}, "")),
           model.countHeads.map((c) => h(doc, "span", { class: "tracker-count", "data-count": c.id, title: c.title }, String(r.counts[c.id]))),
         ),
       ),
